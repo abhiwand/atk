@@ -18,26 +18,19 @@ package com.intel.intelanalytics.rest.v1
 
 import com.intel.intelanalytics.DuplicateNameException
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.query.{ PagedQueryResult, QueryDataResult, Query, RowQuery }
+import com.intel.intelanalytics.domain.query.{ PagedQueryResult, QueryDataResult, RowQuery }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import org.joda.time.DateTime
-import spray.httpx.marshalling.ToResponseMarshallable
 import spray.json._
-import spray.http.{ StatusCodes, HttpResponse, Uri }
-import scala.Some
+import spray.http.{ StatusCodes }
 import com.intel.intelanalytics.rest.v1.viewmodels._
-import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
+import com.intel.intelanalytics.engine.{ Engine }
 import scala.concurrent._
 import scala.util._
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.frame.{ DataFrameTemplate, FrameEntity }
-import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
-import com.intel.intelanalytics.rest.{ RestServerConfig, CommonDirectives, AuthenticationDirective }
-import spray.routing.{ RequestContext, StandardRoute, Directives }
-import com.intel.intelanalytics.rest.v1.decorators.FrameDecorator
+import com.intel.intelanalytics.rest.{ CommonDirectives }
+import spray.routing.{ Directives }
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
-import com.intel.intelanalytics.rest.v1.decorators.{ QueryDecorator, CommandDecorator, FrameDecorator }
+import com.intel.intelanalytics.rest.v1.decorators.{ QueryDecorator, FrameDecorator }
 
 import scala.util.matching.Regex
 import com.intel.event.EventLogging

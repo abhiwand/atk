@@ -16,12 +16,6 @@
 
 package com.intel.intelanalytics.engine.spark.plugin
 
-import com.intel.intelanalytics.engine.plugin.{ QueryPlugin, Invocation }
-import com.intel.intelanalytics.engine.spark.SparkEngine
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
-
 ///**
 // * Base trait for query plugins that need direct access to a SparkContext
 // *

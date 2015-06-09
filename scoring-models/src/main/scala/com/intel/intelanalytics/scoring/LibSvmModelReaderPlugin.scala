@@ -19,8 +19,6 @@ package com.intel.intelanalytics.scoring
 import java.io._
 
 import _root_.libsvm.svm
-import scala.concurrent._
-import ExecutionContext.Implicits.global
 
 class LibSvmModelReaderPlugin() extends ModelLoader {
 

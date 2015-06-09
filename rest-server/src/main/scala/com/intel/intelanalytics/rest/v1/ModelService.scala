@@ -18,26 +18,21 @@ package com.intel.intelanalytics.rest.v1
 
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.plugin.Invocation
-import spray.json._
-import spray.http.{ StatusCode, StatusCodes, Uri }
-import scala.Some
-import com.intel.intelanalytics.rest.v1.viewmodels._
-import com.intel.intelanalytics.engine.{ Engine, EngineComponent }
+import spray.http.{ StatusCodes, Uri }
+import com.intel.intelanalytics.engine.{ Engine }
 import scala.concurrent._
 import scala.util._
 import com.intel.intelanalytics.rest.v1.viewmodels.GetModel
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.model.{ ModelTemplate, ModelEntity }
-import com.intel.intelanalytics.domain.DomainJsonProtocol.DataTypeFormat
-import com.intel.intelanalytics.rest.{ RestServerConfig, CommonDirectives, AuthenticationDirective }
+import com.intel.intelanalytics.domain.model.{ ModelEntity }
+import com.intel.intelanalytics.rest.{ CommonDirectives }
 import spray.routing.Directives
 import com.intel.intelanalytics.rest.v1.decorators.ModelDecorator
 import com.intel.intelanalytics.rest.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.intelanalytics.rest.v1.viewmodels.Rel
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import ExecutionContext.Implicits.global
-
 import com.intel.event.EventLogging
+import spray.json._
 
 /**
  * REST API Model Service.

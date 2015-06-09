@@ -16,15 +16,11 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ CumulativePercentArgs, FrameEntity }
-import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
+import com.intel.intelanalytics.domain.schema.{ DataTypes }
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
 import spray.json._

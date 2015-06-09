@@ -17,19 +17,16 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.{ LoadGraphArgs, GraphEntity }
 import com.intel.intelanalytics.engine.Rows
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
 
-import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.Status
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

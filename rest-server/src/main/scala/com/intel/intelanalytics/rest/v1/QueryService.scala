@@ -16,25 +16,21 @@
 
 package com.intel.intelanalytics.rest.v1
 
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.{ FilterArgs, _ }
-import com.intel.intelanalytics.domain.query.{ Query, Execution, QueryTemplate }
-import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.frame.load.{ LoadFrameArgs, LoadSource }
+import com.intel.intelanalytics.domain.query.{ Query }
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.rest.v1.decorators.QueryDecorator
 import com.intel.intelanalytics.rest.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.rest.v1.viewmodels._
-import com.intel.intelanalytics.rest.{ RestServerConfig, CommonDirectives, UrlParser }
+import com.intel.intelanalytics.rest.{ RestServerConfig, CommonDirectives }
 import spray.http.{ StatusCodes, Uri }
 import scala.concurrent._
 import spray.json._
-import spray.routing.{ Directives, Route }
+import spray.routing.{ Directives }
 
 import scala.concurrent.ExecutionContext
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Failure, Success }
 
 import ExecutionContext.Implicits.global
 import com.intel.event.EventLogging

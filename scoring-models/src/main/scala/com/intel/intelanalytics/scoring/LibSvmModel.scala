@@ -16,7 +16,6 @@
 
 package com.intel.intelanalytics.scoring
 
-import java.io._
 import java.util.StringTokenizer
 
 import _root_.libsvm.{ svm, svm_model, svm_node }

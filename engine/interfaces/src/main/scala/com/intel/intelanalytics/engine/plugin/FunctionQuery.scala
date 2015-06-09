@@ -19,8 +19,6 @@ package com.intel.intelanalytics.engine.plugin
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json._
 
-import scala.concurrent.ExecutionContext
-
 /**
  * Encapsulates a normal Scala function as a QueryPlugin.
  *

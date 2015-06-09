@@ -20,11 +20,10 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.frame.partitioning.RepartitionArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 
-import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
 import spray.json._
