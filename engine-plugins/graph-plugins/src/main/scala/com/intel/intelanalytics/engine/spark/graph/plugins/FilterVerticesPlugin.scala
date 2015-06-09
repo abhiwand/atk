@@ -16,31 +16,15 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
-import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.domain.schema._
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, LegacyFrameRdd, PythonRddStorage }
-import org.apache.spark.frame.FrameRdd
-import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.Rows._
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, PythonRddStorage }
 import com.intel.intelanalytics.domain.graph.SeamlessGraphMeta
-import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameEntity
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.command.CommandDoc
-import scala.Some
 import com.intel.intelanalytics.domain.FilterVerticesArgs
-import org.apache.spark.api.python.EnginePythonRdd
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
-
-//implicit conversion for PairRDD
-
-import org.apache.spark.SparkContext._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._

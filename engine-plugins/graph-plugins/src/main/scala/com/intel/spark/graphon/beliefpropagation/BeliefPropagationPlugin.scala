@@ -29,17 +29,15 @@ import org.apache.spark.frame.FrameRdd
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
+import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory }
 import spray.json._
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
+import com.intel.graphbuilder.elements.{ GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.intelanalytics.domain.command.CommandDoc
-import org.apache.spark.{ SparkConf, SparkContext }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**

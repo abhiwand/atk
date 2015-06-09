@@ -19,10 +19,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 import com.intel.intelanalytics.domain.schema.GraphSchema
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.plugins.RenameColumnsPlugin
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, RenameColumnsArgs }
-import com.intel.intelanalytics.security.UserPrincipal
-import scala.concurrent.ExecutionContext
 
 /**
  * Rename columns for vertex frame.

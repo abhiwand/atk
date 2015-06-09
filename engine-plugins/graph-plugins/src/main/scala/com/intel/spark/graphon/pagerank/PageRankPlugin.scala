@@ -16,31 +16,18 @@
 
 package com.intel.spark.graphon.pagerank
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.intelanalytics.domain.graph.{ GraphReference }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.storage.StorageLevel
-import scala.concurrent.{ Await, ExecutionContext }
-import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import spray.json._
-import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.intelanalytics.domain.command.CommandDoc
-import org.apache.spark.{ SparkConf, SparkContext }
-import java.util.UUID
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+
+import spray.json._
 
 /**
  * Parameters for executing page rank.

@@ -17,19 +17,12 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.engine.spark.frame.plugins.DropDuplicatesPlugin
-import com.intel.intelanalytics.domain.FilterVerticesArgs
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
-import com.intel.intelanalytics.security.UserPrincipal
-import scala.concurrent.ExecutionContext
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, MiscFrameFunctions, LegacyFrameRdd }
 import com.intel.intelanalytics.domain.graph.SeamlessGraphMeta
-import org.apache.spark.SparkContext
-import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema, DataTypes }
-import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
+import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema }
 
 import org.apache.spark.frame.FrameRdd
 
