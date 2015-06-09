@@ -41,7 +41,7 @@ alpha : float (optional)
 
 Returns
 -------
-a dictionary <report, 2-column output frame>. The report is an execution summary string. The output frame contains:
+a 2-column frame:
 
 vertex: int
     A vertex id.
@@ -55,7 +55,7 @@ Examples
     .. code::
 
     input frame (lp.csv)
-    “a”        “b”        “c”        “d”
+    "a"        "b"        "c"        "d"
     1,         2,         0.5,       "0.5,0.5"
     2,         3,         0.4,       "-1,-1"
     3,         1,         0.1,       "0.8,0.2"
@@ -68,20 +68,21 @@ Examples
     c = ia.CsvFile(d,s)
     f = ia.Frame(c)
     r = f.label_propagation("a", "b", "c", "d", "results")
-    result_string = r['report']
-    output_frame = r['frame']
+    r['frame'].inspect()
+    r['report']
 
 .. only:: latex
 
     .. code::
 
-        >>> f.label_propagation(
+        >>> r = f.label_propagation(
         ... srcColName = "a",
         ... destColName  = "b",
         ... weightColName = "c",
         ... srcLabelColName = "d",
         ... resultColName = "resultLabels")
-
+        ... r['frame'].inspect()
+        ... r['report']
 
 The expected output is like this:
 

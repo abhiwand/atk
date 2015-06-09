@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package org.apache.spark.mllib.ia.plugins.classification
 
@@ -35,10 +28,43 @@ import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 //Implicits needed for JSON conversion
 import spray.json._
 
+/**
+ * Parameters
+ * ----------
+ * frame : Frame
+ *   A frame to train the model on.
+ * label_column : str
+ *   Column containing the label for each observation.
+ * observation_column : list of str
+ *   Column(s) containing the observations.
+ * intercept : bool (Optional)
+ *   Intercept value.
+ *   Default is true.
+ * num_iterations: int (Optional)
+ *   Number of iterations.
+ *   Default is 100.
+ * step_size: int (Optional)
+ *   Step size for optimizer.
+ *   Default is 1.0.
+ * reg_type: str (Optional)
+ *   Regularization L1 or L2.
+ *   Default is L2.
+ * reg_param: double (Optional)
+ *   Regularization parameter.
+ *   Default is 0.01.
+ * mini_batch_fraction : double (Optional)
+ *   Mini batch fraction parameter.
+ *   Default is 1.0.
+ */
+
+@PluginDoc(oneLine = "Build logistic regression model.",
+  extended = """Creating a LogisticRegression Model using the observation column and label
+column of the train frame.""")
 class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrainArgs, UnitReturn] {
   /**
    * The name of the command.

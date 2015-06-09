@@ -1,32 +1,26 @@
-package com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct
+/*
+// Copyright (c) 2015 Intel Corporation 
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
-//
-// Copyright 2015 Intel Corporation All Rights Reserved.
-//
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
-//
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+package com.intel.intelanalytics.engine.spark.frame.plugins.dotproduct
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -43,7 +37,40 @@ import DotProductJsonFormat._
  *
  * This is an experimental plugin used by the Netflow POC for scoring. The plugin should be revisited
  * once we support lists as data types.
+ *
+ * Parameters
+ * ----------
+ * left_column_names : [ str | list of str ]
+ *   Names of columns used to create the left vector (A) for each row.
+ *   Names should refer to a single column of type vector, or two or more
+ *   columns of numeric scalars.
+ * right_column_names : [ str | list of str ]
+ *   Names of columns used to create right vector (B) for each row.
+ *   Names should refer to a single column of type vector, or two or more
+ *   columns of numeric scalars.
+ * dot_product_column_name : str
+ *   Name of column used to store the dot product.
+ * default_left_values : list of double (optional)
+ *   Default values used to substitute null values in left vector.
+ *   Default is None.
+ * default_right_values : list of double (optional)
+ *   Default values used to substitute null values in right vector.
+ *   Default is None.
  */
+@PluginDoc(oneLine = "Calculate dot product for each row in current frame.",
+  extended = """Calculate the dot product for each row in a frame using values from two
+equal-length sequences of columns.
+
+Dot product is computed by the following formula:
+
+The dot product of two vectors ``A=[a_1, a_2, ..., a_n]`` and
+``B =[b_1, b_2, ..., b_n]`` is ``a_1*b_1 + a_2*b_2 + ...+ a_n*b_n``.
+The dot product for each row is stored in a new column in the existing frame.
+
+Notes
+-----
+If default_left_values or default_right_values are not specified, any null
+values will be replaced by zeros.""")
 class DotProductPlugin extends SparkCommandPlugin[DotProductArgs, FrameEntity] {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation

@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
@@ -29,6 +22,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.ExecutionContext
 
@@ -38,7 +32,33 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate the median of the specified column.
+ * Parameters
+ * ----------
+ * data_column : str
+ *   The column whose median is to be calculated.
+ * weights_column : str (optional)
+ *   The column that provides weights (frequencies) for the median
+ *   calculation.
+ *   Must contain numerical data.
+ *   Default is all items have a weight of 1.
  */
+@PluginDoc(oneLine = "Calculate the (weighted) median of a column.",
+  extended = """The median is the least value X in the range of the distribution so that
+the cumulative weight of values strictly below X is strictly less than half
+of the total weight and the cumulative weight of values up to and including X
+is greater than or equal to one-half of the total weight.
+
+All data elements of weight less than or equal to 0 are excluded from the
+calculation, as are all data elements whose weight is NaN or infinite.
+If a weight column is provided and no weights are finite numbers greater
+than 0, None is returned.""",
+  returns = """varies
+    The median of the values.
+    If a weight column is provided and no weights are finite numbers greater
+    than 0, None is returned.
+    The type of the median returned is the same as the contents of the data
+    column, so a column of Longs will result in a Long median and a column of
+    Floats will result in a Float median.""")
 class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedianArgs, ColumnMedianReturn] {
 
   /**
