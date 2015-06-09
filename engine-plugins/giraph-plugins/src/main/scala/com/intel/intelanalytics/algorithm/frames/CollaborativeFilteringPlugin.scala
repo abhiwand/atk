@@ -26,9 +26,13 @@ import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, Giraph
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Column, FrameSchema }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.spark.sql.parquet.ia.giraph.frame.cf.{ CollaborativeFilteringVertexOutputFormat, CollaborativeFilteringEdgeInputFormat }
 import CollaborativeFilteringJsonFormat._
 
+@PluginDoc(oneLine = "",
+  extended = "",
+  returns = "")
 class CollaborativeFilteringPlugin
     extends CommandPlugin[CollaborativeFilteringArgs, CollaborativeFilteringResult] {
 
