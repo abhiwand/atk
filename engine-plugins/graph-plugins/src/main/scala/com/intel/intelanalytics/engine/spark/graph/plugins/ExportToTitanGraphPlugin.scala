@@ -26,6 +26,7 @@ import com.intel.intelanalytics.domain.{ Naming }
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.schema.Schema
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema, Schema }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage, GraphBuilderConfigFactory }
@@ -34,7 +35,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.ExecutionContext
 // Implicits needed for JSON conversion

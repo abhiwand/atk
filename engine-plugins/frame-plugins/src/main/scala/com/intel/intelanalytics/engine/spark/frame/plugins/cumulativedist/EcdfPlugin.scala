@@ -19,6 +19,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, Column }
 import com.intel.intelanalytics.engine.plugin.{ Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, SparkFrameStorage, LegacyFrameRdd }
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema, Column }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -26,7 +27,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.{ DomainJsonProtocol, CreateEntityArgs }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

@@ -19,6 +19,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 import com.intel.intelanalytics.domain.graph.{ DefineEdgeArgs, SeamlessGraphMeta }
 import com.intel.intelanalytics.domain.schema.EdgeSchema
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.frame.FrameEntity
@@ -26,7 +27,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

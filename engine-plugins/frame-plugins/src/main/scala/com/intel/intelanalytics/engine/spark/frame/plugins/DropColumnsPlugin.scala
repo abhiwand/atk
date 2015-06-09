@@ -19,12 +19,12 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameReference, DropColumnsArgs, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRdd }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
 
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion

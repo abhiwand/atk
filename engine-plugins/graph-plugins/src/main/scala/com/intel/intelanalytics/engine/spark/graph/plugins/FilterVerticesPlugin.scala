@@ -18,6 +18,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.engine.spark.frame._
@@ -36,7 +37,6 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import scala.Some
 import com.intel.intelanalytics.domain.FilterVerticesArgs
 import org.apache.spark.api.python.EnginePythonRdd
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 //implicit conversion for PairRDD
 

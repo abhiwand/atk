@@ -19,6 +19,7 @@ package com.intel.intelanalytics.engine
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.scalatest.{ Matchers, FlatSpec }
 import scala.concurrent.ExecutionContext
@@ -27,7 +28,6 @@ import ru._
 import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class Mixed(frameId: Int, frame: FrameReference, graphId: Int, graph: GraphReference) {
 }

@@ -24,6 +24,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ExportHdfsHiveArgs
 import com.intel.intelanalytics.engine.PluginDocAnnotation
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.HdfsFileStorage
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
@@ -32,7 +33,6 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.hadoop.fs.Path
 
 // Implicits needed for JSON conversion
