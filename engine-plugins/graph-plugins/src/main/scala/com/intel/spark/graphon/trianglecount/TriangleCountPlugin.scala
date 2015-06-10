@@ -73,9 +73,6 @@ class TriangleCountPlugin extends SparkCommandPlugin[TriangleCountArgs, Triangle
 
   override def execute(arguments: TriangleCountArgs)(implicit invocation: Invocation): TriangleCountResult = {
 
-    if (!SparkEngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
-
     // Get the graph
     val graph = engine.graphs.expectGraph(arguments.graph)
 

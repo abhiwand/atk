@@ -71,29 +71,22 @@ class StartToFinishCliqueSizeThreeTest extends FlatSpec with Matchers with Testi
     outEdgesSet shouldBe gbEdgeSet
 
     val testVerticesToCommunities = outVertexSet.map(v => (v.gbId.value.asInstanceOf[Long],
-      v.getProperty(communityProperty).get.value.asInstanceOf[java.util.Set[Long]])).toMap
+      v.getProperty(communityProperty).get.value.asInstanceOf[String])).toMap
 
     // vertex 0 gets no community (poor lonley little guy)
     testVerticesToCommunities(0) should be('empty)
 
     // vertices 1, 2, 3 each have only one community and it should be the same one
-    testVerticesToCommunities(1).size() shouldBe 1
     testVerticesToCommunities(2) shouldBe testVerticesToCommunities(1)
     testVerticesToCommunities(3) shouldBe testVerticesToCommunities(1)
 
     // vertices 5 and 6 each have only one community and it should be the same one
-    testVerticesToCommunities(5).size() shouldBe 1
     testVerticesToCommunities(5) shouldBe testVerticesToCommunities(6)
 
     // vertices 7, 8, 9 each have only one community and it should be the same one
-    testVerticesToCommunities(7).size() shouldBe 1
     testVerticesToCommunities(7) shouldBe testVerticesToCommunities(8)
     testVerticesToCommunities(7) shouldBe testVerticesToCommunities(9)
 
-    // vertex 4 belongs to the two community of {1, 2, 3} as well as the community of {5, 6}
-
-    import collection.JavaConversions._
-    testVerticesToCommunities(4).toSet shouldBe testVerticesToCommunities(1).toSet ++ testVerticesToCommunities(5).toSet
   }
 
 }
