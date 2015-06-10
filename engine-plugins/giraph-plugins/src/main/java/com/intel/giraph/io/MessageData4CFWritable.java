@@ -53,7 +53,7 @@ public class MessageData4CFWritable implements Writable {
      */
     public MessageData4CFWritable(Vector vector, double bias, EdgeType type, double weight) {
         // vertex type isn't used in message; here uses User as default
-        vertexDataWritable.setType(VertexType.User);
+        vertexDataWritable.setType(VertexType.LEFT);
         vertexDataWritable.setVector(vector);
         vertexDataWritable.setBias(bias);
         edgeDataWritable.setType(type);
