@@ -19,7 +19,7 @@ package com.intel.intelanalytics.rest
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.rest.RestServerConfig
-import org.apache.commons.httpclient.HttpsURL
+import org.apache.commons.httpclient.{ HttpURL, HttpsURL }
 import org.apache.http.HttpHost
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.{ CloseableHttpResponse, HttpGet }
@@ -143,7 +143,7 @@ object CfRequests extends EventLogging with EventLoggingImplicits {
   private def httpsGetQuery(host: String, queryString: String, headers: List[(String, String)]): JsValue = withContext("httpsGetQuery") {
 
     // TODO: This method uses Apache HttpComponents HttpClient as spray-http library does not support proxy over https
-    val (uri, port, scheme) = (host, HttpsURL.DEFAULT_PORT, new String(HttpsURL.DEFAULT_SCHEME))
+    val (uri, port, scheme) = (host, HttpURL.DEFAULT_PORT, new String(HttpURL.DEFAULT_SCHEME))
     val (proxyHostConfigString, proxyPortConfigString) = ("https.proxyHost", "https.proxyPort")
     val httpClient = HttpClients.createDefault()
     try {
