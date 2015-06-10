@@ -16,10 +16,9 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import java.util.concurrent.TimeUnit
 import java.util.{ ArrayList => JArrayList, List => JList }
 
-import com.intel.event.{ EventContext, EventLogging }
+import com.intel.event.{ EventLogging }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
@@ -46,7 +45,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.intelanalytics.domain.{ Status, VectorValue, CreateEntityArgs, FilterArgs }
+import com.intel.intelanalytics.domain.{ CreateEntityArgs }
 
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameReference
@@ -89,6 +88,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
   commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
   commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
+  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
 
   // Administrative plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)

@@ -17,7 +17,6 @@
 package com.intel.intelanalytics.scoring
 
 import akka.actor.Actor
-import com.intel.intelanalytics.domain.{ DomainJsonProtocol }
 import spray.routing._
 import spray.http._
 import MediaTypes._

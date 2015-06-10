@@ -16,27 +16,28 @@
 
 package com.intel.spark.graphon.beliefpropagation
 
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.domain.DomainJsonProtocol
+import com.intel.intelanalytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.component.Boot
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
+import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory }
 import spray.json._
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ GBVertex, GBEdge }
+import com.intel.graphbuilder.elements.{ GBEdge }
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.intelanalytics.domain.command.CommandDoc
-import org.apache.spark.{ SparkConf, SparkContext }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
@@ -70,10 +71,10 @@ object BeliefPropagationDefaults {
 /**
  * The result object
  *
- * @param log execution log
+ * @param frameDictionaryOutput dictionary with vertex label type as key and vertex's frame as the value
  * @param time execution time
  */
-case class BeliefPropagationResult(log: String, time: Double)
+case class BeliefPropagationResult(frameDictionaryOutput: Map[String, FrameEntity], time: Double)
 
 /** Json conversion for arguments and return value case classes */
 object BeliefPropagationJsonFormat {
@@ -99,7 +100,7 @@ This algorithm analyzes a graphical model with prior beliefs using sum product m
 The priors are read from a property in the graph, the posteriors are written to another property in the graph.
 This is the GraphX-based implementation of belief propagation.""",
   returns = "Progress report for belief propagation in the format of a multiple-line string.")
-class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
+class BeliefPropagationPlugin extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
 
   override def name: String = "graph:titan/ml/belief_propagation"
 
@@ -121,9 +122,6 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     val start = System.currentTimeMillis()
 
-    if (!SparkEngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
-
     // Get the graph
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
@@ -137,21 +135,17 @@ class BeliefPropagation extends SparkCommandPlugin[BeliefPropagationArgs, Belief
 
     val (outVertices, outEdges, log) = BeliefPropagationRunner.run(gbVertices, gbEdges, bpRunnerArgs)
 
-    // edges do not change during this computation so we avoid the very expensive step of appending them into Titan
-
-    val dummyOutEdges: RDD[GBEdge] = sc.parallelize(List.empty[GBEdge])
-
-    // write out the graph
-
-    // Create the GraphBuilder object
-    // Setting true to append for updating existing graph
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
-    val gb = new GraphBuilder(new GraphBuilderConfig(new InputSchema(Seq.empty), List.empty, List.empty, titanConfig, append = true))
-    // Build the graph using spark
-    gb.buildGraphWithSpark(outVertices, dummyOutEdges)
-
-    // Get the execution time and print it
+    val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
+    val frameMap = frameRddMap.keys.map(label => {
+      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+        val frameRdd = frameRddMap(label)
+        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
+      }.meta
+      (label, result)
+    }).toMap
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
-    BeliefPropagationResult(log, time)
+
+    BeliefPropagationResult(frameMap, time)
+
   }
 }
