@@ -63,5 +63,19 @@ class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: Class
         throw e
     }
   }
+}
+
+class NoOpApplication(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
+    extends Archive(archiveDefinition, classLoader, config) with EventLogging with ClassLoaderAware {
+
+  override def getAll[T: ClassTag](descriptor: String) = Seq()
+
+  override def stop() = {
+    info("Shutting down engine")
+  }
+
+  override def start() = {
+    info("Starting no op engine app")
+  }
 
 }
