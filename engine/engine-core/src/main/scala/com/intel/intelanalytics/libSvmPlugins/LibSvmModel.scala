@@ -1,13 +1,12 @@
-package com.intel.intelanalytics.scoring
-
-import java.io._
-import java.util.StringTokenizer
+package com.intel.intelanalytics.libSvmPlugins
 
 import _root_.libsvm.{ svm, svm_model, svm_node }
 import com.intel.intelanalytics.domain.schema.DataTypes
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import com.intel.intelanalytics.interfaces.Model
+import java.util.StringTokenizer
 
 class LibSvmModel(libSvmModel: svm_model) extends svm_model with Model {
 
@@ -15,7 +14,7 @@ class LibSvmModel(libSvmModel: svm_model) extends svm_model with Model {
   override def name = _name
   def name_=(value: String): Unit = _name = value
 
-  override def score(data: Seq[Any]): Future[Seq[Any]] = future {
+  override def score(data: Seq[Array[Any]]): Future[Seq[Any]] = future {
     val vector = DataTypes.toVector(-1)(data.mkString(","))
     val output = columnFormatter(vector.toArray.zipWithIndex)
     val splitObs: StringTokenizer = new StringTokenizer(output, " \t\n\r\f:")

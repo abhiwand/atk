@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.scoring
+package com.intel.intelanalytics.interfaces
 
 /**
  * Base interface for a Model loader.

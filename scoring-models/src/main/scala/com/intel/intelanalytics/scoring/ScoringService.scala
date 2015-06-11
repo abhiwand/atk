@@ -33,6 +33,7 @@ import scala.concurrent._
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import scala.util.{ Failure, Success }
+import com.intel.intelanalytics.interfaces.Model
 
 /**
  * We don't implement our route structure directly in the service actor because
@@ -98,7 +99,13 @@ class ScoringService(model: Model) extends Directives {
               (data) =>
                 data match {
                   case Some(x) => {
-                    onComplete(model.score(Seq(x))) {
+                    val segments = x.split('&')
+                    var record = List[Any]()
+                    var records = List[Any]()
+                    for(i <-0 until segments.length){
+                      records = records :: (segments(i))
+                    }
+                    onComplete(model.score(records)) {
                       case Success(scored) => complete(scored.toString)
                       case Failure(ex) => ctx => {
                         ctx.complete(StatusCodes.InternalServerError, ex.getMessage)

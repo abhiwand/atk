@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.scoring
+package com.intel.intelanalytics.interfaces
 
 import scala.concurrent.Future
 
@@ -33,7 +33,7 @@ trait Model {
   /**
    * Called for scoring
    */
-  def score(data: Seq[Any]): Future[Seq[Any]]
+  def score(data: Seq[Array[Any]]): Future[Seq[Any]]
 
   def name: String
 

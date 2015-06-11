@@ -33,6 +33,7 @@ import com.intel.event.{ EventLogging, EventLogger }
 import com.intel.intelanalytics.component.{ ArchiveDefinition, Archive }
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.reflect.ClassTag
+import com.intel.intelanalytics.interfaces.ModelLoader
 
 /**
  * Scoring Service Application - a REST application used by client layer to communicate with the Model.
@@ -59,11 +60,10 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
    * Main entry point to start the Scoring Service Application
    */
   override def start() = {
-    lazy val modelLoader = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.scoring.archive"))
-      .load("com.intel.intelanalytics.scoring." + config.getString("intel.scoring-models.scoring.loader"))
+    val archive = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.archive"), Some("com.intel.intelanalytics.engine.NoOpApplication"))
+    val modelLoader = archive.load("com.intel.intelanalytics.libSvmPlugins." + config.getString("intel.scoring-models.scoring.loader"))
 
     val modelFile = config.getString("intel.scoring-models.scoring.model")
-
     val service = initializeScoringServiceDependencies(modelLoader.asInstanceOf[ModelLoader], modelFile)
 
     createActorSystemAndBindToHttp(service)
@@ -73,7 +73,6 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
     val source = scala.io.Source.fromFile(modelFile)
     val byteArray = source.map(_.toByte).toArray
     source.close()
-
     val model = modelLoader.load(byteArray)
     new ScoringService(model)
   }
@@ -85,9 +84,7 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
     // create the system
     implicit val system = ActorSystem("intelanalytics-scoring")
     implicit val timeout = Timeout(5.seconds)
-
     val service = system.actorOf(Props(new ScoringServiceActor(scoringService)), "scoring-service")
-
     // Bind the Spray Actor to an HTTP Port
     // start a new HTTP server with our service actor as the handler
     IO(Http) ? Http.Bind(service, interface = config.getString("intel.analytics.scoring.host"), port = config.getInt("intel.analytics.scoring.port"))
