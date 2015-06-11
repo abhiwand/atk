@@ -152,13 +152,12 @@ object WeightedDegrees {
     val vertexVDRs: RDD[(Any, VertexDegreeRecord)] =
       vertexRDD.map(gbVertex => (gbVertex.physicalId, VertexDegreeRecord(Some(gbVertex), 0D)))
 
-    val edgeVDRs: RDD[(Any, VertexDegreeRecord)] =
+    val edgeVDRs: RDD[(Any, VertexDegreeRecord)] = {
       if (calculateOutDegreeFlag)
-        edgeRDD.map(e => (e.tailPhysicalId,
-          VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight))))
+        edgeRDD.map(e => (e.tailPhysicalId, VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight))))
       else
-        edgeRDD.map(e => (e.headPhysicalId,
-          VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight))))
+        edgeRDD.map(e => (e.headPhysicalId, VertexDegreeRecord(None, getEdgeWeight(e, weightProperty, defaultWeight, useDefaultEdgeWeight))))
+    }
 
     val vdrs = vertexVDRs.union(edgeVDRs)
 
@@ -174,8 +173,7 @@ object WeightedDegrees {
   private case class VertexDegreeRecord(vertexOption: Option[GBVertex], weightedDegree: Double)
 
   private def mergeVertexAndDegrees(vad1: VertexDegreeRecord, vad2: VertexDegreeRecord) = {
-    //TODO: Uncommenting the require statament causes the method to break on parquet graphs. But on commenting, the output of this seems inconsistent with the equivalent titan graph.
-    //require(vad1.vertexOption.isEmpty || vad2.vertexOption.isEmpty)
+    require(vad1.vertexOption.isEmpty || vad2.vertexOption.isEmpty)
     val v = if (vad1.vertexOption.isDefined) vad1.vertexOption else vad2.vertexOption
     VertexDegreeRecord(v, vad1.weightedDegree + vad2.weightedDegree)
   }

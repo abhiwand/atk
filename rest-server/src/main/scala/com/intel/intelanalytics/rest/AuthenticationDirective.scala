@@ -23,10 +23,7 @@ import java.util.concurrent.{ Callable, TimeUnit }
 import com.google.common.cache.CacheBuilder
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
-import org.springframework.security.jwt._
-import org.springframework.security.jwt.crypto.sign.RsaVerifier
 import spray.http.HttpHeader
-import spray.client
 
 import scala.PartialFunction._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,11 +33,10 @@ import spray.routing._
 import org.apache.commons.lang.StringUtils
 import com.intel.intelanalytics.engine.Engine
 import com.intel.event.EventLogging
-import org.joda.time.DateTime
-
-import scala.util.parsing.json.JSON
 import scala.util.{ Failure, Success, Try }
 import com.intel.intelanalytics.rest.CfRequests.TokenUserInfo
+
+import scala.util.parsing.json.JSON
 
 /**
  * Uses authorization HTTP header and engine to authenticate a user

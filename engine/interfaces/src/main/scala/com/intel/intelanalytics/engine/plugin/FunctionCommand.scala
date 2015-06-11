@@ -19,7 +19,6 @@ package com.intel.intelanalytics.engine.plugin
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json._
 
-import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.command.CommandDoc
 import scala.reflect.runtime.{ universe => ru }
 import ru._

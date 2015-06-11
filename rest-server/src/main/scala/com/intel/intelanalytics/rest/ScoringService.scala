@@ -19,8 +19,6 @@ package com.intel.intelanalytics.rest
 import akka.actor.Actor
 import com.intel.intelanalytics.domain.{ DomainJsonProtocol }
 import com.intel.intelanalytics.engine.Engine
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.rest.v1.viewmodels.ViewModelJsonImplicits
 import spray.routing._
 import spray.http._
 import MediaTypes._

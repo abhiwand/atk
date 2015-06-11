@@ -16,15 +16,9 @@
 
 package com.intel.intelanalytics.engine.spark.model.plugins
 
-import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.model.{ ModelEntity, RenameModelArgs }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
 import spray.json._
