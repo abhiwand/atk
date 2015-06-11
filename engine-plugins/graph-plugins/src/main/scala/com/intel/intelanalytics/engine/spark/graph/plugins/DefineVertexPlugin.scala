@@ -20,10 +20,7 @@ import com.intel.intelanalytics.domain.graph.{ DefineVertexArgs }
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc, ArgDoc }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.intelanalytics.UnitReturn
-<<<<<<< HEAD
-=======
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
->>>>>>> master
 
 // Implicits needed for JSON conversion
 
