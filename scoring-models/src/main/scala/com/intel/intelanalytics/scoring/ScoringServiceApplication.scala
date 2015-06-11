@@ -57,6 +57,7 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
     val modelLoader = archive.load("com.intel.intelanalytics.libSvmPlugins." + config.getString("intel.scoring-models.scoring.loader"))
 
     val modelFile = config.getString("intel.scoring-models.scoring.model")
+
     val service = initializeScoringServiceDependencies(modelLoader.asInstanceOf[ModelLoader], modelFile)
 
     createActorSystemAndBindToHttp(service)
@@ -67,7 +68,8 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
     val byteArray = source.map(_.toByte).toArray
     source.close()
     val model = modelLoader.load(byteArray)
-    new ScoringService(model)
+    val modelName = modelFile.substring(modelFile.lastIndexOf("/") + 1)
+    new ScoringService(model, modelName)
   }
 
   /**
