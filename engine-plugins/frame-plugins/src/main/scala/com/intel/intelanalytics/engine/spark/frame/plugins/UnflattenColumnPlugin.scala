@@ -32,13 +32,13 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Take multiple rows and 'unflatten' them into a row with multiple values in a column.
  *
-Parameters
-----------
-column : List<str>
-    The column list representing the composite key.
-delimiter : str (optional)
-    The delimiter string.
-    Default is comma (,).
+ * Parameters
+ * ----------
+ * column : List<str>
+ * The column list representing the composite key.
+ * delimiter : str (optional)
+ * The delimiter string.
+ * Default is comma (,).
  */
 @PluginDoc(oneLine = "Compacts data from multiple rows based on cell data.",
   extended = """Groups together cells in all columns (less the composite key) using "," as string delimiter.

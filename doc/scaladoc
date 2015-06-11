@@ -25,7 +25,7 @@ else
         fi
     fi
 
-    for File in $(grep -ril --include=*.scala "override def name:" ../); do
+    for File in $(grep -ril --include=*.scala "override def name:" ../ | sort); do
         if [ "$Last" == "$File" ]; then
             Last=None
         fi

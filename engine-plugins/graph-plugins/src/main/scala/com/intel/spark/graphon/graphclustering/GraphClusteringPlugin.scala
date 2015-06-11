@@ -31,8 +31,7 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 case class GraphClusteringArgs(graph: GraphReference,
-                               @ArgDoc("""Column name for the edge distance.""")
-                               edgeDistance: String)
+                               @ArgDoc("""Column name for the edge distance.""") edgeDistance: String)
 
 /** Json conversion for arguments and return value case classes */
 object GraphClusteringFormat {

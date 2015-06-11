@@ -30,9 +30,85 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.spark.sql.parquet.ia.giraph.frame.cf.{ CollaborativeFilteringVertexOutputFormat, CollaborativeFilteringEdgeInputFormat }
 import CollaborativeFilteringJsonFormat._
 
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+/*
+Parameters
+----------
+user_col_name: str
+    The column name for the user vertex id.
+    The valid values are numeric strings (such as "1", "5003")
+item_col_name: str
+    The column name for the item vertex id.
+        The valid values are strings (such as "A", "B")
+rating_col_name: str
+    The column name for the edge rating.
+    The valid values are numeric (such as 1, 3,5)
+evaluation_function: str (optional)
+    "als" or "cgd" as evaluation functions.
+    The default value is "als"
+num_factors : str (optional)
+    number of entries in the (output) factors vector
+        The default value is 3
+max_iterations : int (optional)
+    The maximum number of supersteps that the algorithm will execute.
+    The valid value range is all positive int.
+    The default value is 10.
+convergence_threshold : float (optional)
+    The amount of change in cost function that will be tolerated at
+    convergence.
+    If the change is less than this threshold, the algorithm exits earlier
+    before it reaches the maximum number of supersteps.
+    The valid value range is all float and zero.
+    The default value is 0.00000001f.
+lambda : float (optional)
+    The tradeoff parameter that controls how much influence an external
+    classifier's prediction contributes to the final prediction.
+    This is for the case where an external classifier is available that can
+    produce initial probabilistic classification on unlabeled examples, and
+    the option allows incorporating external classifier's prediction into
+    the LP training process.
+    The valid value range is [0.0,1.0].
+    The default value is 0.
+bias_on : boolean (optional)
+    Bias on/off switch
+    The default value is "true"
+max_value : int (optional)
+    Maximum edge rating value.
+    The default value is 10.
+min_value : int (optional)
+    Maximum edge rating value.
+    The default value is 0.
+learning_curve_interval : int (optional)
+    Iteration interval to output learning curve.
+    The default value is 1.
+cgd_iterations : int (optional)
+    Number of CGD iterations in each super step
+    The default value is 2.
+*/
+
+@PluginDoc(oneLine = "Minimizing goodness-of-fit data measure in a series of steps.",
+  extended = """The ALS/CGD with Bias for collaborative filtering algorithms.
+The algorithms presented in:
+
+1.  Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan.
+    Large-Scale Parallel Collaborative Filtering for the Netflix Prize.
+    2008.
+2.  Y. Koren.
+    Factorization Meets the Neighborhood: a Multifaceted Collaborative
+    Filtering Model.
+    In ACM KDD 2008. (Equation 5)""",
+  returns = """two 2-column frames and a report:
+
+user vertex: int
+    A vertex id.
+result : Vector (long)
+    feature vector for the vertex
+
+item vertex: int
+    A vertex id.
+result : Vector (long)
+    feature vector for the item (same as the vector for the corresponding user)
+
+report: string""")
 class CollaborativeFilteringPlugin
     extends CommandPlugin[CollaborativeFilteringArgs, CollaborativeFilteringResult] {
 
