@@ -330,7 +330,7 @@ delete_folder(dst_rest_api_dir)
 copy_template(rest_api)
 path = dst_rest_api_commands_dir  # the autogen stuff is just for commands/
 print "Creating rst files for REST API docs, using root_path %s" % path
-server_commands = download_server_commands()  # rather than walk api, we use all the defs from the server
+server_build_id, server_commands = download_server_commands(ia.server)  # rather than walk api, use all the defs from the server
 for c in server_commands:
     write_command_def_rest_rst_file(path, c)
 write_commands_index_rest_rst_file(path, server_commands)

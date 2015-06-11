@@ -19,7 +19,7 @@ intelanalytics package init, public API
 """
 import sys
 if not sys.version_info[:2] == (2, 7):
-    raise EnvironmentError("Python 2.7 is required for intelanalytics.  Detected version: %s.%s.%s" % tuple(sys.version_info[:3]))
+    raise EnvironmentError("Python 2.7 required.  Detected version: %s.%s.%s" % tuple(sys.version_info[:3]))
 del sys
 
 from intelanalytics.core.loggers import loggers
@@ -69,14 +69,6 @@ def _walk_api(cls_function, attr_function, include_init=False):
     return walk_api(sys.modules[__name__], cls_function, attr_function, include_init=include_init)
 
 
-# Autoconnect if env says so.  This is NOT standard usage, but needed when
-# an 'import intelanalytics' really needs to get EVERYTHING, like
-# when generating documentation.  Requires that the server is already running
-import os
-autoconnect =  os.getenv('INTELANALYTICS_AUTOCONNECT')
-#print "autoconnect=" + str(autoconnect) + " of type %s" % type(autoconnect)
-if autoconnect is not None and autoconnect.lower() not in [None, '', '0', 'false']:
-    print "$INTELANALYTICS_AUTOCONNECT=%s, trying to connect to IntelAnalytics..." % autoconnect
-    connect()
-del os
-del autoconnect
+from intelanalytics.core.api import api_status
+
+build_id = None  # This client build ID value is auto-filled during packaging.  Set to None to disable check with server
