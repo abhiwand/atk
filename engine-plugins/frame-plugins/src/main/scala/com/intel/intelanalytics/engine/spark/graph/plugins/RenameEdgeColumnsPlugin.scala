@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.schema.GraphSchema
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, PluginDoc }
 
 /**
  * Rename columns for edge frame.

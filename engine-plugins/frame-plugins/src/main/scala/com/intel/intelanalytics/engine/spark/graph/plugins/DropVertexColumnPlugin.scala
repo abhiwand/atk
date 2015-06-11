@@ -16,7 +16,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
-import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema }
 import com.intel.intelanalytics.engine.spark.frame.plugins.DropColumnsPlugin
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, DropColumnsArgs }
@@ -66,3 +66,4 @@ object DropVertexColumnPlugin {
   }
 
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

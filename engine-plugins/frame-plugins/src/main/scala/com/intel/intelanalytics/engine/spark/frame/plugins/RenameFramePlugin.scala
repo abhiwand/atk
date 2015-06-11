@@ -17,9 +17,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.frame.{ RenameFrameArgs, FrameEntity }
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
-
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

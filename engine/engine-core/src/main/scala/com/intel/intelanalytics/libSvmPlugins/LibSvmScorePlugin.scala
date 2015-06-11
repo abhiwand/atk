@@ -19,8 +19,7 @@ package com.intel.intelanalytics.libSvmPlugins
 import java.util.StringTokenizer
 
 import com.intel.intelanalytics.domain.DoubleValue
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, ApiMaturityTag, Invocation }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import libsvm.{ svm_model, svm, svm_node }
@@ -130,3 +129,4 @@ object LibSvmPluginFunctions extends Serializable {
     Integer.parseInt(s)
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

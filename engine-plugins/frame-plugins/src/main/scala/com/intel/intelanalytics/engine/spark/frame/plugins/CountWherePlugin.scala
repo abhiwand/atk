@@ -16,7 +16,7 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.PythonRddStorage
 import com.intel.intelanalytics.domain.frame.CountWhereArgs
 import org.bson.BSON
@@ -31,9 +31,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Counts rows which meet criteria specified by a UDF predicate
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "Counts qualified rows.",
+  extended = "Counts rows which meet criteria specified by a UDF predicate.",
+  returns = "Number of rows matching qualifications.")
 class CountWherePlugin extends SparkCommandPlugin[CountWhereArgs, LongValue] {
 
   override def name: String = "frame/count_where"
@@ -54,3 +54,4 @@ class CountWherePlugin extends SparkCommandPlugin[CountWhereArgs, LongValue] {
     LongValue(pyRdd.map(s => BSON.decode(s).get("array").asInstanceOf[BasicBSONList].size()).fold(0)(_ + _))
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.graph.query.recommend
 
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
@@ -26,7 +26,6 @@ import org.apache.spark.storage.StorageLevel
 import scala.collection.JavaConverters._
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Get recommendation to either left-side or right-side vertices

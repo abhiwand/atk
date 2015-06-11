@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.GraphNoArgs
 import com.intel.intelanalytics.domain.LongValue
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 
 // Implicits needed for JSON conversion
@@ -55,3 +55,4 @@ class VertexCountPlugin extends CommandPlugin[GraphNoArgs, LongValue] {
   }
 
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

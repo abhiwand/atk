@@ -18,8 +18,7 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.scalatest.{ Matchers, FlatSpec }
 import scala.concurrent.ExecutionContext

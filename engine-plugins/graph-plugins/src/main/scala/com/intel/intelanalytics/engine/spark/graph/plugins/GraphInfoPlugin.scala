@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.{ SeamlessGraphMeta, GraphNoArgs }
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 
 // Implicits needed for JSON conversion
@@ -53,3 +53,4 @@ class GraphInfoPlugin extends CommandPlugin[GraphNoArgs, SeamlessGraphMeta] {
   }
 
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

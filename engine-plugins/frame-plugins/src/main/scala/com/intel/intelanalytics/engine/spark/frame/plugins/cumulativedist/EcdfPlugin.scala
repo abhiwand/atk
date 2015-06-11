@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRdd }
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Column }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
@@ -101,3 +101,4 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
     newFrameEntity
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

@@ -18,8 +18,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.quantiles
 
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, Column, DataTypes }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import org.apache.spark.frame.FrameRdd

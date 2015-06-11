@@ -20,7 +20,7 @@ import com.intel.intelanalytics.domain.DoubleValue
 import com.intel.intelanalytics.domain.frame.EntropyArgs
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.NumericValidationUtils
@@ -136,3 +136,4 @@ private[spark] object EntropyRddFunctions extends Serializable {
     entropy
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

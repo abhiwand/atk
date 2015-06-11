@@ -19,8 +19,7 @@ package com.intel.intelanalytics.engine.spark.gc
 import java.util.concurrent.TimeUnit
 
 import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.typesafe.config.ConfigFactory
 
@@ -64,3 +63,4 @@ class GarbageCollectionPlugin extends CommandPlugin[GarbageCollectionArgs, UnitR
     config.getDuration("string_value", TimeUnit.MILLISECONDS)
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

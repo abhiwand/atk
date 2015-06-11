@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.{ DefineEdgeArgs }
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
@@ -66,3 +66,4 @@ class DefineEdgePlugin extends CommandPlugin[DefineEdgeArgs, UnitReturn] {
   }
 
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

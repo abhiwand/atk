@@ -19,7 +19,7 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.intelanalytics.domain.graph.{ LoadGraphArgs, GraphEntity }
 import com.intel.intelanalytics.engine.Rows
-import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
@@ -86,3 +86,4 @@ class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
   }
 
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

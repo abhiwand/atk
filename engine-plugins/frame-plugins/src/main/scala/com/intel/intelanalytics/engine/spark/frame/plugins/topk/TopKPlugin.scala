@@ -19,7 +19,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.topk
 import com.intel.intelanalytics.domain.frame.{ TopKArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
@@ -125,3 +125,4 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     (columnIndexOption, dataTypeOption)
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

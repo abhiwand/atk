@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics
 
 import com.intel.intelanalytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue }
-import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
@@ -173,3 +173,4 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
 
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

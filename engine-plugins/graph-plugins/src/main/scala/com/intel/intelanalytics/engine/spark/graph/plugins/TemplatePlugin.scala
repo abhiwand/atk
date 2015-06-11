@@ -20,7 +20,7 @@
 //import com.intel.intelanalytics.domain.command.CommandDoc
 //import com.intel.intelanalytics.domain.graph.Graph
 //import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-//import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+//import com.intel.intelanalytics.engine.plugin.{ ArgDoc, PluginDoc }
 //import com.intel.intelanalytics.security.UserPrincipal
 //
 //import scala.concurrent.ExecutionContext
