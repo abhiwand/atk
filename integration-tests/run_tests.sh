@@ -3,6 +3,7 @@
 # This script executes all of the tests located in this folder through the use
 # of the nosetests api.
 #
+# Use '-c' option to run with coverage
 
 NAME="[`basename $0`]"
 DIR="$( cd "$( dirname "$0" )" && pwd )"
@@ -25,6 +26,20 @@ if [ ! -d $TARGET_DIR/surefire-reports/ ]
 then
     echo "$NAME Creating target dir"
     mkdir -p $TARGET_DIR/surefire-reports/
+fi
+
+
+# define the nosetests commands here:
+NOSE_SMOKE="nosetests $DIR/smoketests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT1 --processes=10 --process-timeout=300 --with-isolation"
+NOSE="nosetests $DIR/tests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2 --processes=10 --process-timeout=300 --with-isolation"
+
+if [ "$1" = "-c" ] ; then
+    echo "$NAME Running with coverage ENABLED.  (runs in a single process, takes a bit longer)"
+    COVERAGE_ARGS_BASE="--with-coverage --cover-package=intelanalytics --cover-erase --cover-inclusive --cover-html"
+    COVERAGE_ARGS_SMOKE="$COVERAGE_ARGS_BASE --cover-html-dir=$TARGET_DIR/surefire-reports/cover-smoke"
+    COVERAGE_ARGS="$COVERAGE_ARGS_BASE --cover-html-dir=$TARGET_DIR/surefire-reports/cover"
+    NOSE_SMOKE="nosetests $DIR/smoketests $COVERAGE_ARGS_SMOKE --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT1"
+    NOSE="nosetests $DIR/tests $COVERAGE_ARGS --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2"
 fi
 
 echo "$NAME remove old intelanalytics"
@@ -65,13 +80,15 @@ sleep 10
 # Rene said each build agent has about 18 cores (Feb 2015)
 
 echo "$NAME Running smoke tests to verify basic functionality needed by all tests, calling nosetests"
-nosetests $DIR/smoketests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT1 --processes=10 --process-timeout=300 --with-isolation
+echo "$NAME $NOSE_SMOKE"
+eval $NOSE_SMOKE
 SMOKE_TEST_SUCCESS=$?
 
 if [[ $SMOKE_TEST_SUCCESS == 0 ]] ; then
     echo "$NAME Python smoke tests PASSED -- basic frame,graph,model functionality verified"
     echo "$NAME Running the rest of the tests, calling nosetests again"
-    nosetests $DIR/tests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2 --processes=10 --process-timeout=300 --with-isolation
+    echo "$NAME $NOSE"
+    eval $NOSE
     TEST_SUCCESS=$?
 fi
 

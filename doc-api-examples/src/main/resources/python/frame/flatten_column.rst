@@ -1,21 +1,3 @@
-Spread data to multiple rows based on cell data.
-
-Splits cells in the specified column into multiple rows according to a string
-delimiter.
-New rows are a full copy of the original row, but the specified column only
-contains one value.
-The original row is deleted.
-
-
-Parameters
-----------
-column : str
-    The column to be flattened.
-delimiter : str (optional)
-    The delimiter string.
-    Default is comma (,).
-
-
 Examples
 --------
 Given a data file::

@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
@@ -29,14 +22,13 @@ import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.engine.Rows._
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.engine.spark.frame.plugins.statistics.NumericValidationUtils
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext._
 
-import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 // Implicits needed for JSON conversion
@@ -47,7 +39,24 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  * Calculate Shannon entropy of a column.
  *
  * Entropy is a measure of the uncertainty in a random variable.
+ * Parameters
+ * ----------
+ * data_column : str
+ *   The column whose entropy is to be calculated.
+ * weights_column : str (optional)
+ *   The column that provides weights (frequencies) for the entropy
+ *   calculation.
+ *   Must contain numerical data.
+ *   Uniform weights of 1 for all items will be used for the calculation if
+ *   this parameter is not provided.
  */
+@PluginDoc(oneLine = "Calculate the Shannon entropy of a column.",
+  extended = """The column can be weighted.
+All data elements of weight <= 0 are excluded from the calculation, as are
+all data elements whose weight is NaN or infinite.
+If there are no data elements with a finite weight greater than 0,
+the entropy is zero.""",
+  returns = "Entropy.")
 class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
 
   /**

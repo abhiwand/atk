@@ -1,30 +1,24 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -46,7 +40,39 @@ import org.apache.spark.SparkContext._
  *
  * Equal depth binning attempts to place column values into bins such that each bin contains the same number
  * of elements
+ *
+ * Parameters
+ * ----------
+ * column_name : str
+ *   The column whose values are to be binned.
+ * num_bins : int (optional)
+ *   The maximum number of bins.
+ *   Default is the Square-root choice
+ *   :math:`\lfloor \sqrt{m} \rfloor`, where :math:`m` is the number of rows.
+ * bin_column_name : str (optional)
+ *   The name for the new column holding the grouping labels.
+ *   Default is ``<column_name>_binned``.
  */
+@PluginDoc(oneLine = "Classify column into same-width groups.",
+  extended = """Group rows of data based on the value in a single column and add a label
+to identify grouping.
+
+Equal width binning places column values into groups such that the values
+in each group fall within the same interval and the interval width for each
+group is equal.
+
+Notes
+-----
+1)  Unicode in column names is not supported and will likely cause the
+    drop_frames() method (and others) to fail!
+2)  The num_bins parameter is considered to be the maximum permissible number
+    of bins because the data may dictate fewer bins.
+    For example, if the column to be binned has 10
+    elements with only 2 distinct values and the *num_bins* parameter is
+    greater than 2, then the number of actual number of bins will only be 2.
+    This is due to a restriction that elements with an identical value must
+    belong to the same bin.""",
+  returns = "A list of the edges of each bin.")
 class BinColumnEqualWidthPlugin extends ComputedBinColumnPlugin {
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation

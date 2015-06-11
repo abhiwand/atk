@@ -1,25 +1,18 @@
-##############################################################################
-# INTEL CONFIDENTIAL
 #
-# Copyright 2015 Intel Corporation All Rights Reserved.
+# Copyright (c) 2015 Intel Corporation 
 #
-# The source code contained or described herein and all documents related to
-# the source code (Material) are owned by Intel Corporation or its suppliers
-# or licensors. Title to the Material remains with Intel Corporation or its
-# suppliers and licensors. The Material may contain trade secrets and
-# proprietary and confidential information of Intel Corporation and its
-# suppliers and licensors, and is protected by worldwide copyright and trade
-# secret laws and treaty provisions. No part of the Material may be used,
-# copied, reproduced, modified, published, uploaded, posted, transmitted,
-# distributed, or disclosed in any way without Intel's prior express written
-# permission.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# No license under any patent, copyright, trade secret or other intellectual
-# property right is granted to or conferred upon you by disclosure or
-# delivery of the Materials, either expressly, by implication, inducement,
-# estoppel or otherwise. Any license under such intellectual property rights
-# must be express and approved by Intel in writing.
-##############################################################################
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 """
 Results post-processing
@@ -111,6 +104,13 @@ def return_label_propagation(selfish, json_result):
     frame = get_frame(json_result['output_frame']['id'])
     return { 'frame': frame, 'report': json_result['report'] }
 
+@postprocessor('frame:/collaborative_filtering')
+def return_collaborative_filtering(selfish, json_result):
+    from intelanalytics import get_frame
+    user_frame = get_frame(json_result['user_frame']['id'])
+    item_frame= get_frame(json_result['item_frame']['id'])
+    return { 'user_frame': user_frame, 'item_frame': item_frame, 'report': json_result['report'] }
+
 @postprocessor('graph/graphx_connected_components','graph/annotate_weighted_degrees','graph/annotate_degrees','graph/graphx_triangle_count')
 def return_connected_components(selfish, json_result):
     from intelanalytics import get_frame
@@ -125,3 +125,10 @@ def return_page_ank(selfish, json_result):
     vertex_dictionary = dict([(k,get_frame(v["id"])) for k,v in vertex_json.items()])
     edge_dictionary = dict([(k,get_frame(v["id"])) for k,v in edge_json.items()])
     return {'vertex_dictionary': vertex_dictionary, 'edge_dictionary': edge_dictionary}
+
+@postprocessor('graph/ml/belief_propagation','graph/ml/kclique_percolation')
+def return_belief_propagation(selfish, json_result):
+    from intelanalytics import get_frame
+    vertex_json = json_result['frame_dictionary_output']
+    vertex_dictionary = dict([(k,get_frame(v["id"])) for k,v in vertex_json.items()])
+    return {'vertex_dictionary': vertex_dictionary, 'time': json_result['time']}

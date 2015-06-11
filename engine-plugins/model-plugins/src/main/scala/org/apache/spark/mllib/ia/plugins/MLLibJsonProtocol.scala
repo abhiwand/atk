@@ -1,31 +1,22 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package org.apache.spark.mllib.ia.plugins
 
-import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
-import org.apache.spark.mllib.classification.LogisticRegressionModel
-import org.apache.spark.mllib.classification.SVMModel
+import org.apache.spark.mllib.classification.{ NaiveBayesModel, LogisticRegressionModel, SVMModel }
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
@@ -250,6 +241,31 @@ object MLLibJsonProtocol {
 
   }
 
+  implicit object NaiveBayesModelFormat extends JsonFormat[NaiveBayesModel] {
+
+    override def write(obj: NaiveBayesModel): JsValue = {
+      JsObject(
+        "labels" -> obj.labels.toJson,
+        "pi" -> obj.pi.toJson,
+        "theta" -> obj.theta.toJson
+      )
+    }
+
+    override def read(json: JsValue): NaiveBayesModel = {
+      val fields = json.asJsObject.fields
+      val labels = getOrInvalid(fields, "labels").convertTo[Array[Double]]
+      val pi = getOrInvalid(fields, "pi").convertTo[Array[Double]]
+      val theta = getOrInvalid(fields, "theta").convertTo[Array[Array[Double]]]
+      new NaiveBayesModel(labels, pi, theta)
+    }
+
+  }
+
+  def getOrInvalid[T](map: Map[String, T], key: String): T = {
+    // throw exception if a programmer made a mistake
+    map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
+  }
+
   implicit val logRegDataFormat = jsonFormat2(LogisticRegressionData)
   implicit val classficationWithSGDTrainFormat = jsonFormat10(ClassificationWithSGDTrainArgs)
   implicit val classificationWithSGDPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
@@ -260,4 +276,9 @@ object MLLibJsonProtocol {
   implicit val kmeansModelLoadFormat = jsonFormat8(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
   implicit val linRegDataFormat = jsonFormat2(LinearRegressionData)
+  implicit val naiveBayesDataFormat = jsonFormat2(NaiveBayesData)
+  implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
+  implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
 }
+
+class InvalidJsonException(message: String) extends RuntimeException(message)

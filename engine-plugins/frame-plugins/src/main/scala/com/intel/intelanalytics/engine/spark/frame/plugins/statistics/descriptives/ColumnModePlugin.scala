@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
@@ -29,6 +22,7 @@ import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent.ExecutionContext
 
@@ -38,7 +32,57 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate modes of a column.
+ * Parameters
+ * ----------
+ * data_column : str
+ *   The column whose mode is to be calculated.
+ * weights_column : str (optional)
+ *   The name of the column that provides weights (frequencies) for the mode
+ *   calculation.
+ *   Must contain numerical data.
+ *   Default is all items have weight of 1.
+ * max_modes_returned : int (optional)
+ *   Maximum number of modes returned.
+ *   Default is 1.
  */
+@PluginDoc(oneLine = "Evaluate the weights assigned to rows.",
+  extended = """Calculate the modes of a column.
+A mode is a data element of maximum weight.
+All data elements of weight less than or equal to 0 are excluded from the
+calculation, as are all data elements whose weight is NaN or infinite.
+If there are no data elements of finite weight greater than 0,
+no mode is returned.
+
+Because data distributions often have mutliple modes, it is possible for a
+set of modes to be returned.
+By default, only one is returned, but by setting the optional parameter
+max_modes_returned, a larger number of modes can be returned.""",
+  returns = """dict
+    Dictionary containing summary statistics.
+    The data returned is composed of multiple components:
+mode : A mode is a data element of maximum net weight.
+    A set of modes is returned.
+    The empty set is returned when the sum of the weights is 0.
+    If the number of modes is less than or equal to the parameter
+    max_modes_returned, then all modes of the data are
+    returned.
+    If the number of modes is greater than the max_modes_returned
+    parameter, only the first max_modes_returned many modes (per a
+    canonical ordering) are returned.
+weight_of_mode : Weight of a mode.
+    If there are no data elements of finite weight greater than 0,
+    the weight of the mode is 0.
+    If no weights column is given, this is the number of appearances
+    of each mode.
+total_weight : Sum of all weights in the weight column.
+    This is the row count if no weights are given.
+    If no weights column is given, this is the number of rows in
+    the table with non-zero weight.
+mode_count : The number of distinct modes in the data.
+    In the case that the data is very multimodal, this number may
+    exceed max_modes_returned.
+
+""")
 class ColumnModePlugin extends SparkCommandPlugin[ColumnModeArgs, ColumnModeReturn] {
 
   /**

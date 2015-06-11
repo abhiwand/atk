@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
@@ -32,6 +25,7 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.plugins.groupby.GroupByAggregationFunctions
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRdd, SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
 import org.apache.spark.sql.Row
@@ -42,6 +36,46 @@ import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.SparkContext._
 
+/**
+ * Parameters
+ * ----------
+ * column_name : str
+ *   Name of column to be evaluated.
+ * num_bins : int (optional)
+ *   Number of bins in histogram.
+ *   If omitted the system will use the Square-root choice
+ *   `math.floor(math.sqrt(frame.row_count))`.
+ * weight_column_name : str (optional)
+ *   Name of column containing weights.
+ *   If omitted the system will weigh all observations equally.
+ * bin_type : str (optional)
+ *   The binning algorithm to use ['equalwidth' | 'equaldepth'].
+ *   If omitted defaults to equalwidth.
+ */
+@PluginDoc(oneLine = "Compute the histogram for a column in a frame.",
+  extended = """Compute the histogram of the data in a column.
+The returned value is a Histogram object containing 3 lists one each for:
+the cutoff points of the bins, size of each bin, and density of each bin.
+
+Notes
+-----
+The num_bins parameter is considered to be the maximum permissible number
+of bins because the data may dictate fewer bins.
+With equal depth binning, for example, if the column to be binned has 10
+elements with only 2 distinct values and the *num_bins* parameter is
+greater than 2, then the number of actual number of bins will only be 2.
+This is due to a restriction that elements with an identical value must
+belong to the same bin.""",
+  returns = """histogram
+    A Histogram object containing the result set.
+    The data returned is composed of multiple components:
+cutoffs : array of float
+    A list containing the edges of each bin.
+hist : array of float
+    A list containing count of the weighted observations found in each bin.
+density : array of float
+    A list containing a decimal containing the percentage of
+    observations found in the total set per bin.""")
 class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
 
   override def name: String = "frame/histogram"

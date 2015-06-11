@@ -1,25 +1,18 @@
-//////////////////////////////////////////////////////////////////////////////
-// INTEL CONFIDENTIAL
+/*
+// Copyright (c) 2015 Intel Corporation 
 //
-// Copyright 2015 Intel Corporation All Rights Reserved.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code contained or described herein and all documents related to
-// the source code (Material) are owned by Intel Corporation or its suppliers
-// or licensors. Title to the Material remains with Intel Corporation or its
-// suppliers and licensors. The Material may contain trade secrets and
-// proprietary and confidential information of Intel Corporation and its
-// suppliers and licensors, and is protected by worldwide copyright and trade
-// secret laws and treaty provisions. No part of the Material may be used,
-// copied, reproduced, modified, published, uploaded, posted, transmitted,
-// distributed, or disclosed in any way without Intel's prior express written
-// permission.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// No license under any patent, copyright, trade secret or other intellectual
-// property right is granted to or conferred upon you by disclosure or
-// delivery of the Materials, either expressly, by implication, inducement,
-// estoppel or otherwise. Any license under such intellectual property rights
-// must be express and approved by Intel in writing.
-//////////////////////////////////////////////////////////////////////////////
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 
 package com.intel.intelanalytics.engine.spark.frame
 
@@ -61,27 +54,20 @@ object PythonRddStorage {
 
   //TODO: Use config + UUID rather than hard coded paths.
   private def uploadUdfDependencies(udf: Udf): List[String] = {
-    val filesToUpload = udf.dependencies.map(f => f.fileName)
-    val fileData = udf.dependencies.map(f => f.fileContent)
-    var includes = List[String]()
-
-    if (filesToUpload != null) {
+    udf.dependencies.map(d => {
       val path = new File(SparkEngineConfig.pythonUdfDependenciesDirectory)
-      if (!path.exists()) {
-        if (!path.mkdirs()) throw new Exception(s"Unable to create directory structure for uploading UDF dependencies")
+      path.mkdirs() // no check --if false, dirs may already exist; if other problem, will catch during write
+      val data = decodePythonBase64EncodedStrToBytes(d.fileContent)
+      val fileName = d.fileName.split("/").last
+      val fullFileName = SparkEngineConfig.pythonUdfDependenciesDirectory + fileName
+      try {
+        Files.write(data, new File(fullFileName))
       }
-
-      for {
-        i <- 0 until filesToUpload.size
-      } {
-        val fileToUpload = filesToUpload(i)
-        val data = decodePythonBase64EncodedStrToBytes(fileData(i))
-        val fileName = fileToUpload.split("/").last
-        Files.write(data, new File(SparkEngineConfig.pythonUdfDependenciesDirectory + fileName))
-        includes ::= fileName
+      catch {
+        case e: Exception => throw new Exception(s"Unable to upload UDF dependency '$fullFileName'  $e")
       }
-    }
-    includes
+      fileName
+    })
   }
 
   def mapWith(data: FrameRdd, udf: Udf, udfSchema: Schema = null, sc: SparkContext): FrameRdd = {
