@@ -98,8 +98,7 @@ object BeliefPropagationRunner extends Serializable {
         // convert to graphX vertices
 
         val graphXVertices: RDD[(Long, VertexState)] =
-          inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long],
-            bpVertexStateFromVertex(gbVertex, inputPropertyName, stateSpaceSize)))
+          inVertices.map(gbVertex => (gbVertex.physicalId.asInstanceOf[Long], bpVertexStateFromVertex(gbVertex, inputPropertyName, stateSpaceSize)))
 
         val graphXEdges = inEdges.map(edge => bpEdgeStateFromEdge(edge, args.edgeWeightProperty, defaultEdgeWeight))
 
@@ -140,8 +139,11 @@ object BeliefPropagationRunner extends Serializable {
     else {
       defaultEdgeWeight
     }
+    val srcId = gbEdge.tailPhysicalId.asInstanceOf[Long]
 
-    new Edge[Double](gbEdge.tailPhysicalId.asInstanceOf[Long], gbEdge.headPhysicalId.asInstanceOf[Long], weight)
+    val destId = gbEdge.headPhysicalId.asInstanceOf[Long]
+
+    new Edge[Double](srcId, destId, weight)
   }
 
   // converts incoming vertex to the form consumed by the belief propagation computation

@@ -16,23 +16,19 @@
 
 package com.intel.intelanalytics.engine.plugin
 
-import com.intel.event.{ EventContext, EventLogger, EventLogging }
+import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.NotNothing
 import com.intel.intelanalytics.component._
 import com.intel.intelanalytics.domain._
-import com.intel.intelanalytics.domain.command.{ CommandDocLoader, CommandDoc }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.command.{ CommandDocLoader }
 import spray.json.JsObject
 import spray.json._
 
 import scala.reflect.runtime.{ universe => ru }
 import ru._
-import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
-import scala.Some
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.CommandDoc
-import scala.annotation.meta.field
 import com.intel.intelanalytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 
 /**

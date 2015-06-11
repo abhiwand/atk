@@ -23,19 +23,12 @@ import com.intel.intelanalytics.engine.spark.command._
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
-import scala.concurrent.duration._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import org.apache.spark.SparkContext
-import scala.concurrent.ExecutionContext.Implicits.global
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.engine.spark.plugin.SparkInvocation
-import com.intel.intelanalytics.domain.frame.{ CumulativeSumArgs, FrameEntity }
-import com.intel.intelanalytics.domain.frame.QuantileValues
-import scala.concurrent.{ Await, ExecutionContext }
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import DomainJsonProtocol._
-import com.intel.intelanalytics.engine.plugin.{ Call, Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
 import scala.collection.immutable.HashMap
 import org.scalatest.mock.MockitoSugar
 

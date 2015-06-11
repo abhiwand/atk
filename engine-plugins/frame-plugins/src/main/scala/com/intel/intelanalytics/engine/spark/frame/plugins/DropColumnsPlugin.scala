@@ -16,16 +16,10 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameReference, DropColumnsArgs, FrameEntity }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRdd }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.SparkContext
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.domain.frame.{ DropColumnsArgs, FrameEntity }
+import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
 import spray.json._

@@ -125,4 +125,5 @@ object KCliquePercolationRunner {
     gbEdgeList.filter(e => e.tailPhysicalId.asInstanceOf[Long] < e.headPhysicalId.asInstanceOf[Long]).
       map(e => datatypes.Edge(e.tailPhysicalId.asInstanceOf[Long], e.headPhysicalId.asInstanceOf[Long]))
   }
+
 }

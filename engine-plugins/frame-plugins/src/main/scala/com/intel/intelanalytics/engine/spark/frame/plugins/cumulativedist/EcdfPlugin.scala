@@ -17,15 +17,11 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema, Column }
-import com.intel.intelanalytics.engine.plugin.{ Invocation }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, SparkFrameStorage, LegacyFrameRdd }
-import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema, Column }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRdd }
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Column }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
-import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.{ DomainJsonProtocol, CreateEntityArgs }
 
 // Implicits needed for JSON conversion

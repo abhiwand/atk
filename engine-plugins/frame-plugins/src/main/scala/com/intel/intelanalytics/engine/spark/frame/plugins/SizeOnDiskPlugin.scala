@@ -19,11 +19,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.LongValue
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameNoArgs
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

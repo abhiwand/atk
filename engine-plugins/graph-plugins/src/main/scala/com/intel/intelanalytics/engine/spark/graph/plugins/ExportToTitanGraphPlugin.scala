@@ -20,23 +20,14 @@ import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuil
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.StorageFormats
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameEntity }
-import com.intel.intelanalytics.domain.{ Naming }
 import com.intel.intelanalytics.domain.graph._
-import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
-import com.intel.intelanalytics.domain.schema.{ EdgeSchema, Schema }
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameStorage
-import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, SparkGraphStorage, GraphBuilderConfigFactory }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.SparkContext
-import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
+import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.intelanalytics.domain.schema.{ EdgeSchema }
+import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
 
-import scala.concurrent.ExecutionContext
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._

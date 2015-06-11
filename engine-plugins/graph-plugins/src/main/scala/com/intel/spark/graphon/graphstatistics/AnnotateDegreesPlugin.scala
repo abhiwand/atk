@@ -95,9 +95,6 @@ class AnnotateDegreesPlugin extends SparkCommandPlugin[AnnotateDegreesArgs, Anno
 
   override def execute(arguments: AnnotateDegreesArgs)(implicit invocation: Invocation): AnnotateDegreesReturn = {
 
-    if (!SparkEngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
-
     val degreeMethod: String = arguments.degreeMethod
     // Get the graph
     import scala.concurrent.duration._
