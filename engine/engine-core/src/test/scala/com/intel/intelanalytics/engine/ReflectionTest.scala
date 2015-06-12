@@ -22,9 +22,9 @@ import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
 import org.scalatest.{ Matchers, FlatSpec }
 import scala.reflect.runtime.{ universe => ru }
 import ru._
-import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
-import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import spray.json._
+import implicits._
 
 case class Mixed(frameId: Int, frame: FrameReference, graphId: Int, graph: GraphReference) {
 }
