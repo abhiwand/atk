@@ -46,6 +46,7 @@ import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
 import com.intel.event.{ EventContext, EventLogging }
 import scala.concurrent.duration._
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext.global
 
 case class CommandContext(
     command: Command,

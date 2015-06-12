@@ -57,6 +57,7 @@ import com.intel.intelanalytics.domain.command.Command
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import scala.util.{ Try, Success, Failure }
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext.global
 
 object SparkEngine {
   private val pythonRddDelimiter = "YoMeDelimiter"

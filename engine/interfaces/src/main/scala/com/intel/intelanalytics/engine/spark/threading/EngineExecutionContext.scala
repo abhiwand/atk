@@ -16,12 +16,19 @@
 
 package com.intel.intelanalytics.engine.spark.threading
 
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.forkjoin.ForkJoinPool
 
 object EngineExecutionContext {
+
+  val config = ConfigFactory.load()
+
+  val maxThreadsPerExecutionContext: Int = {
+    config.getInt("intel.analytics.engine.spark.max-threads-per-execution-Context")
+  }
+
   implicit val global: ExecutionContext =
-    ExecutionContext.fromExecutorService(new ForkJoinPool((SparkEngineConfig.maxThreadsPerExecutionContext)))
+    ExecutionContext.fromExecutorService(new ForkJoinPool(maxThreadsPerExecutionContext))
 }

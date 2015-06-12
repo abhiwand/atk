@@ -35,6 +35,7 @@ import com.intel.intelanalytics.engine.Engine
 import com.intel.event.EventLogging
 import scala.util.{ Failure, Success, Try }
 import com.intel.intelanalytics.rest.CfRequests.TokenUserInfo
+import com.intel.intelanalytics.rest.threading.SprayExecutionContext.global
 
 import scala.util.parsing.json.JSON
 
