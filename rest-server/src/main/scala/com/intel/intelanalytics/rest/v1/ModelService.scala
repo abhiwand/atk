@@ -135,29 +135,7 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       }
                 }
               }
-          } ~
-          path("v1" / prefix / Segment / "score") { seg =>
-            requestUri { uri =>
-              get {
-                parameters('data.?) {
-                  import spray.httpx.SprayJsonSupport._
-                  implicit val format = DomainJsonProtocol.vectorValueFormat
-                  (data) => data match {
-                    case Some(x) => {
-                      onComplete(engine.scoreModel(seg, x)) {
-                        case Success(scored) => complete(scored.toString)
-                        case Failure(ex) => ctx => {
-                          ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
-                        }
-                      }
-                    }
-                    case None => reject()
-                  }
-                }
-              }
-            }
-
-          }
+          } 
     }
 
   }
