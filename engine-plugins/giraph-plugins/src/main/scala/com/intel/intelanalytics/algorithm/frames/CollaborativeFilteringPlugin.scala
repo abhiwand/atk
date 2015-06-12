@@ -172,3 +172,4 @@ class CollaborativeFilteringPlugin
   }
 
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

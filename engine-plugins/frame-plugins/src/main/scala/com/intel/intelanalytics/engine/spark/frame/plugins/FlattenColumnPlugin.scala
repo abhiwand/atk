@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc, }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
@@ -156,3 +156,4 @@ object FlattenColumnFunctions extends Serializable {
     })
   }
 }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
