@@ -17,6 +17,7 @@
 package com.intel.intelanalytics.engine.spark.graph
 
 import com.intel.intelanalytics.engine.plugin.Call
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import org.scalatest.{ Matchers, WordSpec }
 import org.mockito.Mockito._
 
@@ -25,7 +26,7 @@ import org.scalatest.mock.MockitoSugar
 
 class SparkGraphHBaseBackendTest extends WordSpec with Matchers with MockitoSugar {
 
-  implicit val call = Call(null)
+  implicit val call = Call(null, EngineExecutionContext.global)
   //TODO: enable the test when TRIB-4413 is fixed
   //  "Not quietly deleting a table that does not exist" should {
   //    "throw an illegal argument exception" in {

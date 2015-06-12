@@ -18,6 +18,7 @@ package com.intel.intelanalytics.rest.v1
 
 import com.intel.intelanalytics.domain.model.ModelEntity
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
+import com.intel.intelanalytics.rest.threading.SprayExecutionContext
 import com.intel.intelanalytics.security.UserPrincipal
 import org.mockito.Mockito._
 
@@ -30,7 +31,7 @@ import org.joda.time.DateTime
 
 class ModelEntityServiceTest extends ServiceTest {
   implicit val userPrincipal = mock[UserPrincipal]
-  implicit val call: Invocation = Call(userPrincipal)
+  implicit val call: Invocation = Call(userPrincipal, SprayExecutionContext.global)
   val commonDirectives = mock[CommonDirectives]
   when(commonDirectives.apply("models")).thenReturn(provide(call))
 

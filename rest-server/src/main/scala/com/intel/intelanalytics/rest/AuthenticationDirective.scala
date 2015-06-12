@@ -23,10 +23,10 @@ import java.util.concurrent.{ Callable, TimeUnit }
 import com.google.common.cache.CacheBuilder
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
+import com.intel.intelanalytics.rest.threading.SprayExecutionContext
 import spray.http.HttpHeader
 
 import scala.PartialFunction._
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.routing._
@@ -62,7 +62,7 @@ class AuthenticationDirective(val engine: Engine) extends Directives with EventL
   def authenticateKey: Directive1[Invocation] =
     //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
     optionalHeaderValue(getUserPrincipalFromHeader).flatMap {
-      case Some(p) => provide(Call(p))
+      case Some(p) => provide(Call(p, SprayExecutionContext.global))
       case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))
     }
 
@@ -75,7 +75,7 @@ class AuthenticationDirective(val engine: Engine) extends Directives with EventL
     cache.get(apiKey, new Callable[UserPrincipal]() {
       override def call(): UserPrincipal = {
         // cache miss, look it up
-        Await.result(lookupUserPrincipal(apiKey)(Call(null)), RestServerConfig.defaultTimeout)
+        Await.result(lookupUserPrincipal(apiKey)(Call(null, SprayExecutionContext.global)), RestServerConfig.defaultTimeout)
       }
     })
   }

@@ -23,7 +23,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 class EntityRegistryTest extends FlatSpec with Matchers {
 
-  implicit val invocation: Invocation = Call(null)
+  implicit val invocation: Invocation = Call(null, null) //SERBAN - FIX THIS Call(null)
 
   "Adding a second manager for the same entity" should "replace the original" in {
     val registry = new EntityTypeRegistry

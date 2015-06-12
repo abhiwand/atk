@@ -28,7 +28,7 @@ class ReferenceResolverTest extends FlatSpec with Matchers {
   registry.register(FrameEntityType, new MockFrameManager)
   registry.register(GraphEntityType, new MockGraphManager)
   val resolver = registry.resolver
-  implicit val invocation: Invocation = Call(null)
+  implicit val invocation: Invocation = Call(null, null) //SERBAN - FIX THIS Call(null)
 
   "resolve" should "return metadata when requested" in {
     val meta: MockFrameManager#M = resolver.resolve[MockFrameManager#M]("ia://frames/6").get

@@ -20,9 +20,9 @@ import java.io.File
 import java.nio.file.{ FileSystems, Files }
 
 import com.intel.intelanalytics.engine.spark.hadoop.HadoopSupport
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 
 import sys.process._
-import scala.collection.JavaConversions._
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
@@ -153,7 +153,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
       val context = CommandContext(cmd,
         action = isAction(plugin),
-        executionContext,
+        EngineExecutionContext.global,
         user,
         commandPluginRegistry,
         referenceResolver,
@@ -171,7 +171,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
       val context = CommandContext(cmd,
         action = isAction(plugin),
-        executionContext,
+        EngineExecutionContext.global,
         user,
         commandPluginRegistry,
         referenceResolver,

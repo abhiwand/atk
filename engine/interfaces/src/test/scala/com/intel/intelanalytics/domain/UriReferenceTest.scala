@@ -25,7 +25,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 import scala.util.Success
 
 class UriReferenceTest extends FlatSpec with Matchers {
-  implicit val invocation: Invocation = Call(null)
+  implicit val invocation: Invocation = Call(null, null) //SERBAN - FIX THIS Call(null)
 
   "A frame uri" should "fail to resolve when no resolvers are registered" in {
     val uri: String = "ia://frame/1"

@@ -21,7 +21,7 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 import com.intel.event.{ EventLogging }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.graph._
-import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity, ModelTemplate }
+import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity }
 import com.intel.intelanalytics.engine.spark.gc.{ GarbageCollectionPlugin, GarbageCollector }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
@@ -34,17 +34,17 @@ import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
-import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.engine._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
-import spray.json._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import org.apache.spark.frame.FrameRdd
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import spray.json._
+
 import scala.concurrent._
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
+import com.intel.intelanalytics.domain.schema.{ DataTypes }
 import com.intel.intelanalytics.domain.{ CreateEntityArgs }
 
 import com.intel.intelanalytics.security.UserPrincipal

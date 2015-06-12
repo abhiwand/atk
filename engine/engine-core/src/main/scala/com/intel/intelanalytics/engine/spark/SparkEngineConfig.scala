@@ -178,6 +178,13 @@ trait SparkEngineConfig extends EventLogging {
   }
 
   /**
+   * Max number of threads per execution context
+   */
+  val maxThreadsPerExecutionContext: Int = {
+    config.getInt("intel.analytics.engine.max-threads-per-execution-Context")
+  }
+
+  /**
    * Max partitions if file is larger than limit specified in autoPartitionConfig
    */
   val maxPartitions: Int = {

@@ -16,13 +16,12 @@
 
 package com.intel.intelanalytics.engine
 
-import com.intel.event.EventContext
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
-import com.intel.intelanalytics.domain.model.{ ModelEntity, ModelTemplate }
-import com.intel.intelanalytics.domain.query.{ PagedQueryResult, Query, QueryDataResult, RowQuery, Execution => QueryExecution, _ }
+import com.intel.intelanalytics.domain.model.{ ModelEntity }
+import com.intel.intelanalytics.domain.query.{ Query, QueryDataResult, RowQuery, Execution => QueryExecution, _ }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 

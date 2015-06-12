@@ -20,6 +20,7 @@ import com.intel.intelanalytics.domain.{ FilterArgs, _ }
 import com.intel.intelanalytics.domain.query.{ Query }
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.rest.threading.SprayExecutionContext
 import com.intel.intelanalytics.rest.v1.decorators.QueryDecorator
 import com.intel.intelanalytics.rest.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.rest.v1.viewmodels._
@@ -29,10 +30,9 @@ import scala.concurrent._
 import spray.json._
 import spray.routing.{ Directives }
 
-import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success }
 
-import ExecutionContext.Implicits.global
+import SprayExecutionContext.global
 import com.intel.event.EventLogging
 
 /**

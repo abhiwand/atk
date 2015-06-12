@@ -179,7 +179,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     override def write(obj: T): JsValue = JsString(obj.uri)
 
     override def read(json: JsValue): T = {
-      implicit val invocation: Invocation = Call(null)
+      implicit val invocation: Invocation = Call(null, null) //SERBAN - FIX THIS Call(null)
       json match {
         case JsString(name) => ReferenceResolver.resolve[T](name).get
         case JsNumber(n) => ReferenceResolver.resolve[T](s"ia://${entity.name.plural}/$n").get
