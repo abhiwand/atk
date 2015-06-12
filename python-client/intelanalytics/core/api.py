@@ -40,26 +40,50 @@
 API
 """
 
+import datetime
 
 class _ApiStatus(object):
     """tracks whether the API has been installed yet"""
     def __init__(self):
-        self.__is_api_installed = False
+        self.__api_installed_timestamp = None
+        self.__build_id = None
+        self.__server_uri = None
 
     @property
     def is_installed(self):
-        return self.__is_api_installed
+        return bool(self.__api_installed_timestamp)
 
-    def declare_installed(self):
+    @property
+    def installed_time(self):
+        return self.__api_installed_timestamp
+
+    @property
+    def server_build_id(self):
+        return str(self.__build_id)
+
+    @property
+    def server_uri(self):
+        return self.__server_uri
+
+    def declare_installed(self, server, server_build_id):
         """declares the API as installed for the package, no turning back."""
-        self.__is_api_installed = True
+        self.__api_installed_timestamp = datetime.datetime.now()
+        self.__build_id = server_build_id
+        self.__server_uri = server._get_base_uri()
+
+    def __repr__(self):
+        if not self.is_installed:
+            return "API has not been downloaded yet.  Use connect() to download it."
+        else:
+            return "API was downloaded from server %s (build_id=%s) and installed for this client instance at %s"\
+                   % (self.server_uri, self.server_build_id, self.installed_time)
 
     def verify_installed(self):
-        if not self.__is_api_installed:
+        if not self.is_installed:
             raise ApiNotInstalledError()
 
     def verify_not_installed(self):
-        if self.__is_api_installed:
+        if self.is_installed:
             raise ApiInstalledError()
 
 

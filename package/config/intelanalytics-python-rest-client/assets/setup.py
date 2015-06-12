@@ -65,7 +65,7 @@ setup(
     install_requires=[
         'bottle >= 0.12',
         'numpy >= 1.8.1',
-        'requests >= 2.2.1',
+        'requests >= 2.4.0',
         'ordereddict >= 1.1',
         'decorator >= 3.4.0',
         'pandas >= 0.15.0',
