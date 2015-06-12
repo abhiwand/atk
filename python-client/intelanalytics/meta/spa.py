@@ -18,6 +18,7 @@
 Static Program Analysis (SPA) docstring lib
 """
 
+import re
 from intelanalytics.meta.names import indent, get_type_name
 
 
@@ -32,6 +33,7 @@ def get_spa_docstring(command_def, override_rtype=None):
     if command_def.return_info:
         doc_str += ("\n\n" + get_returns_text(command_def.return_info, override_rtype))
 
+    doc_str = re.sub(r':term:`(.+)`', r'\1', doc_str)  # clear out some sphinx markup (could cover more....)
     return indent(doc_str)
 
 

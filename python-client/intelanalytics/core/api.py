@@ -73,9 +73,9 @@ class _ApiStatus(object):
 
     def __repr__(self):
         if not self.is_installed:
-            return "API has not been downloaded yet.  Use connect() to download it."
+            return "This client has not connected to the server yet.  Use connect() to enable this client instance."
         else:
-            return "API was downloaded from server %s (build_id=%s) and installed for this client instance at %s"\
+            return "This client instance connected to server %s (build_id=%s) at %s and enabled itself."\
                    % (self.server_uri, self.server_build_id, self.installed_time)
 
     def verify_installed(self):
