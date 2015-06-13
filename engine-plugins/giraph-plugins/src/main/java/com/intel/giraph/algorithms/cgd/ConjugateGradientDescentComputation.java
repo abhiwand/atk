@@ -16,11 +16,14 @@
 
 package com.intel.giraph.algorithms.cgd;
 
+import com.intel.giraph.io.CFVertexId;
 import com.intel.giraph.io.EdgeData4CFWritable;
 import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
 import com.intel.giraph.io.MessageData4CFWritable;
 import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 import com.intel.giraph.io.VertexData4CGDWritable;
+import com.intel.ia.giraph.cf.CollaborativeFilteringConfig;
+import com.intel.ia.giraph.cf.CollaborativeFilteringConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
@@ -53,10 +56,10 @@ import java.util.Random;
  * Filtering Model. In ACM KDD 2008. (Equation 5)
  */
 @Algorithm(
-        name = "Conjugate Gradient Descent (CGD) with Bias"
+    name = "Conjugate Gradient Descent (CGD) with Bias"
 )
-public class ConjugateGradientDescentComputation extends BasicComputation<LongWritable, VertexData4CGDWritable,
-        EdgeData4CFWritable, MessageData4CFWritable> {
+public class ConjugateGradientDescentComputation extends BasicComputation<CFVertexId, VertexData4CGDWritable,
+    EdgeData4CFWritable, MessageData4CFWritable> {
     /** Custom argument for number of super steps */
     public static final String MAX_SUPERSTEPS = "cgd.maxSupersteps";
     /** Custom argument for number of CGD iterations in each super step */
@@ -114,8 +117,6 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     private float lambda = 0f;
     /** Bias on/off switch */
     private boolean biasOn = false;
-    /** Turning on/off bi-directional edge check */
-    private boolean bidirectionalCheck = false;
     /** Maximum edge weight value */
     private float maxVal = Float.POSITIVE_INFINITY;
     /** Minimum edge weight value */
@@ -125,28 +126,15 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
 
     @Override
     public void preSuperstep() {
-        // Set custom parameters
-        maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
-        numCGDIters = getConf().getInt(NUM_CGD_ITERS, 5);
-        if (numCGDIters < 2) {
-            throw new IllegalArgumentException("numCGDIters should be >= 2.");
-        }
-        featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
-        if (featureDimension < 1) {
-            throw new IllegalArgumentException("Feature dimension should be > 0.");
-        }
-        lambda = getConf().getFloat(LAMBDA, 0f);
-        if (lambda < 0) {
-            throw new IllegalArgumentException("Regularization parameter lambda should be >= 0.");
-        }
-        biasOn = getConf().getBoolean(BIAS_ON, false);
-        bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
-        maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
-        minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
-        learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
-        if (learningCurveOutputInterval < 1) {
-            throw new IllegalArgumentException("Learning curve output interval should be >= 1.");
-        }
+
+        CollaborativeFilteringConfig config = new CollaborativeFilteringConfiguration(getConf()).getConfig();
+        maxSupersteps = config.maxIterations();
+        featureDimension = config.numFactors();
+        lambda = config.lambda();
+        biasOn = config.biasOn();
+        maxVal = config.maxValue();
+        minVal = config.minValue();
+        numCGDIters = config.cgdIterations();
     }
 
     /**
@@ -154,25 +142,25 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
      *
      * @param vertex of the graph
      */
-    private void initialize(Vertex<LongWritable, VertexData4CGDWritable, EdgeData4CFWritable> vertex) {
+    private void initialize(Vertex<CFVertexId, VertexData4CGDWritable, EdgeData4CFWritable> vertex) {
         // initialize vertex data: bias, vector, gradient, conjugate
         vertex.getValue().setBias(0d);
 
         double sum = 0d;
         int numTrain = 0;
-        for (Edge<LongWritable, EdgeData4CFWritable> edge : vertex.getEdges()) {
+        for (Edge<CFVertexId, EdgeData4CFWritable> edge : vertex.getEdges()) {
             EdgeType et = edge.getValue().getType();
             if (et == EdgeType.TRAIN) {
                 double weight = edge.getValue().getWeight();
                 if (weight < minVal || weight > maxVal) {
                     throw new IllegalArgumentException(String.format("Vertex ID: %d has an edge with weight value " +
-                            "out of the range of [%f, %f].", vertex.getId().get(), minVal, maxVal));
+                        "out of the range of [%f, %f].", vertex.getId().getValueAsLong(), minVal, maxVal));
                 }
                 sum += weight;
                 numTrain++;
             }
         }
-        Random rand = new Random(vertex.getId().get());
+        Random rand = new Random(vertex.getId().getValueAsLong());
         double[] values = new double[featureDimension];
         values[0] = 0d;
         if (numTrain > 0) {
@@ -189,45 +177,45 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
         // collect graph statistics and send out messages
         VertexType vt = vertex.getValue().getType();
         switch (vt) {
-            case LEFT:
-                aggregate(SUM_LEFT_VERTICES, new LongWritable(1));
-                break;
-            case RIGHT:
-                aggregate(SUM_RIGHT_VERTICES, new LongWritable(1));
-                long numTrainEdges = 0L;
-                long numValidateEdges = 0L;
-                long numTestEdges = 0L;
-                for (Edge<LongWritable, EdgeData4CFWritable> edge : vertex.getEdges()) {
-                    EdgeType et = edge.getValue().getType();
-                    switch (et) {
-                        case TRAIN:
-                            numTrainEdges++;
-                            break;
-                        case VALIDATE:
-                            numValidateEdges++;
-                            break;
-                        case TEST:
-                            numTestEdges++;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
-                    }
-                    // send out messages
-                    MessageData4CFWritable newMessage = new MessageData4CFWritable(vertex.getValue(), edge.getValue());
-                    sendMessage(edge.getTargetVertexId(), newMessage);
+        case User:
+            aggregate(SUM_LEFT_VERTICES, new LongWritable(1));
+            break;
+        case Item:
+            aggregate(SUM_RIGHT_VERTICES, new LongWritable(1));
+            long numTrainEdges = 0L;
+            long numValidateEdges = 0L;
+            long numTestEdges = 0L;
+            for (Edge<CFVertexId, EdgeData4CFWritable> edge : vertex.getEdges()) {
+                EdgeType et = edge.getValue().getType();
+                switch (et) {
+                case TRAIN:
+                    numTrainEdges++;
+                    break;
+                case VALIDATE:
+                    numValidateEdges++;
+                    break;
+                case TEST:
+                    numTestEdges++;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
                 }
-                if (numTrainEdges > 0) {
-                    aggregate(SUM_TRAIN_EDGES, new LongWritable(numTrainEdges));
-                }
-                if (numValidateEdges > 0) {
-                    aggregate(SUM_VALIDATE_EDGES, new LongWritable(numValidateEdges));
-                }
-                if (numTestEdges > 0) {
-                    aggregate(SUM_TEST_EDGES, new LongWritable(numTestEdges));
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknow recognized vertex type: " + vt.toString());
+                // send out messages
+                MessageData4CFWritable newMessage = new MessageData4CFWritable(vertex.getValue(), edge.getValue());
+                sendMessage(edge.getTargetVertexId(), newMessage);
+            }
+            if (numTrainEdges > 0) {
+                aggregate(SUM_TRAIN_EDGES, new LongWritable(numTrainEdges));
+            }
+            if (numValidateEdges > 0) {
+                aggregate(SUM_VALIDATE_EDGES, new LongWritable(numValidateEdges));
+            }
+            if (numTestEdges > 0) {
+                aggregate(SUM_TEST_EDGES, new LongWritable(numTestEdges));
+            }
+            break;
+        default:
+            throw new IllegalArgumentException("Unknow recognized vertex type: " + vt.toString());
         }
     }
 
@@ -270,7 +258,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
      * @return alpha of type double
      */
     private double computeAlpha(Vector gradient, Vector conjugate,
-                                Iterable<MessageData4CFWritable> messages) {
+        Iterable<MessageData4CFWritable> messages) {
         double alpha = 0d;
         if (conjugate.norm(1d) == 0d) {
             return alpha;
@@ -340,8 +328,8 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     }
 
     @Override
-    public void compute(Vertex<LongWritable, VertexData4CGDWritable, EdgeData4CFWritable> vertex,
-                        Iterable<MessageData4CFWritable> messages) throws IOException {
+    public void compute(Vertex<CFVertexId, VertexData4CGDWritable, EdgeData4CFWritable> vertex,
+        Iterable<MessageData4CFWritable> messages) throws IOException {
         long step = getSuperstep();
         if (step == 0) {
             initialize(vertex);
@@ -355,12 +343,6 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
         while (it.hasNext()) {
             numMessages++;
             it.next();
-        }
-        if (bidirectionalCheck) {
-            if (numMessages != vertex.getNumEdges()) {
-                throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages (%d)" +
-                        " isn't equal to number of edges (%d).", vertex.getId().get(), numMessages, vertex.getNumEdges()));
-            }
         }
 
         Vector currentValue = vertex.getValue().getVector();
@@ -379,24 +361,24 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
                 double predict = currentBias + otherBias + currentValue.dot(vector);
                 double e = weight - predict;
                 switch (et) {
-                    case TRAIN:
-                        errorOnTrain += e * e;
-                        numTrain++;
-                        break;
-                    case VALIDATE:
-                        errorOnValidate += e * e;
-                        break;
-                    case TEST:
-                        errorOnTest += e * e;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
+                case TRAIN:
+                    errorOnTrain += e * e;
+                    numTrain++;
+                    break;
+                case VALIDATE:
+                    errorOnValidate += e * e;
+                    break;
+                case TEST:
+                    errorOnTest += e * e;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
                 }
             }
             double costOnTrain = 0d;
             if (numTrain > 0) {
                 costOnTrain = errorOnTrain / numTrain + lambda * (currentBias * currentBias +
-                        currentValue.dot(currentValue));
+                    currentValue.dot(currentValue));
             }
             aggregate(SUM_TRAIN_COST, new DoubleWritable(costOnTrain));
             aggregate(SUM_VALIDATE_ERROR, new DoubleWritable(errorOnValidate));
@@ -431,7 +413,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
             }
 
             // send out messages
-            for (Edge<LongWritable, EdgeData4CFWritable> edge : vertex.getEdges()) {
+            for (Edge<CFVertexId, EdgeData4CFWritable> edge : vertex.getEdges()) {
                 MessageData4CFWritable newMessage = new MessageData4CFWritable(vertex.getValue(), edge.getValue());
                 sendMessage(edge.getTargetVertexId(), newMessage);
             }
@@ -536,7 +518,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
 
         @Override
         public void writeAggregator(Iterable<Entry<String, Writable>> aggregatorMap, long superstep)
-                throws IOException {
+            throws IOException {
             long realStep = lastStep;
             int learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
 
@@ -555,9 +537,9 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
                 long testEdges = Long.parseLong(map.get(SUM_TEST_EDGES)) * 2;
                 output.writeBytes("======Graph Statistics======\n");
                 output.writeBytes(String.format("Number of vertices: %d (left: %d, right: %d)%n",
-                        leftVertices + rightVertices, leftVertices, rightVertices));
+                    leftVertices + rightVertices, leftVertices, rightVertices));
                 output.writeBytes(String.format("Number of edges: %d (train: %d, validate: %d, test: %d)%n",
-                        trainEdges + validateEdges + testEdges, trainEdges, validateEdges, testEdges));
+                    trainEdges + validateEdges + testEdges, trainEdges, validateEdges, testEdges));
                 output.writeBytes("\n");
                 // output cgd configuration
                 int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
@@ -623,4 +605,3 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     }
 
 }
-

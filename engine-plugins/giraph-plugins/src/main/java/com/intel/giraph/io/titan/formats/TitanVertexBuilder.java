@@ -124,9 +124,9 @@ public class TitanVertexBuilder {
         if (vertexTypeObject != null) {
             String vertexTypeString = vertexTypeObject.toString().toLowerCase();
             if (vertexTypeString.equals(VERTEX_TYPE_LEFT)) {
-                vertexType = VertexData4CFWritable.VertexType.LEFT;
+                vertexType = VertexData4CFWritable.VertexType.User;
             } else if (vertexTypeString.equals(VERTEX_TYPE_RIGHT)) {
-                vertexType = VertexData4CFWritable.VertexType.RIGHT;
+                vertexType = VertexData4CFWritable.VertexType.Item;
             } else {
                 LOG.error("Vertex type string: %s isn't supported." + vertexTypeString);
                 throw new IllegalArgumentException(String.format(
