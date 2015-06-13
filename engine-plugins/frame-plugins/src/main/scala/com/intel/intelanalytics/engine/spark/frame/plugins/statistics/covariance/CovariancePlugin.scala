@@ -17,14 +17,12 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covariance
 
 import com.intel.intelanalytics.domain.DoubleValue
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.CovarianceArgs
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
-import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

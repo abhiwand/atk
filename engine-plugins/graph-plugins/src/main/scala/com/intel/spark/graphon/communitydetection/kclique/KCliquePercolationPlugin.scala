@@ -19,6 +19,9 @@ package com.intel.spark.graphon.communitydetection.kclique
 import java.util.Date
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
+import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.command.CommandDoc
@@ -28,6 +31,7 @@ import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
+import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent._
@@ -47,7 +51,7 @@ vertex.""") communityPropertyLabel: String) {
   require(cliqueSize > 1, "Invalid clique size; must be at least 2")
 }
 
-case class KCliqueResult(time: Double)
+case class KCliqueResult(frameDictionaryOutput: Map[String, FrameEntity], time: Double)
 
 /**
  * Json conversion for arguments and return value case classes
@@ -56,13 +60,14 @@ case class KCliqueResult(time: Double)
 object KCliquePercolationJsonFormat {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
   implicit val kcliqueFormat = jsonFormat3(KCliqueArgs)
-  implicit val kcliqueResultFormat = jsonFormat1(KCliqueResult)
+  implicit val kcliqueResultFormat = jsonFormat2(KCliqueResult)
 }
 
 import KCliquePercolationJsonFormat._
 /**
  * KClique Percolation plugin class.
  */
+
 @PluginDoc(oneLine = "Find groups of vertices with similar attributes.",
   extended = """Notes
 -----
@@ -73,14 +78,14 @@ construction steps are tracked with a single progress bar (this is most of
 the time), and then successive iterations of analysis of the clique graph
 are tracked with many short-lived progress bars, and then finally the
 result is written out.""",
-  returns = "Execution time."
+  returns = "Dictionary of vertex label and frame, Execution time."
 )
-class KCliquePercolation extends SparkCommandPlugin[KCliqueArgs, KCliqueResult] {
+class KCliquePercolationPlugin extends SparkCommandPlugin[KCliqueArgs, KCliqueResult] {
 
   /**
    * The name of the command, e.g. graphs/ml/kclique_percolation
    */
-  override def name: String = "graph:titan/ml/kclique_percolation"
+  override def name: String = "graph/ml/kclique_percolation"
 
   /**
    * The number of jobs varies with the number of supersteps required to find the connected components
@@ -100,10 +105,6 @@ class KCliquePercolation extends SparkCommandPlugin[KCliqueArgs, KCliqueResult] 
 
     val start = System.currentTimeMillis()
 
-    // Get the SparkContext as one the input parameters for Driver
-    if (!SparkEngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
-
     // Titan Settings for input
     val config = configuration
 
@@ -112,16 +113,22 @@ class KCliquePercolation extends SparkCommandPlugin[KCliqueArgs, KCliqueResult] 
     val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
     val (outVertices, outEdges) = KCliquePercolationRunner.run(gbVertices, gbEdges, arguments.cliqueSize, arguments.communityPropertyLabel)
 
-    // Update back each vertex in the input Titan graph and the write the community property
-    // as the set of communities to which it belongs
-    val communityWriterInTitan = new CommunityWriterInTitan()
-    val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
-    communityWriterInTitan.run(outVertices, outEdges, titanConfig)
+    val mergedVertexRdd = (outVertices ++ gbVertices).mergeDuplicates()
 
     // Get the execution time and print it
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    KCliqueResult(time)
+    val frameRddMap = FrameRdd.toFrameRddMap(mergedVertexRdd)
+
+    val frameMap = frameRddMap.keys.map(label => {
+      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+        val frameRdd = frameRddMap(label)
+        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
+      }.meta
+      (label, result)
+    }).toMap
+    KCliqueResult(frameMap, time)
+
   }
 
 }

@@ -13,16 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
-
-package com.intel.intelanalytics.scoring
+package com.intel.intelanalytics.libSvmPlugins
 
 import java.io._
 
 import _root_.libsvm.svm
-import scala.concurrent._
-import ExecutionContext.Implicits.global
+import com.intel.intelanalytics.interfaces.{ ModelLoader, Model }
 
-class LibSvmModelReaderPlugin() extends ModelLoader {
+class LibSvmModelReaderPlugin extends ModelLoader {
 
   private var libsvmModel: LibSvmModel = _
 
@@ -43,7 +41,6 @@ class LibSvmModelReaderPlugin() extends ModelLoader {
         inputStream.close()
     }
 
-    libsvmModel.name = "AnjaliModel"
     libsvmModel.asInstanceOf[Model]
   }
 }

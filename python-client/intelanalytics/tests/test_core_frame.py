@@ -51,9 +51,9 @@ def get_simple_frame_abfgh():
     return f
 
 
-def fake_download():
+def fake_download(server):
     """Mock out download from server, such that connect works offline"""
-    return []
+    return "Test Stub", []
 
 
 @patch('intelanalytics.meta.config.get_frame_backend')

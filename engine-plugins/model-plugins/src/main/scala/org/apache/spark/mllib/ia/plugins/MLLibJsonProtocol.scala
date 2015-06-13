@@ -16,9 +16,7 @@
 
 package org.apache.spark.mllib.ia.plugins
 
-import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
-import org.apache.spark.mllib.classification.LogisticRegressionModel
-import org.apache.spark.mllib.classification.SVMModel
+import org.apache.spark.mllib.classification.{ NaiveBayesModel, LogisticRegressionModel, SVMModel }
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
@@ -243,6 +241,31 @@ object MLLibJsonProtocol {
 
   }
 
+  implicit object NaiveBayesModelFormat extends JsonFormat[NaiveBayesModel] {
+
+    override def write(obj: NaiveBayesModel): JsValue = {
+      JsObject(
+        "labels" -> obj.labels.toJson,
+        "pi" -> obj.pi.toJson,
+        "theta" -> obj.theta.toJson
+      )
+    }
+
+    override def read(json: JsValue): NaiveBayesModel = {
+      val fields = json.asJsObject.fields
+      val labels = getOrInvalid(fields, "labels").convertTo[Array[Double]]
+      val pi = getOrInvalid(fields, "pi").convertTo[Array[Double]]
+      val theta = getOrInvalid(fields, "theta").convertTo[Array[Array[Double]]]
+      new NaiveBayesModel(labels, pi, theta)
+    }
+
+  }
+
+  def getOrInvalid[T](map: Map[String, T], key: String): T = {
+    // throw exception if a programmer made a mistake
+    map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
+  }
+
   implicit val logRegDataFormat = jsonFormat2(LogisticRegressionData)
   implicit val classficationWithSGDTrainFormat = jsonFormat10(ClassificationWithSGDTrainArgs)
   implicit val classificationWithSGDPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
@@ -253,4 +276,9 @@ object MLLibJsonProtocol {
   implicit val kmeansModelLoadFormat = jsonFormat8(KMeansTrainArgs)
   implicit val kmeansModelPredictFormat = jsonFormat3(KMeansPredictArgs)
   implicit val linRegDataFormat = jsonFormat2(LinearRegressionData)
+  implicit val naiveBayesDataFormat = jsonFormat2(NaiveBayesData)
+  implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
+  implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
 }
+
+class InvalidJsonException(message: String) extends RuntimeException(message)

@@ -16,33 +16,18 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlation
 
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.intelanalytics.domain.schema.Column
-import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
-import com.intel.intelanalytics.domain.schema.FrameSchema
-import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema, DataTypes, Schema }
-import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.domain.{ CreateEntityArgs }
+import com.intel.intelanalytics.domain.schema.{ DataTypes }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import org.apache.spark.frame.FrameRdd
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
-import scala.concurrent.ExecutionContext
 import com.intel.intelanalytics.domain.frame.CorrelationMatrixArgs
 import com.intel.intelanalytics.domain.schema.FrameSchema
-import com.intel.intelanalytics.domain.command.CommandDoc
-import scala.Some
 import com.intel.intelanalytics.domain.schema.Column
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

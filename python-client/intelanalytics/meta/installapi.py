@@ -19,6 +19,7 @@ Install API methods, and other API utils
 """
 
 import inspect
+import warnings
 import logging
 logger = logging.getLogger('meta')
 
@@ -30,9 +31,53 @@ from intelanalytics.meta.mute import muted_commands
 import intelanalytics.meta.metaprog as metaprog
 
 
-def download_server_commands():
+def handle_client_server_build_id_mismatch(client_id, server_id):
+    """
+    Handles a client/server build ID mismatch.(disable to this check
+
+    To turn this client/server build ID check OFF, change the value of 'build_id' to
+    be None before connecting:
+
+    import intelanalytics as ia
+    ia.build_id = None
+    ia.connect()
+    """
+    msg = """
+------------------------------------------------------------------------------
+WARNING - Client build ID '%s' does not match server build ID '%s'.
+------------------------------------------------------------------------------""" % (client_id, server_id),
+
+    #raise RuntimeError(build_id_help_msg)
+    with warnings.catch_warnings():
+        warnings.simplefilter('default')  # make it so Python 2.7 will still report this warning
+        warnings.warn(msg, RuntimeWarning, stacklevel=2)
+
+
+def build_ids_match(client_id, server_id):
+    """Compares build IDs of the client and server"""
+    return client_id == server_id   # simple equality check, could make more sophisticated...
+
+
+def get_build_id(server_response):
+    """Extract and returns server build ID from server response"""
+    # if intelanalytics.build_id is not None (i.e. the cline build id is set),
+    # then a check will be made against the build_server_id
+    try:
+        from intelanalytics import build_id as client_build_id
+    except:
+        client_build_id = None
+    try:
+        server_build_id = server_response.headers['build_id']
+    except KeyError:
+        server_build_id = "<Server response did not provide a build ID>"
+
+    if client_build_id and not build_ids_match(client_build_id, server_build_id):
+        handle_client_server_build_id_mismatch(client_build_id, server_build_id)
+    return server_build_id
+
+
+def download_server_commands(server):
         logger.info("Requesting available commands from server")
-        from intelanalytics.rest.iaserver import server
         from intelanalytics.rest.jsonschema import get_command_def
         from intelanalytics.core.errorhandle import IaError
         try:
@@ -42,9 +87,11 @@ def download_server_commands():
             sys.stderr.write('Unable to connect to server\n')
             raise IaError(logger)
 
+        server_build_id = get_build_id(response)
+
         commands_json_schema = response.json()
         # ensure the assignment to __commands_from_backend is the last line in this 'if' block before the fatal try:
-        return [get_command_def(c) for c in commands_json_schema]
+        return server_build_id, [get_command_def(c) for c in commands_json_schema]
 
 
 def install_client_commands():
@@ -181,7 +228,7 @@ def post_install_clean_up():
                     del installation.intermediates[name]
 
 
-def install_api():
+def install_api(server):
 
     """
     Download API information from the server, once.
@@ -192,21 +239,13 @@ def install_api():
     Subsequent calls to this method invoke no action.
     """
     if not api_status.is_installed:
-        server_commands = download_server_commands()
-
-        from intelanalytics.rest.iaserver import server
-        from intelanalytics.rest.jsonschema import get_command_def
-        #try:
+        server_build_id, server_commands = download_server_commands(server)
         delete_docstubs()
         install_client_commands()  # first do the client-side specific processing
         install_server_commands(server_commands)
         from intelanalytics import _refresh_api_namespace
         _refresh_api_namespace()
-        #except Exception as e:
-        #    errors._api_load = "".join(traceback.format_exception(*sys.exc_info()))
-        #    raise FatalApiLoadError(e)
-
-        api_status.declare_installed()
+        api_status.declare_installed(server, server_build_id)
 
 
 class FatalApiLoadError(RuntimeError):
@@ -217,7 +256,7 @@ class FatalApiLoadError(RuntimeError):
 Fatal error: installing the downloaded API information failed and has left the
 client in a state of unknown compatibility with the server.
 
-Restarting your python session is now require to use this package.
+Restarting your python session is now required to use this package.
 
 Details:%s
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

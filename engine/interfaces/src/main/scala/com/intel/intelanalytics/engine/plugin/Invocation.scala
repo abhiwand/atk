@@ -22,8 +22,6 @@ import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
-
-import Invocation._
 import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
 
 /**

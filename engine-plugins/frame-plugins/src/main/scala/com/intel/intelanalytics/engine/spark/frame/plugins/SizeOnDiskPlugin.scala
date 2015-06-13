@@ -20,9 +20,6 @@ import com.intel.intelanalytics.domain.LongValue
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameNoArgs
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-
-import scala.concurrent.ExecutionContext
 
 // Implicits needed for JSON conversion
 import spray.json._
