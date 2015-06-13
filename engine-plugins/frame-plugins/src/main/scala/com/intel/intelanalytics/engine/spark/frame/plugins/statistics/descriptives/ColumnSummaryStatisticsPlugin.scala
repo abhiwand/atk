@@ -16,15 +16,11 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.descriptives
 
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ FrameReference, ColumnSummaryStatisticsArgs, ColumnSummaryStatisticsReturn }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

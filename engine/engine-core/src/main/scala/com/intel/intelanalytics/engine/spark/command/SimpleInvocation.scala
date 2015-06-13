@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.event.EventContext
-import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ CommandInvocation }
 import com.intel.intelanalytics.engine.{ CommandStorageProgressUpdater, ReferenceResolver, CommandStorage, Engine }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
