@@ -29,13 +29,15 @@ import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandP
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.frame._
-import com.intel.intelanalytics.libSvmPlugins._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine._
-import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
+import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
+import spray.json._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import org.apache.spark.frame.FrameRdd
 
@@ -82,14 +84,6 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
 
   val fsRoot = SparkEngineConfig.fsRoot
   override val pageSize: Int = SparkEngineConfig.pageSize
-
-  // TODO: all plugins should move out of engine-core into plugin modules
-  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
-  commandPluginRegistry.registerCommand(new LibSvmPlugin)
-  commandPluginRegistry.registerCommand(new LibSvmTrainPlugin)
-  commandPluginRegistry.registerCommand(new LibSvmScorePlugin)
-  commandPluginRegistry.registerCommand(new LibSvmTestPlugin)
-  commandPluginRegistry.registerCommand(new LibSvmPredictPlugin)
 
   // Administrative plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
@@ -350,29 +344,29 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     }
   }
 
-  /**
-   * Score a vector on a model.
-   * @param name Model name
-   */
-  override def scoreModel(name: String, values: String): Future[Double] = future {
-    val vector = DataTypes.toVector(-1)(values)
-    val model = models.getModelByName(Some(name))
-    model match {
-      case Some(x) => {
-        x.modelType match {
-          case "model:libsvm" => {
-            val svmJsObject = x.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
-            val libsvmData = svmJsObject.convertTo[LibSvmData]
-            val libsvmModel = libsvmData.svmModel
-            val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
-            predictionLabel.value
-          }
-          case _ => throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")
-        }
-      }
-      case None => throw new IllegalArgumentException(s"Model with the provided name '$name' does not exist in the metastore")
-    }
-  }
+  //  /**
+  //   * Score a vector on a model.
+  //   * @param name Model name
+  //   */
+  //  override def scoreModel(name: String, values: String): Future[Double] = future {
+  //    val vector = DataTypes.toVector(-1)(values)
+  //    val model = models.getModelByName(Some(name))
+  //    model match {
+  //      case Some(x) => {
+  //            x.modelType match {
+  //              case "model:libsvm" => {
+  //                val svmJsObject = x.data.getOrElse(throw new RuntimeException("Can't score because model has not been trained yet"))
+  //                val libsvmData = svmJsObject.convertTo[LibSvmData]
+  //                val libsvmModel = libsvmData.svmModel
+  //                val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
+  //                predictionLabel.value
+  //              }
+  //          case _ => throw new IllegalArgumentException("Only libsvm Model is supported for scoring at this time")
+  //        }
+  //      }
+  //      case None => throw new IllegalArgumentException(s"Model with the provided name '$name' does not exist in the metastore")
+  //    }
+  //  }
 
   override def cancelCommand(id: Long)(implicit invocation: Invocation): Future[Unit] = withContext("se.cancelCommand") {
     future {

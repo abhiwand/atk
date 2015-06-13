@@ -90,7 +90,7 @@ This is the GraphX-based implementation of belief propagation.""",
   returns = "Progress report for belief propagation in the format of a multiple-line string.")
 class BeliefPropagationPlugin extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
 
-  override def name: String = "graph:titan/ml/belief_propagation"
+  override def name: String = "graph/ml/belief_propagation"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None
