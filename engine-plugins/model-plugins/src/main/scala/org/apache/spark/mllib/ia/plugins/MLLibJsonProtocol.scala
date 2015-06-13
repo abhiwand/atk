@@ -95,7 +95,9 @@ object MLLibJsonProtocol {
       val weights = VectorFormat.write(obj.weights)
       JsObject(
         "weights" -> weights,
-        "intercept" -> JsNumber(obj.intercept)
+        "intercept" -> JsNumber(obj.intercept),
+        "numFeatures" -> JsNumber(obj.numFeatures),
+        "numClasses" -> JsNumber(obj.numClasses)
       )
     }
 
@@ -107,14 +109,17 @@ object MLLibJsonProtocol {
      */
     override def read(json: JsValue): LogisticRegressionModel = {
       val fields = json.asJsObject.fields
+
       val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
+      val numFeatures = fields.get("numFeatures").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numFeatures")).asInstanceOf[JsNumber].value.intValue()
+      val numClasses = fields.get("numClasses").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numClasses")).asInstanceOf[JsNumber].value.intValue()
 
       val weights = fields.get("weights").map(v => {
         VectorFormat.read(v)
       }
       ).get
 
-      new LogisticRegressionModel(weights, intercept)
+      new LogisticRegressionModel(weights, intercept, numFeatures, numClasses)
     }
 
   }
@@ -266,7 +271,7 @@ object MLLibJsonProtocol {
     map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
   }
 
-  implicit val logRegDataFormat = jsonFormat2(LogisticRegressionData)
+  implicit val logRegDataFormat = jsonFormat2(LogisticRegressionWithSGDData)
   implicit val classficationWithSGDTrainFormat = jsonFormat10(ClassificationWithSGDTrainArgs)
   implicit val classificationWithSGDPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
   implicit val classificationWithSGDTestFormat = jsonFormat4(ClassificationWithSGDTestArgs)
@@ -279,6 +284,8 @@ object MLLibJsonProtocol {
   implicit val naiveBayesDataFormat = jsonFormat2(NaiveBayesData)
   implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
+  implicit val logRegTrainFormat = jsonFormat16(LogisticRegressionTrainArgs)
+  implicit val logRegTrainReturnFormat = jsonFormat2(LogisticRegressionReturnArgs)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)

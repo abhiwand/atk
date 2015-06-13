@@ -21,7 +21,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.classification.LogisticRegressionWithSGD
+import org.apache.spark.mllib.classification.{ LogisticRegressionWithLBFGS, LogisticRegressionWithSGD }
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
@@ -106,7 +106,7 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classifica
       val logReg = initializeLogisticRegressionModel(arguments)
 
       val logRegModel = logReg.run(labeledTrainRdd)
-      val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns)
+      val jsonModel = new LogisticRegressionWithSGDData(logRegModel, arguments.observationColumns)
 
       //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
@@ -114,6 +114,7 @@ class LogisticRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classifica
     }
   private def initializeLogisticRegressionModel(arguments: ClassificationWithSGDTrainArgs): LogisticRegressionWithSGD = {
     val logReg = new LogisticRegressionWithSGD()
+    //logReg.optimizer.setGradient()
     logReg.optimizer.setNumIterations(arguments.getNumIterations)
     logReg.optimizer.setStepSize(arguments.getStepSize)
     logReg.optimizer.setRegParam(arguments.getRegParam)

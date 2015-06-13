@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.testutils.TestingSparkContextFlatSpec
-import org.apache.spark.{sql, SparkException}
+import org.apache.spark.{ sql, SparkException }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow

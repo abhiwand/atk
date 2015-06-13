@@ -24,7 +24,7 @@ import org.apache.spark.mllib.classification.{ NaiveBayesModel, SVMModel, Logist
 import org.apache.spark.mllib.clustering.KMeansModel
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-import org.apache.spark.mllib.ia.plugins.classification.{ NaiveBayesData, LinearRegressionData, SVMData, LogisticRegressionData }
+import org.apache.spark.mllib.ia.plugins.classification.{ NaiveBayesData, LinearRegressionData, SVMData, LogisticRegressionWithSGDData }
 import org.apache.spark.mllib.ia.plugins.clustering.KMeansData
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
 import org.apache.spark.mllib.regression.LinearRegressionModel
@@ -118,14 +118,14 @@ class MLLibJsonProtocolTest extends WordSpec {
   "LogisticRegressionDataFormat" should {
 
     "be able to serialize" in {
-      val l = new LogisticRegressionData(new LogisticRegressionModel(new DenseVector(Array(1.3, 3.1)), 3.5), List("column1", "column2"))
+      val l = new LogisticRegressionWithSGDData(new LogisticRegressionModel(new DenseVector(Array(1.3, 3.1)), 3.5), List("column1", "column2"))
       assert(l.toJson.compactPrint == "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1]},\"intercept\":3.5},\"observation_columns\":[\"column1\",\"column2\"]}")
     }
 
     "parse json" in {
       val string = "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1]},\"intercept\":3.5},\"observation_columns\":[\"column1\",\"column2\"]}"
       val json = JsonParser(string).asJsObject
-      val l = json.convertTo[LogisticRegressionData]
+      val l = json.convertTo[LogisticRegressionWithSGDData]
 
       assert(l.logRegModel.weights.size == 2)
       assert(l.logRegModel.intercept == 3.5)
