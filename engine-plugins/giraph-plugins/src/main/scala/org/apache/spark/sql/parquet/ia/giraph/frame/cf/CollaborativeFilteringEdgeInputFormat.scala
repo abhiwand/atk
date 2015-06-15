@@ -18,6 +18,7 @@ package org.apache.spark.sql.parquet.ia.giraph.frame.cf
 
 import java.util
 
+import com.intel.giraph.io.EdgeData4CFWritable.EdgeType
 import com.intel.giraph.io.{ CFVertexId, EdgeData4CFWritable }
 import com.intel.ia.giraph.cf.CollaborativeFilteringConfiguration
 import com.intel.intelanalytics.engine.spark.frame.RowWrapper
@@ -102,6 +103,7 @@ class CollaborativeFilteringEdgeReader(conf: CollaborativeFilteringConfiguration
       val itemId = new CFVertexId(row.stringValue(config.itemColName), false)
       val edgeData = new EdgeData4CFWritable()
       edgeData.setWeight(row.longValue(config.ratingColName).toDouble)
+      edgeData.setType(EdgeType.TRAIN)
 
       currentSourceId = userId
       currentEdge = new DefaultEdge[CFVertexId, EdgeData4CFWritable]()

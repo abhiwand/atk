@@ -337,11 +337,9 @@ public class ConjugateGradientDescentComputation extends BasicComputation<CFVert
             return;
         }
 
-        // verify bi-directional edges
-        int numMessages = 0;
+        // verify bi-directional edges;
         Iterator<MessageData4CFWritable> it = messages.iterator();
         while (it.hasNext()) {
-            numMessages++;
             it.next();
         }
 
@@ -372,7 +370,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<CFVert
                     errorOnTest += e * e;
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
+                    throw new IllegalArgumentException("Unknown recognized edge type: " + et.toString());
                 }
             }
             double costOnTrain = 0d;
