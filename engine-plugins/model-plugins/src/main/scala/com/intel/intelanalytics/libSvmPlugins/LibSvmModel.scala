@@ -13,39 +13,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
-
-package com.intel.intelanalytics.scoring
-
-import java.util.StringTokenizer
+package com.intel.intelanalytics.libSvmPlugins
 
 import _root_.libsvm.{ svm, svm_model, svm_node }
 import com.intel.intelanalytics.domain.schema.DataTypes
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import com.intel.intelanalytics.interfaces.Model
+import java.util.StringTokenizer
 
 class LibSvmModel(libSvmModel: svm_model) extends svm_model with Model {
 
-  private var _name = ""
-  override def name = _name
-  def name_=(value: String): Unit = _name = value
-
-  override def score(data: Seq[Any]): Future[Seq[Any]] = future {
-    val vector = DataTypes.toVector(-1)(data.mkString(","))
-    val output = columnFormatter(vector.toArray.zipWithIndex)
-    val splitObs: StringTokenizer = new StringTokenizer(output, " \t\n\r\f:")
-    splitObs.nextToken()
-    val counter: Int = splitObs.countTokens / 2
-    val x: Array[svm_node] = new Array[svm_node](counter)
-    var j: Int = 0
-    while (j < counter) {
-      x(j) = new svm_node
-      x(j).index = atoi(splitObs.nextToken) + 1
-      x(j).value = atof(splitObs.nextToken)
-      j += 1
+  override def score(data: Seq[Array[String]]): Future[Seq[Any]] = future {
+    var score = Seq[Any]()
+    data.foreach { vector =>
+      val output = columnFormatter(vector.zipWithIndex)
+      val splitObs: StringTokenizer = new StringTokenizer(output, " \t\n\r\f:")
+      splitObs.nextToken()
+      val counter: Int = splitObs.countTokens / 2
+      val x: Array[svm_node] = new Array[svm_node](counter)
+      var j: Int = 0
+      while (j < counter) {
+        x(j) = new svm_node
+        x(j).index = atoi(splitObs.nextToken) + 1
+        x(j).value = atof(splitObs.nextToken)
+        j += 1
+      }
+      score = score :+ svm.svm_predict(libSvmModel, x)
     }
-    val score = svm.svm_predict(libSvmModel, x)
-    Seq(score)
+    score
   }
 
   private def columnFormatter(valueIndexPairArray: Array[(Any, Int)]): String = {

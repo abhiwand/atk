@@ -19,8 +19,6 @@ package com.intel.intelanalytics.rest.factory
 // Standard abstract factory pattern to create a service factory based on arguments
 object ServiceFactoryCreator {
   def createFactory(serviceName: String, is_https: Boolean): AbstractServiceFactory = (serviceName, is_https) match {
-    case ("scoring", true) => new ScoringServiceFactoryOnHttps("scoring")
-    case ("scoring", false) => new ScoringServiceFactory("scoring")
     case ("standard", true) => new StandardServiceFactoryOnHttps("standard")
     case ("standard", false) => new StandardServiceFactory("standard")
     case _ => throw new Exception("Unsupported Service Factory")

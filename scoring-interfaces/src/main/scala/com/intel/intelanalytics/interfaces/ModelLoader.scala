@@ -14,19 +14,17 @@
 // limitations under the License.
 */
 
-package com.intel.intelanalytics.engine.spark.frame
+package com.intel.intelanalytics.interfaces
 
-import com.intel.intelanalytics.engine.plugin.Call
-import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
-import org.scalatest.FlatSpec
+/**
+ * Base interface for a Model loader.
+ */
+trait ModelLoader {
 
-class FrameFileStorageTest extends FlatSpec {
-
-  implicit val call = Call(null, EngineExecutionContext.global)
-  val frameFileStorage = new FrameFileStorage("hdfs://hostname/user/iauser", null)
-
-  "FrameFileStorage" should "determine the correct data frames base directory" in {
-    assert(frameFileStorage.frameBaseDirectory(1L).toString == "hdfs://hostname/user/iauser/intelanalytics/dataframes/1")
-  }
+  /**
+   * Called for loading a Model
+   *
+   */
+  def load(bytes: Array[Byte]): Model
 
 }
