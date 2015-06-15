@@ -70,10 +70,11 @@ case class CollaborativeFilteringConfig(inputFormatConfig: CollaborativeFilterin
                                         convergenceThreshold: Double,
                                         lambda: Float,
                                         biasOn: Boolean,
-                                        maxValue: Float,
                                         minValue: Float,
+                                        maxValue: Float,
                                         learningCurveInterval: Int,
-                                        cgdIterations: Int) {
+                                        cgdIterations: Int,
+                                        reportFilename: String) {
 
   def this(inputFormatConfig: CollaborativeFilteringInputFormatConfig,
            outputFormatConfig: CollaborativeFilteringOutputFormatConfig,
@@ -92,7 +93,8 @@ case class CollaborativeFilteringConfig(inputFormatConfig: CollaborativeFilterin
       args.getMinValue,
       args.getMaxValue,
       args.getLearningCurveInterval,
-      args.getCgdIterations)
+      args.getCgdIterations,
+      CollaborativeFilteringConstants.reportFilename)
   }
   require(inputFormatConfig != null, "input format is required")
   require(outputFormatConfig != null, "output format is required")
@@ -104,7 +106,7 @@ case class CollaborativeFilteringConfig(inputFormatConfig: CollaborativeFilterin
 object CollaborativeFilteringConfigJSONFormat {
   implicit val inputFormatConfigFormat = jsonFormat2(CollaborativeFilteringInputFormatConfig)
   implicit val outputFormatConfigFormat = jsonFormat2(CollaborativeFilteringOutputFormatConfig)
-  implicit val configFormat = jsonFormat15(CollaborativeFilteringConfig)
+  implicit val configFormat = jsonFormat16(CollaborativeFilteringConfig)
 }
 
 import CollaborativeFilteringConfigJSONFormat._

@@ -147,6 +147,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<CFVerte
     private void initialize(Vertex<CFVertexId, VertexData4CFWritable, EdgeData4CFWritable> vertex) {
         // initialize vertex data: vertex type, bias, and vector
         vertex.getValue().setBias(0d);
+        vertex.getValue().setType(vertex.getId().isUser() ? VertexType.User: VertexType.Item);
 
         double sum = 0d;
         int numTrain = 0;
@@ -435,7 +436,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<CFVerte
          * @param applicationAttempt of type long
          */
         private static void setFilename(long applicationAttempt) {
-            FILENAME = "als-learning-report_" + applicationAttempt;
+            FILENAME = "cf-learning-report";
         }
 
         @Override

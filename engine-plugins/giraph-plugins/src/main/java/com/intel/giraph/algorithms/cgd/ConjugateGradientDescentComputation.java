@@ -28,6 +28,7 @@ import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.aggregators.LongSumAggregator;
+import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
@@ -145,6 +146,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<CFVert
     private void initialize(Vertex<CFVertexId, VertexData4CGDWritable, EdgeData4CFWritable> vertex) {
         // initialize vertex data: bias, vector, gradient, conjugate
         vertex.getValue().setBias(0d);
+        vertex.getValue().setType(vertex.getId().isUser() ? VertexType.User: VertexType.Item);
 
         double sum = 0d;
         int numTrain = 0;
@@ -511,7 +513,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<CFVert
          * @param applicationAttempt of type long
          */
         private static void setFilename(long applicationAttempt) {
-            FILENAME = "cgd-learning-report_" + applicationAttempt;
+            FILENAME = "cf-learning-report";
         }
 
         @Override

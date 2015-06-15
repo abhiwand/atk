@@ -86,7 +86,7 @@ class CollaborativeFilteringPlugin
       config,
       giraphConf,
       context,
-      "cf-learning-report_0")
+      CollaborativeFilteringConstants.reportFilename)
 
     val resultsColumn = Column("cf_factors", DataTypes.vector(arguments.getNumFactors))
     frames.postSave(None, userFrame.toReference, new FrameSchema(List(frame.schema.column(arguments.userColName), resultsColumn)))

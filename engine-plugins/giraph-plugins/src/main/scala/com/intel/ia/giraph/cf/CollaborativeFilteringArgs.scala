@@ -33,8 +33,8 @@ case class CollaborativeFilteringArgs(frame: FrameReference,
                                       convergenceThreshold: Option[Double] = None,
                                       regularization: Option[Float] = None,
                                       biasOn: Option[Boolean] = None,
-                                      maxValue: Option[Float] = None,
                                       minValue: Option[Float] = None,
+                                      maxValue: Option[Float] = None,
                                       learningCurveInterval: Option[Int] = None,
                                       cgdIterations: Option[Int] = None) {
 
@@ -96,6 +96,7 @@ case class CollaborativeFilteringArgs(frame: FrameReference,
 object CollaborativeFilteringConstants {
   val alsAlgorithm = "als"
   val cgdAlgorithm = "cgd"
+  val reportFilename = "cf-learning-report"
 }
 
 case class CollaborativeFilteringResult(userFrame: FrameEntity, itemFrame: FrameEntity, report: String) {
