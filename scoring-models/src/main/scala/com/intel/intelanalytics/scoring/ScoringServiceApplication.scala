@@ -18,6 +18,7 @@ package com.intel.intelanalytics.scoring
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
+import com.intel.intelanalytics.scoring.ModelLoader
 import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
@@ -26,7 +27,6 @@ import com.intel.event.{ EventLogging, EventLogger }
 import com.intel.intelanalytics.component.{ ArchiveDefinition, Archive }
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.reflect.ClassTag
-import com.intel.intelanalytics.interfaces.ModelLoader
 
 /**
  * Scoring Service Application - a REST application used by client layer to communicate with the Model.
@@ -53,9 +53,9 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
    * Main entry point to start the Scoring Service Application
    */
   override def start() = {
-    //TODO: move the libsvm model into Model plugins
+
     //TODO: modelfile to include contain the archive and loader info
-    lazy val modelLoader = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.archive")) //, Some("com.intel.intelanalytics.engine.NoOpApplication"))
+    lazy val modelLoader = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.archive"))
       .load("com.intel.intelanalytics.libSvmPlugins." + config.getString("intel.scoring-models.scoring.loader"))
 
     val modelFile = config.getString("intel.scoring-models.scoring.model")

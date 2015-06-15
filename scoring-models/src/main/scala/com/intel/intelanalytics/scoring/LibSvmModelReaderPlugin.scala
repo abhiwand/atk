@@ -17,7 +17,7 @@ package com.intel.intelanalytics.scoring
 
 import java.io._
 
-import _root_.libsvm.svm
+import libsvm.svm
 
 class LibSvmModelReaderPlugin extends ModelLoader {
 
