@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
-package com.intel.intelanalytics.libSvmPlugins
+package com.intel.intelanalytics.scoring
 
 import java.io._
 
 import _root_.libsvm.svm
-import com.intel.intelanalytics.interfaces.{ ModelLoader, Model }
 
 class LibSvmModelReaderPlugin extends ModelLoader {
 
