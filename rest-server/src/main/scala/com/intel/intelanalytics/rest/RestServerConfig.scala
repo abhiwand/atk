@@ -67,6 +67,9 @@ object RestServerConfig {
   /** Max size of user principals cache */
   val userPrincipalCacheMaxSize = config.getInt("intel.analytics.component.archives.rest-server.user-principal-cache.max-size")
 
+  /** Max number of threads per execution context */
+  val maxThreadsPerExecutionContext: Int = config.getInt("intel.analytics.max-threads-per-execution-Context")
+
   /**
    * Mode of invocation for api-server : standard or scoring mode
    * The ATK Server can be run in two different modes:

@@ -173,8 +173,8 @@ Appendix A |EM| Sample Application Configuration File
           giraph.maxWorkers = 30
           //giraph.minWorkers = 1
           //giraph.SplitMasterWorker = true
-          mapreduce.map.memory.mb = 8192
-          mapreduce.map.java.opts = "-Xmx6144m"
+          mapreduce.map.memory.mb = 4096
+          mapreduce.map.java.opts = "-Xmx3072m"
           //giraph.zkIsExternal = false
         }
 

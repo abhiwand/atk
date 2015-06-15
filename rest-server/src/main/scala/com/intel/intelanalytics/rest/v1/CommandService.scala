@@ -17,6 +17,7 @@
 package com.intel.intelanalytics.rest.v1
 
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.rest.threading.SprayExecutionContext
 
 import scala.util.Try
 import com.intel.intelanalytics.domain._
@@ -32,13 +33,12 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.rest.v1.viewmodels._
 import com.intel.intelanalytics.rest.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.intelanalytics.domain.command.{ CommandPost, Execution, CommandTemplate, Command }
-import com.intel.intelanalytics.rest.{ UrlParser, RestServerConfig, CommonDirectives }
+import com.intel.intelanalytics.rest.{ RestServerConfig, CommonDirectives }
 import com.intel.intelanalytics.rest.v1.decorators.CommandDecorator
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import com.intel.event.EventLogging
 
-//TODO: Is this right execution context for us?
-import ExecutionContext.Implicits.global
+import SprayExecutionContext.global
 
 /**
  * REST API Command Service

@@ -53,10 +53,9 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
    * Main entry point to start the Scoring Service Application
    */
   override def start() = {
-    //TODO: move the libsvm model into Model plugins
+
     //TODO: modelfile to include contain the archive and loader info
-    val modelArchive = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.archive"))
-    lazy val modelLoader = modelArchive
+    lazy val modelLoader = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.archive"))
       .load("com.intel.intelanalytics.libSvmPlugins." + config.getString("intel.scoring-models.scoring.loader"))
 
     val modelFile = config.getString("intel.scoring-models.scoring.model")
