@@ -14,17 +14,21 @@
 // limitations under the License.
 */
 
-package com.intel.intelanalytics.scoring
+package com.intel.intelanalytics.engine.spark.threading
 
-/**
- * Base interface for a Model loader.
- */
-trait ModelLoader {
+import com.typesafe.config.ConfigFactory
 
-  /**
-   * Called for loading a Model
-   *
-   */
-  def load(bytes: Array[Byte]): Model
+import scala.concurrent.ExecutionContext
+import scala.concurrent.forkjoin.ForkJoinPool
 
+object EngineExecutionContext {
+
+  val config = ConfigFactory.load()
+
+  val maxThreadsPerExecutionContext: Int = {
+    config.getInt("intel.analytics.engine.spark.max-threads-per-execution-Context")
+  }
+
+  implicit val global: ExecutionContext =
+    ExecutionContext.fromExecutorService(new ForkJoinPool(maxThreadsPerExecutionContext))
 }

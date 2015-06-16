@@ -20,6 +20,7 @@ import com.intel.intelanalytics.domain.frame
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntityType, FrameReference }
 import com.intel.intelanalytics.domain.graph.{ GraphEntityType, GraphReference }
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import org.scalatest.{ FlatSpec, Matchers }
 
 class ReferenceResolverTest extends FlatSpec with Matchers {
@@ -28,7 +29,7 @@ class ReferenceResolverTest extends FlatSpec with Matchers {
   registry.register(FrameEntityType, new MockFrameManager)
   registry.register(GraphEntityType, new MockGraphManager)
   val resolver = registry.resolver
-  implicit val invocation: Invocation = Call(null)
+  implicit val invocation: Invocation = Call(null, EngineExecutionContext.global)
 
   "resolve" should "return metadata when requested" in {
     val meta: MockFrameManager#M = resolver.resolve[MockFrameManager#M]("ia://frames/6").get

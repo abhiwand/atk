@@ -17,6 +17,7 @@
 package com.intel.intelanalytics.rest.v1
 
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
+import com.intel.intelanalytics.rest.threading.SprayExecutionContext
 import org.mockito.Mockito._
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.rest.{ ServiceTest, CommonDirectives }
@@ -26,7 +27,7 @@ import scala.concurrent.Future
 class CommandServiceTest extends ServiceTest {
 
   implicit val userPrincipal = mock[UserPrincipal]
-  implicit val call: Invocation = Call(userPrincipal)
+  implicit val call: Invocation = Call(userPrincipal, SprayExecutionContext.global)
   val commonDirectives = mock[CommonDirectives]
   when(commonDirectives.apply("commands")).thenReturn(provide(call))
 

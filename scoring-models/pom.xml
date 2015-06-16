@@ -98,6 +98,12 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.intel.ia</groupId>
+            <artifactId>scoring-interfaces</artifactId>
+            <version>master-SNAPSHOT</version>
+        </dependency>
+
         <!--END BDA dependencies to our modules-->
 
         <dependency>
@@ -163,12 +169,6 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-jwt</artifactId>
         </dependency>
-        <dependency>
-            <groupId>tw.edu.ntu.csie</groupId>
-            <artifactId>libsvm</artifactId>
-        </dependency>
-
-
 
     </dependencies>
 </project>

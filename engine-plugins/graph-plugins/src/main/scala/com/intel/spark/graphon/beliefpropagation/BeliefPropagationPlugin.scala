@@ -18,26 +18,14 @@ package com.intel.spark.graphon.beliefpropagation
 
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
-import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.storage.StorageLevel
-import scala.concurrent.{ Await, ExecutionContext }
-import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory }
+
 import spray.json._
-import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ GBEdge }
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
@@ -102,7 +90,7 @@ This is the GraphX-based implementation of belief propagation.""",
   returns = "Progress report for belief propagation in the format of a multiple-line string.")
 class BeliefPropagationPlugin extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {
 
-  override def name: String = "graph:titan/ml/belief_propagation"
+  override def name: String = "graph/ml/belief_propagation"
 
   //TODO remove when we move to the next version of spark
   override def kryoRegistrator: Option[String] = None

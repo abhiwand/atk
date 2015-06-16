@@ -17,6 +17,7 @@
 package com.intel.intelanalytics.rest
 
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
+import com.intel.intelanalytics.rest.threading.SprayExecutionContext
 import scala.concurrent.duration._
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.{ ArchiveDefinition, Archive }
@@ -56,7 +57,7 @@ class RestServerApplication(archiveDefinition: ArchiveDefinition, classLoader: C
    * Main entry point to start the API Service Application
    */
   override def start() = {
-    implicit val call = Call(null)
+    implicit val call = Call(null, SprayExecutionContext.global)
     val engine = initializeEngine()
     val serviceFactory = ServiceFactoryCreator.createFactory(RestServerConfig.serviceMode, RestServerConfig.schemeIsHttps)
     val scheme = if (RestServerConfig.schemeIsHttps) "https" else "http"

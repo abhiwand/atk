@@ -19,6 +19,7 @@ import com.intel.event.{ EventLogging }
 import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
 import com.intel.intelanalytics.engine.spark._
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import com.typesafe.config.ConfigFactory
 import org.apache.commons.lang.exception.ExceptionUtils
 import scala.reflect.io.Directory
@@ -46,7 +47,7 @@ class CommandDriver extends AbstractEngineComponent(new CommandLoader) {
         implicit val invocation: Invocation = new Call(user match {
           case Some(u) => userStorage.createUserPrincipalFromUser(u)
           case _ => null
-        })
+        }, EngineExecutionContext.global)
         commandExecutor.executeCommand(command, commandPluginRegistry)(invocation)
       }
     }
