@@ -143,11 +143,13 @@ object CfRequests extends EventLogging with EventLoggingImplicits {
   private def httpsGetQuery(host: String, queryString: String, headers: List[(String, String)]): JsValue = withContext("httpsGetQuery") {
 
     // TODO: This method uses Apache HttpComponents HttpClient as spray-http library does not support proxy over https
-    val (uri, port, scheme) = (host, HttpURL.DEFAULT_PORT, new String(HttpURL.DEFAULT_SCHEME))
+    val scheme = if (RestServerConfig.useHttp == true) new String(HttpURL.DEFAULT_SCHEME) else new String(HttpsURL.DEFAULT_SCHEME)
+    val port = if (RestServerConfig.useHttp == true) HttpURL.DEFAULT_PORT else HttpsURL.DEFAULT_PORT
+    //val (uri, port, scheme) = (host, port, httpScheme)
     val (proxyHostConfigString, proxyPortConfigString) = ("https.proxyHost", "https.proxyPort")
     val httpClient = HttpClients.createDefault()
     try {
-      val target = new HttpHost(uri, port, scheme)
+      val target = new HttpHost(host, port, scheme)
       val proxy = (sys.props.contains(proxyHostConfigString), sys.props.contains(proxyPortConfigString)) match {
         case (true, true) => Some(new HttpHost(sys.props.get(proxyHostConfigString).get, sys.props.get(proxyPortConfigString).get.toInt))
         case _ => None
@@ -176,7 +178,7 @@ object CfRequests extends EventLogging with EventLoggingImplicits {
       catch {
         case ex: Throwable =>
           error(s"Error executing request ${ex.getMessage}")
-          throw new RuntimeException(s"Error connecting to $uri")
+          throw new RuntimeException(s"Error connecting to $host")
       }
       finally {
         if (response.isDefined)
