@@ -16,14 +16,9 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics
 
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue, FrameEntity }
+import com.intel.intelanalytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.frame.PythonRddStorage
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-
-import scala.concurrent.ExecutionContext
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
 import spray.json._

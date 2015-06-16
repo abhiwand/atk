@@ -16,17 +16,12 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ LegacyFrameRdd, MiscFrameFunctions }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
-
-import scala.concurrent.ExecutionContext
-import com.intel.intelanalytics.domain.schema.Schema
 
 // Implicits needed for JSON conversion
 import spray.json._

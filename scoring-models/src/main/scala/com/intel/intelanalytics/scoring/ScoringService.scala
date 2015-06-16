@@ -17,7 +17,6 @@
 package com.intel.intelanalytics.scoring
 
 import akka.actor.Actor
-import com.intel.intelanalytics.domain.{ DomainJsonProtocol }
 import spray.routing._
 import spray.http._
 import MediaTypes._
@@ -26,6 +25,7 @@ import scala.concurrent._
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import scala.util.{ Failure, Success }
+import com.intel.intelanalytics.interfaces.Model
 
 /**
  * We don't implement our route structure directly in the service actor because
@@ -53,7 +53,7 @@ class ScoringServiceActor(val scoringService: ScoringService) extends Actor with
 /**
  * Defines our service behavior independently from the service actor
  */
-class ScoringService(model: Model) extends Directives {
+class ScoringService(model: Model, modelName: String) extends Directives {
 
   def homepage = {
     respondWithMediaType(`text/html`) {
@@ -82,24 +82,27 @@ class ScoringService(model: Model) extends Directives {
   val serviceRoute: Route = logRequest("scoring service", Logging.InfoLevel) {
     val prefix = "models"
     path("") {
-      get { homepage }
+      get {
+        homepage
+      }
     } ~
-      path("v1" / prefix / model.name) {
+      path("v1" / prefix / modelName) {
         requestUri { uri =>
           post {
-            parameters('data.?) {
-              (data) =>
-                data match {
-                  case Some(x) => {
-                    onComplete(model.score(Seq(x))) {
-                      case Success(scored) => complete(scored.toString)
-                      case Failure(ex) => ctx => {
-                        ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
-                      }
-                    }
-                  }
-                  case None => reject()
+            parameterSeq { (params) =>
+              val sr = params.toArray
+              var records = Seq[Array[String]]()
+              for (i <- 0 until sr.length) {
+                val decoded = java.net.URLDecoder.decode(sr(i)._2, "UTF-8")
+                val splitSegment = decoded.split(",")
+                records = records :+ splitSegment
+              }
+              onComplete(model.score(records)) {
+                case Success(scored) => complete(scored.toString)
+                case Failure(ex) => ctx => {
+                  ctx.complete(StatusCodes.InternalServerError, ex.getMessage)
                 }
+              }
             }
           }
         }

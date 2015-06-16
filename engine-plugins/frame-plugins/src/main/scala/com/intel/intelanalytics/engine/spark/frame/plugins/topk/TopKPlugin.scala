@@ -16,17 +16,13 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins.topk
 
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameName, DataFrameTemplate, TopKArgs, FrameEntity }
+import com.intel.intelanalytics.domain.frame.{ TopKArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
-import scala.concurrent.{ Await, ExecutionContext }
 import com.intel.intelanalytics.domain.CreateEntityArgs
 
 // Implicits needed for JSON conversion
