@@ -13,15 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
-package com.intel.intelanalytics.libSvmPlugins
+package com.intel.intelanalytics.scoring
 
-import _root_.libsvm.{ svm, svm_model, svm_node }
-import com.intel.intelanalytics.domain.schema.DataTypes
+import java.util.StringTokenizer
+
+import libsvm.{ svm, svm_node, svm_model }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import com.intel.intelanalytics.interfaces.Model
-import java.util.StringTokenizer
 
 class LibSvmModel(libSvmModel: svm_model) extends svm_model with Model {
 

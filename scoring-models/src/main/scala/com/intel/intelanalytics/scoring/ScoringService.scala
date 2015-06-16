@@ -25,7 +25,6 @@ import scala.concurrent._
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
 import scala.util.{ Failure, Success }
-import com.intel.intelanalytics.interfaces.Model
 
 /**
  * We don't implement our route structure directly in the service actor because

@@ -132,11 +132,6 @@
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>
-            <artifactId>scoring-interfaces</artifactId>
-            <version>master-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.intel.ia</groupId>
             <artifactId>graphbuilder</artifactId>
             <exclusions>
                 <exclusion>
