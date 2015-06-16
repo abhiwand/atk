@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.intelanalytics.interfaces
+package com.intel.intelanalytics.scoring
 
 /**
  * Base interface for a Model loader.
