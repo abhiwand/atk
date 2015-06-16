@@ -18,6 +18,7 @@ package com.intel.intelanalytics.rest.v1
 
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.rest.threading.SprayExecutionContext
 import spray.http.{ StatusCodes, Uri }
 import com.intel.intelanalytics.engine.{ Engine }
 import scala.concurrent._
@@ -30,7 +31,7 @@ import com.intel.intelanalytics.rest.v1.decorators.ModelDecorator
 import com.intel.intelanalytics.rest.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.intelanalytics.rest.v1.viewmodels.Rel
 import com.intel.intelanalytics.spray.json.IADefaultJsonProtocol
-import ExecutionContext.Implicits.global
+import SprayExecutionContext.global
 import com.intel.event.EventLogging
 import spray.json._
 
@@ -135,7 +136,7 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       }
                 }
               }
-          } 
+          }
     }
 
   }

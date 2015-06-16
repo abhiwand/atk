@@ -16,19 +16,17 @@
 
 package com.intel.intelanalytics.engine.spark.frame
 
-import java.io.{ File, PrintWriter }
+import java.io.{ File }
 import java.util
 
-import com.intel.event.EventContext
 import com.intel.intelanalytics.component.ClassLoaderAware
-import com.intel.intelanalytics.domain.frame.{ FrameReference, FrameEntity }
-import com.intel.intelanalytics.domain.frame.{ UdfDependency, Udf }
-import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Schema }
+import com.intel.intelanalytics.domain.frame.{ FrameReference }
+import com.intel.intelanalytics.domain.frame.{ Udf }
+import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRdd, PythonBroadcast }
+import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.commons.codec.binary.Base64.decodeBase64
 import java.util.{ ArrayList => JArrayList, List => JList }
 

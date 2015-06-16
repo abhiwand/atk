@@ -55,7 +55,7 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
   override def start() = {
     //TODO: move the libsvm model into Model plugins
     //TODO: modelfile to include contain the archive and loader info
-    lazy val modelLoader = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.archive"))//, Some("com.intel.intelanalytics.engine.NoOpApplication"))
+    lazy val modelLoader = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.archive")) //, Some("com.intel.intelanalytics.engine.NoOpApplication"))
       .load("com.intel.intelanalytics.libSvmPlugins." + config.getString("intel.scoring-models.scoring.loader"))
 
     val modelFile = config.getString("intel.scoring-models.scoring.model")

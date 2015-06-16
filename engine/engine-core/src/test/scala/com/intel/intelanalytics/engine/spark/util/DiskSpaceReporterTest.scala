@@ -17,10 +17,11 @@
 package com.intel.intelanalytics.engine.spark.util
 
 import com.intel.intelanalytics.engine.plugin.Call
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import org.scalatest.WordSpec
 
 class DiskSpaceReporterTest extends WordSpec {
-  implicit val call = Call(null)
+  implicit val call = Call(null, EngineExecutionContext.global)
 
   "DiskSpaceReport" should {
     "not throw exceptions" in {

@@ -25,6 +25,7 @@ import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, HBaseAdm
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark.command._
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
@@ -43,7 +44,7 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
     with EventLogging
     with EventLoggingImplicits {
 
-  implicit lazy val startupCall = Call(null)
+  implicit lazy val startupCall = Call(null, EngineExecutionContext.global)
 
   lazy val commandPluginRegistry: CommandPluginRegistry = new CommandPluginRegistry(commandLoader);
 

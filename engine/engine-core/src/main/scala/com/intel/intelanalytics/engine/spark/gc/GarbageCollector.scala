@@ -26,12 +26,10 @@ import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntryTemplate, Garb
 import com.intel.intelanalytics.engine.GraphBackendStorage
 import com.intel.intelanalytics.engine.plugin.BackendInvocation
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage, SparkFrameStorage }
-import com.intel.intelanalytics.repository.{ GarbageCollectableRepository, MetaStore, MetaStoreComponent }
-import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage }
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
+import com.intel.intelanalytics.repository.{ MetaStore }
 import org.joda.time.DateTime
-
-import scala.util.Try
 
 /**
  * Runnable Thread that executes garbage collection of unused entities.
@@ -144,7 +142,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
         metaStore.frameRepo.lookupByGraphId(graph.id).foreach(frame => deleteFrameData(gc, frame))
         metaStore.graphRepo.updateDataDeleted(graph)
         if (graph.isTitan) {
-          graphBackendStorage.deleteUnderlyingTable(graph.storage, quiet = true)(invocation = new BackendInvocation())
+          graphBackendStorage.deleteUnderlyingTable(graph.storage, quiet = true)(invocation = new BackendInvocation(EngineExecutionContext.global))
         }
         gcEntryRepo.updateEndTime(gcEntry)
       }
