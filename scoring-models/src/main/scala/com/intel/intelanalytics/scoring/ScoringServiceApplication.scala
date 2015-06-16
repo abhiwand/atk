@@ -18,7 +18,6 @@ package com.intel.intelanalytics.scoring
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
-import com.intel.intelanalytics.scoring.ModelLoader
 import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout

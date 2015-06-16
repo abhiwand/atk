@@ -17,7 +17,7 @@ package com.intel.intelanalytics.scoring
 
 import java.util.StringTokenizer
 
-import libsvm.{svm, svm_node, svm_model}
+import libsvm.{ svm, svm_node, svm_model }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
