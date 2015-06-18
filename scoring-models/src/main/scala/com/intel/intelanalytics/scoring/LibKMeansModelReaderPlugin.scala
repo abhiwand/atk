@@ -3,6 +3,7 @@ package com.intel.intelanalytics.scoring
 
 import java.io._
 
+import com.intel.intelanalytics.scoring.JsonReadersWriters.KMeansModelFormat
 import org.apache.commons.math3.geometry.VectorFormat
 import org.apache.spark.mllib.clustering.KMeansModel
 import spray.json._
@@ -11,7 +12,7 @@ import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-object TempJson {
+object JsonReadersWriters {
 
   implicit object SparseVectorFormat extends JsonFormat[SparseVector] {
     /**
@@ -124,14 +125,7 @@ class LibKMeansModelReaderPlugin() extends ModelLoader {
   override def load(bytes: Array[Byte]): Model = {
     try {
       val json: JsValue = new JsString(new String(bytes))
-      //libKMeansModel = json.convertTo[KMeansModel]
-      val fields = json.asJsObject.fields
-
-      val centers = fields.get("clusterCenters").get.asInstanceOf[JsArray].elements.map(vector => {
-        TempJson.VectorFormat.read(vector)
-      })
-
-      libKMeansModel = new KMeansModel(centers.toArray)
+      libKMeansModel = KMeansModelFormat.read(json)
       libKMeansModel.asInstanceOf[Model]
     }
     catch {
