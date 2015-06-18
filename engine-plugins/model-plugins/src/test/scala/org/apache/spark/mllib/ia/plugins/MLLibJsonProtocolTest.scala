@@ -119,17 +119,20 @@ class MLLibJsonProtocolTest extends WordSpec {
 
     "be able to serialize" in {
       val l = new LogisticRegressionWithSGDData(new LogisticRegressionModel(new DenseVector(Array(1.3, 3.1)), 3.5), List("column1", "column2"))
-      assert(l.toJson.compactPrint == "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1]},\"intercept\":3.5},\"observation_columns\":[\"column1\",\"column2\"]}")
+      assert(l.toJson.compactPrint == "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1]},\"intercept\":3.5,\"numFeatures\":2,\"numClasses\":2},\"observation_columns\":[\"column1\",\"column2\"]}")
+       
     }
 
     "parse json" in {
-      val string = "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1]},\"intercept\":3.5},\"observation_columns\":[\"column1\",\"column2\"]}"
+      val string = "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1,1.2]},\"intercept\":3.5, \"numFeatures\":3,\"numClasses\":2},\"observation_columns\":[\"column1\",\"column2\"]}"
       val json = JsonParser(string).asJsObject
       val l = json.convertTo[LogisticRegressionWithSGDData]
 
-      assert(l.logRegModel.weights.size == 2)
+      assert(l.logRegModel.weights.size == 3)
       assert(l.logRegModel.intercept == 3.5)
       assert(l.observationColumns.length == 2)
+      assert(l.logRegModel.numFeatures == 3)
+      assert(l.logRegModel.numClasses == 2)
     }
   }
 
