@@ -199,7 +199,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<CFVert
                     numTestEdges++;
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
+                    throw new IllegalArgumentException("Unknown recognized edge type: " + et.toString());
                 }
                 // send out messages
                 MessageData4CFWritable newMessage = new MessageData4CFWritable(vertex.getValue(), edge.getValue());

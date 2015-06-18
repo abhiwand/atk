@@ -199,7 +199,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<CFVerte
                     numTestEdges++;
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
+                    throw new IllegalArgumentException("Unknown recognized edge type: " + et.toString());
                 }
                 // send out messages
                 MessageData4CFWritable newMessage = new MessageData4CFWritable(vertex.getValue(), edge.getValue());
@@ -216,7 +216,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<CFVerte
             }
             break;
         default:
-            throw new IllegalArgumentException("Unknow recognized vertex type: " + vt.toString());
+            throw new IllegalArgumentException("Unknown recognized vertex type: " + vt.toString());
         }
     }
 

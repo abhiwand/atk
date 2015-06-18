@@ -127,7 +127,7 @@ class CollaborativeFilteringConfiguration(other: Configuration) extends GiraphCo
 
   /** make sure required properties are set */
   def validate(): Unit = {
-    require(get(ConfigPropertyName) != null, "labelPropagation.config property was not set in the Configuration")
+    require(get(ConfigPropertyName) != null, "collaborativefiltering.config property was not set in the Configuration")
   }
 
   def getConfig: CollaborativeFilteringConfig = {
