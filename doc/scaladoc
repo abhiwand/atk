@@ -32,11 +32,11 @@ else
         if [ "$Last" == "None" ]; then
             echo $File > $StatusFile
             # Add 'import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }' if necessary
-            grep "import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }" $File > /dev/null
-            if [ "$?" != "0" ]; then
-                echo "import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }" >> $File
-            fi
-            RST=$(grep -i "override def name:" $File | awk -F= '{print "../doc-api-examples/src/main/resources/python/" $2 ".rst"}' | sed s/:/-/g | sed s/\"//g | sed s/\ //g)
+#           grep "import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }" $File > /dev/null
+#           if [ "$?" != "0" ]; then
+#               echo "import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }" >> $File
+#           fi
+#           RST=$(grep -i "override def name:" $File | awk -F= '{print "../doc-api-examples/src/main/resources/python/" $2 ".rst"}' | sed s/:/-/g | sed s/\"//g | sed s/\ //g)
             if [ -e $RST ]; then
                 vi $RST $File -c 'sp | n'
                 Return=$?
