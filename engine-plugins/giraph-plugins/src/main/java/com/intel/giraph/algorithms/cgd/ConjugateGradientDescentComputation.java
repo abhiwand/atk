@@ -28,7 +28,6 @@ import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.aggregators.LongSumAggregator;
-import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
@@ -46,7 +45,6 @@ import org.apache.mahout.math.Vector;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Random;
 
@@ -135,6 +133,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<CFVert
         biasOn = config.biasOn();
         maxVal = config.maxValue();
         minVal = config.minValue();
+        learningCurveOutputInterval = config.learningCurveInterval();
         numCGDIters = config.cgdIterations();
     }
 
@@ -217,7 +216,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<CFVert
             }
             break;
         default:
-            throw new IllegalArgumentException("Unknow recognized vertex type: " + vt.toString());
+            throw new IllegalArgumentException("Unknown recognized vertex type: " + vt.toString());
         }
     }
 
@@ -337,12 +336,6 @@ public class ConjugateGradientDescentComputation extends BasicComputation<CFVert
             initialize(vertex);
             vertex.voteToHalt();
             return;
-        }
-
-        // verify bi-directional edges;
-        Iterator<MessageData4CFWritable> it = messages.iterator();
-        while (it.hasNext()) {
-            it.next();
         }
 
         Vector currentValue = vertex.getValue().getVector();

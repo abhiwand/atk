@@ -47,7 +47,7 @@ public class CFVertexId implements WritableComparable {
     }
 
     public Long getValueAsLong() {
-        return Long.getLong(value, 0);
+        return Long.parseLong(value);
     }
 
     public boolean isUser() {

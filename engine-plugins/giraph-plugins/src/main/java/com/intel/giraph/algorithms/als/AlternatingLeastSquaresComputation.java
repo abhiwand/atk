@@ -49,7 +49,6 @@ import org.apache.mahout.math.DenseVector;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Random;
 
@@ -163,6 +162,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<CFVerte
                 numTrain++;
             }
         }
+
         Random rand = new Random(vertex.getId().getValueAsLong());
         double[] values = new double[featureDimension];
         values[0] = 0d;
@@ -259,12 +259,6 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<CFVerte
             return;
         }
 
-        // verify bi-directional edges
-        Iterator<MessageData4CFWritable> it = messages.iterator();
-        while (it.hasNext()) {
-            it.next();
-        }
-
         Vector currentValue = vertex.getValue().getVector();
         double currentBias = vertex.getValue().getBias();
         // update aggregators every (2 * interval) super steps
@@ -292,7 +286,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<CFVerte
                     errorOnTest += e * e;
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
+                    throw new IllegalArgumentException("Unknown recognized edge type: " + et.toString());
                 }
             }
             double costOnTrain = 0d;

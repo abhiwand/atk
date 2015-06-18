@@ -102,7 +102,7 @@ class CollaborativeFilteringEdgeReader(conf: CollaborativeFilteringConfiguration
       val userId = new CFVertexId(row.stringValue(config.userColName), true)
       val itemId = new CFVertexId(row.stringValue(config.itemColName), false)
       val edgeData = new EdgeData4CFWritable()
-      edgeData.setWeight(row.longValue(config.ratingColName).toDouble)
+      edgeData.setWeight(row.doubleValue(config.ratingColName))
       edgeData.setType(EdgeType.TRAIN)
 
       currentSourceId = userId
