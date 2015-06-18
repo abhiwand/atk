@@ -54,4 +54,3 @@ class CountWherePlugin extends SparkCommandPlugin[CountWhereArgs, LongValue] {
     LongValue(pyRdd.map(s => BSON.decode(s).get("array").asInstanceOf[BasicBSONList].size()).fold(0)(_ + _))
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

@@ -66,4 +66,3 @@ object DropVertexColumnPlugin {
   }
 
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

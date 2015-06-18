@@ -122,4 +122,3 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
     save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRdd(updatedSchema, binnedRdd))).meta
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

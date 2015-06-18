@@ -63,4 +63,3 @@ class GarbageCollectionPlugin extends CommandPlugin[GarbageCollectionArgs, UnitR
     config.getDuration("string_value", TimeUnit.MILLISECONDS)
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

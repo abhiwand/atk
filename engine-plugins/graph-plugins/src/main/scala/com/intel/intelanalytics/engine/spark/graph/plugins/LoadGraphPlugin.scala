@@ -86,4 +86,3 @@ class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
   }
 
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

@@ -55,4 +55,3 @@ class VertexCountPlugin extends CommandPlugin[GraphNoArgs, LongValue] {
   }
 
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

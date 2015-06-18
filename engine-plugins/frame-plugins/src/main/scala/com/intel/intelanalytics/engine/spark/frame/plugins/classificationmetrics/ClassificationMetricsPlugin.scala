@@ -173,4 +173,3 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
 
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

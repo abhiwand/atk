@@ -69,4 +69,3 @@ class CovariancePlugin extends SparkCommandPlugin[CovarianceArgs, DoubleValue] {
   }
 
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

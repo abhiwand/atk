@@ -64,4 +64,3 @@ class FilterPlugin extends SparkCommandPlugin[FilterArgs, FrameEntity] {
     engine.frames.saveFrameData(frame.meta.toReference, updatedRdd)
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

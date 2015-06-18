@@ -128,4 +128,3 @@ class ExportToTitanGraphPlugin extends SparkCommandPlugin[ExportGraph, GraphEnti
       s"Titan does not allow properties with the same key as an edge label. Please rename the following columns:\n\t${invalidColumnNames.mkString("\n\t")}")
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

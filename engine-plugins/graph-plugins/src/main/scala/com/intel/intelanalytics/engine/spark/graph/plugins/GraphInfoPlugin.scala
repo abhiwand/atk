@@ -53,4 +53,3 @@ class GraphInfoPlugin extends CommandPlugin[GraphNoArgs, SeamlessGraphMeta] {
   }
 
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

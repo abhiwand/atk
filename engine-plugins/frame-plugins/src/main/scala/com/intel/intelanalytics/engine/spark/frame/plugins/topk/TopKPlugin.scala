@@ -125,4 +125,3 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     (columnIndexOption, dataTypeOption)
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

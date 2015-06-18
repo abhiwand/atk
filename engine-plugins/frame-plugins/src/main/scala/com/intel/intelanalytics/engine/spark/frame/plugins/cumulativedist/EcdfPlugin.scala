@@ -101,4 +101,3 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
     newFrameEntity
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

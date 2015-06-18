@@ -129,4 +129,3 @@ object LibSvmPluginFunctions extends Serializable {
     Integer.parseInt(s)
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

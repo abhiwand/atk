@@ -52,4 +52,3 @@ class RenameVertexColumnsPlugin extends RenameColumnsPlugin {
     }
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

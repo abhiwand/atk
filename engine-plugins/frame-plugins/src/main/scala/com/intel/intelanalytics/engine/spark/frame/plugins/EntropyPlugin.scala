@@ -136,4 +136,3 @@ private[spark] object EntropyRddFunctions extends Serializable {
     entropy
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

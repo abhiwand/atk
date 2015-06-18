@@ -103,4 +103,3 @@ class DropDuplicateVerticesPlugin extends SparkCommandPlugin[DropDuplicatesArgs,
 
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

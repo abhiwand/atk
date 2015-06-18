@@ -69,4 +69,3 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
     }
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

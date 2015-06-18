@@ -76,4 +76,3 @@ class FilterVerticesPlugin extends SparkCommandPlugin[FilterVerticesArgs, FrameE
     modifiedFrame
   }
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

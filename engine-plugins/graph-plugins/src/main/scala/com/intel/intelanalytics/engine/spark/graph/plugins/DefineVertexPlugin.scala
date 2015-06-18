@@ -62,4 +62,3 @@ class DefineVertexPlugin extends CommandPlugin[DefineVertexArgs, UnitReturn] {
   }
 
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

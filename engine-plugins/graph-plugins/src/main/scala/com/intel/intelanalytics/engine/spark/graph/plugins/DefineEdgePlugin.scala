@@ -66,4 +66,3 @@ class DefineEdgePlugin extends CommandPlugin[DefineEdgeArgs, UnitReturn] {
   }
 
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
