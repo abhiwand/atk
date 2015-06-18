@@ -44,7 +44,7 @@ class ArchiveClassLoader(archiveName: String, urls: Array[URL], parent: ClassLoa
             case e: Throwable => () //ignore
           }
         }
-        throw new ClassNotFoundException(s"Could not find class $className in archive $archiveName", e)
+        throw new ClassNotFoundException(s"Could not find class $className in archive $archiveName deps:" + dependencies.map(_.toString).mkString(", "), e)
     }
   }
 
