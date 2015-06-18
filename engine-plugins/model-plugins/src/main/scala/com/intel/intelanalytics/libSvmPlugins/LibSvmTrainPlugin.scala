@@ -191,7 +191,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
    */
 
   private def initializeProblem(trainFrameRdd: FrameRdd, arguments: LibSvmTrainArgs, param: svm_parameter): svm_problem = {
-    trainFrameRdd.frameSchema.requireColumnIsType(arguments.labelColumn, DataTypes.float64)
+    //trainFrameRdd.frameSchema.requireColumnIsType(arguments.labelColumn, DataTypes.float64)
 
     val observedRdd = trainFrameRdd.selectColumns(arguments.labelColumn +: arguments.observationColumns)
     val observedSchema = observedRdd.frameSchema.columns

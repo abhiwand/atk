@@ -19,6 +19,7 @@ package com.intel.intelanalytics.rest.v1
 import com.intel.intelanalytics.domain.query.{ QueryDataResult, Query }
 import com.intel.intelanalytics.engine.Engine
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
+import com.intel.intelanalytics.rest.threading.SprayExecutionContext
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.rest.{ CommonDirectives, ServiceTest }
 import org.joda.time.DateTime
@@ -33,7 +34,7 @@ class QueryServiceTest extends ServiceTest {
   implicit val routeTestTimeout = RouteTestTimeout(10.seconds)
 
   implicit val userPrincipal = mock[UserPrincipal]
-  implicit val call: Invocation = Call(userPrincipal)
+  implicit val call: Invocation = Call(userPrincipal, SprayExecutionContext.global)
   val commonDirectives = mock[CommonDirectives]
   when(commonDirectives.apply("queries")).thenReturn(provide(call))
 

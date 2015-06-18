@@ -14,19 +14,21 @@
 // limitations under the License.
 */
 
-package com.intel.intelanalytics.engine.spark.frame
+package com.intel.intelanalytics.engine.spark.threading
 
-import com.intel.intelanalytics.engine.plugin.Call
-import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
-import org.scalatest.FlatSpec
+import com.typesafe.config.ConfigFactory
 
-class FrameFileStorageTest extends FlatSpec {
+import scala.concurrent.ExecutionContext
+import scala.concurrent.forkjoin.ForkJoinPool
 
-  implicit val call = Call(null, EngineExecutionContext.global)
-  val frameFileStorage = new FrameFileStorage("hdfs://hostname/user/iauser", null)
+object EngineExecutionContext {
 
-  "FrameFileStorage" should "determine the correct data frames base directory" in {
-    assert(frameFileStorage.frameBaseDirectory(1L).toString == "hdfs://hostname/user/iauser/intelanalytics/dataframes/1")
+  val config = ConfigFactory.load()
+
+  val maxThreadsPerExecutionContext: Int = {
+    config.getInt("intel.analytics.engine.spark.max-threads-per-execution-Context")
   }
 
+  implicit val global: ExecutionContext =
+    ExecutionContext.fromExecutorService(new ForkJoinPool(maxThreadsPerExecutionContext))
 }

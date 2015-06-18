@@ -18,8 +18,7 @@ package com.intel.intelanalytics.rest
 
 import com.intel.event.EventContext
 import com.intel.intelanalytics.NotFoundException
-import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
-import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.engine.plugin.{ Invocation }
 import spray.http.HttpHeaders.RawHeader
 import spray.http.{ HttpRequest, StatusCodes }
 import spray.routing._
