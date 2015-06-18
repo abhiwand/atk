@@ -520,5 +520,5 @@ def create_function(loadable_class, command_def, execute_command_function=None):
                          (command_def.full_name, loadable_class.__name__, func_text))
         raise
     function.command = command_def
-    function.__doc__ = command_def.doc
+    function.__doc__ = get_spa_docstring(command_def)
     return function

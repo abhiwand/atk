@@ -431,17 +431,17 @@ application.conf using one of the following approaches:
     #.  Search for ``mapreduce.map.memory.mb`` in the search box on the upper
         left corner.
         Modify ``mapreduce.map.memory.mb`` to match mapreduce.map.memory.mb in
-        application.conf (currently 8192 MB)
+        application.conf (currently 4096 MB)
     #.  Search for ``mapreduce.map.java.opts.max`` in the search box.
         Modify this setting to match mapreduce.map.java.opts in
-        application.conf (currently 6554MB).
+        application.conf (currently 3072MB).
         The rule of thumb is that mapreduce.map.java.opts.max should be at most
         85% of mapreduce.map.memory.mb
     #.  Search for ``yarn.nodemanager.resource.memory-mb`` in the search box.
         Modify this setting to a multiple of ``mapreduce.map.memory.mb``.
         For example, to run at most 4 mappers on each node, and
-        ``mapreduce.map.memory.mb`` is set to 8192MB, then set
-        ``yarn.nodemanager.resource.memory-mb`` to 32768MB.
+        ``mapreduce.map.memory.mb`` is set to 4096MB, then set
+        ``yarn.nodemanager.resource.memory-mb`` to 16384MB.
     #.  Save these changes.
     #.  Click on *Actions*, on the top-right corner and then *Deploy Client
         Configuration* to update the configurations across the cluster.

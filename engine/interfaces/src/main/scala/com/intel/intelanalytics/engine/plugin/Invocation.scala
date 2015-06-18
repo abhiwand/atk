@@ -61,14 +61,14 @@ trait Invocation {
  * @param executionContext A Scala execution context for use with methods that require one
  * @param resolver Reference resolver to enable de-referencing of UriReference objects
  */
-case class BackendInvocation(executionContext: ExecutionContext = ExecutionContext.Implicits.global,
+case class BackendInvocation(executionContext: ExecutionContext,
                              resolver: ReferenceResolver = ReferenceResolver) extends Invocation {
   private[intelanalytics] def user: UserPrincipal = null
   private[intelanalytics] def eventContext: EventContext = null
 }
 
 case class Call(user: UserPrincipal,
-                executionContext: ExecutionContext = ExecutionContext.Implicits.global,
+                executionContext: ExecutionContext,
                 resolver: ReferenceResolver = ReferenceResolver,
                 eventContext: EventContext = null) extends Invocation
 

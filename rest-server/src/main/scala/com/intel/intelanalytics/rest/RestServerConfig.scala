@@ -61,11 +61,17 @@ object RestServerConfig {
   /** the URI of the UAA server */
   val uaaUri = config.getString("intel.analytics.component.archives.rest-server.uaaUri")
 
+  /** Scheme for Rest Service to bind with (http or https) */
+  val useHttp: Boolean = config.getBoolean("intel.analytics.component.archives.rest-server.useHttp")
+
   /** How many seconds to cache user principals, helpful for high request volume (e.g. QA parallel testing) */
   val userPrincipalCacheTimeoutSeconds = config.getInt("intel.analytics.component.archives.rest-server.user-principal-cache.timeout-seconds")
 
   /** Max size of user principals cache */
   val userPrincipalCacheMaxSize = config.getInt("intel.analytics.component.archives.rest-server.user-principal-cache.max-size")
+
+  /** Max number of threads per execution context */
+  val maxThreadsPerExecutionContext: Int = config.getInt("intel.analytics.max-threads-per-execution-Context")
 
   /**
    * Mode of invocation for api-server : standard or scoring mode

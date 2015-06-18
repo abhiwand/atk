@@ -19,14 +19,12 @@ package com.intel.intelanalytics.engine
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
-import com.intel.intelanalytics.security.UserPrincipal
 import org.scalatest.{ Matchers, FlatSpec }
-import scala.concurrent.ExecutionContext
 import scala.reflect.runtime.{ universe => ru }
 import ru._
-import scala.tools.nsc.util.ScalaClassLoader.URLClassLoader
-import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import spray.json._
+import implicits._
 
 case class Mixed(frameId: Int, frame: FrameReference, graphId: Int, graph: GraphReference) {
 }
@@ -35,8 +33,6 @@ object implicits {
   implicit val fmt = jsonFormat4(Mixed)
 
 }
-
-import implicits._
 
 class MixedPlugin extends CommandPlugin[Mixed, Mixed] {
   override def name: String = ???

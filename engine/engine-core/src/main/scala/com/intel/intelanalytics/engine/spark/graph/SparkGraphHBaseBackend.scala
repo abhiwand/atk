@@ -16,20 +16,15 @@
 
 package com.intel.intelanalytics.engine.spark.graph
 
-import java.io.OutputStream
 import java.util.UUID
-
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
-import com.intel.intelanalytics.domain.graph.GraphEntity
 import com.intel.intelanalytics.engine.GraphBackendStorage
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
-import org.apache.commons.io.IOUtils
-import org.apache.hadoop.hbase.client.HBaseAdmin
-import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.util.{ Success, Failure }
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext.global
 
 /**
  * Implements graph backend storage in HBase for Spark.
