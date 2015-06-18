@@ -21,14 +21,16 @@ config file for rest client
 
 # default connection config
 class server_defaults:
-    host="localhost"
-    port=9099
+    uri="localhost:9099"
     scheme = 'http'
     headers = {'Content-type': 'application/json',
                'Accept': 'application/json,text/plain'}
     version = 'v1'
-    user_name = "test_api_key_1"
-
+    user_name = 'test_api_key_1'
+    client_name = 'atk-client'
+    client_password = 'c1oudc0w'
+    uaa_scheme = "https"
+    uaa_headers = {"Accept": "application/json"}
 
 class upload_defaults:
     rows = 10000

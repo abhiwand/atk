@@ -19,46 +19,29 @@ logger = logging.getLogger(__name__)
 import intelanalytics.rest.http as http
 from intelanalytics.rest.server import Server
 
-
-class UaaServer(Server):
+def get_oauth_token(uaa_uri, user_name, user_password):
     """
-    Handles communication with CF UAA and keeping an active token
+    Connect to the cloudfoundry uaa server and acquire token
+
+    Calling this method is required before invoking any ATK operations. This method connects to UAA server
+    and validates the user and the client and returns an token that will be passed in the rest server header
     """
-    _server_name = "oauth_server"
+    # Authenticate to UAA as client (this client)
+    # Tell UAA to grant us (the client) a token by authenticating with the user's password
+    if uaa_uri:
+        uaa_server = _get_uaa_server(uaa_uri)
+        client_name = Server._get_value_from_config('client_name')
+        client_password = Server._get_value_from_config('client_password')
+        auth = (client_name, client_password)
+        data = {'grant_type': "password", 'username': user_name, 'password': user_password}
+        response = http.post(uaa_server, "/oauth/token", auth=auth, data=data)
+        uaa_server._check_response(response)
+        token = response.json()['access_token']
+    else:
+        token = None
+    return token
 
-    _scheme_default = "https"
-    _headers_default = {"Accept": "application/json"}
-
-    def __init__(self, host, port, scheme, headers, user_name, user_password, client_name, client_password):
-        super(UaaServer, self).__init__(host, port, scheme, headers, user_name=user_name, user_password=user_password)
-        self.scheme = scheme or self._scheme_default
-        self.headers = headers or self._headers_default
-        self.client_name = client_name
-        self.client_password = client_password
-
-    def _repr_attrs(self):
-        """overrides base indicating all the attributes which should be printed for the repr"""
-        return super(UaaServer, self)._repr_attrs() + ["client_name", "client_password"]
-
-    def is_enabled(self):
-        """Indicates if the server info has enough config to be considered "enabled"."""
-        return bool(self.host)
-
-    def get_token(self):
-        """
-        Connect to the cloudfoundry uaa server and acquire token
-
-        Calling this method is required before invoking any ATK operations. This method connects to UAA server
-        and validates the user and the client and returns an token that will be passed in the rest server header
-        """
-        # Authenticate to UAA as client (this client)
-        # Tell UAA to grant us (the client) a token by authenticating with the user's password
-        if self.is_enabled():
-            data = {'grant_type': "password", 'username': self.user_name, 'password': self.user_password}
-            auth = (self.client_name, self.client_password)
-            response = http.post(self, "/oauth/token", headers=self.headers, auth=auth, data=data)
-            self._check_response(response)
-            token = response.json()['access_token']
-            return token
-        else:
-            return None
+def _get_uaa_server(uaa_uri):
+    scheme = Server._get_value_from_config('uaa_scheme')
+    headers = Server._get_value_from_config('uaa_headers')
+    return Server(uaa_uri, scheme, headers)
