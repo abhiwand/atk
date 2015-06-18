@@ -155,15 +155,15 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<CFVerte
             if (et == EdgeType.TRAIN) {
                 double weight = edge.getValue().getWeight();
                 if (weight < minVal || weight > maxVal) {
-                    throw new IllegalArgumentException(String.format("Vertex ID: %d has an edge with weight value " +
-                        "out of the range of [%f, %f].", vertex.getId().getValueAsLong(), minVal, maxVal));
+                    throw new IllegalArgumentException(String.format("Vertex ID: %s has an edge with weight value " +
+                        "out of the range of [%f, %f].", vertex.getId().getValue(), minVal, maxVal));
                 }
                 sum += weight;
                 numTrain++;
             }
         }
 
-        Random rand = new Random(vertex.getId().getValueAsLong());
+        Random rand = new Random(vertex.getId().seed());
         double[] values = new double[featureDimension];
         values[0] = 0d;
         if (numTrain > 0) {
