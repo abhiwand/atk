@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.testutils.TestingSparkContextFlatSpec
-import org.apache.spark.SparkException
+import org.apache.spark.{ sql, SparkException }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -41,11 +41,11 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 5
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 2, 0)
-    result.apply(2) shouldBe Array[Any]("C", 3, 1)
-    result.apply(3) shouldBe Array[Any]("D", 4, 1)
-    result.apply(4) shouldBe Array[Any]("E", 5, 1)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 2, 0)
+    result.apply(2) shouldBe sql.Row("C", 3, 1)
+    result.apply(3) shouldBe sql.Row("D", 4, 1)
+    result.apply(4) shouldBe sql.Row("E", 5, 1)
   }
 
   "binEqualWidth" should "create the correct number of bins" in {
@@ -82,12 +82,12 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 6
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 1.5, 0)
-    result.apply(2) shouldBe Array[Any]("C", 2, 1)
-    result.apply(3) shouldBe Array[Any]("D", 3, 2)
-    result.apply(4) shouldBe Array[Any]("E", 4, 3)
-    result.apply(5) shouldBe Array[Any]("F", 4.5, 3)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 1.5, 0)
+    result.apply(2) shouldBe sql.Row("C", 2, 1)
+    result.apply(3) shouldBe sql.Row("D", 3, 2)
+    result.apply(4) shouldBe sql.Row("E", 4, 3)
+    result.apply(5) shouldBe sql.Row("F", 4.5, 3)
   }
 
   "binEqualWidth" should "throw error if less than one bin requested" in {
@@ -141,16 +141,16 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 10
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 2, 2)
-    result.apply(2) shouldBe Array[Any]("C", 3, 4)
-    result.apply(3) shouldBe Array[Any]("D", 4, 6)
-    result.apply(4) shouldBe Array[Any]("E", 5, 8)
-    result.apply(5) shouldBe Array[Any]("F", 6, 11)
-    result.apply(6) shouldBe Array[Any]("G", 7, 13)
-    result.apply(7) shouldBe Array[Any]("H", 8, 15)
-    result.apply(8) shouldBe Array[Any]("I", 9, 17)
-    result.apply(9) shouldBe Array[Any]("J", 10, 19)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 2, 2)
+    result.apply(2) shouldBe sql.Row("C", 3, 4)
+    result.apply(3) shouldBe sql.Row("D", 4, 6)
+    result.apply(4) shouldBe sql.Row("E", 5, 8)
+    result.apply(5) shouldBe sql.Row("F", 6, 11)
+    result.apply(6) shouldBe sql.Row("G", 7, 13)
+    result.apply(7) shouldBe sql.Row("H", 8, 15)
+    result.apply(8) shouldBe sql.Row("I", 9, 17)
+    result.apply(9) shouldBe sql.Row("J", 10, 19)
   }
 
   "binEqualDepth" should "append new column" in {
@@ -169,11 +169,11 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 5
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 2, 0)
-    result.apply(2) shouldBe Array[Any]("C", 3, 1)
-    result.apply(3) shouldBe Array[Any]("D", 4, 1)
-    result.apply(4) shouldBe Array[Any]("E", 5, 1)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 2, 0)
+    result.apply(2) shouldBe sql.Row("C", 3, 1)
+    result.apply(3) shouldBe sql.Row("D", 4, 1)
+    result.apply(4) shouldBe sql.Row("E", 5, 1)
   }
 
   "binEqualDepth" should "create the correct number of bins" in {
@@ -209,11 +209,11 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 5
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 1, 0)
-    result.apply(2) shouldBe Array[Any]("C", 1, 0)
-    result.apply(3) shouldBe Array[Any]("D", 1, 0)
-    result.apply(4) shouldBe Array[Any]("E", 5, 1)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 1, 0)
+    result.apply(2) shouldBe sql.Row("C", 1, 0)
+    result.apply(3) shouldBe sql.Row("D", 1, 0)
+    result.apply(4) shouldBe sql.Row("E", 5, 1)
   }
 
   "binEqualDepth" should "create equal depth bins" in {
@@ -233,12 +233,12 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 6
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 1.2, 0)
-    result.apply(2) shouldBe Array[Any]("C", 1.5, 1)
-    result.apply(3) shouldBe Array[Any]("D", 1.6, 1)
-    result.apply(4) shouldBe Array[Any]("E", 3, 2)
-    result.apply(5) shouldBe Array[Any]("F", 6, 2)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 1.2, 0)
+    result.apply(2) shouldBe sql.Row("C", 1.5, 1)
+    result.apply(3) shouldBe sql.Row("D", 1.6, 1)
+    result.apply(4) shouldBe sql.Row("E", 3, 2)
+    result.apply(5) shouldBe sql.Row("F", 6, 2)
   }
 
   "binEqualDepth" should "create equal depth bins - another test" in {
@@ -262,16 +262,16 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 10
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 2, 0)
-    result.apply(2) shouldBe Array[Any]("C", 3, 0)
-    result.apply(3) shouldBe Array[Any]("D", 4, 0)
-    result.apply(4) shouldBe Array[Any]("E", 5, 0)
-    result.apply(5) shouldBe Array[Any]("F", 6, 1)
-    result.apply(6) shouldBe Array[Any]("G", 7, 1)
-    result.apply(7) shouldBe Array[Any]("H", 8, 1)
-    result.apply(8) shouldBe Array[Any]("I", 9, 1)
-    result.apply(9) shouldBe Array[Any]("J", 10, 1)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 2, 0)
+    result.apply(2) shouldBe sql.Row("C", 3, 0)
+    result.apply(3) shouldBe sql.Row("D", 4, 0)
+    result.apply(4) shouldBe sql.Row("E", 5, 0)
+    result.apply(5) shouldBe sql.Row("F", 6, 1)
+    result.apply(6) shouldBe sql.Row("G", 7, 1)
+    result.apply(7) shouldBe sql.Row("H", 8, 1)
+    result.apply(8) shouldBe sql.Row("I", 9, 1)
+    result.apply(9) shouldBe sql.Row("J", 10, 1)
   }
 
   "binEqualDepth" should "put each value in separate bin if num_bins is greater than length of column" in {
@@ -295,16 +295,16 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 10
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 2, 1)
-    result.apply(2) shouldBe Array[Any]("C", 3, 2)
-    result.apply(3) shouldBe Array[Any]("D", 4, 3)
-    result.apply(4) shouldBe Array[Any]("E", 5, 4)
-    result.apply(5) shouldBe Array[Any]("F", 6, 5)
-    result.apply(6) shouldBe Array[Any]("G", 7, 6)
-    result.apply(7) shouldBe Array[Any]("H", 8, 7)
-    result.apply(8) shouldBe Array[Any]("I", 9, 8)
-    result.apply(9) shouldBe Array[Any]("J", 10, 9)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 2, 1)
+    result.apply(2) shouldBe sql.Row("C", 3, 2)
+    result.apply(3) shouldBe sql.Row("D", 4, 3)
+    result.apply(4) shouldBe sql.Row("E", 5, 4)
+    result.apply(5) shouldBe sql.Row("F", 6, 5)
+    result.apply(6) shouldBe sql.Row("G", 7, 6)
+    result.apply(7) shouldBe sql.Row("H", 8, 7)
+    result.apply(8) shouldBe sql.Row("I", 9, 8)
+    result.apply(9) shouldBe sql.Row("J", 10, 9)
   }
 
   "binColumn" should "place values outside of cutoffs into first of last bin when strictBinning is false" in { // Input data
@@ -327,16 +327,16 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 10
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 2, 0)
-    result.apply(2) shouldBe Array[Any]("C", 3, 0)
-    result.apply(3) shouldBe Array[Any]("D", 4, 1)
-    result.apply(4) shouldBe Array[Any]("E", 5, 1)
-    result.apply(5) shouldBe Array[Any]("F", 6, 2)
-    result.apply(6) shouldBe Array[Any]("G", 7, 2)
-    result.apply(7) shouldBe Array[Any]("H", 8, 2)
-    result.apply(8) shouldBe Array[Any]("I", 9, 2)
-    result.apply(9) shouldBe Array[Any]("J", 10, 2)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 2, 0)
+    result.apply(2) shouldBe sql.Row("C", 3, 0)
+    result.apply(3) shouldBe sql.Row("D", 4, 1)
+    result.apply(4) shouldBe sql.Row("E", 5, 1)
+    result.apply(5) shouldBe sql.Row("F", 6, 2)
+    result.apply(6) shouldBe sql.Row("G", 7, 2)
+    result.apply(7) shouldBe sql.Row("H", 8, 2)
+    result.apply(8) shouldBe sql.Row("I", 9, 2)
+    result.apply(9) shouldBe sql.Row("J", 10, 2)
   }
 
   "binColumn" should "place values outside of cutoffs into bin -1 when strictBinning is true" in { // Input data
@@ -359,16 +359,16 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 10
-    result.apply(0) shouldBe Array[Any]("A", 1, -1)
-    result.apply(1) shouldBe Array[Any]("B", 2, 0)
-    result.apply(2) shouldBe Array[Any]("C", 3, 0)
-    result.apply(3) shouldBe Array[Any]("D", 4, 1)
-    result.apply(4) shouldBe Array[Any]("E", 5, 1)
-    result.apply(5) shouldBe Array[Any]("F", 6, 2)
-    result.apply(6) shouldBe Array[Any]("G", 7, 2)
-    result.apply(7) shouldBe Array[Any]("H", 8, 2)
-    result.apply(8) shouldBe Array[Any]("I", 9, 2)
-    result.apply(9) shouldBe Array[Any]("J", 10, -1)
+    result.apply(0) shouldBe sql.Row("A", 1, -1)
+    result.apply(1) shouldBe sql.Row("B", 2, 0)
+    result.apply(2) shouldBe sql.Row("C", 3, 0)
+    result.apply(3) shouldBe sql.Row("D", 4, 1)
+    result.apply(4) shouldBe sql.Row("E", 5, 1)
+    result.apply(5) shouldBe sql.Row("F", 6, 2)
+    result.apply(6) shouldBe sql.Row("G", 7, 2)
+    result.apply(7) shouldBe sql.Row("H", 8, 2)
+    result.apply(8) shouldBe sql.Row("I", 9, 2)
+    result.apply(9) shouldBe sql.Row("J", 10, -1)
   }
 
   "binColumn" should "be upper inclusive when lowerInclusive is false" in { // Input data
@@ -391,16 +391,16 @@ class BinColumnITest extends TestingSparkContextFlatSpec with Matchers {
 
     // Validate
     result.length shouldBe 10
-    result.apply(0) shouldBe Array[Any]("A", 1, 0)
-    result.apply(1) shouldBe Array[Any]("B", 2, 0)
-    result.apply(2) shouldBe Array[Any]("C", 3, 0)
-    result.apply(3) shouldBe Array[Any]("D", 4, 0)
-    result.apply(4) shouldBe Array[Any]("E", 5, 1)
-    result.apply(5) shouldBe Array[Any]("F", 6, 1)
-    result.apply(6) shouldBe Array[Any]("G", 7, 2)
-    result.apply(7) shouldBe Array[Any]("H", 8, 2)
-    result.apply(8) shouldBe Array[Any]("I", 9, 2)
-    result.apply(9) shouldBe Array[Any]("J", 10, 2)
+    result.apply(0) shouldBe sql.Row("A", 1, 0)
+    result.apply(1) shouldBe sql.Row("B", 2, 0)
+    result.apply(2) shouldBe sql.Row("C", 3, 0)
+    result.apply(3) shouldBe sql.Row("D", 4, 0)
+    result.apply(4) shouldBe sql.Row("E", 5, 1)
+    result.apply(5) shouldBe sql.Row("F", 6, 1)
+    result.apply(6) shouldBe sql.Row("G", 7, 2)
+    result.apply(7) shouldBe sql.Row("H", 8, 2)
+    result.apply(8) shouldBe sql.Row("I", 9, 2)
+    result.apply(9) shouldBe sql.Row("J", 10, 2)
   }
 
 }

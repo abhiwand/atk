@@ -53,14 +53,14 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 <object>.f_measure : double
 <object>.precision : double
 <object>.recall : double""")
-class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestArgs, ClassificationMetricValue] {
+class LogisticRegressionTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestArgs, ClassificationMetricValue] {
   /**
    * The name of the command.
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:logistic_regression/test"
+  override def name: String = "model:logistic_regression_exp/test"
 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
   /**

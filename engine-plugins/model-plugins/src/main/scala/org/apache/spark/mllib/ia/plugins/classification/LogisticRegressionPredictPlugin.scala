@@ -57,14 +57,14 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
   extended = """Predict the labels for a test frame and create a new frame revision with
 existing columns and a new predicted label's column.""",
   returns = "Frame containing the original frame's columns and a column with the predicted label.")
-class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPredictArgs, FrameEntity] {
+class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPredictArgs, FrameEntity] {
   /**
    * The name of the command.
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:logistic_regression/predict"
+  override def name: String = "model:logistic_regression_exp/predict"
 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 

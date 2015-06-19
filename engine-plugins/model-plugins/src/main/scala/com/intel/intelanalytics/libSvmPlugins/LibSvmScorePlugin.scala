@@ -89,7 +89,7 @@ object LibSvmPluginFunctions extends Serializable {
   }
 
   def LibSvmFormatter(frameRdd: FrameRdd): Array[String] = {
-    frameRdd.map(row => columnFormatterForTrain(row.toArray.zipWithIndex)).collect()
+    frameRdd.map(row => columnFormatterForTrain(row.toSeq.toArray.zipWithIndex)).collect()
   }
 
   private def columnFormatterForTrain(valueIndexPairArray: Array[(Any, Int)]): String = {

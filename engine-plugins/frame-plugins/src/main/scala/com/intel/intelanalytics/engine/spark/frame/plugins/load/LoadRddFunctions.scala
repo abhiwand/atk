@@ -20,14 +20,15 @@ import com.intel.intelanalytics.domain.frame.load.{ LineParser, LineParserArgume
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
-import org.apache.hadoop.io.{ Text, LongWritable }
+import org.apache.hadoop.io.LongWritable
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{ SQLContext, SchemaRDD }
+import org.apache.spark.sql.SchemaRDD
 import org.apache.spark.sql.catalyst.expressions.{ GenericMutableRow, GenericRow }
 import org.apache.hadoop.io.Text
+import org.apache.spark.sql.{ types => SparkType }
+import SparkType.{ DateType, StructField, TimestampType, ByteType, BooleanType, ShortType, DecimalType }
 
 import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
@@ -205,7 +206,7 @@ object LoadRddFunctions extends Serializable {
     val schema = new FrameSchema(list.toList)
     val convertedRdd: RDD[org.apache.spark.sql.Row] = rdd.map(row => {
       val mutableRow = new GenericMutableRow(row.length)
-      row.zipWithIndex.map {
+      row.toSeq.zipWithIndex.map {
         case (o, i) => {
           if (o == null) mutableRow(i) = null
           else {
@@ -221,7 +222,7 @@ object LoadRddFunctions extends Serializable {
             else if (array(i).dataType.getClass == ByteType.getClass) {
               mutableRow(i) = row.getByte(i).toInt
             }
-            else if (array(i).dataType.getClass == classOf[org.apache.spark.sql.catalyst.types.DecimalType]) {
+            else if (array(i).dataType.getClass == DecimalType.getClass) {
               mutableRow(i) = row.getAs[BigDecimal](i).doubleValue()
             }
             else {
@@ -234,6 +235,6 @@ object LoadRddFunctions extends Serializable {
       mutableRow
     }
     )
-    new FrameRdd(schema, new SQLContext(rdd.context), FrameRdd.createLogicalPlanFromSql(schema, convertedRdd))
+    new FrameRdd(schema, convertedRdd)
   }
 }
