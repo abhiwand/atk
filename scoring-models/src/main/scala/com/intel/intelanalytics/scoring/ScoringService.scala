@@ -59,7 +59,7 @@ class ScoringService(model: Model, modelName: String) extends Directives {
       complete {
         <html>
           <body>
-            <h1>Welcome to the Intel Analytics Toolkit Scoring Server -2</h1>
+            <h1>Welcome to the Scoring Engine -2</h1>
           </body>
         </html>
       }
