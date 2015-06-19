@@ -24,7 +24,12 @@ from intelanalytics.meta.names import indent, get_type_name
 
 def get_spa_docstring(command_def, override_rtype=None):
     """return text for a docstring needed for SPA, uses classic rst format"""
-    doc_str = str(command_def.doc)
+    try:
+        doc_str = str(command_def.doc)
+    except:
+        print "Problem with command_def.doc for command %s" % command_def.full_name
+        raise
+
 
     params = command_def.parameters
     if params:
