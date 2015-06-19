@@ -145,7 +145,7 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
 
             // Update posterior if the vertex was not processed
             if (vertexValue.wasLabeled() == false) {
-                newBelief = newBelief.times(1 - lambda).plus(prior.times(lambda));
+                newBelief = (newBelief.times(1 - lambda).plus(prior.times(lambda))).normalize(1d);
                 vertexValue.setPosteriorVector(newBelief);
             }
 

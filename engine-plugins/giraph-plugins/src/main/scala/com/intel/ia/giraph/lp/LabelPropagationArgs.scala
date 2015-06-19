@@ -54,7 +54,7 @@ case class LabelPropagationArgs(frame: FrameReference,
   }
 
   def getLambda: Float = {
-    val value = alpha.getOrElse(0f)
+    val value = alpha.getOrElse(0.9999999f)
     1 - Math.min(1, Math.max(0, value))
   }
 }
