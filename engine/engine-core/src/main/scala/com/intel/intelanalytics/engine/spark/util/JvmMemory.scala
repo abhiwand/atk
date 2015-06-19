@@ -21,7 +21,6 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-
 package com.intel.intelanalytics.engine.spark.util
 
 import java.text.NumberFormat
@@ -35,7 +34,7 @@ object JvmMemory {
   def memory: String = {
     val formatter = NumberFormat.getInstance(Locale.US)
     "freeMemory=" + formatter.format(Runtime.getRuntime.freeMemory()) +
-    ", totalMemory=" + formatter.format(Runtime.getRuntime.totalMemory()) +
-    ", maxMemory=" + formatter.format(Runtime.getRuntime.maxMemory())
+      ", totalMemory=" + formatter.format(Runtime.getRuntime.totalMemory()) +
+      ", maxMemory=" + formatter.format(Runtime.getRuntime.maxMemory())
   }
 }

@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.util.{JvmMemory, KerberosAuthenticator}
+import com.intel.intelanalytics.engine.spark.util.{ JvmMemory, KerberosAuthenticator }
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
