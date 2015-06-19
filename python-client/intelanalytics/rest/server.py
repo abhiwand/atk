@@ -16,7 +16,7 @@
 
 import intelanalytics.rest.http as http
 import intelanalytics.rest.config as config
-from intelanalytics.meta.clientside import raise_deprecation_warning
+from intelanalytics.core.api import api_status
 import json
 
 
@@ -36,16 +36,15 @@ class Server(object):
             value = default
         return value
 
-    def __init__(self, uri, scheme, headers, user_name=None, user_password=None):
+    def __init__(self, uri, scheme, headers, user=None):
         self._uri = uri
         self._scheme = scheme
         self._headers = headers
-        self._user_name = user_name
-        self._user_password = user_password
+        self._user = user
         self._conf_frozen = None
 
     def _repr_attrs(self):
-        return ["uri", "scheme", "headers", "user_name", "user_password"]
+        return ["uri", "scheme", "headers", "user"]
 
     def __repr__(self):
         d = dict([(a, getattr(self, a)) for a in self._repr_attrs()])
@@ -66,12 +65,13 @@ class Server(object):
         line = "\n------------------------------------------------------------------------------\n"
         return line + "\n".join(["%-15s: %s" % (k, self._str_truncate_value(v)) for k, v in sorted(d.items())]) + line
 
-    def _error_if_conf_frozen(self):
-        if self._conf_frozen:
-            raise RuntimeError("This server's connection settings can no longer be modified.")
+    def _error_if_conf_frozen_and_not_eq(self, a, b):
+        if a != b:
+            self._error_if_conf_frozen()
 
-    def freeze_configuration(self):
-        self._conf_frozen = True
+    def _error_if_conf_frozen(self):
+        if api_status.is_installed:
+            raise RuntimeError("This server's connection settings can no longer be modified.")
 
     @property
     def uri(self):
@@ -79,32 +79,35 @@ class Server(object):
 
     @uri.setter
     def uri(self, value):
-        self._error_if_conf_frozen()
-        self._uri = value
+        with api_status._api_lock:
+            self._error_if_conf_frozen_and_not_eq(self._uri, value)
+            self._uri = value
 
     @property
     def host(self):
         """server host name"""
-        raise_deprecation_warning('server.host')
         return HostPortHelper.get_host_port(self._uri)[0]
 
     @host.setter
     def host(self, value):
-        raise_deprecation_warning('server.host')
-        self._error_if_conf_frozen()
-        self._uri = HostPortHelper.set_uri_host(self._uri, value)
+        with api_status._api_lock:
+            uri = self._uri
+            new_uri = HostPortHelper.set_uri_host(uri, value)
+            self._error_if_conf_frozen_and_not_eq(uri, new_uri)
+            self._uri = new_uri
 
     @property
     def port(self):
         """server port number - can be None for no specification"""
-        raise_deprecation_warning('server.port')
         return HostPortHelper.get_host_port(self._uri)[1]
 
     @port.setter
     def port(self, value):
-        raise_deprecation_warning('server.port')
-        self._error_if_conf_frozen()
-        self._uri = HostPortHelper.set_uri_port(self._uri, value)
+        with api_status._api_lock:
+            uri = self._uri
+            new_uri = HostPortHelper.set_uri_port(uri, value)
+            self._error_if_conf_frozen_and_not_eq(uri, new_uri)
+            self._uri = new_uri
 
     @property
     def scheme(self):
@@ -113,8 +116,9 @@ class Server(object):
 
     @scheme.setter
     def scheme(self, value):
-        self._error_if_conf_frozen()
-        self._scheme = value
+        with api_status._api_lock:
+            self._error_if_conf_frozen()
+            self._scheme = value
 
     @property
     def headers(self):
@@ -123,26 +127,24 @@ class Server(object):
 
     @headers.setter
     def headers(self, value):
-        self._error_if_conf_frozen()
-        self._headers = value
+        with api_status._api_lock:
+            self._error_if_conf_frozen()
+            self._headers = value
 
     @property
-    def user_name(self):
-        return self._user_name
+    def user(self):
+        return self._user
 
-    @user_name.setter
-    def user_name(self, value):
-        self._error_if_conf_frozen()
-        self._user_name = value
+    @user.setter
+    def user(self, value):
+        with api_status._api_lock:
+            self._error_if_conf_frozen()
+            self._user = value
+            self.refresh_authorization_header()
 
-    @property
-    def user_password(self):
-        return self._user_password
-
-    @user_password.setter
-    def user_password(self, value):
-        self._error_if_conf_frozen()
-        self._user_password = value
+    def refresh_authorization_header(self):
+        """for overriding by subtypes"""
+        pass
 
     def _get_scheme_and_authority(self):
         return "%s://%s" % (self.scheme, self.uri)
@@ -224,3 +226,6 @@ class HostPortHelper(object):
         """returns the uri with the port added or replaced, or removed if new_port is None"""
         host, port = HostPortHelper.get_host_port(uri)
         return HostPortHelper.get_uri(host, new_port)
+
+
+

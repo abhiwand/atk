@@ -19,6 +19,13 @@ logger = logging.getLogger(__name__)
 import intelanalytics.rest.http as http
 from intelanalytics.rest.server import Server
 
+
+def _get_uaa_server(uaa_uri):
+    scheme = Server._get_value_from_config('uaa_scheme')
+    headers = Server._get_value_from_config('uaa_headers')
+    return Server(uaa_uri, scheme, headers)
+
+
 def get_oauth_token(uaa_uri, user_name, user_password):
     """
     Connect to the cloudfoundry uaa server and acquire token
@@ -36,12 +43,31 @@ def get_oauth_token(uaa_uri, user_name, user_password):
         data = {'grant_type': "password", 'username': user_name, 'password': user_password}
         response = http.post(uaa_server, "/oauth/token", auth=auth, data=data)
         uaa_server._check_response(response)
+        token_type = response.json()['token_type']
         token = response.json()['access_token']
-    else:
-        token = None
-    return token
+        refresh_token = response.json()['refresh_token']
+        #print "refresh_token=%s" % refresh_token
+        #print "token_type=%s" % token_type
+        return token_type, token, refresh_token
+    return None, None, None
 
-def _get_uaa_server(uaa_uri):
-    scheme = Server._get_value_from_config('uaa_scheme')
-    headers = Server._get_value_from_config('uaa_headers')
-    return Server(uaa_uri, scheme, headers)
+
+def get_refreshed_oauth_token(uaa_uri, refresh_token):
+    """
+    Connect to the cloudfoundry uaa server and acquire access token using a refresh token
+    """
+    # Authenticate to UAA as client (this client)
+    # Tell UAA to grant us (the client) a token using a refresh token
+    if uaa_uri:
+        uaa_server = _get_uaa_server(uaa_uri)
+        client_name = Server._get_value_from_config('client_name')
+        client_password = Server._get_value_from_config('client_password')
+        auth = (client_name, client_password)
+        data = {'grant_type': 'refresh_token', 'refresh_token': refresh_token }
+        response = http.post(uaa_server, "/oauth/token", auth=auth, data=data)
+        uaa_server._check_response(response)
+        token_type = response.json()['token_type']
+        token = response.json()['access_token']
+        refresh_token = response.json()['refresh_token']
+        return token_type, token, refresh_token
+    return None, None, None

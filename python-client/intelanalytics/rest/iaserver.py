@@ -17,8 +17,8 @@
 """
 Connection to the Intel Analytics REST Server
 """
-import os
 import requests
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ from decorator import decorator
 from intelanalytics.core.api import api_status
 import intelanalytics.rest.config as config
 from intelanalytics.rest.server import Server
-from intelanalytics.rest.uaa import get_oauth_token
+from intelanalytics.rest.uaa import get_oauth_token, get_refreshed_oauth_token
 from intelanalytics.meta.installapi import install_api
 
 
@@ -69,19 +69,19 @@ class IaServer(Server):
     """
 
     def __init__(self):
-        user_name=self._get_conf('user_name', None)
-        user_password=self._get_conf('user_password', None)
+        user=self._get_conf('user', None)
         super(IaServer, self).__init__(
             uri= self._get_conf('uri'),
             scheme=self._get_conf('scheme'),
             headers=self._get_conf('headers'),
-            user_name=user_name,
-            user_password=user_password)
+            user=user)
         # specific to IA Server
         self._version = self._get_conf('version')
-        self._oauth_token = None
         self._oauth_uri = None
+        self._oauth_token = None
+        self.oauth_refresh_token = None
         self.retry_on_token_error = self._get_conf('retry_on_token_error', True)
+        self.refresh_authorization_header()
 
     @property
     def version(self):
@@ -110,13 +110,15 @@ class IaServer(Server):
     @oauth_token.setter
     def oauth_token(self, value):
         self._oauth_token = value
-        if value:
-            self.headers['Authorization'] = self._oauth_token
-        else:
-            # If no oauth, we just pass the user_name for the token
-            self.headers['Authorization'] = self.user_name
+        self.refresh_authorization_header()
         logger.info("Client oauth token updated to %s", self._oauth_token)
 
+    def refresh_authorization_header(self):
+        if self._oauth_token:
+            self.headers['Authorization'] = self._oauth_token
+        else:
+            # If no oauth, we just pass the user for the token
+            self.headers['Authorization'] = self.user
 
     def _get_base_uri(self):
         """Returns the base uri used by client as currently configured to talk to the server"""
@@ -129,7 +131,16 @@ class IaServer(Server):
         super(IaServer, self)._check_response(response)
 
     def refresh_oauth_token(self):
-        self.oauth_token = get_oauth_token(self.oauth_uri, self.user_name, self._user_password)
+        token_type, self.oauth_token, self.oauth_refresh_token = get_refreshed_oauth_token(self.oauth_uri, self.oauth_refresh_token)
+
+    def _load_connect_file(self, connect_file):
+        with open(connect_file, "r") as f:
+            creds = json.load(f)
+        self.uri = creds.get('uri', self.uri)
+        self.oauth_uri = creds.get('oauth_uri', self.oauth_uri)
+        self.user = creds.get('user', self.user)
+        self.oauth_token = creds.get('token', self.oauth_token)
+        self.oauth_refresh_token = creds.get('refresh_token', self.oauth_token)
 
     def ping(self):
         """
@@ -150,10 +161,7 @@ class IaServer(Server):
             logger.error(message)
             raise IOError(message)
 
-    def freeze_configuration(self):
-        super(IaServer, self).freeze_configuration()
-
-    def connect(self, user_name=None, user_password=None, token=None):
+    def connect(self, connect_file=None):
         """
         Connect to the intelanalytics server.
 
@@ -166,7 +174,7 @@ class IaServer(Server):
 
         Subsequent calls to this method invoke no action.
 
-        If user credentials are supplied, they will override the settings in the server's configuration
+        If a credentials file is supplied, they will override the settings in the server's configuration
 
         There is no "connection" object or notion of being continuously "connected".  The call to
         connect is just a one-time process to download the API and prepare the client.  If the server
@@ -174,27 +182,17 @@ class IaServer(Server):
         point of view, and will still be operating with the API information originally downloaded.
         """
 
-        if api_status.is_installed:
-            print "Already connected.  %s" % api_status
-        else:
-            if user_name or user_password:
-                if token:
-                    raise ValueError("Provide either token or else name and password, but not both")
-                if user_name is None or user_password is None:
-                    raise ValueError("Both name and password required if specifying connect credentials")
-                self.user_name = user_name
-                self.user_password = user_password
-            elif token:
-                self.oauth_token = token
+        with api_status._api_lock:
+            if api_status.is_installed:
+                print "Already connected.  %s" % api_status
+            else:
+                if connect_file:
+                    self._load_connect_file(connect_file)
 
-            if not self.oauth_token:
-                self.refresh_oauth_token()
-
-            install_api(self)
-            self.freeze_configuration()
-            msg = "Connected.  %s" % api_status
-            logger.info(msg)
-            print msg
+                install_api(self)
+                msg = "Connected.  %s" % api_status
+                logger.info(msg)
+                print msg
 
     @staticmethod
     def _get_conf(name, default=Server._unspecified):
@@ -216,3 +214,33 @@ class IaServer(Server):
 
 
 server = IaServer()
+
+
+def create_connect_file(filename):
+    import json
+    import getpass
+    with open(filename, "w"):
+        pass
+
+    uri = raw_input("server URI: ")
+    oauth_uri = raw_input("OAuth server URI: ") or None
+    user = raw_input("user name: ")
+    if oauth_uri:
+        password = getpass.getpass()
+        token_type, token, refresh_token = get_oauth_token(oauth_uri, user, password)
+    else:
+        token_type, token, refresh_token = None, None, None
+
+    creds = dict({ 'uri': uri,
+                   'user': user,
+                   'oauth_uri': oauth_uri,
+                   'token_type': token_type,
+                   'token': token,
+                   'refresh_token': refresh_token })
+    # call uaa and get the token...
+    # entanglement with server
+    with open(filename, "w") as f:
+        f.write(json.dumps(creds, indent=2))
+    print "\nCredentials created at '%s'" % filename
+
+

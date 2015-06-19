@@ -26,7 +26,7 @@ class server_defaults:
     headers = {'Content-type': 'application/json',
                'Accept': 'application/json,text/plain'}
     version = 'v1'
-    user_name = 'test_api_key_1'
+    user = 'test_api_key_1'
     client_name = 'atk-client'
     client_password = 'c1oudc0w'
     uaa_scheme = "https"
