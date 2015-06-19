@@ -120,7 +120,7 @@ class MLLibJsonProtocolTest extends WordSpec {
     "be able to serialize" in {
       val l = new LogisticRegressionWithSGDData(new LogisticRegressionModel(new DenseVector(Array(1.3, 3.1)), 3.5), List("column1", "column2"))
       assert(l.toJson.compactPrint == "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1]},\"intercept\":3.5,\"numFeatures\":2,\"numClasses\":2},\"observation_columns\":[\"column1\",\"column2\"]}")
-       
+
     }
 
     "parse json" in {
