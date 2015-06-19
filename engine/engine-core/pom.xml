@@ -103,6 +103,10 @@
                                     <pattern>com.google.guava</pattern>
                                     <shadedPattern>atk.com.google.guava</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons.lang3</pattern>
+                                    <shadedPattern>atk.org.apache.commons.lang3</shadedPattern>
+                                </relocation>
                             </relocations>
                         </configuration>
                     </execution>
@@ -334,10 +338,6 @@
                 </exclusion>
             </exclusions>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
