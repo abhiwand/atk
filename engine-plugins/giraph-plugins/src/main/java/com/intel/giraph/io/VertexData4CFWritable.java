@@ -31,7 +31,7 @@ import java.io.IOException;
 public class VertexData4CFWritable implements Writable {
 
     /** The vertex type supported by this vertex */
-    public enum VertexType { LEFT, RIGHT }
+    public enum VertexType { User, Item }
 
     /** The type of this vertex */
     private VertexType type = null;

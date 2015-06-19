@@ -237,9 +237,7 @@ class ApiExistsSmokeTest(unittest.TestCase):
         self.assert_methods_defined(['loopy_belief_propagation'], ia.core.api.GraphMl)
 
     def test_expected_methods_exist_on_titangraphml(self):
-        self.assert_methods_defined(['alternating_least_squares',
-                                     'belief_propagation',
-                                     'conjugate_gradient_descent',
+        self.assert_methods_defined(['belief_propagation',
                                      'kclique_percolation',
                                      'loopy_belief_propagation'], ia.core.api.TitanGraphMl)
 
