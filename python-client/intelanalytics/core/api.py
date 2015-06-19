@@ -46,7 +46,7 @@ import threading
 
 class _ApiStatus(object):
 
-    _api_lock = threading.RLock()
+    #_api_lock = threading.RLock()
 
     """tracks whether the API has been installed yet"""
     def __init__(self):
@@ -61,8 +61,8 @@ class _ApiStatus(object):
 
     @property
     def installed_time(self):
-        with _ApiStatus._api_lock:
-            return self.__api_installed_timestamp
+        #with _ApiStatus._api_lock:
+        return self.__api_installed_timestamp
 
     @property
     def server_build_id(self):
@@ -78,11 +78,11 @@ class _ApiStatus(object):
 
     def declare_installed(self, server, server_build_id):
         """declares the API as installed for the package, no turning back."""
-        with _ApiStatus._api_lock:
-            self.__api_installed_timestamp = datetime.datetime.now()
-            self.__build_id = server_build_id
-            self.__server_uri = server._get_base_uri()
-            self.__user = server.user
+        #with _ApiStatus._api_lock:
+        self.__api_installed_timestamp = datetime.datetime.now()
+        self.__build_id = server_build_id
+        self.__server_uri = server._get_base_uri()
+        self.__user = server.user
 
     def __repr__(self):
         if not self.is_installed:

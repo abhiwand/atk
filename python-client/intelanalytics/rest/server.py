@@ -79,9 +79,9 @@ class Server(object):
 
     @uri.setter
     def uri(self, value):
-        with api_status._api_lock:
-            self._error_if_conf_frozen_and_not_eq(self._uri, value)
-            self._uri = value
+        #with api_status._api_lock:
+        self._error_if_conf_frozen_and_not_eq(self._uri, value)
+        self._uri = value
 
     @property
     def host(self):
@@ -90,11 +90,11 @@ class Server(object):
 
     @host.setter
     def host(self, value):
-        with api_status._api_lock:
-            uri = self._uri
-            new_uri = HostPortHelper.set_uri_host(uri, value)
-            self._error_if_conf_frozen_and_not_eq(uri, new_uri)
-            self._uri = new_uri
+        #with api_status._api_lock:
+        uri = self._uri
+        new_uri = HostPortHelper.set_uri_host(uri, value)
+        self._error_if_conf_frozen_and_not_eq(uri, new_uri)
+        self._uri = new_uri
 
     @property
     def port(self):
@@ -103,11 +103,11 @@ class Server(object):
 
     @port.setter
     def port(self, value):
-        with api_status._api_lock:
-            uri = self._uri
-            new_uri = HostPortHelper.set_uri_port(uri, value)
-            self._error_if_conf_frozen_and_not_eq(uri, new_uri)
-            self._uri = new_uri
+        #with api_status._api_lock:
+        uri = self._uri
+        new_uri = HostPortHelper.set_uri_port(uri, value)
+        #self._error_if_conf_frozen_and_not_eq(uri, new_uri)  # todo: enable when api_status lock figured out
+        self._uri = new_uri
 
     @property
     def scheme(self):
@@ -116,9 +116,9 @@ class Server(object):
 
     @scheme.setter
     def scheme(self, value):
-        with api_status._api_lock:
-            self._error_if_conf_frozen()
-            self._scheme = value
+        #with api_status._api_lock:
+        self._error_if_conf_frozen()
+        self._scheme = value
 
     @property
     def headers(self):
@@ -127,9 +127,9 @@ class Server(object):
 
     @headers.setter
     def headers(self, value):
-        with api_status._api_lock:
-            self._error_if_conf_frozen()
-            self._headers = value
+        #with api_status._api_lock:
+        self._error_if_conf_frozen()
+        self._headers = value
 
     @property
     def user(self):
@@ -137,10 +137,10 @@ class Server(object):
 
     @user.setter
     def user(self, value):
-        with api_status._api_lock:
-            self._error_if_conf_frozen()
-            self._user = value
-            self.refresh_authorization_header()
+        #with api_status._api_lock:
+        self._error_if_conf_frozen()
+        self._user = value
+        self.refresh_authorization_header()
 
     def refresh_authorization_header(self):
         """for overriding by subtypes"""

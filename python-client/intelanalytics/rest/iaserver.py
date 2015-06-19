@@ -182,17 +182,17 @@ class IaServer(Server):
         point of view, and will still be operating with the API information originally downloaded.
         """
 
-        with api_status._api_lock:
-            if api_status.is_installed:
-                print "Already connected.  %s" % api_status
-            else:
-                if connect_file:
-                    self._load_connect_file(connect_file)
+        #with api_status._api_lock:
+        if api_status.is_installed:
+            print "Already connected.  %s" % api_status
+        else:
+            if connect_file:
+                self._load_connect_file(connect_file)
 
-                install_api(self)
-                msg = "Connected.  %s" % api_status
-                logger.info(msg)
-                print msg
+            install_api(self)
+            msg = "Connected.  %s" % api_status
+            logger.info(msg)
+            print msg
 
     @staticmethod
     def _get_conf(name, default=Server._unspecified):
