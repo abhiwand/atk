@@ -63,7 +63,7 @@ public class TestJsonPropertyGraph4CFOutputFormat extends JsonPropertyGraph4CFOu
         Vertex vertex = mock(Vertex.class);
         when(vertex.getId()).thenReturn(new LongWritable(1L));
         
-        when(vertex.getValue()).thenReturn(new VertexData4CFWritable(VertexType.LEFT,
+        when(vertex.getValue()).thenReturn(new VertexData4CFWritable(VertexType.User,
             new DenseVector(new double[]{4.0, 5.0})));
 
         // Create empty iterator == no edges

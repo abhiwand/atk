@@ -46,10 +46,6 @@ public class CFVertexId implements WritableComparable {
         return value;
     }
 
-    public Long getValueAsLong() {
-        return Long.getLong(value, 0);
-    }
-
     public boolean isUser() {
         return isUserVertex;
     }
@@ -60,7 +56,7 @@ public class CFVertexId implements WritableComparable {
 
     /**
      *
-     * @return the object has code
+     * @return the object hash code
      */
     public long seed() {
         return getValue().hashCode();

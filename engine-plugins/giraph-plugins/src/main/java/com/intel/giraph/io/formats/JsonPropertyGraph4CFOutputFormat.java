@@ -71,10 +71,10 @@ public class JsonPropertyGraph4CFOutputFormat extends TextVertexOutputFormat<Lon
                 VertexType vt = vertex.getValue().getType();
                 String vs;
                 switch (vt) {
-                case LEFT:
+                case User:
                     vs = "L";
                     break;
-                case RIGHT:
+                case Item:
                     vs = "R";
                     break;
                 default:
