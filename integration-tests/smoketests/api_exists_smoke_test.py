@@ -232,14 +232,9 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'sampling',
                                      'status'], ia.TitanGraph)
 
-    def test_expected_methods_exist_on_graphml(self):
-        # TODO: this seems wrong? lbp isn't on Graph?
-        self.assert_methods_defined(['loopy_belief_propagation'], ia.core.api.GraphMl)
-
     def test_expected_methods_exist_on_titangraphml(self):
         self.assert_methods_defined(['belief_propagation',
-                                     'kclique_percolation',
-                                     'loopy_belief_propagation'], ia.core.api.TitanGraphMl)
+                                     'kclique_percolation'], ia.core.api.TitanGraphMl)
 
     def test_expected_methods_exist_on_kmeans_model(self):
         self.assert_methods_defined(["name",
