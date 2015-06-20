@@ -17,6 +17,7 @@
 """
 Connection to the Intel Analytics REST Server
 """
+import os
 import requests
 import json
 import logging
@@ -28,6 +29,10 @@ import intelanalytics.rest.config as config
 from intelanalytics.rest.server import Server
 from intelanalytics.rest.uaa import get_oauth_token, get_refreshed_oauth_token
 from intelanalytics.meta.installapi import install_api
+
+
+def clean_file_path(file_path):
+    return os.path.normpath(os.path.expandvars(os.path.expanduser(file_path)))
 
 
 class InvalidAuthTokenError(RuntimeError):
@@ -68,19 +73,47 @@ class IaServer(Server):
         ia.server.ping()  # test server connection
     """
 
+    _uri_env = 'ATK_URI'
+    _creds_env = 'ATK_CREDS'
+
     def __init__(self):
-        user=self._get_conf('user', None)
+        uri = self._get_from_env(IaServer._uri_env, "Default ATK server URI")
         super(IaServer, self).__init__(
-            uri= self._get_conf('uri'),
+            uri=uri or self._get_conf('uri'),
             scheme=self._get_conf('scheme'),
-            headers=self._get_conf('headers'),
-            user=user)
+            headers=self._get_conf('headers'))
         # specific to IA Server
         self._version = self._get_conf('version')
-        self._oauth_uri = None
+        self._user=self._get_conf('user', None)
+        self._oauth_uri = self._get_conf('oauth_uri', None)
         self._oauth_token = None
         self.oauth_refresh_token = None
+        self.refresh_authorization_header()
+
+        creds_file = self._get_from_env(IaServer._creds_env, "Default credentials file")
+        if creds_file:
+            self.init_with_credentials(creds_file)
         self.retry_on_token_error = self._get_conf('retry_on_token_error', True)
+
+    def _get_from_env(self, env_name, value_description):
+        """get value from env variable.  Returns None if not found"""
+        value = os.getenv(env_name, None)
+        if value:
+            msg = "%s taken from env $%s=%s" % (value_description, env_name, value)
+            logger.info(msg)
+            print msg
+        return value
+
+
+    def init_with_credentials(self, credentials_file):
+        """initializes this server config with credentials from the given file, calls an oauth server"""
+        cleaned_path = clean_file_path(credentials_file)
+        with open(cleaned_path, "r") as f:
+            creds = json.load(f)
+        self.oauth_uri = creds.get('oauth_uri', self.oauth_uri)
+        self.user = creds.get('user', self.user)
+        self.oauth_token = creds.get('token', self.oauth_token)
+        self.oauth_refresh_token = creds.get('refresh_token', self.oauth_token)
         self.refresh_authorization_header()
 
     @property
@@ -92,6 +125,17 @@ class IaServer(Server):
     def version(self, value):
         self._error_if_conf_frozen()
         self._version = value
+
+    @property
+    def user(self):
+        return self._user
+
+    @user.setter
+    def user(self, value):
+        #with api_status._api_lock:
+        self._error_if_conf_frozen()
+        self._user = value
+        self.refresh_authorization_header()
 
     @property
     def oauth_uri(self):
@@ -120,6 +164,9 @@ class IaServer(Server):
             # If no oauth, we just pass the user for the token
             self.headers['Authorization'] = self.user
 
+    def refresh_oauth_token(self):
+        token_type, self.oauth_token, self.oauth_refresh_token = get_refreshed_oauth_token(self.oauth_uri, self.oauth_refresh_token)
+
     def _get_base_uri(self):
         """Returns the base uri used by client as currently configured to talk to the server"""
         return super(IaServer, self)._get_base_uri() + ("/%s" % self.version)
@@ -129,18 +176,6 @@ class IaServer(Server):
         if response.status_code == 400 and "CF-InvalidAuthToken" in response.text:
             raise InvalidAuthTokenError(response.text)
         super(IaServer, self)._check_response(response)
-
-    def refresh_oauth_token(self):
-        token_type, self.oauth_token, self.oauth_refresh_token = get_refreshed_oauth_token(self.oauth_uri, self.oauth_refresh_token)
-
-    def _load_connect_file(self, connect_file):
-        with open(connect_file, "r") as f:
-            creds = json.load(f)
-        self.uri = creds.get('uri', self.uri)
-        self.oauth_uri = creds.get('oauth_uri', self.oauth_uri)
-        self.user = creds.get('user', self.user)
-        self.oauth_token = creds.get('token', self.oauth_token)
-        self.oauth_refresh_token = creds.get('refresh_token', self.oauth_token)
 
     def ping(self):
         """
@@ -161,35 +196,48 @@ class IaServer(Server):
             logger.error(message)
             raise IOError(message)
 
-    def connect(self, connect_file=None):
+    def connect(self, credentials_file=None):
         """
         Connect to the intelanalytics server.
 
         This method calls the server, downloads its API information and dynamically generates and adds
-        the appropriate Python code to this Python package.  Calling this method is required before
-        invoking any server activity.
+        the appropriate Python code to the Python package for this python session.  Calling this method
+        is required before invoking any server activity.
 
-        After the client has connected to the server, the server config cannot be changed or refreshed.
+        After the client has connected to the server, the server config cannot be changed.
         User must restart Python in order to change connection info.
 
         Subsequent calls to this method invoke no action.
-
-        If a credentials file is supplied, they will override the settings in the server's configuration
 
         There is no "connection" object or notion of being continuously "connected".  The call to
         connect is just a one-time process to download the API and prepare the client.  If the server
         goes down and comes back up, this client will not recognize any difference from a connection
         point of view, and will still be operating with the API information originally downloaded.
+
+        Parameters
+        ==========
+        credentials_file: str (optional)
+            file name of a credentials file.   If supplied, it will override the settings authentication
+            settings in the client's server configuration.  The credentials file is normally obtained
+            through the env.
         """
 
         #with api_status._api_lock:
         if api_status.is_installed:
             print "Already connected.  %s" % api_status
         else:
-            if connect_file:
-                self._load_connect_file(connect_file)
-
-            install_api(self)
+            if credentials_file:
+                self.init_with_credentials(credentials_file)
+            try:
+                install_api(self)
+            except RuntimeError as runErr:
+                if '''The resource requires authentication, which was not supplied with the request''' in str(runErr):
+                    raise RuntimeError(str(runErr) + ".  Credentials must be supplied through a file specified by env "
+                                       "$%s before launching python or by an argument in the call to connect().  You "
+                                       "can create credentials now by running ia.create_credentials_file('<filename>') "
+                                       "and then calling ia.connect('<filename>')" % IaServer._creds_env)
+                else:
+                    raise
             msg = "Connected.  %s" % api_status
             logger.info(msg)
             print msg
@@ -216,31 +264,54 @@ class IaServer(Server):
 server = IaServer()
 
 
-def create_connect_file(filename):
+# Credentials creation
+
+class _CreateCredentialsCache(object):
+    """caches the most recent user entries, to prevent retyping  (excludes password)"""
+    oauth_uri=None
+    user=None
+
+
+def default_input(message, default):
+    """get raw input from a prompt which can provide a default value if user just hits Enter"""
+    return raw_input("%s%s: " % (message, '' if not default else ' [%s]' % default)) or default
+
+
+def create_credentials_file(filename):
+    """Runs an interactive prompt to collect user input to make a credentials file, calls oauth server for a token."""
     import json
     import getpass
-    with open(filename, "w"):
+    cleaned_path = clean_file_path(filename)
+    with open(cleaned_path, "w"):
         pass
 
-    uri = raw_input("server URI: ")
-    oauth_uri = raw_input("OAuth server URI: ") or None
-    user = raw_input("user name: ")
-    if oauth_uri:
+    cache = _CreateCredentialsCache  # alias the cache singleton for convenience
+    cache.oauth_uri = default_input("OAuth server URI", cache.oauth_uri)
+    cache.user = default_input("User name", cache.user)
+    if cache.oauth_uri:
         password = getpass.getpass()
-        token_type, token, refresh_token = get_oauth_token(oauth_uri, user, password)
+        stars = "*" * len(password)
+        try:
+            token_type, token, refresh_token = get_oauth_token(cache.oauth_uri, cache.user, password)
+        except Exception as error:
+            raise RuntimeError("""
+Unable to acquire oauth token with these credentials.
+  OAuth server URI: %s
+  User name: %s
+  Password: %s
+
+  Error msg: %s
+""" % (cache.oauth_uri, cache.user, stars, str(error)))
     else:
         token_type, token, refresh_token = None, None, None
 
-    creds = dict({ 'uri': uri,
-                   'user': user,
-                   'oauth_uri': oauth_uri,
+    creds = dict({ 'user': cache.user,
+                   'oauth_uri': cache.oauth_uri,
                    'token_type': token_type,
                    'token': token,
                    'refresh_token': refresh_token })
     # call uaa and get the token...
     # entanglement with server
-    with open(filename, "w") as f:
+    with open(cleaned_path, "w") as f:
         f.write(json.dumps(creds, indent=2))
-    print "\nCredentials created at '%s'" % filename
-
-
+    print "\nCredentials file created at '%s'" % cleaned_path

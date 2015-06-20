@@ -131,21 +131,6 @@ class Server(object):
         self._error_if_conf_frozen()
         self._headers = value
 
-    @property
-    def user(self):
-        return self._user
-
-    @user.setter
-    def user(self, value):
-        #with api_status._api_lock:
-        self._error_if_conf_frozen()
-        self._user = value
-        self.refresh_authorization_header()
-
-    def refresh_authorization_header(self):
-        """for overriding by subtypes"""
-        pass
-
     def _get_scheme_and_authority(self):
         return "%s://%s" % (self.scheme, self.uri)
 
