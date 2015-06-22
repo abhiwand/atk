@@ -19,23 +19,15 @@ package com.intel.intelanalytics.engine.spark.util
 import java.text.NumberFormat
 import java.util.Locale
 
-import com.intel.event.{ EventContext, EventLogging }
+object JvmMemory {
 
-/**
- * Make sure some settings get logged that are useful for debugging on clusters
- */
-object EnvironmentLogger extends EventLogging {
-  def log()(implicit eventContext: EventContext) = withContext("EnvironmentLogger") {
-    withContext("environmentVariables") {
-      System.getenv().keySet().toArray(Array[String]()).sorted.foreach(environmentVariable =>
-        info(environmentVariable + "=" + System.getenv(environmentVariable))
-      )
-    }
-    withContext("systemProperties") {
-      System.getProperties.stringPropertyNames().toArray(Array[String]()).sorted.foreach(name => {
-        info(name + "=" + System.getProperty(name))
-      })
-    }
-    info(JvmMemory.memory)
+  /**
+   * Get a formatting String description of current JVM memory
+   */
+  def memory: String = {
+    val formatter = NumberFormat.getInstance(Locale.US)
+    "freeMemory=" + formatter.format(Runtime.getRuntime.freeMemory()) +
+      ", totalMemory=" + formatter.format(Runtime.getRuntime.totalMemory()) +
+      ", maxMemory=" + formatter.format(Runtime.getRuntime.maxMemory())
   }
 }
