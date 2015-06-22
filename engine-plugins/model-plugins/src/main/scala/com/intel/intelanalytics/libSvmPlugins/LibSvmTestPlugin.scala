@@ -90,7 +90,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
         i += 1
       }
       val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
-      Array[Any](label.asInstanceOf[Double], predictionLabel.value)
+      Array[Any](label.asInstanceOf[Int], predictionLabel.value)
     })
 
     //Run Binary classification metrics
