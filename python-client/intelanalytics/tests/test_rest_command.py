@@ -20,7 +20,22 @@ iatest.init()
 import unittest
 from mock import patch, Mock
 from intelanalytics.rest.command import ProgressPrinter
-from intelanalytics.rest.command import Executor
+from intelanalytics.rest.server import HostPortHelper
+
+
+class TestServer(unittest.TestCase):
+
+    def test_re(self):
+        self.assertEquals(('alpha', '1010'), HostPortHelper.get_host_port("alpha:1010"))
+        self.assertEquals(('alpha.com', None), HostPortHelper.get_host_port("alpha.com"))
+        self.assertEquals(('https://alpha.com', None), HostPortHelper.get_host_port("https://alpha.com"))
+        self.assertEquals(('https://alpha.com', '1010'), HostPortHelper.get_host_port("https://alpha.com:1010"))
+
+    def test_set_uri(self):
+        self.assertEquals('beta:1011', HostPortHelper.set_uri_host('alpha:1011', 'beta'))
+        self.assertEquals('beta:1011', HostPortHelper.set_uri_host('alpha:1011', 'beta'))
+        self.assertEquals('alpha', HostPortHelper.set_uri_port('alpha:1010', None))
+        self.assertEquals(None, HostPortHelper.set_uri_host('alpha:1010', None))
 
 
 class TestRestCommand(unittest.TestCase):
@@ -117,6 +132,7 @@ class TestRestCommand(unittest.TestCase):
         self.assertEqual(write_queue[2], "\r[=========================] 100.00% Tasks retries:0 Time 0:00:00\n")
         self.assertEqual(write_queue[3], "\r[=========================] 100.00% Tasks retries:0 Time 0:00:00\n")
         self.assertEqual(write_queue[4], "\r[=========================] 100.00% Tasks retries:0 Time 0:00:00\n")
+
 
 if __name__ == '__main__':
     unittest.main()
