@@ -20,16 +20,16 @@ import java.io.File
 import java.nio.file.{ FileSystems, Files }
 
 import com.intel.intelanalytics.engine.spark.hadoop.HadoopSupport
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 
 import sys.process._
-import scala.collection.JavaConversions._
 
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
+import com.intel.intelanalytics.engine.spark.util.{ JvmMemory, KerberosAuthenticator }
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
@@ -46,6 +46,7 @@ import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
 import com.intel.event.{ EventContext, EventLogging }
 import scala.concurrent.duration._
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext.global
 
 case class CommandContext(
     command: Command,
@@ -153,7 +154,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
       val context = CommandContext(cmd,
         action = isAction(plugin),
-        executionContext,
+        EngineExecutionContext.global,
         user,
         commandPluginRegistry,
         referenceResolver,
@@ -171,7 +172,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
       val context = CommandContext(cmd,
         action = isAction(plugin),
-        executionContext,
+        EngineExecutionContext.global,
         user,
         commandPluginRegistry,
         referenceResolver,
@@ -222,7 +223,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
    * @return plugin return value as JSON
    */
   private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): JsObject = withContext("cmdExcector") {
-    info(s"command id:${commandContext.command.id}, name:${commandContext.command.name}, args:${commandContext.command.compactArgs}")
+    info(s"command id:${commandContext.command.id}, name:${commandContext.command.name}, args:${commandContext.command.compactArgs}, ${JvmMemory.memory}")
     val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
     val arguments = plugin.parseArguments(commandContext.command.arguments.get)
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
@@ -230,12 +231,19 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && SparkEngineConfig.isSparkOnYarn) {
       val archiveName = commandContext.plugins.getArchiveNameFromPlugin(plugin.name)
-      executeCommandOnYarn(commandContext.command, plugin, archiveName)
+      val sparkSubmitExitCode = executeCommandOnYarn(commandContext.command, plugin, archiveName)
       // Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution
       val updatedCommand = commands.lookup(commandContext.command.id).get
-      if (updatedCommand.error.isDefined)
+      if (updatedCommand.error.isDefined) {
         throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
-      updatedCommand.result.getOrElse(throw new Exception("Error submitting command to yarn-cluster"))
+      }
+      if (updatedCommand.result.isDefined) {
+        updatedCommand.result.get
+      }
+      else {
+        error(s"Command didn't have any results, this is probably do to an error submitting command to yarn-cluster: $updatedCommand")
+        throw new Exception(s"Error submitting command to yarn-cluster.")
+      }
     }
     else {
       val returnValue = if (commandContext.action) {
@@ -261,7 +269,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       .map(j => SparkContextFactory.jarPath(j)).mkString(delimiter)
   }
 
-  private def executeCommandOnYarn[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R], archiveName: Option[String])(implicit invocation: Invocation): Unit = {
+  private def executeCommandOnYarn[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R], archiveName: Option[String])(implicit invocation: Invocation): Int = {
     withContext("executeCommandOnYarn") {
 
       val tempConfFileName = s"/tmp/application_${command.id}.conf"
@@ -352,8 +360,9 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           // execution in yarn-cluster mode.
 
           val pb = new java.lang.ProcessBuilder(javaArgs: _*)
-          val result = (pb.inheritIO() !)
-          info(s"Command ${command.id} complete with result: $result")
+          val result = pb.inheritIO().start().waitFor()
+          info(s"Command ${command.id} completed with exitCode:$result, ${JvmMemory.memory}")
+          result
         }
       }
       finally {

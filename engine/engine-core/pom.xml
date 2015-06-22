@@ -92,6 +92,10 @@
                                     <resource>reference.conf</resource>
                                 </transformer>
                                 <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>log4j.properties</resource>
+                                </transformer>
+                                <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                             <relocations>
@@ -129,11 +133,6 @@
         <dependency>
             <groupId>com.intel.ia</groupId>
             <artifactId>meta-store</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.intel.ia</groupId>
-            <artifactId>scoring-interfaces</artifactId>
-            <version>master-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.intel.ia</groupId>

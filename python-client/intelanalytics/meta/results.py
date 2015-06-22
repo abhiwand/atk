@@ -104,6 +104,12 @@ def return_label_propagation(selfish, json_result):
     frame = get_frame(json_result['output_frame']['id'])
     return { 'frame': frame, 'report': json_result['report'] }
 
+@postprocessor('frame:/loopy_belief_propagation')
+def return_loopy_belief_propagation(selfish, json_result):
+    from intelanalytics import get_frame
+    frame = get_frame(json_result['output_frame']['id'])
+    return { 'frame': frame, 'report': json_result['report'] }
+
 @postprocessor('frame:/collaborative_filtering')
 def return_collaborative_filtering(selfish, json_result):
     from intelanalytics import get_frame

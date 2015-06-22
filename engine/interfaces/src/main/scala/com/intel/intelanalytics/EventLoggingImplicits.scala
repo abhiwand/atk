@@ -20,8 +20,6 @@ import com.intel.event.EventContext
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 
-import scala.concurrent.ExecutionContext
-
 /**
  * Implicits for working with invocations and event logging
  */
@@ -31,7 +29,7 @@ trait EventLoggingImplicits {
     require(inv != null, "invocation cannot be null")
     inv.eventContext
   }
-  implicit def executionContext[T](implicit inv: Invocation): ExecutionContext = inv.executionContext
+
   implicit def user[T](implicit inv: Invocation): UserPrincipal = inv.user
 
 }

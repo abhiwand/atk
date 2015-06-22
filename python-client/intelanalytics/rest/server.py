@@ -16,10 +16,8 @@
 
 import intelanalytics.rest.http as http
 import intelanalytics.rest.config as config
+from intelanalytics.core.api import api_status
 import json
-
-
-_connections_module = None # global singleton, indicating the module to use for connection config
 
 
 class Server(object):
@@ -29,36 +27,24 @@ class Server(object):
     _unspecified = object()  # sentinel
 
     @staticmethod
-    def _get_value_from_config(server_name, value_name, default=_unspecified):
-        global _connections_module
-        if not _connections_module:
-            try:
-                import intelanalytics.connections as _connections_module
-            except:
-                _connections_module = config
+    def _get_value_from_config(value_name, default=_unspecified):
         try:
-            server_config = getattr(_connections_module, server_name)
-            value = getattr(server_config, value_name)
+            value = getattr(config.server_defaults, value_name)
         except AttributeError:
-            try:
-                value = getattr(config.server_defaults, value_name)
-            except AttributeError:
-                if default is Server._unspecified:
-                    raise RuntimeError("Unable to find value '%s' for server '%s' in configuration" % (value_name, server_name))
-                value = default
+            if default is Server._unspecified:
+                raise RuntimeError("Unable to find value '%s' for server in configuration" % value_name)
+            value = default
         return value
 
-    def __init__(self, host, port, scheme, headers, user_name=None, user_password=None):
-        self._host = host
-        self._port = port
+    def __init__(self, uri, scheme, headers, user=None):
+        self._uri = uri
         self._scheme = scheme
         self._headers = headers
-        self._user_name = user_name
-        self._user_password = user_password
+        self._user = user
         self._conf_frozen = None
 
     def _repr_attrs(self):
-        return ["host", "port", "scheme", "headers", "user_name", "user_password"]
+        return ["uri", "scheme", "headers", "user"]
 
     def __repr__(self):
         d = dict([(a, getattr(self, a)) for a in self._repr_attrs()])
@@ -79,32 +65,49 @@ class Server(object):
         line = "\n------------------------------------------------------------------------------\n"
         return line + "\n".join(["%-15s: %s" % (k, self._str_truncate_value(v)) for k, v in sorted(d.items())]) + line
 
+    def _error_if_conf_frozen_and_not_eq(self, a, b):
+        if a != b:
+            self._error_if_conf_frozen()
+
     def _error_if_conf_frozen(self):
-        if self._conf_frozen:
+        if api_status.is_installed:
             raise RuntimeError("This server's connection settings can no longer be modified.")
 
-    def freeze_configuration(self):
-        self._conf_frozen = True
+    @property
+    def uri(self):
+        return self._uri
+
+    @uri.setter
+    def uri(self, value):
+        #with api_status._api_lock:
+        self._error_if_conf_frozen_and_not_eq(self._uri, value)
+        self._uri = value
 
     @property
     def host(self):
         """server host name"""
-        return self._host
+        return HostPortHelper.get_host_port(self._uri)[0]
 
     @host.setter
     def host(self, value):
-        self._error_if_conf_frozen()
-        self._host = value
+        #with api_status._api_lock:
+        uri = self._uri
+        new_uri = HostPortHelper.set_uri_host(uri, value)
+        self._error_if_conf_frozen_and_not_eq(uri, new_uri)
+        self._uri = new_uri
 
     @property
     def port(self):
         """server port number - can be None for no specification"""
-        return self._port
+        return HostPortHelper.get_host_port(self._uri)[1]
 
     @port.setter
     def port(self, value):
-        self._error_if_conf_frozen()
-        self._port = value
+        #with api_status._api_lock:
+        uri = self._uri
+        new_uri = HostPortHelper.set_uri_port(uri, value)
+        #self._error_if_conf_frozen_and_not_eq(uri, new_uri)  # todo: enable when api_status lock figured out
+        self._uri = new_uri
 
     @property
     def scheme(self):
@@ -113,6 +116,7 @@ class Server(object):
 
     @scheme.setter
     def scheme(self, value):
+        #with api_status._api_lock:
         self._error_if_conf_frozen()
         self._scheme = value
 
@@ -123,32 +127,12 @@ class Server(object):
 
     @headers.setter
     def headers(self, value):
+        #with api_status._api_lock:
         self._error_if_conf_frozen()
         self._headers = value
 
-    @property
-    def user_name(self):
-        return self._user_name
-
-    @user_name.setter
-    def user_name(self, value):
-        self._error_if_conf_frozen()
-        self._user_name = value
-
-    @property
-    def user_password(self):
-        return self._user_password
-
-    @user_password.setter
-    def user_password(self, value):
-        self._error_if_conf_frozen()
-        self._user_password = value
-
     def _get_scheme_and_authority(self):
-        uri = "%s://%s" % (self.scheme, self.host)
-        if self.port:
-            uri += ":%s" % self.port
-        return uri
+        return "%s://%s" % (self.scheme, self.uri)
 
     def _get_base_uri(self):
         """Returns the base uri used by client as currently configured to talk to the server"""
@@ -189,3 +173,44 @@ class ServerJsonEncoder(json.JSONEncoder):
         if isinstance(obj, Server):
             return json.loads(repr(obj))
         return json.JSONEncoder.default(self, obj)
+
+
+class HostPortHelper(object):
+    """
+    Converts Host/Port strings to URI strings
+    """
+    import re
+    pattern = re.compile(r'(.*?)(:(\d+))?$')
+
+    @staticmethod
+    def get_host_port(uri):
+        """gets host and port from a uri"""
+        match = HostPortHelper.pattern.search(uri)
+        if not match:
+            raise ValueError("Bad uri string %s" % uri)
+        host, option, port = match.groups()
+        return host, port
+
+    @staticmethod
+    def get_uri(host, port):
+        """gets uri string from host and port"""
+        if port:
+            return '%s:%s' % (host, port)
+        return host
+
+    @staticmethod
+    def set_uri_host(uri, new_host):
+        """returns the uri with the host replaced.  Returns None if new_host is None"""
+        if not new_host:
+            return None
+        host, port = HostPortHelper.get_host_port(uri)
+        return HostPortHelper.get_uri(new_host, port)
+
+    @staticmethod
+    def set_uri_port(uri, new_port):
+        """returns the uri with the port added or replaced, or removed if new_port is None"""
+        host, port = HostPortHelper.get_host_port(uri)
+        return HostPortHelper.get_uri(host, new_port)
+
+
+

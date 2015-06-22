@@ -29,11 +29,14 @@ import java.io.IOException;
  */
 public class VertexData4LBPWritable implements Writable {
     /** the vertex type supported by this vertex */
-    public enum VertexType { TRAIN, VALIDATE, TEST };
+    public enum VertexType { TRAIN, VALIDATE, TEST }
+
     /** the type of this vertex */
     private VertexType type = null;
+
     /** prior vector */
     private final VectorWritable priorWritable = new VectorWritable();
+
     /** posterior vector */
     private final VectorWritable posteriorWritable = new VectorWritable();
 

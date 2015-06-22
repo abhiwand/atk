@@ -18,7 +18,8 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.frame.{ FrameReferenceManagement, FrameReference }
 import com.intel.intelanalytics.engine.plugin.{ Call, Invocation }
-import com.intel.intelanalytics.engine.spark.command.{ Typeful, Dependencies }
+import com.intel.intelanalytics.engine.spark.command.{ Dependencies }
+import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import org.scalatest.{ FlatSpec, Matchers }
 import spray.json._
 
@@ -30,7 +31,7 @@ class DependenciesTest extends FlatSpec with Matchers {
     implicit val fmt = jsonFormat2(Foo)
 
     val reference = List(FrameReference(3))
-    implicit val invocation: Invocation = Call(null)
+    implicit val invocation: Invocation = Call(null, EngineExecutionContext.global)
     FrameReferenceManagement //reference to ensure it's loaded and registered
     Dependencies.getUriReferencesFromJsObject(Foo(1, reference.head).toJson.asJsObject) should be(reference)
   }

@@ -89,7 +89,7 @@ Examples
     .. code::
 
     input frame (lp.csv)
-    “a”        “b”        “c”
+    "a"        "b"        "c"
     1,         2,         0.5
     2,         3,         0.4
     3,         1,         0.1

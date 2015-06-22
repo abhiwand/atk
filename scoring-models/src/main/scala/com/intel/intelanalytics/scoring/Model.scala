@@ -14,17 +14,18 @@
 // limitations under the License.
 */
 
-package com.intel.intelanalytics.interfaces
+package com.intel.intelanalytics.scoring
+
+import scala.concurrent.Future
 
 /**
  * Base interface for a Model loader.
  */
-trait ModelLoader {
+trait Model {
 
   /**
-   * Called for loading a Model
-   *
+   * Called for scoring
    */
-  def load(bytes: Array[Byte]): Model
+  def score(data: Seq[Array[String]]): Future[Seq[Any]]
 
 }
