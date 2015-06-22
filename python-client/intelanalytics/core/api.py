@@ -41,20 +41,27 @@ API
 """
 
 import datetime
+import threading
+
 
 class _ApiStatus(object):
+
+    #_api_lock = threading.RLock()
+
     """tracks whether the API has been installed yet"""
     def __init__(self):
         self.__api_installed_timestamp = None
         self.__build_id = None
         self.__server_uri = None
+        self.__user = None
 
     @property
     def is_installed(self):
-        return bool(self.__api_installed_timestamp)
+        return bool(self.installed_time)
 
     @property
     def installed_time(self):
+        #with _ApiStatus._api_lock:
         return self.__api_installed_timestamp
 
     @property
@@ -62,21 +69,27 @@ class _ApiStatus(object):
         return str(self.__build_id)
 
     @property
+    def user(self):
+        return str(self.__user)
+
+    @property
     def server_uri(self):
         return self.__server_uri
 
     def declare_installed(self, server, server_build_id):
         """declares the API as installed for the package, no turning back."""
+        #with _ApiStatus._api_lock:
         self.__api_installed_timestamp = datetime.datetime.now()
         self.__build_id = server_build_id
         self.__server_uri = server._get_base_uri()
+        self.__user = server.user
 
     def __repr__(self):
         if not self.is_installed:
             return "This client has not connected to the server yet.  Use connect() to enable this client instance."
         else:
-            return "This client instance connected to server %s (build_id=%s) at %s and enabled itself."\
-                   % (self.server_uri, self.server_build_id, self.installed_time)
+            return "This client instance connected to server %s (build_id=%s) as user %s at %s."\
+                   % (self.server_uri, self.server_build_id, self.user, self.installed_time)
 
     def verify_installed(self):
         if not self.is_installed:
