@@ -8,37 +8,29 @@ because graphs typically contain cycles, or loops.
 
 In Giraph, the algorithm runs in iterations until it converges.
 
-
 Parameters
 ----------
-vertex_value_property_list : list of str
-    The vertex properties which contain prior vertex values if more than one
-    vertex property is used.
-edge_value_property_list : list of str
-    The edge properties which contain the input edge values.
-    A comma-separated list of property names if more than one edge property is
-    used.
-input_edge_label_list : list of str
-    The name of edge label.
-output_vertex_property_list : list of str
-    The list of vertex properties to store output vertex values.
-vertex_type : str
-    The name of vertex property which contains vertex type.
-    The default value is "vertex_type".
-vector_value : bool
-    True means a vector as vertex value is supported,
-    False means a vector as vertex value is not supported.
-max_supersteps : int (optional)
+src_col_name: str
+    The column name for the source vertex id.
+dest_col_name: str
+    The column name for the destination vertex id.
+weight_col_name: str
+    The column name for the edge weight.
+src_label_col_name: str
+    The column name for the label properties for the source vertex.
+result_col_name : str (optional)
+    column name for the results (holding the post labels for the vertices)
+max_iterations : int (optional)
     The maximum number of supersteps that the algorithm will execute.
     The valid value range is all positive int.
-    Default is 20.
+    The default value is 10.
 convergence_threshold : float (optional)
     The amount of change in cost function that will be tolerated at
     convergence.
-    If the change is less than this threshold, the algorithm exits
+    If the change is less than this threshold, the algorithm exits earlier
     before it reaches the maximum number of supersteps.
     The valid value range is all float and zero.
-    Default is 0.001.
+    The default value is 0.00000001f.
 anchor_threshold : float (optional)
     The parameter that determines if a node's posterior will be updated or
     not.
@@ -56,11 +48,6 @@ smoothing : float (optional)
     Larger value implies smoother decay and the edge weight beomes less
     important.
     Default is 2.0.
-validate_graph_structure : bool (optional)
-    Checks if the graph meets certain structural requirements before starting
-    the algorithm: at every vertex, the in-degree equals the out-degree.
-    This algorithm is for undirected graphs, therefore this is a necessary,
-    but insufficient, check for valid input.
 ignore_vertex_type : bool (optional)
     If True, all vertex will be treated as training data.
     Default is False.
@@ -74,10 +61,12 @@ power : float (optional)
 
 Returns
 -------
-str
-    The configuration and learning curve report for Loopy Belief Propagation
-    in the format of a multiple-line string.
+a 2-column frame:
 
+vertex: int
+    A vertex id.
+result : Vector (long)
+    label vector for the results (for the node id in column 1)
 
 Examples
 --------
@@ -85,27 +74,35 @@ Examples
 
     .. code::
 
-        >>> g.ml.loopy_belief_propagation(vertex_value_property_list = "value", edge_value_property_list  = "weight", input_edge_label_list = "edge",   output_vertex_property_list = "lbp_posterior",   vertex_type_property_key = "vertex_type",  vector_value = "true",    max_supersteps = 10,   convergence_threshold = 0.0, anchor_threshold = 0.9, smoothing = 2.0, bidirectional_check = False,  ignore_vertex_type = False, max_product= False, power = 0)
+    input frame (lbp.csv)
+    "a"        "b"        "c"        "d"
+    1,         2,         0.5,       "0.5,0.5"
+    2,         3,         0.4,       "-1,-1"
+    3,         1,         0.1,       "0.8,0.2"
+
+    script
+
+    ia.connect()
+    s = [("a", ia.int32), ("b", ia.int32), ("c", ia.float32), ("d", ia.vector(2))]
+    d = "lbp.csv"
+    c = ia.CsvFile(d,s)
+    f = ia.Frame(c)
+    r = f.loopy_belief_propagation("a", "b", "c", "d", "results")
+    r['frame'].inspect()
+    r['report']
 
 .. only:: latex
 
     .. code::
 
-        >>> g.ml.loopy_belief_propagation(
-        ...     vertex_value_property_list = "value",
-        ...     edge_value_property_list  = "weight",
-        ...     input_edge_label_list = "edge",
-        ...     output_vertex_property_list = "lbp_posterior",
-        ...     vertex_type_property_key = "vertex_type",
-        ...     vector_value = "true",
-        ...     max_supersteps = 10,
-        ...     convergence_threshold = 0.0,
-        ...     chor_threshold = 0.9,
-        ...     oothing = 2.0,
-        ...     directional_check = False,
-        ...     gnore_vertex_type = False,
-        ...     x_product= False,
-        ...     wer = 0)
+        >>> r = f.loopy_belief_propagation(
+        ... srcColName = "a",
+        ... destColName  = "b",
+        ... weightColName = "c",
+        ... srcLabelColName = "d",
+        ... resultColName = "resultLabels")
+        ... r['frame'].inspect()
+        ... r['report']
 
 The expected output is like this:
 

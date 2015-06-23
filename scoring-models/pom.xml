@@ -98,6 +98,7 @@
             <groupId>com.intel.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
+
         <!--END BDA dependencies to our modules-->
 
         <dependency>
@@ -168,8 +169,20 @@
             <artifactId>libsvm</artifactId>
             <version>3.17</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_${scala.short.version}</artifactId>
+            <version>${dep.spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.spark-project.akka</groupId>
+                    <artifactId>akka-slf4j_2.10</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.spark-project.akka</groupId>
+                    <artifactId>akka-remote_2.10</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 </project>
-
-
-

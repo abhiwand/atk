@@ -61,6 +61,9 @@ object RestServerConfig {
   /** the URI of the UAA server */
   val uaaUri = config.getString("intel.analytics.component.archives.rest-server.uaaUri")
 
+  /** Scheme for Rest Service to bind with (http or https) */
+  val useHttp: Boolean = config.getBoolean("intel.analytics.component.archives.rest-server.useHttp")
+
   /** How many seconds to cache user principals, helpful for high request volume (e.g. QA parallel testing) */
   val userPrincipalCacheTimeoutSeconds = config.getInt("intel.analytics.component.archives.rest-server.user-principal-cache.timeout-seconds")
 

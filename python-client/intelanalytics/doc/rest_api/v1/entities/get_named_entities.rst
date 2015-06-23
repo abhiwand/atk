@@ -4,17 +4,17 @@
 
 Gets list of short entries for all named entities in the entity collection.
 
-GET /v1/:entities/
-==================
+GET /v1/:entities
+=================
 
 Request
 -------
 
 **Route** ::
 
-  GET /v1/frames/
-  GET /v1/graphs/
-  GET /v1/models/
+  GET /v1/frames
+  GET /v1/graphs
+  GET /v1/models
 
 **Body**
 
@@ -54,7 +54,7 @@ Returns a list of entity entries for the given collection, where an entry is def
 
 ::
 
-  Example for GET /v1/frames/:
+  Example for GET /v1/frames:
   [
     {
         "id": 7,
@@ -76,7 +76,3 @@ Returns a list of entity entries for the given collection, where an entry is def
   Content-Length: 279
   Content-Type: application/json; charset=UTF-8
   Date: Thu, 14 May 2015 23:42:27 GMT
-  Server: spray-can/1.3.1
-  build_id: TheReneNumber
-
-
