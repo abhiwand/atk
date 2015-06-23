@@ -35,6 +35,10 @@ import org.apache.spark.rdd.RDD
 /**
  * Classification model trained using Multinomial/Binary Logistic Regression.
  *
+ * Copy of MlLib's logistic regression model that supports a frequency column.
+ * The frequency column contains the frequency of occurrence of each observation.
+ * @see org.apache.spark.mllib.classification.LogisticRegressionModel
+ *
  * @param weights Weights computed for every feature.
  * @param intercept Intercept computed for this model. (Only used in Binary Logistic Regression.
  *                  In Multinomial Logistic Regression, the intercepts will not be a single value,

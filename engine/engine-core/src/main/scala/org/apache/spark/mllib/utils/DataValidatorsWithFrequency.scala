@@ -25,6 +25,11 @@ import org.apache.spark.rdd.RDD
 /**
  * :: DeveloperApi ::
  * A collection of methods used to validate data before applying ML algorithms.
+ *
+ * Copy of MlLib's data validators that supports a frequency column.
+ * The frequency column contains the frequency of occurrence of each observation.
+ * @see org.apache.spark.mllib.utils.DataValidators
+ *
  */
 @DeveloperApi
 object DataValidatorsWithFrequency extends Logging {
