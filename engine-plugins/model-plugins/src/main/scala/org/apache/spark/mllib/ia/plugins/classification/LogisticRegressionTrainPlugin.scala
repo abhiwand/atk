@@ -25,7 +25,7 @@ import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.{ LogisticRegressionWithLBFGS, LogisticRegressionWithSGD }
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
-import org.apache.spark.mllib.regression.{ GeneralizedLinearAlgorithm, LabeledPoint }
+import org.apache.spark.mllib.regression.{LabeledPointWithFrequency, GeneralizedLinearAlgorithm, LabeledPoint}
 import org.apache.spark.rdd.RDD
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -118,7 +118,8 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
 
       //create RDD from the frame
       val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
-      val labeledTrainRdd: RDD[LabeledPoint] = trainFrameRdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
+
+      val labeledTrainRdd = trainFrameRdd.toLabeledPointRDDWithFrequency(arguments.labelColumn, arguments.observationColumns, arguments.frequencyColumn)
 
       //Running MLLib
       val model = arguments.optimizer match {
@@ -133,7 +134,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
       //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
       LogisticRegressionReturnArgs(logRegModel.numFeatures, logRegModel.numClasses)
-      //new UnitReturn
+
     }
 
   private def initializeLBFGSModel(arguments: LogisticRegressionTrainArgs): LogisticRegressionWithLBFGS = {
