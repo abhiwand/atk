@@ -89,7 +89,8 @@ class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationW
       val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
       val logRegModel = logRegData.logRegModel
       if (arguments.observationColumns.isDefined) {
-        require(logRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+        require(logRegData.observationColumns.length == arguments.observationColumns.get.length,
+          "Number of columns for train and predict should be same")
       }
       val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
 

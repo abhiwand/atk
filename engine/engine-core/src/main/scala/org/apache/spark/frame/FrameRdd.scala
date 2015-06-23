@@ -92,15 +92,19 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   /**
    * Convert FrameRdd into RDD[LabeledPointWithFrequency] format required for updates in MLLib code
    */
-  def toLabeledPointRDDWithFrequency(labelColumnName: String, featureColumnNames: List[String], frequencyColumnName: Option[String]): RDD[LabeledPointWithFrequency] = {
+  def toLabeledPointRDDWithFrequency(labelColumnName: String,
+                                     featureColumnNames: List[String],
+                                     frequencyColumnName: Option[String]): RDD[LabeledPointWithFrequency] = {
     this.mapRows(row =>
     {
       val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
       if(frequencyColumnName.isDefined) {
-        new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray), DataTypes.toDouble(row.value(frequencyColumnName.get)))
+        new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
+          new DenseVector(features.toArray), DataTypes.toDouble(row.value(frequencyColumnName.get)))
       }
       else{
-        new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray), DataTypes.toDouble(1.0))
+        new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
+          new DenseVector(features.toArray), DataTypes.toDouble(1.0))
       }
     })
   }
