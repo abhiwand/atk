@@ -19,7 +19,7 @@ package com.intel.intelanalytics.libSvmPlugins
 import com.intel.intelanalytics.domain.{ CreateEntityArgs }
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -28,6 +28,20 @@ import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
 // TODO: all plugins should move out of engine-core into plugin modules
 
+/*
+Parameters
+----------
+predict_frame : Frame
+    A frame whose labels are to be predicted.
+observation_column : list of str (Optional)
+    Column(s) containing the observations whose labels are to be predicted.
+    Default is the columns the LibsvmModel was trained on.
+*/
+@PluginDoc(oneLine = "New frame with new predicted label column.",
+  extended = """Predict the labels for a test frame and create a new frame revision with
+existing columns and a new predicted label's column.""",
+  returns = """A new frame containing the original frame's columns and a column
+*predicted_label* containing the score calculated for each observation.""")
 class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEntity] {
   /**
    * The name of the command.

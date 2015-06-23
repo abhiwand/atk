@@ -19,7 +19,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.correlati
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.{ CreateEntityArgs }
 import com.intel.intelanalytics.domain.schema.{ DataTypes }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
@@ -27,7 +27,6 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.frame.CorrelationMatrixArgs
 import com.intel.intelanalytics.domain.schema.FrameSchema
 import com.intel.intelanalytics.domain.schema.Column
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

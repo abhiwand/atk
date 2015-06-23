@@ -18,11 +18,10 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.frame.PythonRddStorage
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -31,9 +30,10 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Copies specified columns into a new Frame object, optionally renaming them and/or filtering them
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "New frame with copied columns.",
+  extended = """Copies specified columns into a new Frame object, optionally
+renaming them and/or filtering them.""",
+  returns = "New Frame object.")
 class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
 
   override def name: String = "frame/copy"

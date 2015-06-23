@@ -19,7 +19,7 @@ package com.intel.intelanalytics.libSvmPlugins
 import java.util.StringTokenizer
 
 import com.intel.intelanalytics.domain.DoubleValue
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import libsvm.{ svm_model, svm, svm_node }
@@ -28,6 +28,15 @@ import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
 // TODO: all plugins should move out of engine-core into plugin modules
 
+/*
+Parameters
+----------
+observation : Vector
+    A single observation of features.
+*/
+@PluginDoc(oneLine = "Calculate the prediction label for a single observation.",
+  extended = "",
+  returns = "Predicted label.")
 class LibSvmScorePlugin extends CommandPlugin[LibSvmScoreArgs, DoubleValue] {
 
   /**

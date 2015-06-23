@@ -35,9 +35,11 @@ rst_epilog = """
 
 .. |ALPHA|  image:: /_static/alpha.*
               :target: /glossary.html#term-api-maturity-tags
-.. |API|    replace:: abbr:`API (Application Programming Interface)`
+.. |ALPHA|  replace:: :abbr:`/ALPHA/ (Indicates a function or feature which has been developed, but has not been completely tested.  Use this function with caution.  This function may be changed or eliminated in future releases.)`
+.. |API|    replace:: :abbr:`API (Application Programming Interface)`
+.. |ATK|    replace:: |IAT|
 .. |BETA|   image:: /_static/beta.*
-              :target: /glossary.html#term-api-maturity-tags
+              :target: glossary.html#term-api-maturity-tags
 .. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
 .. |COPY|   unicode:: U+000A9 .. Copyright symbol
 .. |CSV|    replace:: :abbr:`CSV (Character-Separated Variables)`

@@ -19,7 +19,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 import com.intel.intelanalytics.domain.LongValue
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameNoArgs
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -28,6 +28,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Get the RDD partition count after loading a frame (useful for debugging purposes)
  */
+@PluginDoc(oneLine = "Get the RDD partition count after loading a frame.",
+  extended = "",
+  returns = "")
 class SizeOnDiskPlugin extends CommandPlugin[FrameNoArgs, LongValue] {
 
   /**

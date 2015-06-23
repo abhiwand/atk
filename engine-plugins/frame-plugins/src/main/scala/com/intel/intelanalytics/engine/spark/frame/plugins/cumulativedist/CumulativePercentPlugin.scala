@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.frame.{ CumulativePercentArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ DataTypes }
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
@@ -28,7 +28,26 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Compute a cumulative percent sum.
+ *
+ * Parameters
+ * ----------
+ * sample_col : str
+ * The name of the column from which to compute the cumulative percent sum.
+ *
+ *
  */
+@PluginDoc(oneLine = "Add column to frame with cumulative percent sum.",
+  extended = """A cumulative percent sum is computed by sequentially stepping through the
+column values and keeping track of the current percentage of the total sum
+accounted for at the current value.
+
+
+Notes
+-----
+This method applies only to columns containing numerical data.
+Although this method will execute for columns containing negative
+values, the interpretation of the result will change (for example,
+negative percentages).""")
 class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentArgs, FrameEntity] {
 
   /**

@@ -19,7 +19,7 @@ package com.intel.spark.graphon.sampling
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.frame.FrameName
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
@@ -33,7 +33,6 @@ import scala.concurrent._
 import java.util.UUID
 import com.intel.spark.graphon.sampling.VertexSampleSparkOps._
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Represents the arguments for vertex sampling

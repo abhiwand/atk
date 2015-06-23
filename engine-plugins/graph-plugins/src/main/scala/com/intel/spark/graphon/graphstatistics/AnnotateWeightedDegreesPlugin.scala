@@ -20,7 +20,7 @@ import com.intel.graphbuilder.elements.{ GBVertex, Property }
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
@@ -28,7 +28,6 @@ import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class AnnotateWeightedDegreesArgs(graph: GraphReference,
                                        @ArgDoc("") outputPropertyName: String,

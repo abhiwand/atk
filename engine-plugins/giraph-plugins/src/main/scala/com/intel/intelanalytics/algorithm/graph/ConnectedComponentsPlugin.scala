@@ -21,7 +21,7 @@ import com.intel.giraph.algorithms.pr.PageRankComputation
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDLongValue, TitanVertexInputFormatLongLongNull, TitanVertexInputFormatLongDoubleNull }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
@@ -32,7 +32,6 @@ import scala.concurrent.duration._
 import scala.concurrent._
 import com.intel.giraph.algorithms.cc.ConnectedComponentsComputation
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class ConnectedComponentsCommand(graph: GraphReference,
                                       @ArgDoc("""The name of edge label used to for performing the connected components

@@ -18,7 +18,7 @@ package com.intel.spark.graphon.beliefpropagation
 
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import org.apache.spark.frame.FrameRdd
@@ -26,8 +26,6 @@ import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 
 import spray.json._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
-
 /**
  * Parameters for executing belief propagation.
  * @param graph Reference to the graph object on which to propagate beliefs.

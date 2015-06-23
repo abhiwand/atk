@@ -17,10 +17,14 @@
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.schema.GraphSchema
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, PluginDoc }
 
 /**
  * Drop columns from edge frame.
  */
+@PluginDoc(oneLine = "Drop columns from edge frame.",
+  extended = "",
+  returns = "")
 class DropEdgeColumnPlugin extends DropVertexColumnPlugin {
   override def name: String = "frame:edge/drop_columns"
   override val systemFields = Set(GraphSchema.edgeProperty, GraphSchema.srcVidProperty, GraphSchema.destVidProperty, GraphSchema.labelProperty)

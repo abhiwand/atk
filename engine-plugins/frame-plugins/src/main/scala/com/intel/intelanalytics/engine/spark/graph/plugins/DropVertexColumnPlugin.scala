@@ -16,7 +16,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema }
 import com.intel.intelanalytics.engine.spark.frame.plugins.DropColumnsPlugin
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, DropColumnsArgs }
@@ -24,6 +24,9 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, DropColumnsArgs }
 /**
  * Drop columns from vertex frame.
  */
+@PluginDoc(oneLine = "Drop columns from vertex frame.",
+  extended = "",
+  returns = "")
 class DropVertexColumnPlugin extends DropColumnsPlugin {
 
   /**
