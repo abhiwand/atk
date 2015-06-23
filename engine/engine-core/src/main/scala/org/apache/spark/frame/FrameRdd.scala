@@ -26,6 +26,7 @@ import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyF
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.regression.LabeledPointWithFrequency
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
 import org.apache.spark.{ TaskContext, Partition, SparkContext, sql }
 import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
@@ -86,6 +87,22 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
         val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
         new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
       })
+  }
+
+  /**
+   * Convert FrameRdd into RDD[LabeledPointWithFrequency] format required for updates in MLLib code
+   */
+  def toLabeledPointRDDWithFrequency(labelColumnName: String, featureColumnNames: List[String], frequencyColumnName: Option[String]): RDD[LabeledPointWithFrequency] = {
+    this.mapRows(row =>
+    {
+      val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
+      if(frequencyColumnName.isDefined) {
+        new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray), DataTypes.toDouble(row.value(frequencyColumnName.get)))
+      }
+      else{
+        new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray), DataTypes.toDouble(1.0))
+      }
+    })
   }
 
   override def compute(split: Partition, context: TaskContext): Iterator[sql.Row] =
