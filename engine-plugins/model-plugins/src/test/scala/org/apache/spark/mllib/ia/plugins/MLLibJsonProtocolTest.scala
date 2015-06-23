@@ -16,21 +16,18 @@
 
 package org.apache.spark.mllib.ia.plugins
 
-//import org.apache.commons.math3.geometry.VectorFormat
-
-import com.intel.intelanalytics.libSvmPlugins.LibSvmData
-import libsvm.{ svm_node, svm_parameter, svm_model }
-import org.apache.spark.mllib.classification.{ NaiveBayesModel, SVMModel, LogisticRegressionModel }
+import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, SVMModel}
 import org.apache.spark.mllib.clustering.KMeansModel
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-import org.apache.spark.mllib.ia.plugins.classification.{ NaiveBayesData, LinearRegressionData, SVMData, LogisticRegressionWithSGDData }
+import org.apache.spark.mllib.ia.plugins.classification.glm.LogisticRegressionData
+import org.apache.spark.mllib.ia.plugins.classification.{ LinearRegressionData, SVMData }
 import org.apache.spark.mllib.ia.plugins.clustering.KMeansData
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import org.scalatest.WordSpec
+
 import spray.json._
-import Array._
 
 class MLLibJsonProtocolTest extends WordSpec {
   "DenseVectorFormat" should {
@@ -118,7 +115,8 @@ class MLLibJsonProtocolTest extends WordSpec {
   "LogisticRegressionDataFormat" should {
 
     "be able to serialize" in {
-      val l = new LogisticRegressionWithSGDData(new LogisticRegressionModel(new DenseVector(Array(1.3, 3.1)), 3.5), List("column1", "column2"))
+      val l = new LogisticRegressionData(new LogisticRegressionModelWithFrequency(new DenseVector(Array(1.3, 3.1)), 3.5), List("column1", "column2"))
+
       assert(l.toJson.compactPrint == "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1]},\"intercept\":3.5,\"numFeatures\":2,\"numClasses\":2},\"observation_columns\":[\"column1\",\"column2\"]}")
 
     }
@@ -126,7 +124,7 @@ class MLLibJsonProtocolTest extends WordSpec {
     "parse json" in {
       val string = "{\"log_reg_model\":{\"weights\":{\"values\":[1.3,3.1,1.2]},\"intercept\":3.5, \"numFeatures\":3,\"numClasses\":2},\"observation_columns\":[\"column1\",\"column2\"]}"
       val json = JsonParser(string).asJsObject
-      val l = json.convertTo[LogisticRegressionWithSGDData]
+      val l = json.convertTo[LogisticRegressionData]
 
       assert(l.logRegModel.weights.size == 3)
       assert(l.logRegModel.intercept == 3.5)

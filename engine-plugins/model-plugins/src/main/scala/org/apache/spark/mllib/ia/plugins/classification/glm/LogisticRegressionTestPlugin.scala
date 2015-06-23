@@ -14,13 +14,14 @@
 // limitations under the License.
 */
 
-package org.apache.spark.mllib.ia.plugins.classification
+package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import spray.json._
@@ -53,14 +54,14 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 <object>.f_measure : double
 <object>.precision : double
 <object>.recall : double""")
-class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestArgs, ClassificationMetricValue] {
+class LogisticRegressionTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestArgs, ClassificationMetricValue] {
   /**
    * The name of the command.
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:logistic_regression/test"
+  override def name: String = "model:logistic_regression_exp/test"
 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
   /**
@@ -91,7 +92,7 @@ class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[Classificat
       val testFrameRdd = frames.loadFrameData(sc, inputFrame)
 
       val logRegJsObject = modelMeta.data.get
-      val logRegData = logRegJsObject.convertTo[LogisticRegressionWithSGDData]
+      val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
       val logRegModel = logRegData.logRegModel
       if (arguments.observationColumns.isDefined) {
         require(logRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")

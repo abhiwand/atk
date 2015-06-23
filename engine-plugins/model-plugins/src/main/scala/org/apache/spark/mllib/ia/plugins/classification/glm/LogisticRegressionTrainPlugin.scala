@@ -14,20 +14,14 @@
 // limitations under the License.
 */
 
-package org.apache.spark.mllib.ia.plugins.classification
+package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.model.ModelReference
-import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.classification.{ LogisticRegressionWithLBFGS, LogisticRegressionWithSGD }
+import org.apache.spark.mllib.classification.{ LogisticRegressionWithFrequencyLBFGS, LogisticRegressionWithFrequencySGD }
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
-import org.apache.spark.mllib.regression.{LabeledPointWithFrequency, GeneralizedLinearAlgorithm, LabeledPoint}
-import org.apache.spark.rdd.RDD
-import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
@@ -129,7 +123,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
       }
 
       val logRegModel = model.run(labeledTrainRdd)
-      val jsonModel = new LogisticRegressionWithSGDData(logRegModel, arguments.observationColumns)
+      val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns)
 
       //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
@@ -137,8 +131,8 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
 
     }
 
-  private def initializeLBFGSModel(arguments: LogisticRegressionTrainArgs): LogisticRegressionWithLBFGS = {
-    val model = new LogisticRegressionWithLBFGS()
+  private def initializeLBFGSModel(arguments: LogisticRegressionTrainArgs): LogisticRegressionWithFrequencyLBFGS = {
+    val model = new LogisticRegressionWithFrequencyLBFGS()
 
     model.optimizer.setNumIterations(arguments.getNumIterations)
     model.optimizer.setConvergenceTol(arguments.getConvergenceTolerance)
@@ -157,8 +151,8 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
     model.setIntercept(arguments.getIntercept)
   }
 
-  private def initializeSGDModel(arguments: LogisticRegressionTrainArgs): LogisticRegressionWithSGD = {
-    val model = new LogisticRegressionWithSGD()
+  private def initializeSGDModel(arguments: LogisticRegressionTrainArgs): LogisticRegressionWithFrequencySGD = {
+    val model = new LogisticRegressionWithFrequencySGD()
 
     model.optimizer.setNumIterations(arguments.getNumIterations)
     model.optimizer.setStepSize(arguments.getStepSize)

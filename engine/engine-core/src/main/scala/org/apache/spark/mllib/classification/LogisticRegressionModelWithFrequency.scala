@@ -23,10 +23,12 @@ import org.apache.spark.mllib.classification.impl.GLMClassificationModel
 import org.apache.spark.mllib.linalg.BLAS.dot
 import org.apache.spark.mllib.linalg.{DenseVector, Vector}
 import org.apache.spark.mllib.optimization._
+import org.apache.spark.mllib.utils.DataValidatorsWithFrequency
+
 //import org.apache.spark.mllib.pmml.PMMLExportable
 //import org.apache.spark.mllib.pmml.PMMLExportable
 import org.apache.spark.mllib.regression._
-import org.apache.spark.mllib.util.{DataValidatorsWithFrequency, DataValidators, Saveable, Loader}
+import org.apache.spark.mllib.util.{Loader, Saveable}
 import org.apache.spark.rdd.RDD
 
 
@@ -42,7 +44,7 @@ import org.apache.spark.rdd.RDD
  *                   Multinomial Logistic Regression. By default, it is binary logistic regression
  *                   so numClasses will be set to 2.
  */
-class LogisticRegressionModel (
+class LogisticRegressionModelWithFrequency (
                                 override val weights: Vector,
                                 override val intercept: Double,
                                 val numFeatures: Int,
@@ -74,7 +76,7 @@ class LogisticRegressionModel (
   }
 
   /**
-   * Constructs a [[LogisticRegressionModel]] with weights and intercept for binary classification.
+   * Constructs a [[LogisticRegressionModelWithFrequency]] with weights and intercept for binary classification.
    */
   def this(weights: Vector, intercept: Double) = this(weights, intercept, weights.size, 2)
 
@@ -168,9 +170,9 @@ class LogisticRegressionModel (
   }
 }
 
-object LogisticRegressionModel extends Loader[LogisticRegressionModel] {
+object LogisticRegressionModelWithFrequency extends Loader[LogisticRegressionModelWithFrequency] {
 
-  override def load(sc: SparkContext, path: String): LogisticRegressionModel = {
+  override def load(sc: SparkContext, path: String): LogisticRegressionModelWithFrequency = {
     val (loadedClassName, version, metadata) = Loader.loadMetadata(sc, path)
     // Hard-code class name string in case it changes in the future
     val classNameV1_0 = "org.apache.spark.mllib.classification.LogisticRegressionModel"
@@ -180,7 +182,7 @@ object LogisticRegressionModel extends Loader[LogisticRegressionModel] {
         val data = GLMClassificationModel.SaveLoadV1_0.loadData(sc, path, classNameV1_0)
         // numFeatures, numClasses, weights are checked in model initialization
         val model =
-          new LogisticRegressionModel(data.weights, data.intercept, numFeatures, numClasses)
+          new LogisticRegressionModelWithFrequency(data.weights, data.intercept, numFeatures, numClasses)
         data.threshold match {
           case Some(t) => model.setThreshold(t)
           case None => model.clearThreshold()
@@ -197,17 +199,17 @@ object LogisticRegressionModel extends Loader[LogisticRegressionModel] {
 /**
  * Train a classification model for Binary Logistic Regression
  * using Stochastic Gradient Descent. By default L2 regularization is used,
- * which can be changed via [[LogisticRegressionWithSGD.optimizer]].
+ * which can be changed via [[LogisticRegressionWithFrequencySGD.optimizer]].
  * NOTE: Labels used in Logistic Regression should be {0, 1, ..., k - 1}
  * for k classes multi-label classification problem.
- * Using [[LogisticRegressionWithLBFGS]] is recommended over this.
+ * Using [[LogisticRegressionWithFrequencyLBFGS]] is recommended over this.
  */
-class LogisticRegressionWithSGD private[mllib] (
+class LogisticRegressionWithFrequencySGD private[mllib] (
                                                  private var stepSize: Double,
                                                  private var numIterations: Int,
                                                  private var regParam: Double,
                                                  private var miniBatchFraction: Double)
-  extends GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModel] with Serializable {
+  extends GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency] with Serializable {
 
   private val gradient = new LogisticGradient()
   private val updater = new SquaredL2Updater()
@@ -225,7 +227,7 @@ class LogisticRegressionWithSGD private[mllib] (
   def this() = this(1.0, 100, 0.01, 1.0)
 
   override protected[mllib] def createModel(weights: Vector, intercept: Double) = {
-    new LogisticRegressionModel(weights, intercept)
+    new LogisticRegressionModelWithFrequency(weights, intercept)
   }
 }
 
@@ -233,7 +235,7 @@ class LogisticRegressionWithSGD private[mllib] (
  * Top-level methods for calling Logistic Regression using Stochastic Gradient Descent.
  * NOTE: Labels used in Logistic Regression should be {0, 1}
  */
-object LogisticRegressionWithSGD {
+object LogisticRegressionWithFrequencySGD {
   // NOTE(shivaram): We use multiple train methods instead of default arguments to support
   // Java programs.
 
@@ -256,8 +258,8 @@ object LogisticRegressionWithSGD {
              numIterations: Int,
              stepSize: Double,
              miniBatchFraction: Double,
-             initialWeights: Vector): LogisticRegressionModel = {
-    new LogisticRegressionWithSGD(stepSize, numIterations, 0.0, miniBatchFraction)
+             initialWeights: Vector): LogisticRegressionModelWithFrequency = {
+    new LogisticRegressionWithFrequencySGD(stepSize, numIterations, 0.0, miniBatchFraction)
       .run(input, initialWeights)
   }
 
@@ -277,8 +279,8 @@ object LogisticRegressionWithSGD {
              input: RDD[LabeledPointWithFrequency],
              numIterations: Int,
              stepSize: Double,
-             miniBatchFraction: Double): LogisticRegressionModel = {
-    new LogisticRegressionWithSGD(stepSize, numIterations, 0.0, miniBatchFraction)
+             miniBatchFraction: Double): LogisticRegressionModelWithFrequency = {
+    new LogisticRegressionWithFrequencySGD(stepSize, numIterations, 0.0, miniBatchFraction)
       .run(input)
   }
 
@@ -297,7 +299,7 @@ object LogisticRegressionWithSGD {
   def train(
              input: RDD[LabeledPointWithFrequency],
              numIterations: Int,
-             stepSize: Double): LogisticRegressionModel = {
+             stepSize: Double): LogisticRegressionModelWithFrequency = {
     train(input, numIterations, stepSize, 1.0)
   }
 
@@ -313,7 +315,7 @@ object LogisticRegressionWithSGD {
    */
   def train(
              input: RDD[LabeledPointWithFrequency],
-             numIterations: Int): LogisticRegressionModel = {
+             numIterations: Int): LogisticRegressionModelWithFrequency = {
     train(input, numIterations, 1.0, 1.0)
   }
 }
@@ -324,8 +326,8 @@ object LogisticRegressionWithSGD {
  * NOTE: Labels used in Logistic Regression should be {0, 1, ..., k - 1}
  * for k classes multi-label classification problem.
  */
-class LogisticRegressionWithLBFGS
-  extends GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModel] with Serializable {
+class LogisticRegressionWithFrequencyLBFGS
+  extends GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency] with Serializable {
 
   this.setFeatureScaling(true)
 
@@ -359,9 +361,9 @@ class LogisticRegressionWithLBFGS
 
   override protected def createModel(weights: Vector, intercept: Double) = {
     if (numOfLinearPredictor == 1) {
-      new LogisticRegressionModel(weights, intercept)
+      new LogisticRegressionModelWithFrequency(weights, intercept)
     } else {
-      new LogisticRegressionModel(weights, intercept, numFeatures, numOfLinearPredictor + 1)
+      new LogisticRegressionModelWithFrequency(weights, intercept, numFeatures, numOfLinearPredictor + 1)
     }
   }
 }

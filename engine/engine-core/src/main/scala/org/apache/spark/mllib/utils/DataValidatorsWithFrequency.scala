@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.spark.mllib.util
+package org.apache.spark.mllib.utils
 
-import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.Logging
+import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.mllib.regression.LabeledPointWithFrequency
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.regression.{LabeledPointWithFrequency, LabeledPoint}
 
 /**
  * :: DeveloperApi ::

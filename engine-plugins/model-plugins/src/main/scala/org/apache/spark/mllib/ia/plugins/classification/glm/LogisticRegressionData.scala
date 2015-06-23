@@ -14,16 +14,16 @@
 // limitations under the License.
 */
 
-package org.apache.spark.mllib.ia.plugins.classification
+package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import org.apache.spark.mllib.classification.LogisticRegressionModel
+import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
 
 /**
  * Command for loading model data into existing model in the model database.
  * @param logRegModel Trained MLLib's LogisticRegressionModel object
  * @param observationColumns Handle to the observation columns of the data frame
  */
-case class LogisticRegressionWithSGDData(logRegModel: LogisticRegressionModel, observationColumns: List[String]) {
+case class LogisticRegressionData(logRegModel: LogisticRegressionModelWithFrequency, observationColumns: List[String]) {
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
   require(logRegModel != null, "logRegModel must not be null")
 }

@@ -16,14 +16,15 @@
 
 package org.apache.spark.mllib.ia.plugins
 
-import org.apache.spark.mllib.classification.{ NaiveBayesModel, LogisticRegressionModel, SVMModel }
-import org.apache.spark.mllib.regression.LinearRegressionModel
+import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel}
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
-import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn, KMeansData }
-import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
+import org.apache.spark.mllib.ia.plugins.classification.glm.{LogisticRegressionReturnArgs, LogisticRegressionData, LogisticRegressionTrainArgs}
+import org.apache.spark.mllib.ia.plugins.clustering.{KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn}
+import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector}
+import org.apache.spark.mllib.regression.LinearRegressionModel
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON
@@ -71,6 +72,7 @@ object MLLibJsonProtocol {
         "values" -> new JsArray(obj.values.map(d => JsNumber(d)).toList)
       )
     }
+
     /**
      * Conversion from JsValue to MLLib's DenseVector format
      * @param json JsValue
@@ -83,7 +85,7 @@ object MLLibJsonProtocol {
     }
   }
 
-  implicit object LogisticRegressionModelFormat extends JsonFormat[LogisticRegressionModel] {
+  implicit object LogisticRegressionModelFormat extends JsonFormat[LogisticRegressionModelWithFrequency] {
     /**
      * The write methods converts from LogisticRegressionModel to JsValue
      * @param obj LogisticRegressionModel. Where LogisticRegressionModel's format is
@@ -91,7 +93,7 @@ object MLLibJsonProtocol {
      *            and the weights Vector could be either a SparseVector or DenseVector
      * @return JsValue
      */
-    override def write(obj: LogisticRegressionModel): JsValue = {
+    override def write(obj: LogisticRegressionModelWithFrequency): JsValue = {
       val weights = VectorFormat.write(obj.weights)
       JsObject(
         "weights" -> weights,
@@ -107,19 +109,25 @@ object MLLibJsonProtocol {
      * @return LogisticRegressionModel with format LogisticRegressionModel(val weights: Vector,val intercept: Double, numfeatures:Int, numClasses:Int)
      *         and the weights Vector could be either a SparseVector or DenseVector
      */
-    override def read(json: JsValue): LogisticRegressionModel = {
+    override def read(json: JsValue): LogisticRegressionModelWithFrequency = {
       val fields = json.asJsObject.fields
 
-      val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
-      val numFeatures = fields.get("numFeatures").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numFeatures")).asInstanceOf[JsNumber].value.intValue()
-      val numClasses = fields.get("numClasses").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numClasses")).asInstanceOf[JsNumber].value.intValue()
+      val intercept = fields.get("intercept")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
+        .asInstanceOf[JsNumber].value.doubleValue()
+      val numFeatures = fields.get("numFeatures")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numFeatures"))
+        .asInstanceOf[JsNumber].value.intValue()
+      val numClasses = fields.get("numClasses")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numClasses"))
+        .asInstanceOf[JsNumber].value.intValue()
 
       val weights = fields.get("weights").map(v => {
         VectorFormat.read(v)
       }
       ).get
 
-      new LogisticRegressionModel(weights, intercept, numFeatures, numClasses)
+      new LogisticRegressionModelWithFrequency(weights, intercept, numFeatures, numClasses)
     }
 
   }
@@ -148,7 +156,9 @@ object MLLibJsonProtocol {
      */
     override def read(json: JsValue): LinearRegressionModel = {
       val fields = json.asJsObject.fields
-      val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
+      val intercept = fields.get("intercept")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
+        .asInstanceOf[JsNumber].value.doubleValue()
 
       val weights = fields.get("weights").map(v => {
         VectorFormat.read(v)
@@ -234,7 +244,9 @@ object MLLibJsonProtocol {
      */
     override def read(json: JsValue): SVMModel = {
       val fields = json.asJsObject.fields
-      val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
+      val intercept = fields.get("intercept")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
+        .asInstanceOf[JsNumber].value.doubleValue()
 
       val weights = fields.get("weights").map(v => {
         VectorFormat.read(v)
@@ -271,7 +283,7 @@ object MLLibJsonProtocol {
     map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
   }
 
-  implicit val logRegDataFormat = jsonFormat2(LogisticRegressionWithSGDData)
+  implicit val logRegDataFormat = jsonFormat2(LogisticRegressionData)
   implicit val classficationWithSGDTrainFormat = jsonFormat10(ClassificationWithSGDTrainArgs)
   implicit val classificationWithSGDPredictFormat = jsonFormat3(ClassificationWithSGDPredictArgs)
   implicit val classificationWithSGDTestFormat = jsonFormat4(ClassificationWithSGDTestArgs)
