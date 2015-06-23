@@ -56,6 +56,7 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'bin_column_equal_depth',
                                       'bin_column_equal_width',
                                       'classification_metrics',
+                                      'collaborative_filtering',
                                       'column_median',
                                       'column_mode',
                                       'column_names',
@@ -84,6 +85,8 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'histogram',
                                       'inspect',
                                       'join',
+                                      'label_propagation',
+                                      'loopy_belief_propagation',
                                       'name',
                                       'quantiles',
                                       'rename_columns',
@@ -94,7 +97,8 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'take',
                                       'tally',
                                       'tally_percent',
-                                      'top_k'], ia.Frame)
+                                      'top_k',
+                                      'unflatten_column'], ia.Frame)
 
     def test_expected_methods_exist_on_vertexframe(self):
         self.assert_methods_defined([ 'add_columns',
@@ -143,7 +147,8 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'take',
                                       'tally',
                                       'tally_percent',
-                                      'top_k'], ia.VertexFrame)
+                                      'top_k',
+                                      'unflatten_column'], ia.VertexFrame)
 
     def test_expected_methods_exist_on_edgeframe(self):
         self.assert_methods_defined([ 'add_columns',
@@ -191,7 +196,8 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'take',
                                       'tally',
                                       'tally_percent',
-                                      'top_k'], ia.EdgeFrame)
+                                      'top_k',
+                                      'unflatten_column'], ia.EdgeFrame)
 
     def test_expected_methods_exist_on_graph(self):
         self.assert_methods_defined(['annotate_degrees',
@@ -232,16 +238,9 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'sampling',
                                      'status'], ia.TitanGraph)
 
-    def test_expected_methods_exist_on_graphml(self):
-        # TODO: this seems wrong? lbp isn't on Graph?
-        self.assert_methods_defined(['loopy_belief_propagation'], ia.core.api.GraphMl)
-
     def test_expected_methods_exist_on_titangraphml(self):
-        self.assert_methods_defined(['alternating_least_squares',
-                                     'belief_propagation',
-                                     'conjugate_gradient_descent',
-                                     'kclique_percolation',
-                                     'loopy_belief_propagation'], ia.core.api.TitanGraphMl)
+        self.assert_methods_defined(['belief_propagation',
+                                     'kclique_percolation'], ia.core.api.TitanGraphMl)
 
     def test_expected_methods_exist_on_kmeans_model(self):
         self.assert_methods_defined(["name",

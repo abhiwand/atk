@@ -17,24 +17,14 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.frame.{ DropColumnsArgs, FrameEntity }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
-
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-/**
- * Remove columns from a frame
- *
- * Parameters
- * ----------
- * columns: [ str | list of str ]
- *   Column name OR list of column names to be removed from the frame.
- */
 @PluginDoc(oneLine = "Remove columns from the frame.",
   extended = """The data from the columns is lost.
 

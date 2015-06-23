@@ -17,13 +17,12 @@
 package com.intel.intelanalytics.engine.spark.model.plugins
 
 import com.intel.intelanalytics.domain.model.{ ModelEntity, RenameModelArgs }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // TODO: shouldn't be a Spark Plugin, doesn't need Spark
 

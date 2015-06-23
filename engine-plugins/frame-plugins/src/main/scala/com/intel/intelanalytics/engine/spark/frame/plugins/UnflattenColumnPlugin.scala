@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins
 
 import com.intel.intelanalytics.domain.frame.{ UnflattenColumnArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes, Column }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ RowWrapper }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.commons.lang.StringUtils
@@ -30,7 +30,18 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Take multiple rows and 'unflatten' them into a row with multiple values in a column.
+ *
+ * Parameters
+ * ----------
+ * column : List<str>
+ * The column list representing the composite key.
+ * delimiter : str (optional)
+ * The delimiter string.
+ * Default is comma (,).
  */
+@PluginDoc(oneLine = "Compacts data from multiple rows based on cell data.",
+  extended = """Groups together cells in all columns (less the composite key) using "," as string delimiter.
+The original rows are deleted. Thr grouping takes place based on a composite key passed as arguments.""")
 class UnflattenColumnPlugin extends SparkCommandPlugin[UnflattenColumnArgs, FrameEntity] {
 
   private val defaultDelimiter = ","

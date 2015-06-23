@@ -16,14 +16,13 @@
 
 package com.intel.intelanalytics.engine.spark.frame.plugins
 
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.PythonRddStorage
 import com.intel.intelanalytics.domain.frame.CountWhereArgs
 import org.bson.BSON
 import org.bson.types.BasicBSONList
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.LongValue
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -32,9 +31,9 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 /**
  * Counts rows which meet criteria specified by a UDF predicate
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "Counts qualified rows.",
+  extended = "Counts rows which meet criteria specified by a UDF predicate.",
+  returns = "Number of rows matching qualifications.")
 class CountWherePlugin extends SparkCommandPlugin[CountWhereArgs, LongValue] {
 
   override def name: String = "frame/count_where"

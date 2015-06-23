@@ -21,14 +21,13 @@ import com.intel.giraph.algorithms.pr.PageRankComputation.{ PageRankMasterComput
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDDoubleValue, TitanVertexInputFormatLongDoubleNull }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 import scala.concurrent.duration._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent._
 import com.intel.intelanalytics.domain.command.CommandDoc

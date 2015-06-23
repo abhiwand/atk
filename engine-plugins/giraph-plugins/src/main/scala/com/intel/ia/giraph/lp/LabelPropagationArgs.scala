@@ -18,20 +18,21 @@ package com.intel.ia.giraph.lp
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import org.apache.commons.lang3.StringUtils
 
 /**
  * Arguments to the plugin - see user docs for more on the parameters
  */
-case class LabelPropagationArgs(frame: FrameReference,
-                                srcColName: String,
-                                destColName: String,
-                                weightColName: String,
-                                srcLabelColName: String,
-                                resultColName: Option[String] = None,
-                                maxIterations: Option[Int] = None,
-                                convergenceThreshold: Option[Float] = None,
-                                alpha: Option[Float] = None) {
+case class LabelPropagationArgs(@ArgDoc("""""") frame: FrameReference,
+                                @ArgDoc("""""") srcColName: String,
+                                @ArgDoc("""""") destColName: String,
+                                @ArgDoc("""""") weightColName: String,
+                                @ArgDoc("""""") srcLabelColName: String,
+                                @ArgDoc("""""") resultColName: Option[String] = None,
+                                @ArgDoc("""""") maxIterations: Option[Int] = None,
+                                @ArgDoc("""""") convergenceThreshold: Option[Float] = None,
+                                @ArgDoc("""""") alpha: Option[Float] = None) {
 
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(srcColName), "source column name property list is required")
@@ -54,7 +55,7 @@ case class LabelPropagationArgs(frame: FrameReference,
   }
 
   def getLambda: Float = {
-    val value = alpha.getOrElse(0f)
+    val value = alpha.getOrElse(0.9999999f)
     1 - Math.min(1, Math.max(0, value))
   }
 }

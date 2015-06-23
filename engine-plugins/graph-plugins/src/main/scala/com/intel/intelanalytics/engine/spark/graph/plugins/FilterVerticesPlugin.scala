@@ -16,7 +16,7 @@
 
 package com.intel.intelanalytics.engine.spark.graph.plugins
 
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.domain.schema._
@@ -24,7 +24,6 @@ import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, PythonRd
 import com.intel.intelanalytics.domain.graph.SeamlessGraphMeta
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.FilterVerticesArgs
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._

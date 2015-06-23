@@ -21,7 +21,7 @@ import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation.{ Con
 import com.intel.giraph.io.titan.formats.{ TitanVertexOutputFormatPropertyGraph4CF, TitanVertexInputFormatPropertyGraph4CFCGD, TitanVertexInputFormatPropertyGraph4CF }
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
@@ -32,7 +32,6 @@ import scala.concurrent.duration._
 import scala.concurrent._
 import scala.collection.JavaConverters._
 import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class ConjugateGradientDescent(graph: GraphReference,
                                     @ArgDoc("""The edge properties which contain the input edge values.

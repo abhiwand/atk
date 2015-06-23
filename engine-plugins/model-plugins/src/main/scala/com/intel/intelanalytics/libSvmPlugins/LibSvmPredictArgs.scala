@@ -18,14 +18,16 @@ package com.intel.intelanalytics.libSvmPlugins
 
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.model.ModelReference
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 
 /**
  * Command for predicting labels on the given dataset using a libsvm model
- * @param model Handle to the model to be written to.
- * @param frame Handle to the data frame
- * @param observationColumns Handle to the observation column of the data frame
  */
-case class LibSvmPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: Option[List[String]]) {
+case class LibSvmPredictArgs(@ArgDoc("""Handle to the model to be written to.""") model: ModelReference,
+                             @ArgDoc("""A frame whose labels are to be predicted.""") frame: FrameReference,
+                             @ArgDoc("""Column(s) containing the observations whose labels are to be
+                                predicted.
+                                Default is the columns the LibsvmModel was trained on.""") observationColumns: Option[List[String]]) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
 

@@ -22,13 +22,10 @@ import com.intel.ia.giraph.lp._
 import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobManager }
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.schema.{ Column, FrameSchema }
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import org.apache.spark.sql.parquet.ia.giraph.frame.lp.{ LabelPropagationVertexOutputFormat, LabelPropagationVertexInputFormat, LabelPropagationEdgeInputFormat }
 import LabelPropagationJsonFormat._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
-@PluginDoc(oneLine = "",
-  extended = "")
 class LabelPropagationPlugin
     extends CommandPlugin[LabelPropagationArgs, LabelPropagationResult] {
 

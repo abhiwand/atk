@@ -55,7 +55,7 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
 
     //TODO: modelfile to include contain the archive and loader info
     lazy val modelLoader = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.archive"))
-      .load("com.intel.intelanalytics.libSvmPlugins." + config.getString("intel.scoring-models.scoring.loader"))
+      .load("com.intel.intelanalytics.scoring." + config.getString("intel.scoring-models.scoring.loader"))
 
     val modelFile = config.getString("intel.scoring-models.scoring.model")
 

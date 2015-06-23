@@ -22,12 +22,11 @@ import com.intel.graphbuilder.parser.InputSchema
 import com.intel.intelanalytics.domain.StorageFormats
 import com.intel.intelanalytics.domain.frame.{ FrameEntity }
 import com.intel.intelanalytics.domain.graph._
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.domain.schema.{ EdgeSchema }
 import com.intel.intelanalytics.engine.spark.graph.{ GraphBuilderConfigFactory }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

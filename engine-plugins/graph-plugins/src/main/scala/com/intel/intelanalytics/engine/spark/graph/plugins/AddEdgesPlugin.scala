@@ -21,7 +21,7 @@ import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
 import com.intel.intelanalytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
 import com.intel.intelanalytics.domain.schema.{ GraphSchema, DataTypes, EdgeSchema }
-import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandInvocation, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
@@ -30,7 +30,6 @@ import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.SparkContext._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

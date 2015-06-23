@@ -23,7 +23,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDPredictArgs
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
@@ -37,7 +37,6 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Parameters

@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.frame.{ TallyArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ Schema, DataTypes }
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
@@ -28,7 +28,18 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Computes a cumulative count
+ *
+ * Parameters
+ * ----------
+ * sample_col : str
+ * The name of the column from which to compute the cumulative count.
+ * count_value : str
+ * The column value to be used for the counts.
  */
+@PluginDoc(oneLine = "Count number of times a value is seen.",
+  extended = """A cumulative count is computed by sequentially stepping through the column
+values and keeping track of the the number of times the specified
+*count_value* has been seen up to the current value.""")
 class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
 
   /**

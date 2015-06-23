@@ -81,7 +81,7 @@ public class TestJsonPropertyGraph4CFInputFormat extends JsonPropertyGraph4CFInp
         assertEquals(vertex.getNumEdges(), 3);
         assertEquals(1L, vertex.getId().get());
         assertTrue(vertex.getValue().getVector().size() == 0);
-        assertTrue(vertex.getValue().getType() == VertexType.LEFT);
+        assertTrue(vertex.getValue().getType() == VertexType.User);
         assertEquals(1.0, vertex.getEdgeValue(new LongWritable(0L)).getWeight(), 0d);
         assertEquals(2.0, vertex.getEdgeValue(new LongWritable(2L)).getWeight(), 0d);
         assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).getWeight(), 0d);

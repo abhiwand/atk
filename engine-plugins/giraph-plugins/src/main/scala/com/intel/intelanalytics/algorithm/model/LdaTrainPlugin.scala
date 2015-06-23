@@ -23,11 +23,11 @@ import com.intel.intelanalytics.algorithm.util.{ GiraphConfigurationUtil, Giraph
 import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Column, FrameSchema }
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, CommandInvocation, CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, CommandInvocation, CommandPlugin, Invocation, PluginDoc }
 import org.apache.spark.sql.parquet.ia.giraph.frame.{ LdaParquetFrameEdgeInputFormat, LdaParquetFrameVertexOutputFormat }
 import spray.json._
 import LdaJsonFormat._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+
 /**
  * Represents the arguments for Latent Dirichlet allocation
  *
