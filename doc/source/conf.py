@@ -36,6 +36,7 @@ rst_epilog = """
 .. |ALPHA|  image:: /_static/alpha.*
               :target: /glossary.html#term-api-maturity-tags
 .. |API|    replace:: abbr:`API (Application Programming Interface)`
+.. |ATK|    replace:: |IAT|
 .. |BETA|   image:: /_static/beta.*
               :target: /glossary.html#term-api-maturity-tags
 .. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
