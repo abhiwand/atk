@@ -20,11 +20,9 @@ import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.model.ModelReference
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.classification.{ LogisticRegressionWithFrequencyLBFGS, LogisticRegressionWithFrequencySGD }
-import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.PluginDoc
 
 //Implicits needed for JSON conversion
 import spray.json._
@@ -84,7 +82,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:logistic_regression_exp/train"
+  override def name: String = "model:logistic_regression/train"
 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
@@ -113,62 +111,16 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
       //create RDD from the frame
       val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
 
-      val labeledTrainRdd = trainFrameRdd.toLabeledPointRDDWithFrequency(arguments.labelColumn, arguments.observationColumns, arguments.frequencyColumn)
+      val labeledTrainRdd = trainFrameRdd.toLabeledPointRDDWithFrequency(arguments.labelColumn,
+        arguments.observationColumns, arguments.frequencyColumn)
 
       //Running MLLib
-      val model = arguments.optimizer match {
-        case "LBFGS" => initializeLBFGSModel(arguments)
-        case "SGD" => initializeSGDModel(arguments)
-        case _ => throw new IllegalArgumentException("Only LBFGS or SGD optimizers permitted")
-      }
-
+      val model = IaLogisticRegressionModelFactory.createModel(arguments)
       val logRegModel = model.run(labeledTrainRdd)
       val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns)
 
       //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
       LogisticRegressionReturnArgs(logRegModel.numFeatures, logRegModel.numClasses)
-
     }
-
-  private def initializeLBFGSModel(arguments: LogisticRegressionTrainArgs): LogisticRegressionWithFrequencyLBFGS = {
-    val model = new LogisticRegressionWithFrequencyLBFGS()
-
-    model.optimizer.setNumIterations(arguments.getNumIterations)
-    model.optimizer.setConvergenceTol(arguments.getConvergenceTolerance)
-    model.optimizer.setNumCorrections(arguments.getNumCorrections)
-    model.optimizer.setRegParam(arguments.getRegParam)
-
-    model.setNumClasses(arguments.getNumClasses)
-    model.setFeatureScaling(arguments.getFeatureScaling)
-
-    if (arguments.regType.isDefined) {
-      model.optimizer.setUpdater(arguments.regType.get match {
-        case "L1" => new L1Updater()
-        case other => new SquaredL2Updater()
-      })
-    }
-    model.setIntercept(arguments.getIntercept)
-  }
-
-  private def initializeSGDModel(arguments: LogisticRegressionTrainArgs): LogisticRegressionWithFrequencySGD = {
-    val model = new LogisticRegressionWithFrequencySGD()
-
-    model.optimizer.setNumIterations(arguments.getNumIterations)
-    model.optimizer.setStepSize(arguments.getStepSize)
-    model.optimizer.setRegParam(arguments.getRegParam)
-    model.optimizer.setMiniBatchFraction(arguments.getMiniBatchFraction)
-
-    model.setFeatureScaling(arguments.getFeatureScaling)
-
-    if (arguments.regType.isDefined) {
-      model.optimizer.setUpdater(arguments.regType.get match {
-        case "L1" => new L1Updater()
-        case other => new SquaredL2Updater()
-      })
-    }
-    model.setIntercept(arguments.getIntercept)
-
-  }
-
 }

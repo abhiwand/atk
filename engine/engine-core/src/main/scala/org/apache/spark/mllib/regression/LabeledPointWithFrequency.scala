@@ -1,7 +1,7 @@
 package org.apache.spark.mllib.regression
 
 import org.apache.spark.SparkException
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.mllib.util.NumericParser
 
 import scala.beans.BeanInfo
@@ -39,8 +39,9 @@ object LabeledPointWithFrequency {
         case other =>
           throw new SparkException(s"Cannot parse $other.")
       }
-    } else { // dense format used before v1.0
-    val parts = s.split(',')
+    }
+    else { // dense format used before v1.0
+      val parts = s.split(',')
       val label = java.lang.Double.parseDouble(parts(0))
       val features = Vectors.dense(parts(1).trim().split(' ').map(java.lang.Double.parseDouble))
       val frequency = java.lang.Double.parseDouble(parts(2))

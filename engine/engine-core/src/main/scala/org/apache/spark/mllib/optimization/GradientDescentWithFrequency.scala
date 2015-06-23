@@ -19,20 +19,25 @@ package org.apache.spark.mllib.optimization
 
 import scala.collection.mutable.ArrayBuffer
 
-import breeze.linalg.{DenseVector => BDV}
+import breeze.linalg.{ DenseVector => BDV }
 
-import org.apache.spark.annotation.{Experimental, DeveloperApi}
+import org.apache.spark.annotation.{ Experimental, DeveloperApi }
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.linalg.{Vectors, Vector}
+import org.apache.spark.mllib.linalg.{ Vectors, Vector }
 
 /**
  * Class used to solve an optimization problem using Gradient Descent.
+ *
+ * Copy of MlLib's gradient descent that supports a frequency column.
+ * The frequency column contains the frequency of occurrence of each observation.
+ * @see org.apache.spark.mllib.optimization.GradientDescent
+ *
  * @param gradient Gradient function to be used.
  * @param updater Updater to be used to update weights after every iteration.
  */
-class GradientDescent private[mllib] (private var gradient: Gradient, private var updater: Updater)
-  extends Optimizer with Logging {
+class GradientDescentWithFrequency private[mllib] (private var gradient: Gradient, private var updater: Updater)
+    extends Optimizer with Logging {
 
   private var stepSize: Double = 1.0
   private var numIterations: Int = 100
@@ -84,7 +89,6 @@ class GradientDescent private[mllib] (private var gradient: Gradient, private va
     this
   }
 
-
   /**
    * Set the updater function to actually perform a gradient step in a given direction.
    * The updater is responsible to perform the update from the regularization term as well,
@@ -104,7 +108,7 @@ class GradientDescent private[mllib] (private var gradient: Gradient, private va
    */
   @DeveloperApi
   def optimize(data: RDD[(Double, Vector)], initialWeights: Vector): Vector = {
-    val (weights, _) = GradientDescent.runMiniBatchSGD(
+    val (weights, _) = GradientDescentWithFrequency.runMiniBatchSGD(
       data,
       gradient,
       updater,
@@ -123,7 +127,7 @@ class GradientDescent private[mllib] (private var gradient: Gradient, private va
  * Top-level method to run gradient descent.
  */
 @DeveloperApi
-object GradientDescent extends Logging {
+object GradientDescentWithFrequency extends Logging {
   /**
    * Run stochastic gradient descent (SGD) in parallel using mini batches.
    * In each iteration, we sample a subset (fraction miniBatchFraction) of the total data
@@ -147,14 +151,14 @@ object GradientDescent extends Logging {
    *         stochastic loss computed for every iteration.
    */
   def runMiniBatchSGD(
-                       data: RDD[(Double, Vector)],
-                       gradient: Gradient,
-                       updater: Updater,
-                       stepSize: Double,
-                       numIterations: Int,
-                       regParam: Double,
-                       miniBatchFraction: Double,
-                       initialWeights: Vector): (Vector, Array[Double]) = {
+    data: RDD[(Double, Vector)],
+    gradient: Gradient,
+    updater: Updater,
+    stepSize: Double,
+    numIterations: Int,
+    regParam: Double,
+    miniBatchFraction: Double,
+    initialWeights: Vector): (Vector, Array[Double]) = {
 
     val stochasticLossHistory = new ArrayBuffer[Double](numIterations)
 
@@ -207,7 +211,8 @@ object GradientDescent extends Logging {
           weights, Vectors.fromBreeze(gradientSum / miniBatchSize.toDouble), stepSize, i, regParam)
         weights = update._1
         regVal = update._2
-      } else {
+      }
+      else {
         logWarning(s"Iteration ($i/$numIterations). The size of sampled batch is zero")
       }
     }

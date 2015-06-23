@@ -61,7 +61,7 @@ class LogisticRegressionTestPlugin extends SparkCommandPlugin[ClassificationWith
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:logistic_regression_exp/test"
+  override def name: String = "model:logistic_regression/test"
 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
   /**

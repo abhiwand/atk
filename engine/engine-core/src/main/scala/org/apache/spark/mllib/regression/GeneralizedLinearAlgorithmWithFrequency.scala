@@ -19,12 +19,12 @@ package org.apache.spark.mllib.regression
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.mllib.feature.StandardScaler
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.linalg.{ DenseMatrix, Vector, Vectors }
 import org.apache.spark.mllib.optimization._
 import org.apache.spark.mllib.util.MLUtils._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
-import org.apache.spark.{Logging, SparkException}
+import org.apache.spark.{ Logging, SparkException }
 
 /**
  * :: DeveloperApi ::
@@ -41,7 +41,7 @@ import org.apache.spark.{Logging, SparkException}
  */
 @DeveloperApi
 abstract class GeneralizedLinearModelWithFrequency(val weights: Vector, val intercept: Double)
-  extends Serializable {
+    extends Serializable {
 
   /**
    * Predict the result given a data point and the weights learned.
@@ -95,7 +95,7 @@ abstract class GeneralizedLinearModelWithFrequency(val weights: Vector, val inte
  */
 @DeveloperApi
 abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearModelWithFrequency]
-  extends Logging with Serializable {
+    extends Logging with Serializable {
 
   protected val validators: Seq[RDD[LabeledPointWithFrequency] => Boolean] = List()
 
@@ -151,9 +151,10 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
   }
 
   /**
-   * Create a model given the weights and intercept
+   * Create a model given the weights, intercept and optional hessian matrix
    */
-  protected def createModel(weights: Vector, intercept: Double): M
+  protected def createModel(weights: Vector,
+                            intercept: Double): M
 
   /**
    * Get if the algorithm uses addIntercept
@@ -200,14 +201,17 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
     val initialWeights = {
       if (numOfLinearPredictor == 1) {
         Vectors.zeros(numFeatures)
-      } else if (addIntercept) {
+      }
+      else if (addIntercept) {
         Vectors.zeros((numFeatures + 1) * numOfLinearPredictor)
-      } else {
+      }
+      else {
         Vectors.zeros(numFeatures * numOfLinearPredictor)
       }
     }
     run(input, initialWeights)
   }
+
   /**
    * Run the algorithm with the configured parameters on an input RDD
    * of LabeledPoint entries starting from the initial weights provided.
@@ -249,7 +253,8 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
      */
     val scaler = if (useFeatureScaling) {
       new StandardScaler(withStd = true, withMean = false).fit(input.map(_.features))
-    } else {
+    }
+    else {
       null
     }
 
@@ -259,13 +264,16 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
       if (addIntercept) {
         if (useFeatureScaling) {
           input.map(lp => (lp.label, appendBias(scaler.transform(lp.features)))).cache()
-        } else {
+        }
+        else {
           input.map(lp => (lp.label, appendBias(lp.features))).cache()
         }
-      } else {
+      }
+      else {
         if (useFeatureScaling) {
           input.map(lp => (lp.label, scaler.transform(lp.features))).cache()
-        } else {
+        }
+        else {
           input.map(lp => (lp.label, lp.features))
         }
       }
@@ -277,7 +285,8 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
      */
     val initialWeightsWithIntercept = if (addIntercept && numOfLinearPredictor == 1) {
       appendBias(initialWeights)
-    } else {
+    }
+    else {
       /** If `numOfLinearPredictor > 1`, initialWeights already contains intercepts. */
       initialWeights
     }
@@ -286,13 +295,15 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
 
     val intercept = if (addIntercept && numOfLinearPredictor == 1) {
       weightsWithIntercept(weightsWithIntercept.size - 1)
-    } else {
+    }
+    else {
       0.0
     }
 
     var weights = if (addIntercept && numOfLinearPredictor == 1) {
       Vectors.dense(weightsWithIntercept.toArray.slice(0, weightsWithIntercept.size - 1))
-    } else {
+    }
+    else {
       weightsWithIntercept
     }
 
@@ -307,7 +318,8 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
     if (useFeatureScaling) {
       if (numOfLinearPredictor == 1) {
         weights = scaler.transform(weights)
-      } else {
+      }
+      else {
         /**
          * For `numOfLinearPredictor > 1`, we have to transform the weights back to the original
          * scale for each set of linear predictor. Note that the intercepts have to be explicitly
@@ -318,7 +330,9 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
         val weightsArray = weights.toArray
         while (i < numOfLinearPredictor) {
           val start = i * n
-          val end = (i + 1) * n - { if (addIntercept) 1 else 0 }
+          val end = (i + 1) * n - {
+            if (addIntercept) 1 else 0
+          }
 
           val partialWeightsArray = scaler.transform(
             Vectors.dense(weightsArray.slice(start, end))).toArray

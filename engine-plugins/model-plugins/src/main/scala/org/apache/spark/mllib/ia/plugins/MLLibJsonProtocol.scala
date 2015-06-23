@@ -17,12 +17,12 @@
 package org.apache.spark.mllib.ia.plugins
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel}
+import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
-import org.apache.spark.mllib.ia.plugins.classification.glm.{LogisticRegressionReturnArgs, LogisticRegressionData, LogisticRegressionTrainArgs}
-import org.apache.spark.mllib.ia.plugins.clustering.{KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn}
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector}
+import org.apache.spark.mllib.ia.plugins.classification.glm.{ LogisticRegressionReturnArgs, LogisticRegressionData, LogisticRegressionTrainArgs }
+import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn }
+import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import spray.json._
 

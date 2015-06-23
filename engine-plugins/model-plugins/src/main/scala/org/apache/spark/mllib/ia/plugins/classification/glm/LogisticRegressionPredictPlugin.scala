@@ -17,9 +17,9 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.intelanalytics.domain.CreateEntityArgs
-import com.intel.intelanalytics.domain.frame.{FrameEntity, FrameMeta}
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.plugin.{ApiMaturityTag, Invocation, PluginDoc}
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -53,7 +53,7 @@ class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationW
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:logistic_regression_exp/predict"
+  override def name: String = "model:logistic_regression/predict"
 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 

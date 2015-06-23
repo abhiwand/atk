@@ -96,17 +96,17 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
                                      featureColumnNames: List[String],
                                      frequencyColumnName: Option[String]): RDD[LabeledPointWithFrequency] = {
     this.mapRows(row =>
-    {
-      val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
-      if(frequencyColumnName.isDefined) {
-        new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
-          new DenseVector(features.toArray), DataTypes.toDouble(row.value(frequencyColumnName.get)))
-      }
-      else{
-        new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
-          new DenseVector(features.toArray), DataTypes.toDouble(1.0))
-      }
-    })
+      {
+        val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
+        if (frequencyColumnName.isDefined) {
+          new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
+            new DenseVector(features.toArray), DataTypes.toDouble(row.value(frequencyColumnName.get)))
+        }
+        else {
+          new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
+            new DenseVector(features.toArray), DataTypes.toDouble(1.0))
+        }
+      })
   }
 
   override def compute(split: Partition, context: TaskContext): Iterator[sql.Row] =

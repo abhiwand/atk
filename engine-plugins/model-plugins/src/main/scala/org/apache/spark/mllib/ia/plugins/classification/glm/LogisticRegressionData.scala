@@ -23,7 +23,8 @@ import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequenc
  * @param logRegModel Trained MLLib's LogisticRegressionModel object
  * @param observationColumns Handle to the observation columns of the data frame
  */
-case class LogisticRegressionData(logRegModel: LogisticRegressionModelWithFrequency, observationColumns: List[String]) {
+case class LogisticRegressionData(logRegModel: LogisticRegressionModelWithFrequency,
+                                  observationColumns: List[String]) {
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
   require(logRegModel != null, "logRegModel must not be null")
 }
