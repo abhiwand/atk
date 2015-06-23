@@ -84,7 +84,7 @@ def download_server_commands(server):
             response = server.get("/commands/definitions")
         except:
             import sys
-            sys.stderr.write('Unable to connect to server\n')
+            sys.stderr.write('Unable to connect to server %s\n' % server._get_base_uri())
             raise IaError(logger)
 
         server_build_id = get_build_id(response)

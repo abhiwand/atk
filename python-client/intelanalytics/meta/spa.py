@@ -30,7 +30,6 @@ def get_spa_docstring(command_def, override_rtype=None):
         print "Problem with command_def.doc for command %s" % command_def.full_name
         raise
 
-
     params = command_def.parameters
     if params:
         params_text = "\n".join([get_parameter_text(p) for p in params if not p.use_self])

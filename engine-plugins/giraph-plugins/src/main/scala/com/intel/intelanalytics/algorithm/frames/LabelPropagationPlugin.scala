@@ -26,8 +26,6 @@ import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocatio
 import org.apache.spark.sql.parquet.ia.giraph.frame.lp.{ LabelPropagationVertexOutputFormat, LabelPropagationVertexInputFormat, LabelPropagationEdgeInputFormat }
 import LabelPropagationJsonFormat._
 
-@PluginDoc(oneLine = "",
-  extended = "")
 class LabelPropagationPlugin
     extends CommandPlugin[LabelPropagationArgs, LabelPropagationResult] {
 
