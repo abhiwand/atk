@@ -16,19 +16,6 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
-import scala.reflect.io.Directory
-import java.io.File
-object mydebug {
-  val x = {
-    System.err.println("In Mydebug Static Object")
-    System.err.println(s"Java Class Path is: ${System.getProperty("java.class.path")}")
-    System.err.println(s"Current PWD is ${Directory.Current.get.toString()}")
-    System.err.println(s"Contents of the directory are")
-    new File(s"${Directory.Current.get.toString()}").listFiles().map(f => f.getName()).map(System.err.println)
-    true
-  }
-}
-
 import com.intel.event.{ EventLogging }
 import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
@@ -103,8 +90,6 @@ object CommandDriver {
 
       println(s"Java Class Path is: ${System.getProperty("java.class.path")}")
       println(s"Current PWD is ${Directory.Current.get.toString()}")
-      println(s"Contents of the directory are")
-      new File(s"${Directory.Current.get.toString()}").listFiles().map(f => f.getName()).map(println)
 
       try {
         /* Set to true as for some reason in yarn cluster mode, this doesn't seem to be set on remote driver container */

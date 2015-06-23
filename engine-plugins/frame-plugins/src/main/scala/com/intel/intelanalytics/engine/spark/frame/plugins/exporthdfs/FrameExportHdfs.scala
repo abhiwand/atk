@@ -113,8 +113,7 @@ object FrameExportHdfs extends Serializable {
     tablename: String) {
 
     val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
-    // TODO move this function to sql package for access. Also this changes to registerRDDAsDataframe
-    //    sqlContext.registerRDDAsTable(frameRdd, "mytable")
+    frameRdd.toDataFrame.registerTempTable("mytable")
     sqlContext.sql("CREATE TABLE " + tablename + " STORED AS AVRO AS SELECT * FROM mytable")
   }
 

@@ -77,6 +77,12 @@
                                     </includes>
                                 </filter>
                                 <filter>
+                                    <artifact>org.apache.spark:spark-core_${scala.short.version}</artifact>
+                                    <excludes>
+                                        <exclude>org/apache/spark/api/java/JavaRDD</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>*.html</exclude>
@@ -102,10 +108,6 @@
                                 <relocation>
                                     <pattern>com.google.guava</pattern>
                                     <shadedPattern>atk.com.google.guava</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.commons.lang3</pattern>
-                                    <shadedPattern>atk.org.apache.commons.lang3</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -338,6 +340,10 @@
                 </exclusion>
             </exclusions>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>

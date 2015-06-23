@@ -312,13 +312,9 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
           val driverClassPathString = "spark.driver.extraClassPath"
           val driverClassPathTuple = (driverClassPathString,
-            s".:interfaces.jar:launcher.jar:engine-core.jar:frame-plugins.jar:application.conf:" +
+            s".:interfaces.jar:launcher.jar:engine-core.jar:frame-plugins.jar:graph-plugins.jar:model-plugins.jar:application.conf:" +
             s"${pluginExtraClasspath.mkString(":")}:${SparkEngineConfig.hiveLib}:${SparkEngineConfig.hiveConf}:" +
             s"${SparkEngineConfig.sparkConfProperties.get(driverClassPathString).getOrElse("")}")
-          //          val driverClassPathTuple = (driverClassPathString,
-          //            s".:${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
-          //            s"${pluginExtraClasspath.mkString(":")}:${SparkEngineConfig.hiveLib}:${SparkEngineConfig.hiveConf}:" +
-          //            s"${SparkEngineConfig.sparkConfProperties.get(driverClassPathString).getOrElse("")}")
 
           val executionConfigs = {
             for {
@@ -357,8 +353,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
 
           val pb = new java.lang.ProcessBuilder(javaArgs: _*)
           val result = (pb.inheritIO() !)
-          System.out.println("***************** THIS OUT********************")
-          System.err.println("***************** THIS ERR********************")
           info(s"Command ${command.id} complete with result: $result")
         }
       }

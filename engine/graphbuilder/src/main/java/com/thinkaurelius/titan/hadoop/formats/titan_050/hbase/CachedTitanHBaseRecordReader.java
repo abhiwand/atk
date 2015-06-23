@@ -24,7 +24,8 @@ import com.thinkaurelius.titan.hadoop.config.ModifiableHadoopConfiguration;
 import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseHadoopGraph;
 import com.thinkaurelius.titan.hadoop.formats.util.input.TitanHadoopSetup;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.mapreduce.TableRecordReader;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -63,7 +64,7 @@ public class CachedTitanHBaseRecordReader extends RecordReader<NullWritable, Fau
         });
     }
 
-    private TableRecordReader reader;
+    private RecordReader<ImmutableBytesWritable, Result> reader;
     private TitanHBaseHadoopGraph graph;
     private FaunusVertexQueryFilter vertexQuery;
     private Configuration configuration;
@@ -71,7 +72,7 @@ public class CachedTitanHBaseRecordReader extends RecordReader<NullWritable, Fau
 
     private final byte[] edgestoreFamilyBytes;
 
-    public CachedTitanHBaseRecordReader(final ModifiableHadoopConfiguration faunusConf, final FaunusVertexQueryFilter vertexQuery, final TableRecordReader reader, final byte[] edgestoreFamilyBytes) {
+    public CachedTitanHBaseRecordReader(final ModifiableHadoopConfiguration faunusConf, final FaunusVertexQueryFilter vertexQuery, final RecordReader reader, final byte[] edgestoreFamilyBytes) {
         TitanHadoopCacheConfiguration cacheConfiguration = new TitanHadoopCacheConfiguration(faunusConf);
         TitanHadoopSetup titanSetup = graphCache.getGraph(cacheConfiguration);
 
@@ -121,7 +122,7 @@ public class CachedTitanHBaseRecordReader extends RecordReader<NullWritable, Fau
     }
 
     @Override
-    public float getProgress() {
+    public float getProgress() throws IOException, InterruptedException  {
         return this.reader.getProgress();
     }
 
