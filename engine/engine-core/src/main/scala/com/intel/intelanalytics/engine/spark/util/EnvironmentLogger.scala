@@ -36,11 +36,6 @@ object EnvironmentLogger extends EventLogging {
         info(name + "=" + System.getProperty(name))
       })
     }
-    withContext("memory") {
-      val formatter = NumberFormat.getInstance(Locale.US)
-      info("free=" + formatter.format(Runtime.getRuntime.freeMemory()))
-      info("total=" + formatter.format(Runtime.getRuntime.totalMemory()))
-      info("max=" + formatter.format(Runtime.getRuntime.maxMemory()))
-    }
+    info(JvmMemory.memory)
   }
 }

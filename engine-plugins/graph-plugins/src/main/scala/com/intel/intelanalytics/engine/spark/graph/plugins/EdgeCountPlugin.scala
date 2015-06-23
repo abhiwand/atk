@@ -18,9 +18,8 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.GraphNoArgs
 import com.intel.intelanalytics.domain.LongValue
-import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -31,7 +30,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
  */
 @PluginDoc(oneLine = "Get the total number of edges in the graph.",
   extended = "")
-class EdgeCountPlugin extends SparkCommandPlugin[GraphNoArgs, LongValue] {
+class EdgeCountPlugin extends CommandPlugin[GraphNoArgs, LongValue] {
 
   /**
    * The name of the command, e.g. graph:/edge_count
@@ -56,4 +55,3 @@ class EdgeCountPlugin extends SparkCommandPlugin[GraphNoArgs, LongValue] {
   }
 
 }
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }

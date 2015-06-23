@@ -70,5 +70,6 @@ def _walk_api(cls_function, attr_function, include_init=False):
 
 
 from intelanalytics.core.api import api_status
+from intelanalytics.rest.iaserver import create_credentials_file
 
 build_id = None  # This client build ID value is auto-filled during packaging.  Set to None to disable check with server
