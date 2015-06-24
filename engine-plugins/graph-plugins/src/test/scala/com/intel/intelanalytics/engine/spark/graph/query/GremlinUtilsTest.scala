@@ -32,6 +32,13 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
 
   before {
     setupTitan()
+    // Create schema before setting properties -- Needed in Titan 0.5.4+
+    val graphManager = titanGraph.getManagementSystem()
+    graphManager.makePropertyKey("name").dataType(classOf[String]).make()
+    graphManager.makePropertyKey("age").dataType(classOf[Integer]).make()
+    graphManager.makePropertyKey("weight").dataType(classOf[Integer]).make()
+    graphManager.makeEdgeLabel("test").make()
+    graphManager.commit()
   }
 
   after {
@@ -52,7 +59,7 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
     val vertex1 = titanIdGraph.addVertex(1)
     val vertex2 = titanIdGraph.addVertex(2)
     val edge = titanIdGraph.addEdge(3, vertex1, vertex2, "test")
-    edge.setProperty("weight", 0.5f)
+    edge.setProperty("weight", 2)
 
     val json = GremlinUtils.serializeGremlinToJson[Element](titanIdGraph, edge)
     edge should equalsGraphSONEdge(json)
@@ -123,7 +130,7 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
 
   "deserializeJsonToGremlin" should "deserialize a JSON map to a Java Map" in {
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
-    val json = Map("weight1" -> 1.5, "weight2" -> 4.5).toJson
+    val json = Map("weight1" -> 1, "weight2" -> 4).toJson
     val jsonFields = json.asJsObject.fields
 
     val javaHashMap = GremlinUtils.deserializeJsonToGremlin[java.util.Map[String, Double]](titanIdGraph, json)
