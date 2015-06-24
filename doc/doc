@@ -101,12 +101,15 @@ function doc_help() {
     echo "-h, --help: Print this and return"
     echo "-e:         Do not erase previous compilation"
     echo "+e:         Erase doctrees"
+    echo "-p:         Do not rebuild docstub files"
     echo "-q, -qq:    Quiet mode, use default values for prompts"
     echo "-s:         Do not compile Scala code"
     echo
+    echo "dirhtml:    Compile to html segregated with directories"
     echo "html:       Compile to html"
     echo "latex:      Compile to LaTeX"
     echo "pdf:        Compile to pdf"
+    echo "singlehtml: Compile to a monolithic html file"
     echo "text:       Compile to text"
     echo "zip:        Do a zip of build directory"
     echo "doctest:    Test the code examples"
@@ -291,11 +294,14 @@ function main() {
         if [ "$Return" != "0" ]; then return $Return; fi
 
         # debug: Update the additional python documentation files
-        pushd ../python-client/intelanalytics/doc > /dev/null
-        build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
-        Return=$?
-        popd > /dev/null
-        if [ "$Return" != "0" ]; then return $Return; fi
+        echo $ModifiedArguments | grep -i "/-p/" > /dev/null
+        if [ "$?" == "1" ]; then
+            pushd ../python-client/intelanalytics/doc > /dev/null
+            build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
+            Return=$?
+            popd > /dev/null
+            if [ "$Return" != "0" ]; then return $Return; fi
+        fi
 
         RunCommand="which sphinx-build"
         do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
