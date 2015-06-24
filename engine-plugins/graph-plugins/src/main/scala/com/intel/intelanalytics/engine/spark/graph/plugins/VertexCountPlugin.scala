@@ -18,9 +18,8 @@ package com.intel.intelanalytics.engine.spark.graph.plugins
 
 import com.intel.intelanalytics.domain.graph.GraphNoArgs
 import com.intel.intelanalytics.domain.LongValue
-import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphStorage
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

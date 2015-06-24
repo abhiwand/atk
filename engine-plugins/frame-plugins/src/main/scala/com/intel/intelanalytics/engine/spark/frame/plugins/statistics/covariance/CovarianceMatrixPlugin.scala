@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.statistics.covarianc
 
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import org.apache.spark.frame.FrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -28,7 +28,6 @@ import com.intel.intelanalytics.domain.frame.CovarianceMatrixArgs
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.Column
 import com.intel.intelanalytics.domain.schema.DataTypes.vector
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._

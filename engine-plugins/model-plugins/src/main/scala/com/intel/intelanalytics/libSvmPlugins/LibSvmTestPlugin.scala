@@ -19,7 +19,7 @@ package com.intel.intelanalytics.libSvmPlugins
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.Rows._
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -28,7 +28,36 @@ import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import org.apache.spark.rdd.RDD
 
 // TODO: all plugins should move out of engine-core into plugin modules
-
+/*
+Parameters
+----------
+predict_frame : Frame
+    A frame whose labels are to be predicted.
+label_column : str
+    Column containing the actual label for each observation.
+observation_column : list of str (Optional)
+    Column(s) containing the observations whose labels are to be predicted and
+    tested.
+    By default, we test over the columns the LibsvmModel was trained on.
+*/
+@PluginDoc(oneLine = "Predict test frame labels and return metrics.",
+  extended = "Predict the labels for a test frame and run classification metrics on predicted and target labels.",
+  returns = """Object
+    Object with binary classification metrics.
+    The data returned is composed of multiple components:
+<object>.accuracy : double
+     The degree of correctness of the test frame labels.
+<object>.confusion_matrix : table
+    A specific table layout that allows visualization of the performance of the
+    test.
+<object>.f_measure : double
+    A measure of a test's accuracy.
+    It considers both the precision and the recall of the test to compute
+    the score.
+<object>.precision : double
+    The degree to which the correctness of the label is expressed.
+<object>.recall : double
+     The fraction of relevant instances that are retrieved.""")
 class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, ClassificationMetricValue] {
   /**
    * The name of the command.

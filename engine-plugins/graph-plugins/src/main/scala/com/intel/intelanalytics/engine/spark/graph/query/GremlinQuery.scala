@@ -20,7 +20,7 @@ import javax.script.Bindings
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandInvocation, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBackendName, GraphBuilderConfigFactory }
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
@@ -33,7 +33,6 @@ import scala.util.{ Failure, Success, Try }
 import com.typesafe.config.Config
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.engine.CommandStorageProgressUpdater
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Arguments for Gremlin query.

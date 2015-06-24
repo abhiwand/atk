@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.intelanalytics.domain.frame.{ TallyPercentArgs, FrameEntity }
 import com.intel.intelanalytics.domain.schema.{ DataTypes }
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.LegacyFrameRdd
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 
@@ -28,7 +28,19 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Computes a cumulative percent count
+ *
+ * Parameters
+ * ----------
+ * sample_col : str
+ * The name of the column from which to compute the cumulative sum.
+ * count_value : str
+ * The column value to be used for the counts.
  */
+@PluginDoc(oneLine = "Compute a cumulative percent count.",
+  extended = """A cumulative percent count is computed by sequentially stepping through
+the column values and keeping track of the current percentage of the
+total number of times the specified *count_value* has been seen up to
+the current value.""")
 class TallyPercentPlugin extends SparkCommandPlugin[TallyPercentArgs, FrameEntity] {
 
   /**

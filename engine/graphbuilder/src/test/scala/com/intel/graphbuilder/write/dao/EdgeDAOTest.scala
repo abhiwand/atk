@@ -29,6 +29,16 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
 
   before {
     setupTitan()
+
+    // Create schema before setting properties -- Needed in Titan 0.5.4+
+    val graphManager = titanGraph.getManagementSystem()
+    graphManager.makePropertyKey("gbId").dataType(classOf[Integer]).make()
+    graphManager.makePropertyKey("newKey").dataType(classOf[String]).make()
+    graphManager.makePropertyKey("key1").dataType(classOf[String]).make()
+    graphManager.makePropertyKey("key2").dataType(classOf[String]).make()
+    graphManager.makeEdgeLabel("myLabel").make()
+    graphManager.commit()
+
     vertexDAO = new VertexDAO(titanGraph)
     edgeDAO = new EdgeDAO(titanGraph, vertexDAO)
   }

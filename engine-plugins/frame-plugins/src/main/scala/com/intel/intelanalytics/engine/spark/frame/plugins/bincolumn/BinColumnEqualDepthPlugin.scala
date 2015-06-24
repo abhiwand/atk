@@ -17,8 +17,7 @@
 package com.intel.intelanalytics.engine.spark.frame.plugins.bincolumn
 
 import com.intel.intelanalytics.domain.frame.ComputedBinColumnArgs
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row

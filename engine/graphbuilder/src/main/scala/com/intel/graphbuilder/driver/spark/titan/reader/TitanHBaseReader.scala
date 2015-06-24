@@ -22,7 +22,6 @@ import com.intel.graphbuilder.elements.GraphElement
 import com.intel.graphbuilder.graph.titan.{ TitanHadoopHBaseCacheListener, TitanAutoPartitioner, TitanGraphConnector }
 import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.hadoop.FaunusVertex
-import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseRecordReader
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.io.NullWritable

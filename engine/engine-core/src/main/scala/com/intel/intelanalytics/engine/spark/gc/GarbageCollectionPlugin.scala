@@ -19,14 +19,13 @@ package com.intel.intelanalytics.engine.spark.gc
 import java.util.concurrent.TimeUnit
 
 import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.typesafe.config.ConfigFactory
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Plugin that executes a single instance of garbage collection with user timespans specified at runtime

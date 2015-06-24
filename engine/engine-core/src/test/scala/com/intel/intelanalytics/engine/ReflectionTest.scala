@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine
 
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import org.scalatest.{ Matchers, FlatSpec }
 import scala.reflect.runtime.{ universe => ru }
 import ru._
