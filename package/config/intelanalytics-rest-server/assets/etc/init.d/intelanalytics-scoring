@@ -1,17 +1,17 @@
 #!/bin/bash
 
 #
-#intelanalytics init script
+#intelanalytics-scoring init script
 #
 #chkconfig: 345 99 25
-#description: intel analytics rest server for big data analytics
+#description: intel analytics scoring server for big data analytics
 #
 
 # Source function library.
 . /etc/init.d/functions
 
 
-prog=intelanalytics-rest-server
+prog=intelanalytics-scoring-server
 #lockfile=/var/lock/subsys/$prog
 
 green='\e[1;32m'#$(tput setaf 2)
@@ -38,10 +38,10 @@ initctlFunc() {
 }
 
 verifySparkHome
-
-mkdir -p /var/log/intelanalytics/rest-server
+verifySparkHome
+mkdir -p /var/log/intelanalytics/scoring-server
 #change ownership log directory so logback has permissions to create application log
-chown $IAUSER:$IAUSER /var/log/intelanalytics/rest-server
+chown $IAUSER:$IAUSER /var/log/intelanalytics/scoring-server
 
 # See how we were called.
 case "$1" in
