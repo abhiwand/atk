@@ -53,7 +53,7 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
    */
   override def start() = {
 
-    //TODO: modelfile to include contain the archive and loader info
+    //TODO: modelfile to include the archive and loader info
     lazy val modelLoader = com.intel.intelanalytics.component.Boot.getArchive(config.getString("intel.scoring-models.archive"))
       .load("com.intel.intelanalytics.scoring." + config.getString("intel.scoring-models.scoring.loader"))
 
