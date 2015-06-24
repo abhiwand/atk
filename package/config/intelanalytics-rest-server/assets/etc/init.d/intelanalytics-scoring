@@ -38,7 +38,7 @@ initctlFunc() {
 }
 
 verifySparkHome
-verifySparkHome
+
 mkdir -p /var/log/intelanalytics/scoring-server
 #change ownership log directory so logback has permissions to create application log
 chown $IAUSER:$IAUSER /var/log/intelanalytics/scoring-server
