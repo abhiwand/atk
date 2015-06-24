@@ -16,11 +16,15 @@
 
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import com.intel.intelanalytics.domain.frame.FrameReference
+import com.intel.intelanalytics.domain.CreateEntityArgs
+import com.intel.intelanalytics.domain.frame.{FrameMeta, FrameEntity, FrameReference}
 import com.intel.intelanalytics.domain.model.ModelReference
+import com.intel.intelanalytics.domain.schema.{FrameSchema, DataTypes, Column}
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import org.apache.spark.mllib.evaluation.ApproximateHessianMatrix
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import com.intel.intelanalytics.engine.plugin.PluginDoc
 
@@ -70,7 +74,7 @@ case class LogisticRegressionTrainArgs(model: ModelReference,
   def getThreshold: Double = { threshold.getOrElse(0.5) }
 }
 
-case class LogisticRegressionReturnArgs(numFeatures: Int, numClasses: Int)
+case class LogisticRegressionReturnArgs(numFeatures: Int, numClasses: Int, covarianceMatrix: FrameEntity)
 
 @PluginDoc(oneLine = "Build logistic regression model.",
   extended = """Creating a LogisticRegression Model using the observation column and label
@@ -116,11 +120,19 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
 
       //Running MLLib
       val model = IaLogisticRegressionModelFactory.createModel(arguments)
-      val logRegModel = model.run(labeledTrainRdd)
+      val logRegModel = model.getModel.run(labeledTrainRdd)
+      val hessianMatrix = model.getHessianMatrix.get
       val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns)
+      val hessianSchema =  FrameSchema(List(Column("hessian", DataTypes.vector(hessianMatrix.cols))))
+      val hessianFrameRdd = ApproximateHessianMatrix.toFrameRdd(labeledTrainRdd.sparkContext, hessianMatrix, hessianSchema)
+
+      val hessianFrame = tryNew(CreateEntityArgs(description = Some("hessian matrix created by LogisticRegression train operation"))) {
+        newTrainFrame: FrameMeta =>
+          save(new SparkFrameData(newTrainFrame.meta, hessianFrameRdd))
+      }.meta
 
       //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
-      LogisticRegressionReturnArgs(logRegModel.numFeatures, logRegModel.numClasses)
+      LogisticRegressionReturnArgs(logRegModel.numFeatures, logRegModel.numClasses, hessianFrame)
     }
 }

@@ -17,17 +17,15 @@
 
 package org.apache.spark.mllib.optimization
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
-
-import breeze.linalg.{ DenseVector => BDV }
-import breeze.optimize.{ CachedDiffFunction, DiffFunction, LBFGS => BreezeLBFGS }
-
+import breeze.linalg.{DenseMatrix => BDM, DenseVector => BDV}
+import breeze.optimize.{CachedDiffFunction, LBFGS => BreezeLBFGS}
 import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.mllib.linalg.{ Vector, Vectors }
-import org.apache.spark.mllib.linalg.BLAS.axpy
+import org.apache.spark.mllib.evaluation.{Hessian, ApproximateHessianMatrix}
+import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
+
+import scala.collection.mutable
 
 /**
  * :: DeveloperApi ::
@@ -38,12 +36,13 @@ import org.apache.spark.rdd.RDD
  */
 @DeveloperApi
 class LBFGSWithFrequency(private var gradient: Gradient, private var updater: Updater)
-    extends Optimizer with Logging {
+  extends Optimizer with Logging with Hessian {
 
   private var numCorrections = 10
   private var convergenceTol = 1E-4
   private var maxNumIterations = 100
   private var regParam = 0.0
+  private var hessianMatrix: Option[BDM[Double]] = None
 
   /**
    * Set the number of corrections used in the LBFGS update. Default 10.
@@ -113,8 +112,13 @@ class LBFGSWithFrequency(private var gradient: Gradient, private var updater: Up
     this
   }
 
+  /**
+   * Get the approximate Hessian matrix
+   */
+  override def getHessianMatrix: Option[BDM[Double]] = hessianMatrix
+
   override def optimize(data: RDD[(Double, Vector)], initialWeights: Vector): Vector = {
-    val (weights, _) = LBFGSWithFrequency.runLBFGS(
+    val (weights, _, hessian) = LBFGSWithFrequency.runLBFGS(
       data,
       gradient,
       updater,
@@ -123,6 +127,8 @@ class LBFGSWithFrequency(private var gradient: Gradient, private var updater: Up
       maxNumIterations,
       regParam,
       initialWeights)
+
+    this.hessianMatrix = hessian
     weights
   }
 
@@ -140,37 +146,38 @@ object LBFGSWithFrequency extends Logging {
    * spark map-reduce in each iteration.
    *
    * @param data - Input data for L-BFGS. RDD of the set of data examples, each of
-   *               the form (label, [feature values]).
+   *             the form (label, [feature values]).
    * @param gradient - Gradient object (used to compute the gradient of the loss function of
-   *                   one single data example)
+   *                 one single data example)
    * @param updater - Updater function to actually perform a gradient step in a given direction.
    * @param numCorrections - The number of corrections used in the L-BFGS update.
    * @param convergenceTol - The convergence tolerance of iterations for L-BFGS which is must be
-   *                         nonnegative. Lower values are less tolerant and therefore generally
-   *                         cause more iterations to be run.
+   *                       nonnegative. Lower values are less tolerant and therefore generally
+   *                       cause more iterations to be run.
    * @param maxNumIterations - Maximal number of iterations that L-BFGS can be run.
    * @param regParam - Regularization parameter
    *
-   * @return A tuple containing two elements. The first element is a column matrix containing
-   *         weights for every feature, and the second element is an array containing the loss
-   *         computed for every iteration.
+   * @return A tuple containing three elements. The first element is a column matrix containing
+   *         weights for every feature, the second element is an array containing the loss
+   *         computed for every iteration, and the third element is the approximate Hessian matrix.
    */
   def runLBFGS(
-    data: RDD[(Double, Vector)],
-    gradient: Gradient,
-    updater: Updater,
-    numCorrections: Int,
-    convergenceTol: Double,
-    maxNumIterations: Int,
-    regParam: Double,
-    initialWeights: Vector): (Vector, Array[Double]) = {
+                data: RDD[(Double, Vector)],
+                gradient: Gradient,
+                updater: Updater,
+                numCorrections: Int,
+                convergenceTol: Double,
+                maxNumIterations: Int,
+                regParam: Double,
+                initialWeights: Vector,
+                computeHessian: Boolean = true): (Vector, Array[Double], Option[BDM[Double]]) = {
 
     val lossHistory = mutable.ArrayBuilder.make[Double]
 
     val numExamples = data.count()
 
     val costFun =
-      new CostFun(data, gradient, updater, regParam, numExamples)
+      new CostFunction(data, gradient, updater, regParam, numExamples)
 
     val lbfgs = new BreezeLBFGS[BDV[Double]](maxNumIterations, numCorrections, convergenceTol)
 
@@ -191,74 +198,19 @@ object LBFGSWithFrequency extends Logging {
 
     val lossHistoryArray = lossHistory.result()
 
+    // Compute the approximate Hessian matrix using weights for the final iteration
+    val hessian = if (computeHessian) {
+      Some(ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate())
+    }
+    else {
+      None
+    }
+
     logInfo("LBFGS.runLBFGS finished. Last 10 losses %s".format(
       lossHistoryArray.takeRight(10).mkString(", ")))
 
-    (weights, lossHistoryArray)
-  }
 
-  /**
-   * CostFun implements Breeze's DiffFunction[T], which returns the loss and gradient
-   * at a particular point (weights). It's used in Breeze's convex optimization routines.
-   */
-  private class CostFun(
-      data: RDD[(Double, Vector)],
-      gradient: Gradient,
-      updater: Updater,
-      regParam: Double,
-      numExamples: Long) extends DiffFunction[BDV[Double]] {
-
-    override def calculate(weights: BDV[Double]): (Double, BDV[Double]) = {
-      // Have a local copy to avoid the serialization of CostFun object which is not serializable.
-      val w = Vectors.fromBreeze(weights)
-      val n = w.size
-      val bcW = data.context.broadcast(w)
-      val localGradient = gradient
-
-      val (gradientSum, lossSum) = data.treeAggregate((Vectors.zeros(n), 0.0))(
-        seqOp = (c, v) => (c, v) match {
-          case ((grad, loss), (label, features)) =>
-            val l = localGradient.compute(
-              features, label, bcW.value, grad)
-            (grad, loss + l)
-        },
-        combOp = (c1, c2) => (c1, c2) match {
-          case ((grad1, loss1), (grad2, loss2)) =>
-            axpy(1.0, grad2, grad1)
-            (grad1, loss1 + loss2)
-        })
-
-      /**
-       * regVal is sum of weight squares if it's L2 updater;
-       * for other updater, the same logic is followed.
-       */
-      val regVal = updater.compute(w, Vectors.zeros(n), 0, 1, regParam)._2
-
-      val loss = lossSum / numExamples + regVal
-      /**
-       * It will return the gradient part of regularization using updater.
-       *
-       * Given the input parameters, the updater basically does the following,
-       *
-       * w' = w - thisIterStepSize * (gradient + regGradient(w))
-       * Note that regGradient is function of w
-       *
-       * If we set gradient = 0, thisIterStepSize = 1, then
-       *
-       * regGradient(w) = w - w'
-       *
-       * TODO: We need to clean it up by separating the logic of regularization out
-       *       from updater to regularizer.
-       */
-      // The following gradientTotal is actually the regularization part of gradient.
-      // Will add the gradientSum computed from the data with weights in the next step.
-      val gradientTotal = w.copy
-      axpy(-1.0, updater.compute(w, Vectors.zeros(n), 1, 1, regParam)._1, gradientTotal)
-
-      // gradientTotal = gradientSum / numExamples + gradientTotal
-      axpy(1.0 / numExamples, gradientSum, gradientTotal)
-
-      (loss, gradientTotal.toBreeze.asInstanceOf[BDV[Double]])
-    }
+    (weights, lossHistoryArray, hessian)
   }
 }
+

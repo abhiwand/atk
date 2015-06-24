@@ -1,0 +1,72 @@
+package org.apache.spark.mllib.optimization
+
+import breeze.linalg.{DenseVector => BDV}
+import breeze.optimize.DiffFunction
+import org.apache.spark.mllib.linalg.BLAS.axpy
+import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.rdd.RDD
+
+/**
+ * LBFGSCostFun implements Breeze's DiffFunction[T], which returns the loss and gradient
+ * at a particular point (weights). It's used in Breeze's convex optimization routines.
+ */
+class CostFunction(
+                         data: RDD[(Double, Vector)],
+                         gradient: Gradient,
+                         updater: Updater,
+                         regParam: Double,
+                         numExamples: Long) extends DiffFunction[BDV[Double]] {
+
+  override def calculate(weights: BDV[Double]): (Double, BDV[Double]) = {
+    // Have a local copy to avoid the serialization of CostFun object which is not serializable.
+    val w = Vectors.fromBreeze(weights)
+    val n = w.size
+    val bcW = data.context.broadcast(w)
+    val localGradient = gradient
+
+    val (gradientSum, lossSum) = data.treeAggregate((Vectors.zeros(n), 0.0))(
+      seqOp = (c, v) => (c, v) match {
+        case ((grad, loss), (label, features)) =>
+          val l = localGradient.compute(
+            features, label, bcW.value, grad)
+          (grad, loss + l)
+      },
+      combOp = (c1, c2) => (c1, c2) match {
+        case ((grad1, loss1), (grad2, loss2)) =>
+          axpy(1.0, grad2, grad1)
+          (grad1, loss1 + loss2)
+      })
+
+    /**
+     * regVal is sum of weight squares if it's L2 updater;
+     * for other updater, the same logic is followed.
+     */
+    val regVal = updater.compute(w, Vectors.zeros(n), 0, 1, regParam)._2
+
+    val loss = lossSum / numExamples + regVal
+    /**
+     * It will return the gradient part of regularization using updater.
+     *
+     * Given the input parameters, the updater basically does the following,
+     *
+     * w' = w - thisIterStepSize * (gradient + regGradient(w))
+     * Note that regGradient is function of w
+     *
+     * If we set gradient = 0, thisIterStepSize = 1, then
+     *
+     * regGradient(w) = w - w'
+     *
+     * TODO: We need to clean it up by separating the logic of regularization out
+     * from updater to regularizer.
+     */
+    // The following gradientTotal is actually the regularization part of gradient.
+    // Will add the gradientSum computed from the data with weights in the next step.
+    val gradientTotal = w.copy
+    axpy(-1.0, updater.compute(w, Vectors.zeros(n), 1, 1, regParam)._1, gradientTotal)
+
+    // gradientTotal = gradientSum / numExamples + gradientTotal
+    axpy(1.0 / numExamples, gradientSum, gradientTotal)
+
+    (loss, gradientTotal.toBreeze.asInstanceOf[BDV[Double]])
+  }
+}

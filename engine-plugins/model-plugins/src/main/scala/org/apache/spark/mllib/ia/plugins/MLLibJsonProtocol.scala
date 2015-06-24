@@ -297,7 +297,7 @@ object MLLibJsonProtocol {
   implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
   implicit val logRegTrainFormat = jsonFormat17(LogisticRegressionTrainArgs)
-  implicit val logRegTrainReturnFormat = jsonFormat2(LogisticRegressionReturnArgs)
+  implicit val logRegTrainReturnFormat = jsonFormat3(LogisticRegressionReturnArgs)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)

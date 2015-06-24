@@ -1,10 +1,26 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
+import breeze.linalg.DenseMatrix
 import org.apache.spark.mllib.classification.{ LogisticRegressionWithFrequencyLBFGS, LogisticRegressionModelWithFrequency }
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
-import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
+import org.apache.spark.mllib.regression.{LabeledPointWithFrequency, GeneralizedLinearAlgorithmWithFrequency}
+import org.apache.spark.rdd.RDD
 
-class IaLogisticRegressionModelWithLBFGS extends IaLogisticRegressionModel {
+class IaLogisticRegressionModelWithLBFGS() extends IaLogisticRegressionModel {
+
+  val model = new LogisticRegressionWithFrequencyLBFGS()
+
+  /**
+   * Get logistic regression model
+   */
+  override def getModel: LogisticRegressionWithFrequencyLBFGS = model
+
+  /**
+   * Get the approximate Hessian matrix at the solution (i.e., final iteration)
+   */
+  override def getHessianMatrix: Option[DenseMatrix[Double]] = {
+    model.optimizer.getHessianMatrix
+  }
 
   /**
    * Create logistic regression model
@@ -12,9 +28,7 @@ class IaLogisticRegressionModelWithLBFGS extends IaLogisticRegressionModel {
    * @param arguments model arguments
    * @return Logistic regression model
    */
-  override def createModel(arguments: LogisticRegressionTrainArgs): GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency] = {
-
-    val model = new LogisticRegressionWithFrequencyLBFGS()
+  override def initialize(arguments: LogisticRegressionTrainArgs) : Unit  = {
     model.optimizer.setNumIterations(arguments.getNumIterations)
     model.optimizer.setConvergenceTol(arguments.getConvergenceTolerance)
     model.optimizer.setNumCorrections(arguments.getNumCorrections)
@@ -30,4 +44,6 @@ class IaLogisticRegressionModelWithLBFGS extends IaLogisticRegressionModel {
     }
     model.setIntercept(arguments.getIntercept)
   }
+
+
 }

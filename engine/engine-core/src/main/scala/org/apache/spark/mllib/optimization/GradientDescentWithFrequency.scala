@@ -17,9 +17,11 @@
 
 package org.apache.spark.mllib.optimization
 
+import org.apache.spark.mllib.evaluation.{Hessian, ApproximateHessianMatrix}
+
 import scala.collection.mutable.ArrayBuffer
 
-import breeze.linalg.{ DenseVector => BDV }
+import breeze.linalg.{ DenseMatrix => BDM, DenseVector => BDV }
 
 import org.apache.spark.annotation.{ Experimental, DeveloperApi }
 import org.apache.spark.Logging
@@ -37,12 +39,13 @@ import org.apache.spark.mllib.linalg.{ Vectors, Vector }
  * @param updater Updater to be used to update weights after every iteration.
  */
 class GradientDescentWithFrequency private[mllib] (private var gradient: Gradient, private var updater: Updater)
-    extends Optimizer with Logging {
+    extends Optimizer with Logging with Hessian {
 
   private var stepSize: Double = 1.0
   private var numIterations: Int = 100
   private var regParam: Double = 0.0
   private var miniBatchFraction: Double = 1.0
+  private var hessianMatrix: Option[BDM[Double]] = None
 
   /**
    * Set the initial step size of SGD for the first step. Default 1.0.
@@ -100,6 +103,11 @@ class GradientDescentWithFrequency private[mllib] (private var gradient: Gradien
   }
 
   /**
+   * Get the approximate Hessian matrix
+   */
+  override def getHessianMatrix: Option[BDM[Double]] = hessianMatrix
+
+  /**
    * :: DeveloperApi ::
    * Runs gradient descent on the given training data.
    * @param data training data
@@ -108,7 +116,7 @@ class GradientDescentWithFrequency private[mllib] (private var gradient: Gradien
    */
   @DeveloperApi
   def optimize(data: RDD[(Double, Vector)], initialWeights: Vector): Vector = {
-    val (weights, _) = GradientDescentWithFrequency.runMiniBatchSGD(
+    val (weights, _, hessian) = GradientDescentWithFrequency.runMiniBatchSGD(
       data,
       gradient,
       updater,
@@ -117,6 +125,8 @@ class GradientDescentWithFrequency private[mllib] (private var gradient: Gradien
       regParam,
       miniBatchFraction,
       initialWeights)
+
+    this.hessianMatrix = hessian
     weights
   }
 
@@ -158,7 +168,8 @@ object GradientDescentWithFrequency extends Logging {
     numIterations: Int,
     regParam: Double,
     miniBatchFraction: Double,
-    initialWeights: Vector): (Vector, Array[Double]) = {
+    initialWeights: Vector,
+    computeHessian: Boolean = true): (Vector, Array[Double], Option[BDM[Double]]) = {
 
     val stochasticLossHistory = new ArrayBuffer[Double](numIterations)
 
@@ -167,7 +178,7 @@ object GradientDescentWithFrequency extends Logging {
     // if no data, return initial weights to avoid NaNs
     if (numExamples == 0) {
       logWarning("GradientDescent.runMiniBatchSGD returning initial weights, no data found")
-      return (initialWeights, stochasticLossHistory.toArray)
+      return (initialWeights, stochasticLossHistory.toArray, None)
     }
 
     if (numExamples * miniBatchFraction < 1) {
@@ -217,10 +228,20 @@ object GradientDescentWithFrequency extends Logging {
       }
     }
 
+    // Compute the approximate Hessian matrix using weights for the final iteration
+    val hessian = if (computeHessian) {
+      val costFun =
+        new CostFunction(data, gradient, updater, regParam, numExamples)
+      Some(ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate())
+    }
+    else {
+      None
+    }
+
     logInfo("GradientDescent.runMiniBatchSGD finished. Last 10 stochastic losses %s".format(
       stochasticLossHistory.takeRight(10).mkString(", ")))
 
-    (weights, stochasticLossHistory.toArray)
+    (weights, stochasticLossHistory.toArray, hessian)
 
   }
 }

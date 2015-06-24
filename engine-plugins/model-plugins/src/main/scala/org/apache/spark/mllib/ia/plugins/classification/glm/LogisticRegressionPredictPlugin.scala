@@ -106,7 +106,7 @@ class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationW
       val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_label", DataTypes.int32)
       val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-      tryNew(CreateEntityArgs(description = Some("created by LogisticRegressionWithSGDs predict operation"))) {
+      tryNew(CreateEntityArgs(description = Some("created by LogisticRegression predict operation"))) {
         newPredictedFrame: FrameMeta =>
           save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
       }.meta

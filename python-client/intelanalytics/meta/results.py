@@ -98,6 +98,12 @@ def return_lda_train(selfish, json_result):
     word_frame= get_frame(json_result['word_results']['id'])
     return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }
 
+@postprocessor('model:logistic_regression/train')
+def return_lda_train(selfish, json_result):
+    from intelanalytics import get_frame
+    covariance_frame = get_frame(json_result['covariance_matrix']['id'])
+    return { 'num_features': json_result['num_features'], 'num_classes': json_result['num_classes'], 'covariance_matrix': covariance_frame }
+
 @postprocessor('frame:/label_propagation')
 def return_label_propagation(selfish, json_result):
     from intelanalytics import get_frame
