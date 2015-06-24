@@ -65,17 +65,17 @@ Glossary
         of the following tags.  The absence of a tag means the function is
         standardized and fully tested.
 
-        |ALPHA| Indicates a function or feature which has been developed, but
+        [ALPHA] Indicates a function or feature which has been developed, but
         has not been completely tested.
         Use this function with caution.
         This function may be changed or eliminated in future releases.
 
-        |BETA| Indicates a function or feature which has been developed and
+        [BETA] Indicates a function or feature which has been developed and
         preliminarily tested, but has not been completely tested.
         Use this function with caution.
         This function may be changed in future releases.
 
-        |DEPRECATED| Indicates a function or feature which is no longer
+        [DEPRECATED] Indicates a function or feature which is no longer
         supported.
         It is recommended that an alternate solution be found.
         This function may be removed in future releases.

@@ -260,8 +260,15 @@ function main() {
     fi
 
     # debug: Look for buildable
-    echo $ModifiedArguments | grep -i -e "/latex/" -e "/pdf/" -e "/text/" -e "/html/" > /dev/null
-    if [ "$?" == "0" ]; then
+    SphinxFormats="latex text html singlehtml dirhtml"
+    BuildableFormat=False
+    for Format in $SphinxFormats; do
+        if [ "$ModifiedArguments" != "${ModifiedArguments/$Format/}" ]; then
+            BuildableFormat=True
+            break
+        fi
+    done
+    if [ "$BuildableFormat" == "True" ]; then
 
         # debug: Remove previous doctrees
         echo $ModifiedArguments | grep -i "/+e/" > /dev/null
@@ -295,7 +302,6 @@ function main() {
         if [ "$?" != "0" ]; then return 1; fi
 
         # debug: Look for sphinx build types
-        SphinxFormats="latex text html"
         SphinxFlag=OK
         for Format in $SphinxFormats
         do
@@ -591,7 +597,7 @@ function sphinx_build() {
     BuildDirectory="build/$1"
 
     echo "$6" | grep -i "/-e/" > /dev/null
-    if [ $? == 1 ]; then
+    if [ "$?" == "1" ]; then
         delete_previous $BuildDirectory $2 $3 $4 $5
         if [ "$?" == "1" ]; then return 1; fi
     fi
