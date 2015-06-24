@@ -79,6 +79,11 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
     var vertices = vertexRdd
     var edges = edgeRdd
 
+    // Adding listener that evicts Titan graph instances from cache when it the application ends
+    // Needed to shutdown run-away Titan threads if the application ends abruptly
+    // https://github.com/thinkaurelius/titan/issues/817
+    vertexRdd.sparkContext.addSparkListener(new TitanGraphCacheListener())
+
     if (config.retainDanglingEdges) {
       println("retain dangling edges was true so we'll create extra vertices from edges")
       vertices = vertices.union(edges.verticesFromEdges())
@@ -116,6 +121,8 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
 
     // Manually Unpersist RDDs to help with Memory usage
     idMap.unpersist(blocking = false)
+
+    TitanGraphConnector.invalidateGraphCache()
 
     println("done writing edges")
   }
