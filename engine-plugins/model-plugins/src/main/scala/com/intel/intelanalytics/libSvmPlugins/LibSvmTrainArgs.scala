@@ -18,6 +18,7 @@ package com.intel.intelanalytics.libSvmPlugins
 
 import com.intel.intelanalytics.domain.frame.FrameReference
 import com.intel.intelanalytics.domain.model.ModelReference
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Command for training a lib svm model with the provided dataset and params.
@@ -25,25 +26,75 @@ import com.intel.intelanalytics.domain.model.ModelReference
  * @param frame Handle to the data frame
  * @param observationColumns Handle to the observation column/s of the data frame
  */
-case class LibSvmTrainArgs(model: ModelReference,
-                           frame: FrameReference,
-                           labelColumn: String,
-                           observationColumns: List[String],
-                           svmType: Option[Int],
-                           kernelType: Option[Int],
-                           weightLabel: Option[Array[Int]],
-                           weight: Option[Array[Double]],
-                           epsilon: Option[Double] = None,
-                           degree: Option[Int] = None,
-                           gamma: Option[Double] = None,
-                           coef: Option[Double] = None,
-                           nu: Option[Double] = None,
-                           cacheSize: Option[Double] = None,
-                           shrinking: Option[Int] = None,
-                           probability: Option[Int] = None,
-                           nrWeight: Option[Int] = None,
-                           C: Option[Double] = None,
-                           p: Option[Double] = None) {
+case class LibSvmTrainArgs(@ArgDoc("""Handle to the model to be used.""") model: ModelReference,
+
+                           @ArgDoc("""A frame to train the model on.""") frame: FrameReference,
+
+                           @ArgDoc("""Column name containing the label for each observation.""") labelColumn: String,
+
+                           @ArgDoc("""Column(s) containing the observations.""") observationColumns: List[String],
+
+                           @ArgDoc("""Set type of SVM.
+Default is 2.
+
+                            0 -- C-SVC
+
+                            1 -- nu-SVC
+
+                            2 -- one-class SVM
+
+                            3 -- epsilon-SVR
+
+                            4 -- nu-SVR""") svmType: Option[Int],
+
+                           @ArgDoc("""Specifies the kernel type to be used in the algorithm.
+Default is 2.
+
+                            0 -- linear: u\'\*v
+
+                            1 -- polynomial: (gamma*u\'\*v + coef0)^degree
+
+                            2 -- radial basis function: exp(-gamma*|u-v|^2)
+
+                            3 -- sigmoid: tanh(gamma*u\'\*v + coef0)""") kernelType: Option[Int],
+
+                           @ArgDoc("""Default is (Array[Int](0))""") weightLabel: Option[Array[Int]],
+
+                           @ArgDoc("""Default is (Array[Double](0.0))""") weight: Option[Array[Double]],
+
+                           @ArgDoc("""Set tolerance of termination criterion.
+Default is 0.001.""") epsilon: Option[Double] = None,
+
+                           @ArgDoc("""Degree of the polynomial kernel function ('poly').
+Ignored by all other kernels.
+Default is 3.""") degree: Option[Int] = None,
+
+                           @ArgDoc("""Kernel coefficient for 'rbf', 'poly' and 'sigmoid'.
+Default is 1/n_features.""") gamma: Option[Double] = None,
+
+                           @ArgDoc("""Independent term in kernel function.
+It is only significant in 'poly' and 'sigmoid'.
+Default is 0.0.""") coef: Option[Double] = None,
+
+                           @ArgDoc("""Set the parameter nu of nu-SVC, one-class SVM, and nu-SVR.
+Default is 0.5.""") nu: Option[Double] = None,
+
+                           @ArgDoc("""Specify the size of the kernel cache (in MB).
+Default is 100.0.""") cacheSize: Option[Double] = None,
+
+                           @ArgDoc("""Whether to use the shrinking heuristic.
+Default is 1 (true).""") shrinking: Option[Int] = None,
+
+                           @ArgDoc("""Whether to enable probability estimates.
+Default is 0 (false).""") probability: Option[Int] = None,
+
+                           @ArgDoc("""Default is 0.""") nrWeight: Option[Int] = None,
+
+                           @ArgDoc("""Penalty parameter C of the error term.
+Default is 1.0.""") C: Option[Double] = None,
+
+                           @ArgDoc("""Set the epsilon in loss function of epsilon-SVR.
+Default is 0.1.""") p: Option[Double] = None) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
   require(observationColumns != null && !observationColumns.isEmpty, "One or more observation columns is required")
