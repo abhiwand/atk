@@ -24,6 +24,13 @@ import spray.json.JsNumber
 class GremlinQueryITest extends FlatSpec with Matchers with TestingTitan with BeforeAndAfter {
   before {
     setupTitan()
+
+    // Create schema before setting properties -- Needed in Titan 0.5.4+
+    val graphManager = titanGraph.getManagementSystem()
+    graphManager.makePropertyKey("name").dataType(classOf[String]).make()
+    graphManager.makePropertyKey("age").dataType(classOf[Integer]).make()
+    graphManager.makeEdgeLabel("knows").make()
+    graphManager.commit()
   }
 
   after {
