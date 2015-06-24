@@ -120,13 +120,16 @@ object JsonReadersWriters {
 
 class LibKMeansModelReaderPlugin() extends ModelLoader {
 
-  private var libKMeansModel: KMeansModel = _
+  private var myLibKMeansModel: LibKMeansModel = _
 
   override def load(bytes: Array[Byte]): Model = {
     try {
-      val json: JsValue = new JsString(new String(bytes))
-      libKMeansModel = KMeansModelFormat.read(json)
-      libKMeansModel.asInstanceOf[Model]
+      val str = new String(bytes)
+      println(str)
+      val json: JsValue = str.parseJson
+      val libKMeansModel = json.convertTo[KMeansModel]
+      myLibKMeansModel = new LibKMeansModel(libKMeansModel)
+      myLibKMeansModel.asInstanceOf[Model]
     }
     catch {
       //TODO: log the error

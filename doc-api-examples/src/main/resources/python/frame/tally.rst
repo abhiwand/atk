@@ -1,18 +1,3 @@
-Count number of times a value is seen.
-
-A cumulative count is computed by sequentially stepping through the column
-values and keeping track of the the number of times the specified
-*count_value* has been seen up to the current value.
-
-
-Parameters
-----------
-sample_col : str
-    The name of the column from which to compute the cumulative count.
-count_value : str
-    The column value to be used for the counts.
-
-
 Examples
 --------
 Consider Frame *my_frame*, which accesses a frame that contains a single

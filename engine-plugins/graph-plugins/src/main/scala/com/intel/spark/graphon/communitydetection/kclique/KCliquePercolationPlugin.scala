@@ -18,7 +18,7 @@ package com.intel.spark.graphon.communitydetection.kclique
 
 import java.util.Date
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.domain.CreateEntityArgs
@@ -32,7 +32,6 @@ import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, Gra
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal
 import org.apache.spark.frame.FrameRdd
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 import scala.concurrent._
 

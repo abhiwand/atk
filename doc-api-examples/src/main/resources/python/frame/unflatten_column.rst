@@ -1,18 +1,3 @@
-Compacts data from multiple rows based on cell data.
-
-Groups together cells in all columns (less the composite key) using "," as string delimiter.
-The original rows are deleted. Thr grouping takes place based on a composite key passed as arguments.
-
-
-Parameters
-----------
-column : List<str>
-    The column list representing the composite key.
-delimiter : str (optional)
-    The delimiter string.
-    Default is comma (,).
-
-
 Examples
 --------
 Given a data file::

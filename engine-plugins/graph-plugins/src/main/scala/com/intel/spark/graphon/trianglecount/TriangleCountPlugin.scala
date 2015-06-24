@@ -19,7 +19,7 @@ package com.intel.spark.graphon.trianglecount
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphReference }
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
@@ -28,8 +28,6 @@ import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import spray.json._
-
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 /**
  * Parameters for executing triangle count.

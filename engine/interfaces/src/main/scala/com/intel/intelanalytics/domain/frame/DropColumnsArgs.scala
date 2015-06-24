@@ -16,7 +16,10 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class DropColumnsArgs(frame: FrameReference, columns: List[String]) {
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation }
+
+case class DropColumnsArgs(frame: FrameReference,
+                           @ArgDoc("""Column name OR list of column names to be removed from the frame.""") columns: List[String]) {
   require(frame != null, "frame is required")
   require(columns != null, "columns are required")
 }

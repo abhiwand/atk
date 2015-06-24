@@ -1,20 +1,3 @@
-Walk through single column and track cumulative sums.
-
-A cumulative sum is computed by sequentially stepping through the column
-values and keeping track of the current cumulative sum for each value.
-
-
-Parameters
-----------
-sample_col : str
-    The name of the column from which to compute the cumulative sum.
-
-
-Notes
------
-This method applies only to columns containing numerical data.
-
-
 Examples
 --------
 Consider Frame *my_frame*, which accesses a frame that contains a single
