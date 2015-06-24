@@ -20,7 +20,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
-import org.apache.spark.mllib.ia.plugins.classification.glm.{ LogisticRegressionReturnArgs, LogisticRegressionData, LogisticRegressionTrainArgs }
+import org.apache.spark.mllib.ia.plugins.classification.glm.{ LogisticRegressionTrainResults, LogisticRegressionData, LogisticRegressionTrainArgs }
 import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn }
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import org.apache.spark.mllib.regression.LinearRegressionModel
@@ -297,7 +297,7 @@ object MLLibJsonProtocol {
   implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
   implicit val logRegTrainFormat = jsonFormat17(LogisticRegressionTrainArgs)
-  implicit val logRegTrainReturnFormat = jsonFormat3(LogisticRegressionReturnArgs)
+  implicit val logRegTrainReturnFormat = jsonFormat4(LogisticRegressionTrainResults)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)

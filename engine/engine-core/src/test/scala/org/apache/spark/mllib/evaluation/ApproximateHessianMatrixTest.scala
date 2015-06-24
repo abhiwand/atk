@@ -1,9 +1,9 @@
 package org.apache.spark.mllib.evaluation
 
-import breeze.linalg.{DenseMatrix, DenseVector}
+import breeze.linalg.{ DenseMatrix, DenseVector }
 import breeze.optimize.DiffFunction
 import breeze.util.DoubleImplicits
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class ApproximateHessianMatrixTest extends FlatSpec with Matchers with DoubleImplicits {
 

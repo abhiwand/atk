@@ -102,7 +102,7 @@ def return_lda_train(selfish, json_result):
 def return_lda_train(selfish, json_result):
     from intelanalytics import get_frame
     covariance_frame = get_frame(json_result['covariance_matrix']['id'])
-    return { 'num_features': json_result['num_features'], 'num_classes': json_result['num_classes'], 'covariance_matrix': covariance_frame }
+    return { 'num_features': json_result['num_features'], 'num_classes': json_result['num_classes'], 'coefficients': json_result['coefficients'],'covariance_matrix': covariance_frame }
 
 @postprocessor('frame:/label_propagation')
 def return_label_propagation(selfish, json_result):

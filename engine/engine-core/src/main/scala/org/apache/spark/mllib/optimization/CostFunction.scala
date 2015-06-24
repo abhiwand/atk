@@ -1,9 +1,9 @@
 package org.apache.spark.mllib.optimization
 
-import breeze.linalg.{DenseVector => BDV}
+import breeze.linalg.{ DenseVector => BDV }
 import breeze.optimize.DiffFunction
 import org.apache.spark.mllib.linalg.BLAS.axpy
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.rdd.RDD
 
 /**
@@ -11,11 +11,11 @@ import org.apache.spark.rdd.RDD
  * at a particular point (weights). It's used in Breeze's convex optimization routines.
  */
 class CostFunction(
-                         data: RDD[(Double, Vector)],
-                         gradient: Gradient,
-                         updater: Updater,
-                         regParam: Double,
-                         numExamples: Long) extends DiffFunction[BDV[Double]] {
+    data: RDD[(Double, Vector)],
+    gradient: Gradient,
+    updater: Updater,
+    regParam: Double,
+    numExamples: Long) extends DiffFunction[BDV[Double]] {
 
   override def calculate(weights: BDV[Double]): (Double, BDV[Double]) = {
     // Have a local copy to avoid the serialization of CostFun object which is not serializable.

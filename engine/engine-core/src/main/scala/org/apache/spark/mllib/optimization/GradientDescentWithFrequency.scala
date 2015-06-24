@@ -17,7 +17,7 @@
 
 package org.apache.spark.mllib.optimization
 
-import org.apache.spark.mllib.evaluation.{Hessian, ApproximateHessianMatrix}
+import org.apache.spark.mllib.evaluation.{ Hessian, ApproximateHessianMatrix }
 
 import scala.collection.mutable.ArrayBuffer
 

@@ -17,12 +17,12 @@
 
 package org.apache.spark.mllib.optimization
 
-import breeze.linalg.{DenseMatrix => BDM, DenseVector => BDV}
-import breeze.optimize.{CachedDiffFunction, LBFGS => BreezeLBFGS}
+import breeze.linalg.{ DenseMatrix => BDM, DenseVector => BDV }
+import breeze.optimize.{ CachedDiffFunction, LBFGS => BreezeLBFGS }
 import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.mllib.evaluation.{Hessian, ApproximateHessianMatrix}
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.evaluation.{ Hessian, ApproximateHessianMatrix }
+import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
@@ -36,7 +36,7 @@ import scala.collection.mutable
  */
 @DeveloperApi
 class LBFGSWithFrequency(private var gradient: Gradient, private var updater: Updater)
-  extends Optimizer with Logging with Hessian {
+    extends Optimizer with Logging with Hessian {
 
   private var numCorrections = 10
   private var convergenceTol = 1E-4
@@ -162,15 +162,15 @@ object LBFGSWithFrequency extends Logging {
    *         computed for every iteration, and the third element is the approximate Hessian matrix.
    */
   def runLBFGS(
-                data: RDD[(Double, Vector)],
-                gradient: Gradient,
-                updater: Updater,
-                numCorrections: Int,
-                convergenceTol: Double,
-                maxNumIterations: Int,
-                regParam: Double,
-                initialWeights: Vector,
-                computeHessian: Boolean = true): (Vector, Array[Double], Option[BDM[Double]]) = {
+    data: RDD[(Double, Vector)],
+    gradient: Gradient,
+    updater: Updater,
+    numCorrections: Int,
+    convergenceTol: Double,
+    maxNumIterations: Int,
+    regParam: Double,
+    initialWeights: Vector,
+    computeHessian: Boolean = true): (Vector, Array[Double], Option[BDM[Double]]) = {
 
     val lossHistory = mutable.ArrayBuilder.make[Double]
 
@@ -208,7 +208,6 @@ object LBFGSWithFrequency extends Logging {
 
     logInfo("LBFGS.runLBFGS finished. Last 10 losses %s".format(
       lossHistoryArray.takeRight(10).mkString(", ")))
-
 
     (weights, lossHistoryArray, hessian)
   }

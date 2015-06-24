@@ -16,5 +16,5 @@ trait IaLogisticRegressionModel extends Hessian {
   /**
    * Get logistic regression model
    */
-  def getModel : GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency]
+  def getModel: GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency]
 }

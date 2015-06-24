@@ -16,10 +16,11 @@
 
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
+import breeze.linalg.inv
 import com.intel.intelanalytics.domain.CreateEntityArgs
-import com.intel.intelanalytics.domain.frame.{FrameMeta, FrameEntity, FrameReference}
+import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
 import com.intel.intelanalytics.domain.model.ModelReference
-import com.intel.intelanalytics.domain.schema.{FrameSchema, DataTypes, Column}
+import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes, Column }
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
@@ -27,6 +28,8 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.evaluation.ApproximateHessianMatrix
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import com.intel.intelanalytics.engine.plugin.PluginDoc
+
+import scala.util.Try
 
 //Implicits needed for JSON conversion
 import spray.json._
@@ -74,12 +77,15 @@ case class LogisticRegressionTrainArgs(model: ModelReference,
   def getThreshold: Double = { threshold.getOrElse(0.5) }
 }
 
-case class LogisticRegressionReturnArgs(numFeatures: Int, numClasses: Int, covarianceMatrix: FrameEntity)
+case class LogisticRegressionTrainResults(numFeatures: Int,
+                                          numClasses: Int,
+                                          coefficients: Map[String, Double],
+                                          covarianceMatrix: FrameEntity)
 
 @PluginDoc(oneLine = "Build logistic regression model.",
   extended = """Creating a LogisticRegression Model using the observation column and label
 column of the train frame.""")
-class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressionTrainArgs, LogisticRegressionReturnArgs] {
+class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressionTrainArgs, LogisticRegressionTrainResults] {
   /**
    * The name of the command.
    *
@@ -104,7 +110,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: LogisticRegressionTrainArgs)(implicit invocation: Invocation): LogisticRegressionReturnArgs =
+  override def execute(arguments: LogisticRegressionTrainArgs)(implicit invocation: Invocation): LogisticRegressionTrainResults =
     {
       val models = engine.models
       val frames = engine.frames
@@ -121,18 +127,24 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
       //Running MLLib
       val model = IaLogisticRegressionModelFactory.createModel(arguments)
       val logRegModel = model.getModel.run(labeledTrainRdd)
-      val hessianMatrix = model.getHessianMatrix.get
+      val covarianceMatrix = Try(inv(model.getHessianMatrix.get)).getOrElse({
+        throw new IllegalArgumentException("Could not compute covariance matrix: Hessian matrix is not invertable")
+      })
       val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns)
-      val hessianSchema =  FrameSchema(List(Column("hessian", DataTypes.vector(hessianMatrix.cols))))
-      val hessianFrameRdd = ApproximateHessianMatrix.toFrameRdd(labeledTrainRdd.sparkContext, hessianMatrix, hessianSchema)
+      val covarianceSchema = FrameSchema(List(Column("covariance", DataTypes.vector(covarianceMatrix.cols))))
+      val covarianceFrameRdd = ApproximateHessianMatrix.toFrameRdd(labeledTrainRdd.sparkContext, covarianceMatrix, covarianceSchema)
+
+      val coefs = logRegModel.intercept +: logRegModel.weights.toArray
+      val coefNames = List(arguments.labelColumn) ++ arguments.observationColumns
+      val coefficients = (coefNames zip coefs).toMap
 
       val hessianFrame = tryNew(CreateEntityArgs(description = Some("hessian matrix created by LogisticRegression train operation"))) {
         newTrainFrame: FrameMeta =>
-          save(new SparkFrameData(newTrainFrame.meta, hessianFrameRdd))
+          save(new SparkFrameData(newTrainFrame.meta, covarianceFrameRdd))
       }.meta
 
       //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
-      LogisticRegressionReturnArgs(logRegModel.numFeatures, logRegModel.numClasses, hessianFrame)
+      LogisticRegressionTrainResults(logRegModel.numFeatures, logRegModel.numClasses, coefficients, hessianFrame)
     }
 }

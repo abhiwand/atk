@@ -3,7 +3,7 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 import breeze.linalg.DenseMatrix
 import org.apache.spark.mllib.classification.{ LogisticRegressionWithFrequencyLBFGS, LogisticRegressionModelWithFrequency }
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
-import org.apache.spark.mllib.regression.{LabeledPointWithFrequency, GeneralizedLinearAlgorithmWithFrequency}
+import org.apache.spark.mllib.regression.{ LabeledPointWithFrequency, GeneralizedLinearAlgorithmWithFrequency }
 import org.apache.spark.rdd.RDD
 
 class IaLogisticRegressionModelWithLBFGS() extends IaLogisticRegressionModel {
@@ -28,7 +28,7 @@ class IaLogisticRegressionModelWithLBFGS() extends IaLogisticRegressionModel {
    * @param arguments model arguments
    * @return Logistic regression model
    */
-  override def initialize(arguments: LogisticRegressionTrainArgs) : Unit  = {
+  override def initialize(arguments: LogisticRegressionTrainArgs): Unit = {
     model.optimizer.setNumIterations(arguments.getNumIterations)
     model.optimizer.setConvergenceTol(arguments.getConvergenceTolerance)
     model.optimizer.setNumCorrections(arguments.getNumCorrections)
@@ -44,6 +44,5 @@ class IaLogisticRegressionModelWithLBFGS() extends IaLogisticRegressionModel {
     }
     model.setIntercept(arguments.getIntercept)
   }
-
 
 }

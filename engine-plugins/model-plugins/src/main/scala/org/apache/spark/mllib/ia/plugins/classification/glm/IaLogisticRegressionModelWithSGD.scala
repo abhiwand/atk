@@ -1,8 +1,8 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, LogisticRegressionWithFrequencySGD}
-import org.apache.spark.mllib.optimization.{L1Updater, SquaredL2Updater}
+import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, LogisticRegressionWithFrequencySGD }
+import org.apache.spark.mllib.optimization.{ L1Updater, SquaredL2Updater }
 import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
 
 class IaLogisticRegressionModelWithSGD extends IaLogisticRegressionModel {
