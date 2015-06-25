@@ -62,6 +62,12 @@ def _get_api_info():
     return ApiInfo(sys.modules[__name__])
 
 
+def _dump_server_command_defs(file_name):
+    """Gets command defs from server and dumps them to a file, as raw JSON"""
+    from intelanalytics.meta.installapi import dump_server_command_defs_to_file
+    dump_server_command_defs_to_file(server, file_name)
+
+
 def _walk_api(cls_function, attr_function, include_init=False):
     """Walks the installed API and runs the given functions for class and attributes in the API"""
     from intelanalytics.meta.installapi import walk_api

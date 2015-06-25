@@ -117,7 +117,10 @@ def get_return_description(json_schema):
 
 def get_doc(json_schema):
     doc = json_schema.get('doc', {})
-    return Doc(doc.get('title', '<Missing Doc>').strip(), doc.get('description', '').lstrip())
+    title = doc.get('title', '<Missing Doc>').strip()
+    description = (doc.get('description', '') or '').lstrip()
+    examples = (doc.get('examples', {}) or {}).get('python', '').lstrip()
+    return Doc(title, description, examples)
 
 
 def get_parameters(argument_schema):

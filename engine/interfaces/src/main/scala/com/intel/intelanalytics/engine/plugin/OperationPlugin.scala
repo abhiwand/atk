@@ -84,7 +84,7 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
    *
    * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
    */
-  def doc: Option[CommandDoc] = CommandDocLoader.getCommandDoc(name)
+  def doc: Option[CommandDoc] = None
 
   /**
    * Optional Tag for the plugin API

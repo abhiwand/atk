@@ -479,18 +479,20 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   implicit object CommandDocFormat extends JsonFormat[CommandDoc] {
     override def read(value: JsValue): CommandDoc = {
-      value.asJsObject.getFields("title", "description") match {
-        case Seq(JsString(title), JsString(description)) =>
-          CommandDoc(title, Some(description))
-        case Seq(JsString(title), JsNull) =>
-          CommandDoc(title, None)
-        case x => deserializationError(s"Expected a CommandDoc Json object, but got $x")
-      }
+      throw new NotImplementedError("CommandDoc JSON read")  // We only dump these
     }
 
-    override def write(doc: CommandDoc): JsValue = doc.extendedSummary match {
-      case Some(d) => JsObject("title" -> JsString(doc.oneLineSummary), "description" -> JsString(doc.extendedSummary.get))
-      case None => JsObject("title" -> JsString(doc.oneLineSummary))
+    override def write(doc: CommandDoc): JsValue = {
+      val title = JsString(doc.oneLineSummary)
+      val description = doc.extendedSummary match {
+        case Some(d) => JsString(d)
+        case None => JsNull
+      }
+      val examples = doc.examples match {
+        case Some(e) => JsObject(e.map { case (x, y) => x -> JsString(y) })
+        case None => JsNull
+      }
+      JsObject("title" -> title, "description" -> description, "examples" -> examples)
     }
   }
 

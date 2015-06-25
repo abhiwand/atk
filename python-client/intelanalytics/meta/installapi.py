@@ -19,6 +19,7 @@ Install API methods, and other API utils
 """
 
 import inspect
+import json
 import warnings
 import logging
 logger = logging.getLogger('meta')
@@ -76,22 +77,33 @@ def get_build_id(server_response):
     return server_build_id
 
 
-def download_server_commands(server):
-        logger.info("Requesting available commands from server")
-        from intelanalytics.rest.jsonschema import get_command_def
-        from intelanalytics.core.errorhandle import IaError
-        try:
-            response = server.get("/commands/definitions")
-        except:
-            import sys
-            sys.stderr.write('Unable to connect to server %s\n' % server._get_base_uri())
-            raise IaError(logger)
+def request_server_command_defs(server):
+    logger.info("Requesting available commands from server")
+    from intelanalytics.core.errorhandle import IaError
+    try:
+        return server.get("/commands/definitions")
+    except:
+        import sys
+        sys.stderr.write('Unable to connect to server %s\n' % server._get_base_uri())
+        raise IaError(logger)
 
-        server_build_id = get_build_id(response)
 
-        commands_json_schema = response.json()
-        # ensure the assignment to __commands_from_backend is the last line in this 'if' block before the fatal try:
-        return server_build_id, [get_command_def(c) for c in commands_json_schema]
+def dump_server_command_defs_to_file(server, file_name):
+    """Gets command defs from server and dumps them to a file, as raw JSON"""
+    response = request_server_command_defs(server)
+    with open(file_name, "w") as f:
+        json.dump(response.json(), f, indent=2)
+
+
+def download_server_details(server):
+    """Ask server for details about itself: the build ID and the API command defs"""
+    logger.info("Requesting available commands from server")
+    from intelanalytics.rest.jsonschema import get_command_def
+    response = request_server_command_defs(server)
+    server_build_id = get_build_id(response)
+    commands_json_schema = response.json()
+    # ensure the assignment to __commands_from_backend is the last line in this 'if' block before the fatal try:
+    return server_build_id, [get_command_def(c) for c in commands_json_schema]
 
 
 def install_client_commands():
@@ -239,7 +251,7 @@ def install_api(server):
     Subsequent calls to this method invoke no action.
     """
     if not api_status.is_installed:
-        server_build_id, server_commands = download_server_commands(server)
+        server_build_id, server_commands = download_server_details(server)
         delete_docstubs()
         install_client_commands()  # first do the client-side specific processing
         install_server_commands(server_commands)
@@ -358,6 +370,8 @@ class ApiInfo(object):
                             str(c.full_name),
                             self._get_side(c))
                            for cls, commands in self.command_defs_by_class.items() for c in commands]))
+
+
 
     def __repr__(self):
         return "\n".join([str(t) for t in self.get_big_tuples()])

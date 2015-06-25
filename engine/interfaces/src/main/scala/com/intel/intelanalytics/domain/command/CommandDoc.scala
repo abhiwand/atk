@@ -21,6 +21,8 @@ package com.intel.intelanalytics.domain.command
  * @param oneLineSummary - one line summary of the command
  * @param extendedSummary - more detailed summary of the command
  */
-case class CommandDoc(oneLineSummary: String, extendedSummary: Option[String] = None)
-// TODO - add 'errors', 'notes', 'examples', 'version'
+case class CommandDoc(oneLineSummary: String,
+                      extendedSummary: Option[String] = None,
+                      examples: Option[Map[String, String]] = None) // language -> text, like 'python' -> '>>> blah...'
+// TODO - add 'errors', 'notes', 'version'
 // (arguments and return are documented individually)

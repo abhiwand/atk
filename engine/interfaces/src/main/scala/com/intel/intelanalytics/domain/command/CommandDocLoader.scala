@@ -28,10 +28,13 @@ object CommandDocLoader {
    * @param commandName full name of the command, like "frame/add_columns"
    * @return CommandDoc, None if command not found in resource files
    */
-  def getCommandDoc(commandName: String): Option[CommandDoc] = {
+  def getCommandDocExamples(commandName: String): Option[Map[String, String]] = {
     val path = getPath(commandName)
-    val text = CommandDocText.getText(path, "python")
-    createCommandDoc(text)
+    // todo: scrape resources for folders besides 'python'.  We're just hardcoding python now
+    CommandDocText.getText(path, "python") match {
+      case Some(text) => Some(Map("python" -> text))
+      case None => None
+    }
   }
 
   /**

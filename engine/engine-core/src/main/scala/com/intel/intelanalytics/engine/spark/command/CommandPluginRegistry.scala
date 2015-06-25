@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.component.Archive
-import com.intel.intelanalytics.domain.command.{ CommandDefinition, CommandDoc }
+import com.intel.intelanalytics.domain.command.{ CommandDocLoader, CommandDefinition, CommandDoc }
 import com.intel.intelanalytics.engine.PluginDocAnnotation
 import com.intel.intelanalytics.engine.plugin.{ PluginDoc, CommandPlugin, Invocation }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
@@ -141,8 +141,9 @@ class CommandPluginRegistry(loader: CommandLoader) {
   }
 
   private def getCommandDoc(p: CommandPlugin[_, _]): Option[CommandDoc] = {
+    val examples: Option[Map[String, String]] = CommandDocLoader.getCommandDocExamples(p.name)
     JsonSchemaExtractor.getPluginDocAnnotation(p.thisManifest) match {
-      case Some(pluginDoc) => Some(CommandDoc(pluginDoc.oneLine, Some(pluginDoc.extended)))
+      case Some(pluginDoc) => Some(CommandDoc(pluginDoc.oneLine, Some(pluginDoc.extended), examples))
       case None => p.doc
     }
   }

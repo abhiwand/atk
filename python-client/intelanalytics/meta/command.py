@@ -36,15 +36,20 @@ Version = namedtuple("Version", ['added', 'changed', 'deprecated', 'doc'])
 class Doc(object):
     """Represents descriptive text for an object, but not its individual pieces"""
 
-    def __init__(self, one_line='<Missing Doc>', extended=''):  # todo add examples!!
+    def __init__(self, one_line='<Missing Doc>', extended='', examples=None):  # todo add examples!!
         self.one_line = one_line.strip()
         self.extended = extended
+        self.examples = examples
 
     def __str__(self):
         r = self.one_line
         if self.extended:
             r += ("\n\n" + self.extended)
         return r
+
+    def __repr__(self):
+        import json
+        return json.dumps(self.__dict__)
 
     @staticmethod
     def _pop_blank_lines(lines):
@@ -124,7 +129,7 @@ class CommandDefinition(object):
                           "\n".join([repr(p) for p in self.parameters]) if self.parameters else "<no parameters>",
                           repr(self.return_info),
                           repr(self.version),
-                          repr(self.doc)])
+                          "Doc" + repr(self.doc)])
 
     def get_return_type(self):
         return None if self.return_info is None else self.return_info.data_type
