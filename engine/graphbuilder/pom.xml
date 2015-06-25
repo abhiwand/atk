@@ -21,17 +21,31 @@
     </parent>
 
     <build>
-
-        <!--
-            sourceDirectory and testSourceDirectory don't seem to be needed by Maven but they
-            seem to help IntelliJ import projects correctly (but aren't needed on every module)
-        -->
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
+            <!--
+                More about mixed Scala/Java projects here:
+                http://davidb.github.io/scala-maven-plugin/example_java.html
+            -->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-test-compile</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.scalatest</groupId>
