@@ -15,10 +15,15 @@
 */
 
 package com.intel.intelanalytics.engine.spark.gc
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Arguments used for a single execution of garbage collection
  * @param ageToDeleteData minimum age of entity for data deletion. defaults to server config
  * @param ageToDeleteMetaData minimum age of entity for meta data deletion. defaults to server config
  */
-case class GarbageCollectionArgs(ageToDeleteData: Option[String] = None, ageToDeleteMetaData: Option[String] = None)
+case class GarbageCollectionArgs(
+  @ArgDoc("""Minimum age of entity for data deletion.
+Defaults to server config.""") ageToDeleteData: Option[String] = None,
+  @ArgDoc("""Minimum age of entity for meta data deletion.
+Defaults to server config.""") ageToDeleteMetaData: Option[String] = None)
