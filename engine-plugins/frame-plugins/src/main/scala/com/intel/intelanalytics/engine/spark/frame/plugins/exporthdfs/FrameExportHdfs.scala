@@ -112,9 +112,9 @@ object FrameExportHdfs extends Serializable {
     frameRdd: FrameRdd,
     tablename: String) {
 
-    val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
-    frameRdd.toDataFrame.registerTempTable("mytable")
-    sqlContext.sql("CREATE TABLE " + tablename + " STORED AS AVRO AS SELECT * FROM mytable")
+    val df = frameRdd.toDataFrameUsingHiveContext
+    df.registerTempTable("mytable")
+    df.sqlContext.asInstanceOf[org.apache.spark.sql.hive.HiveContext].sql("CREATE TABLE " + tablename + " STORED AS AVRO AS SELECT * FROM mytable")
   }
 
 }

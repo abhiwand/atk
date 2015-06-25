@@ -76,6 +76,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
    * @return Dataframe representing the FrameRdd
    */
   def toDataFrame = new SQLContext(this.sparkContext).createDataFrame(this, sparkSchema)
+  def toDataFrameUsingHiveContext = new org.apache.spark.sql.hive.HiveContext(this.sparkContext).createDataFrame(this, sparkSchema)
 
   /**
    * Convert FrameRdd into RDD[LabeledPoint] format required by MLLib
