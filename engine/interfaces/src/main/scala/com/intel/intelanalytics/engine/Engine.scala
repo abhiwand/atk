@@ -20,8 +20,8 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.intelanalytics.domain.frame._
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate }
-import com.intel.intelanalytics.domain.model.{ ModelEntity }
-import com.intel.intelanalytics.domain.query.{ Query, QueryDataResult, RowQuery, Execution => QueryExecution, _ }
+import com.intel.intelanalytics.domain.model.ModelEntity
+import com.intel.intelanalytics.domain.query.{ QueryResult, RowQuery }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.security.UserPrincipal
 
@@ -58,14 +58,6 @@ trait Engine {
 
   def getCommand(id: Identifier)(implicit invocation: Invocation): Future[Option[Command]]
 
-  def getQueries(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Query]]
-
-  def getQuery(id: Identifier)(implicit invocation: Invocation): Future[Option[Query]]
-
-  def getQueryPage(id: Identifier, pageId: Identifier)(implicit invocation: Invocation): QueryDataResult
-
-  //  def getEntityTypes()(implicit invocation: Invocation): Future[Seq[EntityType]]
-
   def getUserPrincipal(userKey: String)(implicit invocation: Invocation): UserPrincipal
 
   def addUserPrincipal(userKey: String)(implicit invocation: Invocation): UserPrincipal
@@ -73,8 +65,6 @@ trait Engine {
   def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
   def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult
-
-  //  def getRowsLarge(arguments: RowQuery[Identifier])(implicit invocation: Invocation): PagedQueryResult
 
   @deprecated("use engine.graphs.createFrame()")
   def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity]
