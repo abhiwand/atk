@@ -19,7 +19,7 @@ package com.intel.intelanalytics.engine.spark.gc
 import java.util.concurrent.TimeUnit
 
 import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
+import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.SparkEngineConfig
 import com.typesafe.config.ConfigFactory
 
