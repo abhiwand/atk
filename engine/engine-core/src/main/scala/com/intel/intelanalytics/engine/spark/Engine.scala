@@ -378,10 +378,10 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     GarbageCollector.shutdown()
   }
 
-  override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = {
+  override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[FrameEntity] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
-      Some(seamless.vertexMeta(label))
+      seamless.vertexMeta(label)
     }
   }
 
@@ -392,10 +392,10 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     }
   }
 
-  override def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = {
+  override def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[FrameEntity] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
-      Some(seamless.edgeMeta(label))
+      seamless.edgeMeta(label)
     }
   }
 

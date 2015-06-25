@@ -96,11 +96,11 @@ trait Engine {
   @deprecated("use engine.graphs.createGraph()")
   def createGraph(graph: GraphTemplate)(implicit invocation: Invocation): Future[GraphEntity]
 
-  def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]
+  def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[FrameEntity]
 
   def getVertices(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]]
 
-  def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]]
+  def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[FrameEntity]
 
   def getEdges(graphId: Identifier)(implicit invocation: Invocation): Future[Seq[FrameEntity]]
 

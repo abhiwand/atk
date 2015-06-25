@@ -113,19 +113,17 @@ object JoinRddFunctions extends Serializable {
    */
   def fullOuterJoin(left: RddJoinParam, right: RddJoinParam): RDD[Row] = {
     Spark.fullOuterJoin(left.rdd, right.rdd).map {
-      case (_, outerJoinResult) => {
+      case (_, outerJoinResult) =>
         outerJoinResult match {
-          case (Some(leftValues), Some(rightValues)) => {
+          case (Some(leftValues), Some(rightValues)) =>
             Row.fromSeq(leftValues ++ rightValues)
-          }
-          case (Some(leftValues), None) => {
+          case (Some(leftValues), None) =>
             Row.fromSeq(leftValues ++ (1 to right.columnCount).map(i => null))
-          }
-          case (None, Some(rightValues)) => {
+          case (None, Some(rightValues)) =>
             Row.fromSeq((1 to left.columnCount).map(i => null) ++ rightValues)
-          }
+          case (None, None) =>
+            throw new IllegalArgumentException("No join parameters were supplied")
         }
-      }
     }
   }
 
