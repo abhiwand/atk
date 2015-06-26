@@ -18,7 +18,6 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
-import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD
