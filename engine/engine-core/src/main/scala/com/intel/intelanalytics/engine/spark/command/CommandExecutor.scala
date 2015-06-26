@@ -40,7 +40,7 @@ import scala.util.Try
 import com.intel.intelanalytics.domain.command.CommandTemplate
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.command.Execution
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.command.Command
 import scala.collection.mutable
 import com.intel.event.{ EventContext, EventLogging }
@@ -123,7 +123,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
         eventContext)
 
       /* Stores the (intermediate) results, don't mark the command complete yet as it will be marked complete by rest server */
-      commands.storeResult(context.command.id, Try { executeCommandContext(context, firstExecution = true) })
+      commands.storeResult(context.command.id, Try { executeCommandContext(context) })
     }
 
   /**
@@ -133,22 +133,21 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
    *
    * @return an Execution object that can be used to track the command's execution
    */
-  private def createExecution[A <: Product: TypeTag, R <: Product: TypeTag](commandContext: CommandContext,
-                                                                            firstExecution: Boolean = true)(implicit invocation: Invocation): Execution = {
-    Execution(commandContext.command, executeCommandContextInFuture(commandContext, firstExecution))
+  private def createExecution[A <: Product: TypeTag, R <: Product: TypeTag](commandContext: CommandContext)(implicit invocation: Invocation): Execution = {
+    Execution(commandContext.command, executeCommandContextInFuture(commandContext))
   }
 
   /**
    * Execute the command in the future with correct classloader, context, etc.,
    * On complete - mark progress as 100% or failed
    */
-  private def executeCommandContextInFuture[T](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): Future[Command] = {
+  private def executeCommandContextInFuture[T](commandContext: CommandContext)(implicit invocation: Invocation): Future[Command] = {
     withMyClassLoader {
       withContext(commandContext.command.name) {
         // run the command in a future so that we don't make the client wait for initial response
         val cmdFuture = future {
           commands.complete(commandContext.command.id, Try {
-            executeCommandContext(commandContext, firstExecution)
+            executeCommandContext(commandContext)
           })
           // get the latest command progress from DB when command is done executing
           commands.lookup(commandContext.command.id).get
@@ -164,7 +163,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
    * @tparam A plugin arguments
    * @return plugin return value as JSON
    */
-  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext, firstExecution: Boolean)(implicit invocation: Invocation): JsObject = withContext("cmdExcector") {
+  private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext)(implicit invocation: Invocation): JsObject = withContext("cmdExcector") {
     info(s"command id:${commandContext.command.id}, name:${commandContext.command.name}, args:${commandContext.command.compactArgs}, ${JvmMemory.memory}")
     val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
     val arguments = plugin.parseArguments(commandContext.command.arguments.get)
