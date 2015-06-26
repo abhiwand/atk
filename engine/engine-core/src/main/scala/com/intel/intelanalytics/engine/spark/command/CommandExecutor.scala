@@ -107,7 +107,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
         referenceResolver,
         eventContext)
 
-      createExecution(context)(plugin.argumentTag, plugin.returnTag, invocation)
+      Execution(cmd, executeCommandContextInFuture(context))
     }
 
   def executeCommand[A <: Product, R <: Product](cmd: Command,
@@ -125,17 +125,6 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
       /* Stores the (intermediate) results, don't mark the command complete yet as it will be marked complete by rest server */
       commands.storeResult(context.command.id, Try { executeCommandContext(context) })
     }
-
-  /**
-   * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
-   *
-   * Stores the results of the command execution back in the persistent command object.
-   *
-   * @return an Execution object that can be used to track the command's execution
-   */
-  private def createExecution[A <: Product: TypeTag, R <: Product: TypeTag](commandContext: CommandContext)(implicit invocation: Invocation): Execution = {
-    Execution(commandContext.command, executeCommandContextInFuture(commandContext))
-  }
 
   /**
    * Execute the command in the future with correct classloader, context, etc.,
