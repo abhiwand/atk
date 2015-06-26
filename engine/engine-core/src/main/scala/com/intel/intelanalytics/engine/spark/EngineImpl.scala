@@ -18,11 +18,10 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
-import com.intel.event.{ EventLogging }
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity }
-import com.intel.intelanalytics.engine.spark.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.gc.{ GarbageCollectionPlugin, GarbageCollector }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
@@ -45,8 +44,7 @@ import spray.json._
 
 import scala.concurrent._
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.intelanalytics.domain.schema.{ DataTypes }
-import com.intel.intelanalytics.domain.{ CreateEntityArgs }
+import com.intel.intelanalytics.domain.CreateEntityArgs
 
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameReference

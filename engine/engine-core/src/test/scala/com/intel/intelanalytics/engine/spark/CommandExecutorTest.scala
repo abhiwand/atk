@@ -16,7 +16,6 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import com.intel.intelanalytics.engine.spark.SparkContextFactory
 import com.intel.intelanalytics.engine.{ ProgressInfo, CommandStorage }
 import org.joda.time.DateTime
 import org.scalatest.{ Matchers, FlatSpec }
