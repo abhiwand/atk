@@ -26,7 +26,7 @@ import com.typesafe.config.{ ConfigList, ConfigValue }
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.event.EventLogging
-import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineConfig, SparkEngine}
+import com.intel.intelanalytics.engine.spark.{SparkContextFactory, EngineConfig, EngineImpl}
 
 /**
  * Base trait for command plugins that need direct access to a SparkContext
@@ -37,7 +37,7 @@ import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineCo
 trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     extends CommandPlugin[Argument, Return] {
 
-  override def engine(implicit invocation: Invocation): SparkEngine = invocation.asInstanceOf[SparkInvocation].engine
+  override def engine(implicit invocation: Invocation): EngineImpl = invocation.asInstanceOf[SparkInvocation].engine
 
   /**
    * Name of the custom kryoclass this plugin needs.
@@ -54,7 +54,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
   override protected def customizeInvocation(invocation: Invocation, arguments: Argument): Invocation = {
     require(invocation.isInstanceOf[CommandInvocation], "Cannot invoke a CommandPlugin without a CommandInvocation")
     val commandInvocation = invocation.asInstanceOf[CommandInvocation]
-    val sparkEngine: SparkEngine = commandInvocation.engine.asInstanceOf[SparkEngine]
+    val sparkEngine: EngineImpl = commandInvocation.engine.asInstanceOf[EngineImpl]
     val sparkInvocation = new SparkInvocation(sparkEngine,
       invocation.user,
       commandInvocation.commandId,
@@ -74,7 +74,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     val commandId = cmd.id
     val commandName = cmd.name
     val context: SparkContext = sparkContextFactory.context(s"(id:$commandId,name:$commandName)", kryoRegistrator)
-    if (!SparkEngineConfig.reuseSparkContext) {
+    if (!EngineConfig.reuseSparkContext) {
       try {
         val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, numberOfJobs(arguments)) // Pass number of Jobs here
         val progressPrinter = new ProgressPrinter(listener)
@@ -110,7 +110,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
       Archive.getAugmentedConfig(archiveName, Thread.currentThread().getContextClassLoader).entrySet()
     }
     catch {
-      case _: Throwable => SparkEngineConfig.config.entrySet()
+      case _: Throwable => EngineConfig.config.entrySet()
     }
 
     val allEntries = {
@@ -179,7 +179,7 @@ object SparkCommandPlugin extends EventLogging {
   }
 
   private def stopContextIfNeeded(sc: SparkContext): Unit = {
-    if (SparkEngineConfig.reuseSparkContext) {
+    if (EngineConfig.reuseSparkContext) {
       info("not stopping local SparkContext so that it can be re-used")
     }
     else {

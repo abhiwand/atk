@@ -24,7 +24,7 @@ import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import org.apache.spark.frame.FrameRdd
-import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineConfig}
+import com.intel.intelanalytics.engine.spark.{SparkContextFactory, EngineConfig}
 import org.apache.spark.rdd.RDD
 import spray.json._
 import DomainJsonProtocol._

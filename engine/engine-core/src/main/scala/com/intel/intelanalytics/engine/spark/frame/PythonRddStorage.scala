@@ -24,7 +24,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameReference }
 import com.intel.intelanalytics.domain.frame.{ Udf }
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
 import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.commons.codec.binary.Base64.decodeBase64
@@ -53,11 +53,11 @@ object PythonRddStorage {
   //TODO: Use config + UUID rather than hard coded paths.
   private def uploadUdfDependencies(udf: Udf): List[String] = {
     udf.dependencies.map(d => {
-      val path = new File(SparkEngineConfig.pythonUdfDependenciesDirectory)
+      val path = new File(EngineConfig.pythonUdfDependenciesDirectory)
       path.mkdirs() // no check --if false, dirs may already exist; if other problem, will catch during write
       val data = decodePythonBase64EncodedStrToBytes(d.fileContent)
       val fileName = d.fileName.split("/").last
-      val fullFileName = SparkEngineConfig.pythonUdfDependenciesDirectory + fileName
+      val fullFileName = EngineConfig.pythonUdfDependenciesDirectory + fileName
       try {
         Files.write(data, new File(fullFileName))
       }
@@ -82,7 +82,7 @@ object PythonRddStorage {
     val pythonIncludes = new JArrayList[String]()
     if (uploads != null) {
       for (k <- 0 until uploads.size) {
-        sc.addFile(s"file://${SparkEngineConfig.pythonUdfDependenciesDirectory}" + uploads(k))
+        sc.addFile(s"file://${EngineConfig.pythonUdfDependenciesDirectory}" + uploads(k))
         pythonIncludes.add(uploads(k))
       }
     }
@@ -119,7 +119,7 @@ object PythonRddStorage {
       }
     )
 
-    val pythonExec = SparkEngineConfig.pythonWorkerExec
+    val pythonExec = EngineConfig.pythonWorkerExec
     val environment = new util.HashMap[String, String]()
     //This is needed to make the python executors put the spark jar (with the pyspark files) on the PYTHONPATH.
     //Without it, only the first added jar (engine.jar) goes on the pythonpath, and since engine.jar has
@@ -128,7 +128,7 @@ object PythonRddStorage {
     //version number for py4j that Spark's PythonUtils uses.
 
     //TODO: Refactor Spark's PythonUtils to better support this use case
-    val sparkPython: Path = (SparkEngineConfig.sparkHome: Path) / "python"
+    val sparkPython: Path = (EngineConfig.sparkHome: Path) / "python"
     environment.put("PYTHONPATH",
       Seq(sparkPython,
         sparkPython / "lib" / "py4j-0.8.2.1-src.zip",

@@ -49,13 +49,13 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
 
   val sparkContextFactory = SparkContextFactory
 
-  val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
+  val fileStorage = new HdfsFileStorage(EngineConfig.fsRoot)
 
   val sparkAutoPartitioner = new SparkAutoPartitioner(fileStorage)
 
-  val frameFileStorage = new FrameFileStorage(SparkEngineConfig.fsRoot, fileStorage)
+  val frameFileStorage = new FrameFileStorage(EngineConfig.fsRoot, fileStorage)
 
-  val frameStorage = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
+  val frameStorage = new SparkFrameStorage(frameFileStorage, EngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
 
   protected val backendGraphStorage: SparkGraphHBaseBackend = new SparkGraphHBaseBackend(hbaseAdminFactory = new HBaseAdminFactory)
   val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, backendGraphStorage, frameStorage)
@@ -71,16 +71,16 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
   override lazy val profile = withContext("engine connecting to metastore") {
 
     // Initialize a Profile from settings in the config
-    val driver = SparkEngineConfig.metaStoreConnectionDriver
+    val driver = EngineConfig.metaStoreConnectionDriver
     new Profile(Profile.jdbcProfileForDriver(driver),
-      connectionString = SparkEngineConfig.metaStoreConnectionUrl,
+      connectionString = EngineConfig.metaStoreConnectionUrl,
       driver,
-      username = SparkEngineConfig.metaStoreConnectionUsername,
-      password = SparkEngineConfig.metaStoreConnectionPassword,
-      poolMaxActive = SparkEngineConfig.metaStorePoolMaxActive)
+      username = EngineConfig.metaStoreConnectionUsername,
+      password = EngineConfig.metaStoreConnectionPassword,
+      poolMaxActive = EngineConfig.metaStorePoolMaxActive)
   }(startupCall.eventContext)
 
-  val engine = new SparkEngine(sparkContextFactory,
+  val engine = new EngineImpl(sparkContextFactory,
     commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage,
     sparkAutoPartitioner, commandPluginRegistry) {}
 }

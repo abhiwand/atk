@@ -24,7 +24,7 @@ import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineConfig}
+import com.intel.intelanalytics.engine.spark.{SparkContextFactory, EngineConfig}
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.graph._

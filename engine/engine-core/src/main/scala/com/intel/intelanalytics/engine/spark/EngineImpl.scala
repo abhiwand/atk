@@ -60,11 +60,11 @@ import com.intel.intelanalytics.engine.spark.user.UserStorage
 import scala.util.{ Try, Success, Failure }
 import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext.global
 
-object SparkEngine {
+object EngineImpl {
   private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
-class SparkEngine(val sparkContextFactory: SparkContextFactory,
+class EngineImpl(val sparkContextFactory: SparkContextFactory,
                   commands: CommandExecutor,
                   commandStorage: CommandStorage,
                   val frames: SparkFrameStorage,
@@ -80,8 +80,8 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   type Data = FrameRdd
   type Context = SparkContext
 
-  val fsRoot = SparkEngineConfig.fsRoot
-  override val pageSize: Int = SparkEngineConfig.pageSize
+  val fsRoot = EngineConfig.fsRoot
+  override val pageSize: Int = EngineConfig.pageSize
 
   // Administrative plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
@@ -94,7 +94,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
       require(offset >= 0, "offset cannot be negative")
       require(count >= 0, "count cannot be negative")
       future {
-        commandStorage.scan(offset, Math.min(count, SparkEngineConfig.pageSize))
+        commandStorage.scan(offset, Math.min(count, EngineConfig.pageSize))
       }
     }
   }

@@ -33,7 +33,7 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
    * Creates a new sparkContext with the specified kryo classes
    */
   def getContext(description: String, kryoRegistrator: Option[String] = None)(implicit invocation: Invocation): SparkContext = withContext("engine.SparkContextFactory") {
-    if (SparkEngineConfig.reuseSparkContext) {
+    if (EngineConfig.reuseSparkContext) {
       SparkContextFactory.sharedSparkContext()
     }
     else {
@@ -51,14 +51,14 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
     val userName = user.user.apiKey.getOrElse(
       throw new RuntimeException("User didn't have an apiKey which shouldn't be possible if they were authenticated"))
     val sparkConf = new SparkConf()
-      .setMaster(SparkEngineConfig.sparkMaster)
-      .setSparkHome(SparkEngineConfig.sparkHome)
+      .setMaster(EngineConfig.sparkMaster)
+      .setSparkHome(EngineConfig.sparkHome)
       .setAppName(s"intel-analytics:$userName:$description")
 
-    SparkEngineConfig.sparkConfProperties.foreach { case (k, v) => debug(s"$k->$v") }
-    sparkConf.setAll(SparkEngineConfig.sparkConfProperties)
+    EngineConfig.sparkConfProperties.foreach { case (k, v) => debug(s"$k->$v") }
+    sparkConf.setAll(EngineConfig.sparkConfProperties)
 
-    if (!SparkEngineConfig.disableKryo && kryoRegistrator.isDefined) {
+    if (!EngineConfig.disableKryo && kryoRegistrator.isDefined) {
       sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       sparkConf.set("spark.kryo.registrator", kryoRegistrator.get)
     }
@@ -68,7 +68,7 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
     info("SparkConf settings: " + sparkConf.toDebugString)
 
     val sparkContext = new SparkContext(sparkConf)
-    if (!SparkEngineConfig.isSparkOnYarn) {
+    if (!EngineConfig.isSparkOnYarn) {
       // TODO: plugin jars should be added based on the jar the plugin is coming from instead of all of them like this
       val paths = List(jarPath("engine-core"), jarPath("frame-plugins"), jarPath("graph-plugins"), jarPath("model-plugins"))
       info(s"addJar() paths=$paths")
@@ -87,7 +87,7 @@ trait SparkContextFactory extends EventLogging with EventLoggingImplicits {
    * @return "local:/usr/lib/intelanalytics/lib/engine-core.jar" or similar
    */
   def jarPath(archive: String): String = {
-    if (SparkEngineConfig.sparkAppJarsLocal) {
+    if (EngineConfig.sparkAppJarsLocal) {
       "local:" + StringUtils.removeStart(Archive.getJar(archive).getPath, "file:")
     }
     else {

@@ -64,7 +64,7 @@ class CommandDumper(archiveDefinition: ArchiveDefinition, classLoader: ClassLoad
     val impUser: UserPrincipal = new UserPrincipal(new User(1, None, None, new DateTime(), new DateTime()), List("dumper"))
     implicit val call = Call(impUser, EngineExecutionContext.global)
     val commands = new CommandStorageImpl(metaStore.asInstanceOf[SlickMetaStore])
-    lazy val engine = new SparkEngine(
+    lazy val engine = new EngineImpl(
       /*sparkContextManager*/ null,
       commandExecutor,
       commands,
@@ -90,7 +90,7 @@ class CommandDumper(archiveDefinition: ArchiveDefinition, classLoader: ClassLoad
 /**
  *  Command Dumper needs to use basic H-2 setup
  */
-object CommandDumperConfig extends SparkEngineConfig {
+object CommandDumperConfig extends EngineConfig {
   override val metaStoreConnectionUrl: String = nonEmptyString("intel.analytics.metastore.connection-h2.url")
   override val metaStoreConnectionDriver: String = nonEmptyString("intel.analytics.metastore.connection-h2.driver")
   override val metaStoreConnectionUsername: String = config.getString("intel.analytics.metastore.connection-h2.username")

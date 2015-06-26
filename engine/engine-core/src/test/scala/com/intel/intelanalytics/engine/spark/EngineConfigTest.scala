@@ -18,14 +18,14 @@ package com.intel.intelanalytics.engine.spark
 
 import org.scalatest.FlatSpec
 
-class SparkEngineConfigTest extends FlatSpec {
+class EngineConfigTest extends FlatSpec {
 
-  "SparkEngineConfig" should "provide the expected maxPartitions size" in {
-    assert(SparkEngineConfig.maxPartitions == 10000, "data bricks recommended 10,000 as the max partition value, please don't change unless you are decreasing")
+  "EngineConfig" should "provide the expected maxPartitions size" in {
+    assert(EngineConfig.maxPartitions == 10000, "data bricks recommended 10,000 as the max partition value, please don't change unless you are decreasing")
   }
 
   it should "provide auto partitioner config in the expected order" in {
-    val list = SparkEngineConfig.autoPartitionerConfig
+    val list = EngineConfig.autoPartitionerConfig
 
     // list should have something in it
     assert(list.size > 3)
@@ -39,7 +39,7 @@ class SparkEngineConfigTest extends FlatSpec {
   }
 
   it should "provide auto partitioner config with the expected first element" in {
-    val list = SparkEngineConfig.autoPartitionerConfig
+    val list = EngineConfig.autoPartitionerConfig
 
     assert(list.size > 3)
 
@@ -49,7 +49,7 @@ class SparkEngineConfigTest extends FlatSpec {
   }
 
   it should "provide auto partitioner config with the expected last element" in {
-    val list = SparkEngineConfig.autoPartitionerConfig
+    val list = EngineConfig.autoPartitionerConfig
 
     assert(list.size > 3)
     assert(list.last.fileSizeUpperBound == 1000000)

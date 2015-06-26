@@ -71,7 +71,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
   val commandPluginRegistry = new CommandPluginRegistry(loader)
   def createCommandExecutor(): CommandExecutor = {
-    val engine = mock[SparkEngine]
+    val engine = mock[EngineImpl]
     val commandStorage = new FakeCommandStorage
     val contextFactory = mock[SparkContextFactory]
     val sc = mock[SparkContext]

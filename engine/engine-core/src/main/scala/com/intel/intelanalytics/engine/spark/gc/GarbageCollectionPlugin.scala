@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import com.typesafe.config.ConfigFactory
 
 // Implicits needed for JSON conversion
@@ -46,7 +46,7 @@ class GarbageCollectionPlugin extends CommandPlugin[GarbageCollectionArgs, UnitR
   override def execute(arguments: GarbageCollectionArgs)(implicit context: Invocation): UnitReturn = {
     val dataDeleteAge = arguments.ageToDeleteData match {
       case Some(age) => stringToMilliseconds(age)
-      case None => SparkEngineConfig.gcAgeToDeleteData
+      case None => EngineConfig.gcAgeToDeleteData
     }
     GarbageCollector.singleTimeExecution(dataDeleteAge)
     new UnitReturn

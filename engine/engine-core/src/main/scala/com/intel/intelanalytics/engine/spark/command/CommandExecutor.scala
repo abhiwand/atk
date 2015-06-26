@@ -29,7 +29,7 @@ import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.util.{ JvmMemory, KerberosAuthenticator }
-import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineConfig, SparkEngine}
+import com.intel.intelanalytics.engine.spark.{SparkContextFactory, EngineConfig, EngineImpl}
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
 
@@ -101,7 +101,7 @@ case class CommandContext(
  * @param commands a command storage that the executor can use for audit logging command execution
  */
 //class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextFactory: SparkContextFactory)
-class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
+class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
     extends EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
@@ -197,7 +197,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
     debug(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
-    if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && SparkEngineConfig.isSparkOnYarn) {
+    if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && EngineConfig.isSparkOnYarn) {
       val archiveName = commandContext.plugins.getArchiveNameFromPlugin(plugin.name)
       val sparkSubmitExitCode = executeCommandOnYarn(commandContext.command, plugin, archiveName)
       // Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution
@@ -240,17 +240,17 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
         withMyClassLoader {
           //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
           KerberosAuthenticator.loginWithKeyTabCLI()
-          val (kerbFile, kerbOptions) = SparkEngineConfig.kerberosKeyTabPath match {
+          val (kerbFile, kerbOptions) = EngineConfig.kerberosKeyTabPath match {
             case Some(path) => (s",${path}",
               s"-Dintel.analytics.engine.hadoop.kerberos.keytab-file=${new File(path).getName}")
             case None => ("", "")
           }
 
-          val sparkMaster = Array(s"--master", s"${SparkEngineConfig.sparkMaster}")
+          val sparkMaster = Array(s"--master", s"${EngineConfig.sparkMaster}")
           val jobName = Array(s"--name", s"${command.getJobName}")
           val pluginExecutionDriverClass = Array("--class", "com.intel.intelanalytics.engine.spark.command.CommandDriver")
 
-          val pluginDependencyJars = SparkEngineConfig.sparkAppJarsLocal match {
+          val pluginDependencyJars = EngineConfig.sparkAppJarsLocal match {
             case true => Array[String]() /* Expect jars to installed locally and available */
             case false => Array("--jars",
               s"${SparkContextFactory.jarPath("interfaces")}," +
@@ -261,28 +261,28 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
           val pluginDependencyFiles = Array("--files", s"$tempConfFileName#application.conf$kerbFile",
             "--conf", s"config.resource=application.conf")
           val executionParams = Array(
-            "--num-executors", s"${SparkEngineConfig.sparkOnYarnNumExecutors}",
-            "--driver-java-options", s"-XX:MaxPermSize=${SparkEngineConfig.sparkDriverMaxPermSize} $kerbOptions")
+            "--num-executors", s"${EngineConfig.sparkOnYarnNumExecutors}",
+            "--driver-java-options", s"-XX:MaxPermSize=${EngineConfig.sparkDriverMaxPermSize} $kerbOptions")
 
           val executorClassPathString = "spark.executor.extraClassPath"
-          val executorClassPathTuple = SparkEngineConfig.sparkAppJarsLocal match {
+          val executorClassPathTuple = EngineConfig.sparkAppJarsLocal match {
             case true => (executorClassPathString,
               s"${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
-              s"${SparkEngineConfig.hiveLib}:${getPluginJarPath(pluginJarsList, ":")}" +
-              s"${SparkEngineConfig.sparkConfProperties.get(executorClassPathString).getOrElse("")}")
+              s"${EngineConfig.hiveLib}:${getPluginJarPath(pluginJarsList, ":")}" +
+              s"${EngineConfig.sparkConfProperties.get(executorClassPathString).getOrElse("")}")
             case false => (executorClassPathString,
-              s"${SparkEngineConfig.hiveLib}:${SparkEngineConfig.sparkConfProperties.get(executorClassPathString).getOrElse("")}")
+              s"${EngineConfig.hiveLib}:${EngineConfig.sparkConfProperties.get(executorClassPathString).getOrElse("")}")
           }
 
           val driverClassPathString = "spark.driver.extraClassPath"
           val driverClassPathTuple = (driverClassPathString,
             s"${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
-            s"${pluginExtraClasspath.mkString(":")}:${SparkEngineConfig.hiveLib}:${SparkEngineConfig.hiveConf}:" +
-            s"${SparkEngineConfig.sparkConfProperties.get(driverClassPathString).getOrElse("")}")
+            s"${pluginExtraClasspath.mkString(":")}:${EngineConfig.hiveLib}:${EngineConfig.hiveConf}:" +
+            s"${EngineConfig.sparkConfProperties.get(driverClassPathString).getOrElse("")}")
 
           val executionConfigs = {
             for {
-              (config, value) <- SparkEngineConfig.sparkConfProperties + (executorClassPathTuple, driverClassPathTuple)
+              (config, value) <- EngineConfig.sparkConfProperties + (executorClassPathTuple, driverClassPathTuple)
             } yield List("--conf", s"$config=$value")
           }.flatMap(identity).toArray
 
@@ -374,7 +374,7 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     val command = commands.lookup(commandId).getOrElse(throw new Exception(s"Command $commandId does not exist"))
     val commandPlugin = commandPluginRegistry.getCommandDefinition(command.name).get
     if (commandPlugin.isInstanceOf[SparkCommandPlugin[_, _]]) {
-      if (!SparkEngineConfig.isSparkOnYarn) {
+      if (!EngineConfig.isSparkOnYarn) {
         /* SparkCommandPlugins which run on Standalone cluster mode */
         SparkCommandPlugin.stop(commandId)
       }
