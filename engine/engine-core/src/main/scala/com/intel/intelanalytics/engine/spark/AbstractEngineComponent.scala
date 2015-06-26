@@ -20,7 +20,6 @@ import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.Call
-import com.intel.intelanalytics.engine.spark.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameFileStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, HBaseAdminFactory, SparkGraphHBaseBackend }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
