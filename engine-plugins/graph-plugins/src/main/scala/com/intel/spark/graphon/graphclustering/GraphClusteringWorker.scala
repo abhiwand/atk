@@ -18,13 +18,9 @@ package com.intel.spark.graphon.graphclustering
 
 import com.intel.event.EventLogging
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.spark.graphon.graphclustering.GraphClusteringStorage
-import org.apache.spark.rdd.RDD
-
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.rdd.RDD
-import java.io.{ Serializable }
+import java.io.Serializable
 import org.apache.spark.SparkContext._
 import org.apache.spark.storage.StorageLevel
 

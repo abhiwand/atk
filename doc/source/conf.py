@@ -35,16 +35,20 @@ rst_epilog = """
 
 .. |ALPHA|  image:: /_static/alpha.*
               :target: /glossary.html#term-api-maturity-tags
-.. |ALPHA|  replace:: :abbr:`/ALPHA/ (Indicates a function or feature which has been developed, but has not been completely tested.  Use this function with caution.  This function may be changed or eliminated in future releases.)`
+.. |ALPHA|  replace:: :abbr:`[ALPHA] (This is a function or feature which has been developed, but has not been completely tested.  Use this function with caution.  This function may be changed or eliminated in future releases.)`
 .. |API|    replace:: :abbr:`API (Application Programming Interface)`
 .. |ATK|    replace:: |IAT|
 .. |BETA|   image:: /_static/beta.*
               :target: glossary.html#term-api-maturity-tags
+.. |BETA|   replace:: :abbr:`[BETA] (This is a function or feature which has been developed and preliminarily tested, but has not been completely tested. Use this function with caution. This function may be changed in future releases.)`
 .. |CDH|    replace:: :abbr:`CDH (Cloudera Hadoop)`
 .. |COPY|   unicode:: U+000A9 .. Copyright symbol
 .. |CSV|    replace:: :abbr:`CSV (Character-Separated Variables)`
-.. |DEPRECATED|   image:: /_static/deprecated.*
-              :target: /glossary.html#term-api-maturity-tags
+.. |DEPRECATED| image:: /_static/deprecated.*
+    :target: /glossary.html#term-api-maturity-tags
+.. |DEPRECATED| replace:: :abbr:`[DEPRECATED] (This is a function or feature which is no longer supported.
+    It is recommended that an alternate solution be found.
+    This function may be removed in future releases.)`
 .. |DNS|    replace:: :abbr:`DNS (Domain Name Service)`
 .. |ECDF|   replace:: :abbr:`ECDF (Empirical Cumulative Distribution Function)`
 .. |EM|     unicode:: U+02014 .. Long dash

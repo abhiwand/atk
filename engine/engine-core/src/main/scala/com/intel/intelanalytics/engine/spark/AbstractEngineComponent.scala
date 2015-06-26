@@ -24,7 +24,6 @@ import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameFil
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, HBaseAdminFactory, SparkGraphHBaseBackend }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
-import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark.command._
@@ -81,9 +80,7 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
       poolMaxActive = SparkEngineConfig.metaStorePoolMaxActive)
   }(startupCall.eventContext)
 
-  val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], fileStorage)
-
   val engine = new SparkEngine(sparkContextFactory,
-    commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage, queries,
+    commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage,
     sparkAutoPartitioner, commandPluginRegistry) {}
 }

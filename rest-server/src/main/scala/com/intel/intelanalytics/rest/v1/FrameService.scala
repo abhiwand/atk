@@ -138,7 +138,7 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       }
                       case Success(exec: PagedQueryResult) => {
                         val pattern = new Regex(prefix + ".*")
-                        val commandUri = pattern.replaceFirstIn(uri.toString, QueryService.prefix + "/") + exec.execution.start.id
+                        val commandUri = pattern.replaceFirstIn(uri.toString, "queries/") + exec.execution.start.id
                         complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.execution.start, exec.schema))
                       }
                       case Failure(ex) => throw ex

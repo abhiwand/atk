@@ -32,7 +32,6 @@ import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
-import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -72,7 +71,6 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
                   val graphs: SparkGraphStorage,
                   val models: SparkModelStorage,
                   users: UserStorage,
-                  queryStorage: SparkQueryStorage,
                   val sparkAutoPartitioner: SparkAutoPartitioner,
                   commandPluginRegistry: CommandPluginRegistry) extends Engine
     with EventLogging
@@ -104,54 +102,6 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   override def getCommand(id: Long)(implicit invocation: Invocation): Future[Option[Command]] = withContext("se.getCommand") {
     future {
       commandStorage.lookup(id)
-    }
-  }
-
-  /**
-   * return a list of the existing queries
-   * @param offset First query to obtain.
-   * @param count Number of queries to obtain.
-   * @return sequence of queries
-   */
-  override def getQueries(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Query]] = withContext("se.getQueries") {
-    future {
-      queryStorage.scan(offset, count)
-    }
-  }
-
-  /**
-   * return a query object
-   * @param id query id
-   * @return Query
-   */
-  override def getQuery(id: Long)(implicit invocation: Invocation): Future[Option[Query]] = withContext("se.getQuery") {
-    future {
-      queryStorage.lookup(id)
-    }
-  }
-
-  /**
-   * returns the data found in a specific query result page
-   *
-   * @param id query id
-   * @param pageId page id
-   * @return data of specific page
-   */
-  override def getQueryPage(id: Long, pageId: Long)(implicit invocation: Invocation) = withContext("se.getQueryPage") {
-    withMyClassLoader {
-      val sc = sparkContextFactory.context("query")
-      try {
-        val data = queryStorage.getQueryPage(sc, id, pageId)
-        com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
-      }
-      finally {
-        if (SparkEngineConfig.reuseSparkContext) {
-          info("not stopping local SparkContext so that it can be re-used")
-        }
-        else {
-          sc.stop()
-        }
-      }
     }
   }
 
@@ -378,10 +328,10 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     GarbageCollector.shutdown()
   }
 
-  override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = {
+  override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[FrameEntity] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
-      Some(seamless.vertexMeta(label))
+      seamless.vertexMeta(label)
     }
   }
 
@@ -392,10 +342,10 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     }
   }
 
-  override def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = {
+  override def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[FrameEntity] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
-      Some(seamless.edgeMeta(label))
+      seamless.edgeMeta(label)
     }
   }
 
