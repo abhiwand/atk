@@ -53,29 +53,7 @@ case class CommandContext(
     user: UserPrincipal,
     plugins: CommandPluginRegistry,
     resolver: ReferenceResolver,
-    eventContext: EventContext,
-    dynamic: mutable.Map[String, Any] = mutable.Map.empty,
-    cleaners: mutable.Map[String, () => Unit] = mutable.Map.empty) {
-
-  def apply[T](name: String): Option[T] = {
-    dynamic.get(name).map(o => o.asInstanceOf[T])
-  }
-
-  def put[T](name: String, value: T, cleaner: () => Unit = null) = {
-    dynamic.put(name, value)
-    if (cleaner != null) {
-      cleaners.put(name, cleaner)
-    }
-  }
-
-  def clean(): Unit = {
-    cleaners.keys.foreach { key =>
-      val func = cleaners(key)
-      func()
-    }
-    cleaners.clear()
-    dynamic.clear()
-  }
+    eventContext: EventContext) {
 
 }
 
@@ -127,9 +105,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
         user,
         commandPluginRegistry,
         referenceResolver,
-        eventContext,
-        mutable.Map.empty,
-        mutable.Map.empty)
+        eventContext)
 
       createExecution(context)(plugin.argumentTag, plugin.returnTag, invocation)
     }
@@ -144,12 +120,10 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
         user,
         commandPluginRegistry,
         referenceResolver,
-        eventContext,
-        mutable.Map.empty,
-        mutable.Map.empty)
+        eventContext)
 
       /* Stores the (intermediate) results, don't mark the command complete yet as it will be marked complete by rest server */
-      commands.storeResult(context.command.id, Try { executeCommandContext(context, true) })
+      commands.storeResult(context.command.id, Try { executeCommandContext(context, firstExecution = true) })
     }
 
   /**
@@ -214,8 +188,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
       }
     }
     else {
-      val res = commandContext.resolver
-      val returnValue = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
+      val returnValue = invokeCommandFunction(plugin, arguments, commandContext)
       plugin.serializeReturn(returnValue)
     }
   }
