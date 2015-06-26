@@ -20,8 +20,7 @@ import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineConfig}
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 
 case class ClusteringCoefficientArgs(graph: GraphReference,

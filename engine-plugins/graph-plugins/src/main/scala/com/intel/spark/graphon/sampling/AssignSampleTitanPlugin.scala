@@ -20,8 +20,7 @@ import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.graph.{ AssignSampleTitanArgs, GraphEntity }
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineConfig}
 import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
 import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin

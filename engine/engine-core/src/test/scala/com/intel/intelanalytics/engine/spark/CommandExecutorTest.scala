@@ -16,6 +16,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
+import com.intel.intelanalytics.engine.spark.SparkContextFactory
 import com.intel.intelanalytics.engine.{ ProgressInfo, CommandStorage }
 import org.joda.time.DateTime
 import org.scalatest.{ Matchers, FlatSpec }
@@ -23,7 +24,6 @@ import com.intel.intelanalytics.engine.spark.command._
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import org.apache.spark.SparkContext
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol

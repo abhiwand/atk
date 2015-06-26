@@ -20,12 +20,11 @@ import com.intel.graphbuilder.elements.{ Property }
 import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
 import com.intel.intelanalytics.domain.graph.{ GraphReference }
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.intelanalytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import org.apache.spark.frame.FrameRdd
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineConfig}
 import org.apache.spark.rdd.RDD
 import spray.json._
 import DomainJsonProtocol._

@@ -22,6 +22,7 @@ import com.intel.event.{ EventLogging }
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity }
+import com.intel.intelanalytics.engine.spark.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.gc.{ GarbageCollectionPlugin, GarbageCollector }
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
@@ -37,7 +38,6 @@ import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 import spray.json._
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import org.apache.spark.frame.FrameRdd
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._

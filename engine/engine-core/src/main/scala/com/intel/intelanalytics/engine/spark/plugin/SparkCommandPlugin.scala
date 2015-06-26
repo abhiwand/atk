@@ -22,12 +22,11 @@ import scala.collection.JavaConversions._
 
 import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.typesafe.config.{ ConfigList, ConfigValue }
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.event.EventLogging
-import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
+import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineConfig, SparkEngine}
 
 /**
  * Base trait for command plugins that need direct access to a SparkContext

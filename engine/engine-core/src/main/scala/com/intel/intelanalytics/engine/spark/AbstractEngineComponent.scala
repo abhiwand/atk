@@ -20,6 +20,7 @@ import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.Call
+import com.intel.intelanalytics.engine.spark.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameFileStorage }
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, HBaseAdminFactory, SparkGraphHBaseBackend }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
@@ -27,7 +28,6 @@ import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
 import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark.command._
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.repository.{ Profile, SlickMetaStoreComponent, DbProfileComponent }
 
 /**
