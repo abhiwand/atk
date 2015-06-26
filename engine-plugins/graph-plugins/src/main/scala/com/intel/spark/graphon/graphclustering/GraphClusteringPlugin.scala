@@ -19,7 +19,7 @@ package com.intel.spark.graphon.graphclustering
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.graph.{ GraphReference }
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.{SparkContextFactory, EngineConfig}
+import com.intel.intelanalytics.engine.spark.{ SparkContextFactory, EngineConfig }
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol

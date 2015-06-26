@@ -22,7 +22,7 @@ import com.intel.intelanalytics.component.Archive
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.util.KerberosAuthenticator
 import org.apache.commons.lang3.StringUtils
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
  * Class Factory for creating spark contexts

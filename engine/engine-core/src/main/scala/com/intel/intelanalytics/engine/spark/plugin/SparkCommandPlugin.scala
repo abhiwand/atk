@@ -26,7 +26,7 @@ import com.typesafe.config.{ ConfigList, ConfigValue }
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.event.EventLogging
-import com.intel.intelanalytics.engine.spark.{SparkContextFactory, EngineConfig, EngineImpl}
+import com.intel.intelanalytics.engine.spark.{ SparkContextFactory, EngineConfig, EngineImpl }
 
 /**
  * Base trait for command plugins that need direct access to a SparkContext

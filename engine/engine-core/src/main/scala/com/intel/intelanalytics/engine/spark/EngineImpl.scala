@@ -63,14 +63,14 @@ object EngineImpl {
 }
 
 class EngineImpl(val sparkContextFactory: SparkContextFactory,
-                  commands: CommandExecutor,
-                  commandStorage: CommandStorage,
-                  val frames: SparkFrameStorage,
-                  val graphs: SparkGraphStorage,
-                  val models: SparkModelStorage,
-                  users: UserStorage,
-                  val sparkAutoPartitioner: SparkAutoPartitioner,
-                  commandPluginRegistry: CommandPluginRegistry) extends Engine
+                 commands: CommandExecutor,
+                 commandStorage: CommandStorage,
+                 val frames: SparkFrameStorage,
+                 val graphs: SparkGraphStorage,
+                 val models: SparkModelStorage,
+                 users: UserStorage,
+                 val sparkAutoPartitioner: SparkAutoPartitioner,
+                 commandPluginRegistry: CommandPluginRegistry) extends Engine
     with EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
