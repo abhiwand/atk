@@ -28,9 +28,8 @@ import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.util.{ JvmMemory, KerberosAuthenticator }
-import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
+import com.intel.intelanalytics.engine.spark.{SparkContextFactory, SparkEngineConfig, SparkEngine}
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
 
@@ -106,34 +105,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     extends EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
-
-  /**
-   * Create all the necessary empty metadata objects needed to generate a valid Return object without actually
-   * running a Command.
-   *
-   * Note that this will fail if called on a return type that has members other than UriReference subtypes, since
-   * those cannot be lazily suspended.
-   *
-   * @param command the command we're simulating
-   * @param plugin the actual command plugin implementation
-   * @param arguments an instance of Arguments that was passed with the actual argument values
-   * @tparam Arguments the type of arguments to the command
-   * @tparam Return the type of the return value of the command
-   * @return an instance of the Return type with all the generated references.
-   */
-  private def createSuspendedReferences[Arguments <: Product: TypeTag, Return <: Product: TypeTag](command: Command,
-                                                                                                   plugin: CommandPlugin[Arguments, Return],
-                                                                                                   arguments: Arguments)(implicit invocation: Invocation): Return = {
-
-    val types = Reflection.getUriReferenceTypes[Return]()
-    val references = types.map {
-      case (name, signature) =>
-        val management: EntityManager[_] = EntityTypeRegistry.entityManagerForType(signature.typeSymbol.asType.toType).get
-        (name, management.create(CreateEntityArgs()))
-    }.toMap
-    val ctorMap = Reflection.getConstructorMap[Return]()
-    ctorMap(references)
-  }
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
