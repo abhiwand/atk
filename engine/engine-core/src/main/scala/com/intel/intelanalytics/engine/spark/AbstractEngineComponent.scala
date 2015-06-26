@@ -64,7 +64,7 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
 
   val userStorage = new UserStorage(metaStore.asInstanceOf[SlickMetaStore])
 
-  val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
+  val commands = new CommandStorage(metaStore.asInstanceOf[SlickMetaStore])
 
   lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands)
 

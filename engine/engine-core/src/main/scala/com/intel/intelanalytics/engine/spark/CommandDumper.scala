@@ -20,7 +20,7 @@ import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.component.{ Archive, ArchiveDefinition, DefaultArchive, FileUtil }
 import FileUtil.writeFile
 import com.intel.intelanalytics.engine.plugin.Call
-import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, SparkCommandStorage }
+import com.intel.intelanalytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, CommandStorage }
 import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import com.intel.intelanalytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import com.intel.intelanalytics.security.UserPrincipal
@@ -63,7 +63,7 @@ class CommandDumper(archiveDefinition: ArchiveDefinition, classLoader: ClassLoad
     metaStore.initializeSchema()
     val impUser: UserPrincipal = new UserPrincipal(new User(1, None, None, new DateTime(), new DateTime()), List("dumper"))
     implicit val call = Call(impUser, EngineExecutionContext.global)
-    val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
+    val commands = new CommandStorage(metaStore.asInstanceOf[SlickMetaStore])
     lazy val engine = new SparkEngine(
       /*sparkContextManager*/ null,
       commandExecutor,

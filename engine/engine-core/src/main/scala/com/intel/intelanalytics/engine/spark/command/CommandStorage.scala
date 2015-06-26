@@ -26,7 +26,7 @@ import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo, Command
 import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent }
 import com.intel.event.{ EventContext, EventLogging }
 
-class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends CommandStorage with EventLogging {
+class CommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends CommandStorage with EventLogging {
   val repo = metaStore.commandRepo
 
   override def lookup(id: Long): Option[Command] =
