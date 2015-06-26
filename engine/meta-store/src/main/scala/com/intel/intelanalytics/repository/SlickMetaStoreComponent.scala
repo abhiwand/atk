@@ -33,7 +33,6 @@ import com.intel.event.{ EventContext, EventLogging }
 import com.intel.intelanalytics.domain.frame.DataFrameTemplate
 import com.intel.intelanalytics.engine.ProgressInfo
 import com.intel.intelanalytics.domain.schema.FrameSchema
-import com.intel.intelanalytics.domain.query.QueryTemplate
 import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.domain.model.ModelEntity
 import com.intel.intelanalytics.domain.command.Command
@@ -130,7 +129,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
             commandRepo.asInstanceOf[SlickCommandRepository].createTable // depends on user
             graphRepo.asInstanceOf[SlickGraphRepository].createTable // depends on user, status
             frameRepo.asInstanceOf[SlickFrameRepository].createTable // depends on user, status
-            queryRepo.asInstanceOf[SlickQueryRepository].createTable // depends on user
             gcRepo.asInstanceOf[SlickGarbageCollectionRepository].createTable
             gcEntryRepo.asInstanceOf[SlickGarbageCollectionEntryRepository].createTable //depends on gc
 
@@ -164,7 +162,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
             // Tables that are dependencies for other tables need to go last
             frameRepo.asInstanceOf[SlickFrameRepository].dropTable
             commandRepo.asInstanceOf[SlickCommandRepository].dropTable
-            queryRepo.asInstanceOf[SlickQueryRepository].dropTable
             graphRepo.asInstanceOf[SlickGraphRepository].dropTable
             userRepo.asInstanceOf[SlickUserRepository].dropTable
             statusRepo.asInstanceOf[SlickStatusRepository].dropTable
@@ -193,9 +190,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     /** Repository for CRUD on 'command' table */
     override lazy val commandRepo: CommandRepository[Session] = new SlickCommandRepository
-
-    /** Repository for CRUD on 'command' table */
-    override lazy val queryRepo: QueryRepository[Session] = new SlickQueryRepository
 
     /** Repository for CRUD on 'user' table */
     override lazy val userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User] = new SlickUserRepository
@@ -774,105 +768,6 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override def updateProgress(id: Long, progress: List[ProgressInfo])(implicit session: Session): Try[Unit] = Try {
       val q = for { c <- commandTable if c.id === id && c.complete === false } yield c.progress
       q.update(progress)
-    }
-  }
-
-  /**
-   * A slick implementation of a Query Repository.
-   *
-   * Provides methods for modifying and querying the query table.
-   */
-  class SlickQueryRepository extends QueryRepository[Session] with NameableRepository[Session, QueryRecord]
-      with EventLogging {
-    this: Repository[Session, QueryTemplate, QueryRecord] =>
-
-    /**
-     * A slick implementation of the 'Query' table that defines
-     * the columns and conversion to/from Scala beans.
-     */
-    class QueryTable(tag: Tag) extends Table[QueryRecord](tag, "query") {
-      def id = column[Long]("query_id", O.PrimaryKey, O.AutoInc)
-
-      def name = column[String]("name")
-
-      def arguments = column[Option[JsObject]]("arguments")
-
-      def error = column[Option[Error]]("error")
-
-      def complete = column[Boolean]("complete", O.Default(false))
-
-      def totalPages = column[Option[Long]]("total_pages")
-
-      def pageSize = column[Option[Long]]("page_size")
-
-      def createdOn = column[DateTime]("created_on")
-
-      def modifiedOn = column[DateTime]("modified_on")
-
-      def createdById = column[Option[Long]]("created_by")
-
-      /** projection to/from the database */
-      def * = (id, name, arguments, error, complete, totalPages, pageSize, createdOn, modifiedOn, createdById) <> (QueryRecord.tupled, QueryRecord.unapply)
-
-      def createdBy = foreignKey("query_created_by", createdById, users)(_.id)
-    }
-
-    val queries = TableQuery[QueryTable]
-
-    protected val queriesAutoInc = queries returning queries.map(_.id) into {
-      case (f, id) => f.copy(id = id)
-    }
-
-    override def insert(query: QueryTemplate)(implicit session: Session): Try[QueryRecord] = Try {
-      // TODO: add createdBy user id
-      val c = QueryRecord(0, query.name, query.arguments, None, complete = false, None, None, new DateTime(), new DateTime(), None)
-      queriesAutoInc.insert(c)
-    }
-
-    override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
-      queries.where(_.id === id).mutate(f => f.delete())
-    }
-
-    override def update(query: QueryRecord)(implicit session: Session): Try[QueryRecord] = Try {
-      val updatedQuery = query.copy(modifiedOn = new DateTime())
-      val updated = queries.where(_.id === query.id).update(updatedQuery)
-      updatedQuery
-    }
-
-    override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[QueryRecord] = {
-      queries.drop(offset).take(count).list
-    }
-
-    override def lookup(id: Long)(implicit session: Session): Option[QueryRecord] = {
-      queries.where(_.id === id).firstOption
-    }
-
-    override def lookupByName(name: Option[String])(implicit session: Session): Option[QueryRecord] = {
-      name match {
-        case Some(n) => queries.where(_.name === n).firstOption
-        case _ => None
-      }
-    }
-
-    /**
-     * update the query to complete
-     * @param id query id
-     * @param complete the complete flag
-     * @param session session to db
-     */
-    override def updateComplete(id: Long, complete: Boolean)(implicit session: Session): Try[Unit] = Try {
-      val completeCol = for (c <- queries if c.id === id) yield c.complete
-      completeCol.update(complete)
-    }
-
-    /** execute DDL to create the underlying table */
-    def createTable(implicit session: Session) = {
-      queries.ddl.create
-    }
-
-    /** execute DDL to drop the underlying table - for unit testing */
-    def dropTable()(implicit session: Session) = {
-      queries.ddl.drop
     }
   }
 
