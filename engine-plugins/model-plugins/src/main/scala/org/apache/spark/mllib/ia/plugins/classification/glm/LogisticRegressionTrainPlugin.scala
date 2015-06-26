@@ -36,10 +36,10 @@ import spray.json._
 
 case class LogisticRegressionTrainArgs(model: ModelReference,
                                        frame: FrameReference,
-                                       optimizer: String,
                                        labelColumn: String,
                                        observationColumns: List[String],
                                        frequencyColumn: Option[String] = None,
+                                       optimizer: Option[String] = None,
                                        intercept: Option[Boolean] = None,
                                        featureScaling: Option[Boolean] = None,
                                        numIterations: Option[Int] = None,
@@ -55,7 +55,6 @@ case class LogisticRegressionTrainArgs(model: ModelReference,
                                        numCorrections: Option[Int] = None) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
-  require(optimizer == "LBFGS" || optimizer == "SGD", "valid optimizer name needed")
   require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
   require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
 
@@ -64,16 +63,25 @@ case class LogisticRegressionTrainArgs(model: ModelReference,
     numIterations.getOrElse(100)
   }
 
+  def getOptimizer: String = {
+    if (optimizer.isDefined) { require(optimizer.get == "LBFGS" || optimizer.get == "SGD", "valid optimizer name needed") }
+    optimizer.getOrElse("LBFGS")
+  }
+
   def getIntercept: Boolean = { intercept.getOrElse(true) }
   def getStepSize: Int = { stepSize.getOrElse(1) }
   def getRegParam: Double = { regParam.getOrElse(0.01) }
   def getMiniBatchFraction: Double = { miniBatchFraction.getOrElse(1.0) }
   def getFeatureScaling: Boolean = { featureScaling.getOrElse(false) }
   def getNumClasses: Int = { numClasses.getOrElse(2) }
-  //TODO: Verify what this should be default
-  def getConvergenceTolerance: Double = { convergenceTolerance.getOrElse(0.01) }
-  //TODO: Verify what this should be default
-  def getNumCorrections: Int = { numCorrections.getOrElse(2) }
+  def getConvergenceTolerance: Double = {
+    if (convergenceTolerance.isDefined) { require(convergenceTolerance.get >= 0, "convergenceTolerance must be non negative") }
+    convergenceTolerance.getOrElse(1E-4)
+  }
+  def getNumCorrections: Int = {
+    if (numCorrections.isDefined) { require(numCorrections.get > 0, "numCorrections must be greater than 0") }
+    numCorrections.getOrElse(10)
+  }
   def getThreshold: Double = { threshold.getOrElse(0.5) }
 }
 
@@ -82,9 +90,71 @@ case class LogisticRegressionTrainResults(numFeatures: Int,
                                           coefficients: Map[String, Double],
                                           covarianceMatrix: FrameEntity)
 
+/**
+ * Parameters
+ * ----------
+ * frame : Frame
+ *   A frame to train the model on.
+ * label_column : str
+ *   Column containing the label
+ * observation_columns : list of str
+ *   Columns containing the observations.
+ * frequency_column : str (optional)
+ *   Column containing frequency of the observation.
+ * optimizer : str (optional)
+ *   String containing the name of the optmizer for logistic regression
+ *   Default is "LBFGS"
+ * intercept : boolean (optional)
+ *   Set if the algorithm should add an intercept.
+ *   Default true.
+ * feature_scaling : boolean (optional)
+ *   Set if the algorithm should use feature scaling to improve the convergence during optimization.
+ *   Default false.
+ * num_iterations : int (optional)
+ *   The maximal number of iterations.
+ *   Default 100.
+ * step_size : int (optional)
+ *   The initial step size of SGD for the first step.
+ *   In subsequent steps, the step size will decrease with stepSize/sqrt(t)
+ *   Default 1.0.
+ * reg_type : str (optional)
+ *   Updater function to actually perform a gradient step in a given direction.
+ *   The updater is responsible to perform the update from the regularization term as well,
+ *   and therefore determines what kind or regularization is used, if any.
+ * reg_param : double (optional)
+ *   Regularization parameter.
+ *   Default 0.0.
+ * mini_batch_fraction : double (optional)
+ *   Fraction of data to be used for each SGD iteration.
+ *   Default 1.0 (corresponding to deterministic/classical gradient descent)
+ * threshold : double (optional)
+ *   Threshold for classification.
+ *   Default is 0.5
+ * num_classes : int (optional)
+ *   Number of classes  .
+ *   Default is 2.
+ *   SGD is a binary classifier, LBFGS can be multiclass
+ * convergence_tolerance : double (optional)
+ *   Set the convergence tolerance of iterations for L-BFGS.
+ *   Default 1E-4.
+ * num_corrections : int (optional)
+ *   Set the number of corrections used in the LBFGS update.
+ *   Default 10.
+ */
+
 @PluginDoc(oneLine = "Build logistic regression model.",
-  extended = """Creating a LogisticRegression Model using the observation column and label
-column of the train frame.""")
+  extended = "Creating a LogisticRegression Model using the observation column and label column of the train frame.",
+  returns = """
+    Results.
+    The data returned is composed of multiple components:
+numFeatures : Int
+    Number of features in the training data
+numClasses : Int
+    Number of classes in the training data
+coefficients: dict
+    Value for each of the coefficients trained
+covarianceMatrix: Frame
+    Covariance matrix of the trained data.""""")
 class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressionTrainArgs, LogisticRegressionTrainResults] {
   /**
    * The name of the command.

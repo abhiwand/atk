@@ -38,8 +38,8 @@ import org.apache.spark.mllib.linalg.{ Vectors, Vector }
  * @param gradient Gradient function to be used.
  * @param updater Updater to be used to update weights after every iteration.
  */
-class GradientDescentWithFrequency private[mllib] (private var gradient: Gradient, private var updater: Updater)
-    extends Optimizer with Logging with Hessian {
+class GradientDescentWithFrequency private[mllib] (private var gradient: GradientWithFrequency, private var updater: Updater)
+    extends OptimizerWithFrequency with Logging with Hessian {
 
   private var stepSize: Double = 1.0
   private var numIterations: Int = 100
@@ -87,7 +87,7 @@ class GradientDescentWithFrequency private[mllib] (private var gradient: Gradien
    * Set the gradient function (of the loss function of one single data example)
    * to be used for SGD.
    */
-  def setGradient(gradient: Gradient): this.type = {
+  def setGradient(gradient: GradientWithFrequency): this.type = {
     this.gradient = gradient
     this
   }
@@ -110,12 +110,12 @@ class GradientDescentWithFrequency private[mllib] (private var gradient: Gradien
   /**
    * :: DeveloperApi ::
    * Runs gradient descent on the given training data.
-   * @param data training data
+   * @param data training data consisting of label, features and frequency
    * @param initialWeights initial weights
    * @return solution vector
    */
   @DeveloperApi
-  def optimize(data: RDD[(Double, Vector)], initialWeights: Vector): Vector = {
+  def optimizeWithFrequency(data: RDD[(Double, Vector, Double)], initialWeights: Vector): Vector = {
     val (weights, _, hessian) = GradientDescentWithFrequency.runMiniBatchSGD(
       data,
       gradient,
@@ -161,8 +161,8 @@ object GradientDescentWithFrequency extends Logging {
    *         stochastic loss computed for every iteration.
    */
   def runMiniBatchSGD(
-    data: RDD[(Double, Vector)],
-    gradient: Gradient,
+    data: RDD[(Double, Vector, Double)],
+    gradient: GradientWithFrequency,
     updater: Updater,
     stepSize: Double,
     numIterations: Int,
@@ -204,7 +204,7 @@ object GradientDescentWithFrequency extends Logging {
         .treeAggregate((BDV.zeros[Double](n), 0.0, 0L))(
           seqOp = (c, v) => {
             // c: (grad, loss, count), v: (label, features)
-            val l = gradient.compute(v._2, v._1, bcWeights.value, Vectors.fromBreeze(c._1))
+            val l = gradient.compute(v._2, v._1, v._3, bcWeights.value, Vectors.fromBreeze(c._1))
             (c._1, c._2 + l, c._3 + 1)
           },
           combOp = (c1, c2) => {
@@ -231,7 +231,7 @@ object GradientDescentWithFrequency extends Logging {
     // Compute the approximate Hessian matrix using weights for the final iteration
     val hessian = if (computeHessian) {
       val costFun =
-        new CostFunction(data, gradient, updater, regParam, numExamples)
+        new CostFunctionWithFrequency(data, gradient, updater, regParam, numExamples)
       Some(ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate())
     }
     else {

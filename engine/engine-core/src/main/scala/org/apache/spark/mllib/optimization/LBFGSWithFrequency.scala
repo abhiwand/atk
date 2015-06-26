@@ -35,8 +35,8 @@ import scala.collection.mutable
  * @param updater Updater to be used to update weights after every iteration.
  */
 @DeveloperApi
-class LBFGSWithFrequency(private var gradient: Gradient, private var updater: Updater)
-    extends Optimizer with Logging with Hessian {
+class LBFGSWithFrequency(private var gradient: GradientWithFrequency, private var updater: Updater)
+    extends OptimizerWithFrequency with Logging with Hessian {
 
   private var numCorrections = 10
   private var convergenceTol = 1E-4
@@ -97,7 +97,7 @@ class LBFGSWithFrequency(private var gradient: Gradient, private var updater: Up
    * Set the gradient function (of the loss function of one single data example)
    * to be used for L-BFGS.
    */
-  def setGradient(gradient: Gradient): this.type = {
+  def setGradient(gradient: GradientWithFrequency): this.type = {
     this.gradient = gradient
     this
   }
@@ -117,7 +117,7 @@ class LBFGSWithFrequency(private var gradient: Gradient, private var updater: Up
    */
   override def getHessianMatrix: Option[BDM[Double]] = hessianMatrix
 
-  override def optimize(data: RDD[(Double, Vector)], initialWeights: Vector): Vector = {
+  override def optimizeWithFrequency(data: RDD[(Double, Vector, Double)], initialWeights: Vector): Vector = {
     val (weights, _, hessian) = LBFGSWithFrequency.runLBFGS(
       data,
       gradient,
@@ -162,8 +162,8 @@ object LBFGSWithFrequency extends Logging {
    *         computed for every iteration, and the third element is the approximate Hessian matrix.
    */
   def runLBFGS(
-    data: RDD[(Double, Vector)],
-    gradient: Gradient,
+    data: RDD[(Double, Vector, Double)],
+    gradient: GradientWithFrequency,
     updater: Updater,
     numCorrections: Int,
     convergenceTol: Double,
@@ -177,7 +177,7 @@ object LBFGSWithFrequency extends Logging {
     val numExamples = data.count()
 
     val costFun =
-      new CostFunction(data, gradient, updater, regParam, numExamples)
+      new CostFunctionWithFrequency(data, gradient, updater, regParam, numExamples)
 
     val lbfgs = new BreezeLBFGS[BDV[Double]](maxNumIterations, numCorrections, convergenceTol)
 

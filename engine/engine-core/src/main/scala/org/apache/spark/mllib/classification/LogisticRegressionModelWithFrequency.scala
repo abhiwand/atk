@@ -220,7 +220,7 @@ class LogisticRegressionWithFrequencySGD private[mllib] (
     extends GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency]
     with Serializable {
 
-  private val gradient = new LogisticGradient()
+  private val gradient = new LogisticGradientWithFrequency()
   private val updater = new SquaredL2Updater()
   override val optimizer = new GradientDescentWithFrequency(gradient, updater)
     .setStepSize(stepSize)
@@ -342,7 +342,7 @@ class LogisticRegressionWithFrequencyLBFGS
 
   this.setFeatureScaling(true)
 
-  override val optimizer = new LBFGSWithFrequency(new LogisticGradient, new SquaredL2Updater)
+  override val optimizer = new LBFGSWithFrequency(new LogisticGradientWithFrequency, new SquaredL2Updater)
 
   override protected val validators = List(multiLabelValidator)
 
@@ -366,7 +366,7 @@ class LogisticRegressionWithFrequencyLBFGS
     require(numClasses > 1)
     numOfLinearPredictor = numClasses - 1
     if (numClasses > 2) {
-      optimizer.setGradient(new LogisticGradient(numClasses))
+      optimizer.setGradient(new LogisticGradientWithFrequency(numClasses))
     }
     this
   }
