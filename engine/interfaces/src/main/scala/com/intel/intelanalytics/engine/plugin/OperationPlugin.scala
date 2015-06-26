@@ -255,15 +255,3 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
 abstract class QueryPlugin[Arguments <: Product: JsonFormat: ClassManifest]
   extends OperationPlugin[Arguments, Any] {}
 
-/**
- * Transforms are command plugins that work lazily - they are only executed when
- * the things they produce are needed. For example, a command that takes a frame
- * reference and returns a frame reference. The lazy execution system will create
- * a new (empty) frame and assign an ID to it when this command is called, but
- * the command's execute method will not be called until the frame that was created
- * is actually inspected, exported to a file, or materialized. At that time, the
- * engine will invoke the Transform.
- */
-trait Transformation[Arguments <: Product, Return <: Product] extends CommandPlugin[Arguments, Return] {
-
-}

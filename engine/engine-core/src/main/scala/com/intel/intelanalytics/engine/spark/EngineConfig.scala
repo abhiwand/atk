@@ -36,14 +36,14 @@ import scala.util.Try
  *
  * This is our wrapper for Typesafe config.
  */
-object SparkEngineConfig extends SparkEngineConfig
+object EngineConfig extends EngineConfig
 
 /**
  * Configuration Settings for the SparkEngine,
  *
  * This is our wrapper for Typesafe config.
  */
-trait SparkEngineConfig extends EventLogging {
+trait EngineConfig extends EventLogging {
   implicit val eventContext: EventContext = null
 
   val config = ConfigFactory.load()
@@ -302,7 +302,7 @@ trait SparkEngineConfig extends EventLogging {
   private def hostname: String = InetAddress.getLocalHost.getCanonicalHostName
 
   // log important settings
-  def logSettings(): Unit = withContext("SparkEngineConfig") {
+  def logSettings(): Unit = withContext("EngineConfig") {
     info("fsRoot: " + fsRoot)
     info("sparkHome: " + sparkHome)
     info("sparkMaster: " + sparkMaster)

@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.plugin
 
 import com.intel.event.EventContext
 import com.intel.intelanalytics.engine.plugin.CommandInvocation
-import com.intel.intelanalytics.engine.spark.{ CommandProgressUpdater, SparkEngine }
+import com.intel.intelanalytics.engine.spark.{ CommandProgressUpdater, EngineImpl }
 import com.intel.intelanalytics.engine.{ CommandStorageProgressUpdater, CommandStorage, ReferenceResolver }
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.json.JsObject
@@ -36,7 +36,7 @@ import scala.concurrent.ExecutionContext
  * @param executionContext the Scala execution context in use
  * @param arguments the original JSON arguments, unconverted
  */
-case class SparkInvocation(engine: SparkEngine,
+case class SparkInvocation(engine: EngineImpl,
                            user: UserPrincipal,
                            commandId: Long,
                            executionContext: ExecutionContext,

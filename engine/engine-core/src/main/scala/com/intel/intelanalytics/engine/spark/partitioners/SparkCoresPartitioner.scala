@@ -16,7 +16,7 @@
 
 package com.intel.intelanalytics.engine.spark.partitioners
 
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import org.apache.spark.rdd.RDD
 
 /**
@@ -46,6 +46,6 @@ object SparkCoresPartitioner extends Serializable {
       val maxSparkCores = rdd.sparkContext.getConf.getInt("spark.cores.max", 0)
       if (maxSparkCores > 0) maxSparkCores else Runtime.getRuntime.availableProcessors() * numExecutors
     }
-    SparkEngineConfig.maxTasksPerCore * numSparkCores
+    EngineConfig.maxTasksPerCore * numSparkCores
   }
 }

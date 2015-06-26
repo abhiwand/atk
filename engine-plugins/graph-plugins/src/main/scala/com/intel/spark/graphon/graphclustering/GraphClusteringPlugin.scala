@@ -19,8 +19,7 @@ package com.intel.spark.graphon.graphclustering
 import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.graph.{ GraphReference }
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.{ SparkContextFactory, EngineConfig }
 import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.intelanalytics.domain.DomainJsonProtocol
@@ -53,7 +52,7 @@ class GraphClusteringPlugin extends SparkCommandPlugin[GraphClusteringArgs, Unit
 
   override def execute(arguments: GraphClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
 
-    if (!SparkEngineConfig.isSparkOnYarn)
+    if (!EngineConfig.isSparkOnYarn)
       sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)

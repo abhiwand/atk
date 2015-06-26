@@ -21,7 +21,7 @@ import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.schema.{ FrameSchema, Schema }
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -74,7 +74,7 @@ class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
     rightFrame.data.frameSchema.validateColumnsExist(List(arguments.rightFrame.joinColumn))
 
     // Get estimated size of frame to determine whether to use a broadcast join
-    val broadcastJoinThreshold = SparkEngineConfig.broadcastJoinThreshold
+    val broadcastJoinThreshold = EngineConfig.broadcastJoinThreshold
 
     val joinResultRDD = JoinRddFunctions.joinRDDs(
       createRDDJoinParam(frames, leftFrame, arguments.leftFrame.joinColumn, broadcastJoinThreshold),
