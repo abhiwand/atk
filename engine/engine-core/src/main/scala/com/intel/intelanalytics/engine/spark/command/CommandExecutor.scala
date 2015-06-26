@@ -27,7 +27,7 @@ import sys.process._
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain._
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.engine.plugin.{ Transformation, Invocation, CommandPlugin }
+import com.intel.intelanalytics.engine.plugin.{ Invocation, CommandPlugin }
 import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.engine.spark.util.{ JvmMemory, KerberosAuthenticator }
 import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, SparkEngine }
@@ -50,7 +50,6 @@ import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext.gl
 
 case class CommandContext(
     command: Command,
-    action: Boolean,
     executionContext: ExecutionContext,
     user: UserPrincipal,
     plugins: CommandPluginRegistry,
@@ -153,7 +152,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       val cmd = commands.create(commandTemplate.copy(createdBy = if (invocation.user != null) Some(invocation.user.user.id) else None))
       val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
       val context = CommandContext(cmd,
-        action = isAction(plugin),
         EngineExecutionContext.global,
         user,
         commandPluginRegistry,
@@ -171,7 +169,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     withContext(s"ce.executeCommand.${cmd.name}") {
       val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
       val context = CommandContext(cmd,
-        action = isAction(plugin),
         EngineExecutionContext.global,
         user,
         commandPluginRegistry,
@@ -246,20 +243,8 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       }
     }
     else {
-      val returnValue = if (commandContext.action) {
-        val res = if (firstExecution) {
-          this.runDependencies(arguments, commandContext)(plugin.argumentTag, commandInvocation)
-        }
-        else commandContext.resolver
-        val result = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
-        result
-      }
-      else {
-        createSuspendedReferences(commandContext.command, plugin, arguments)
-      }
-      if (firstExecution) {
-        commandContext.clean()
-      }
+      val res = commandContext.resolver
+      val returnValue = invokeCommandFunction(plugin, arguments, commandContext.copy(resolver = res))
       plugin.serializeReturn(returnValue)
     }
   }
@@ -372,53 +357,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
     }
   }
 
-  /**
-   * For the arguments and command given, find all the dependencies (UriReferences) in the arguments,
-   * and if they aren't already materialized, run the commands that generate data for them. If they
-   * in turn have dependencies, process those first, recursively.
-   *
-   * @param arguments the arguments to the command
-   * @param commandContext the command that's being run
-   * @param invocation the invocation in which we're running
-   * @tparam A the arguments type
-   * @return a new ReferenceResolver that will resolve references by returning the in-memory data
-   *         when available, rather than going back to the EntityManager.
-   */
-  private def runDependencies[A <: Product: TypeTag](arguments: A,
-                                                     commandContext: CommandContext)(implicit invocation: Invocation): ReferenceResolver = {
-    implicit val eventContext = invocation.eventContext
-    implicit val user = invocation.user
-    val dependencies = Dependencies.getComputables(arguments)
-    val newResolver = dependencies match {
-      case x if x.isEmpty => ReferenceResolver
-      case _ =>
-        var dependencySets = Dependencies.build(dependencies)
-        var resolver = new AugmentedResolver(commandContext.resolver, Seq.empty)
-        while (dependencySets.nonEmpty) {
-          info(s"Resolving dependencies for ${commandContext.command.name}, ${dependencySets.length} rounds remain")
-          val commands = dependencySets.head
-          val results = commands.map(c => {
-            createExecution(commandContext.copy(command = c, action = true, resolver = resolver), firstExecution = false)
-          })
-          //Next, examine the results and add uri references to the resolver,
-          //if they are HasData instances. This is what allows RDDs or other data
-          //structures to chain from one operation to the next without serializing
-          //at each step
-          //TODO: Realistic, non-hard-coded timeout
-          val refs = results.map(exc => Await.result(exc.end, 100 hours))
-            .flatMap(obj => Dependencies.getUriReferencesFromJsObject(obj.result.get))
-          val data = refs.flatMap {
-            case r: UriReference with HasData => Seq(r)
-            case _ => Seq.empty
-          }.toSeq
-          resolver = resolver ++ data
-          dependencySets = dependencySets.tail
-        }
-        resolver
-    }
-    newResolver
-  }
-
   private def invokeCommandFunction[A <: Product: TypeTag, R <: Product: TypeTag](command: CommandPlugin[A, R],
                                                                                   arguments: A,
                                                                                   commandContext: CommandContext)(implicit invocation: Invocation): R = {
@@ -440,27 +378,6 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       resolver = commandContext.resolver,
       eventContext = commandContext.eventContext
     )
-  }
-
-  /**
-   * Is this an action? A command is an action if it declares so by implementing the Action
-   * trait, or else by having a return type that has members that are not references.
-   *
-   * The second case makes this an action because there is no way to return a pending value
-   * of an arbitrary type. UriReferences are a special case, we can create one ahead of time
-   * and intercept calls to it, but we can't return a lazy Int (especially across process and
-   * protocol boundaries) where a regular Int is requested.
-   *
-   * @tparam R the return type of the plugin
-   * @return true if the plugin is an action, false otherwise.
-   */
-  def isAction[R <: Product](plugin: CommandPlugin[_, R]) = {
-    !plugin.isInstanceOf[Transformation[_, _]] || {
-      implicit val returnTag = plugin.returnTag
-      val dataMembers: Seq[(String, Type)] = Reflection.getVals[R]()
-      val referenceTypes: Seq[(String, Type)] = Reflection.getUriReferenceTypes[R]()
-      dataMembers.length != referenceTypes.length
-    }
   }
 
   /**
@@ -495,8 +412,9 @@ class CommandExecutor(engine: => SparkEngine, commands: CommandStorage)
       }
     }
     else {
-      /* Other plugins like Giraph etc which inherit from CommandPlugin, See TRIB-4661 */
-      // We need to rename all giraph jobs to use command.getJobName as yarn job name instead of hardcoded values like "iat_giraph_als"
+      // TODO: Other plugins like Giraph etc which inherit from CommandPlugin, See TRIB-4661
+      // TODO: We need to rename all giraph jobs to use command.getJobName as yarn job name instead of hardcoded values like "iat_giraph_als"
+      error(s"Cancel is NOT implemented for anything other than SparkCommandPlugins, ${command.name} is NOT a SparkCommandPlugin")
     }
   }
 }
