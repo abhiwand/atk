@@ -142,6 +142,7 @@ class LdaTrainPlugin
 
     giraphConf.setLdaConfig(ldaConfig)
     GiraphConfigurationUtil.set(giraphConf, "giraphjob.maxSteps", arguments.maxIterations)
+    GiraphConfigurationUtil.set(giraphConf, "mapreduce.input.fileinputformat.inputdir", Some(inputFormatConfig.parquetFileLocation))
 
     //giraphConf.setVertexInputFormatClass(classOf[LdaParquetFrameVertexValueInputFormat])
     giraphConf.setEdgeInputFormatClass(classOf[LdaParquetFrameEdgeInputFormat])
