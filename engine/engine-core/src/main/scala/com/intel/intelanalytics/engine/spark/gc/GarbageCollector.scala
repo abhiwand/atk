@@ -25,7 +25,7 @@ import com.intel.intelanalytics.domain.frame.FrameEntity
 import com.intel.intelanalytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollectionTemplate, GarbageCollection }
 import com.intel.intelanalytics.engine.GraphBackendStorage
 import com.intel.intelanalytics.engine.plugin.BackendInvocation
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import com.intel.intelanalytics.engine.spark.frame.{ FrameFileStorage }
 import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import com.intel.intelanalytics.repository.{ MetaStore }
@@ -65,7 +65,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
   /**
    * garbage collect all entities
    */
-  def garbageCollectEntities(gcAgeToDeleteData: Long = SparkEngineConfig.gcAgeToDeleteData): Unit = {
+  def garbageCollectEntities(gcAgeToDeleteData: Long = EngineConfig.gcAgeToDeleteData): Unit = {
     this.synchronized {
       metaStore.withSession("gc.garbagecollector") {
         implicit session =>
@@ -133,7 +133,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
    * @param session db session for backend process
    */
   def garbageCollectGraphs(gc: GarbageCollection, gcAgeToDeleteData: Long)(implicit session: metaStore.Session): Unit = {
-    metaStore.graphRepo.listReadyForDeletion(SparkEngineConfig.gcAgeToDeleteData).foreach(graph => {
+    metaStore.graphRepo.listReadyForDeletion(EngineConfig.gcAgeToDeleteData).foreach(graph => {
       val description = s"Deleting Data for Graph ID: ${graph.id} Name: ${graph.name}"
       try {
         val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
@@ -158,7 +158,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
    * @param session db session for backend process
    */
   def garbageCollectModels(gc: GarbageCollection, gcAgeToDeleteData: Long)(implicit session: metaStore.Session): Unit = {
-    metaStore.modelRepo.listReadyForDeletion(SparkEngineConfig.gcAgeToDeleteData).foreach(model => {
+    metaStore.modelRepo.listReadyForDeletion(EngineConfig.gcAgeToDeleteData).foreach(model => {
       val description = s"Deleting Data for Model ID: ${model.id} Name: ${model.name}"
       try {
         val gcEntry: GarbageCollectionEntry = gcEntryRepo.insert(
@@ -189,7 +189,7 @@ object GarbageCollector {
       if (garbageCollector == null)
         garbageCollector = new GarbageCollector(metaStore, frameStorage, graphBackendStorage)
       if (gcScheduler == null) {
-        gcScheduler = Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(garbageCollector, 0, SparkEngineConfig.gcInterval, TimeUnit.MILLISECONDS)
+        gcScheduler = Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(garbageCollector, 0, EngineConfig.gcInterval, TimeUnit.MILLISECONDS)
       }
     }
   }

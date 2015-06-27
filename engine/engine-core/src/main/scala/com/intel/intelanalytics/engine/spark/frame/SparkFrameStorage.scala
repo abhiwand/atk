@@ -177,7 +177,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     (frame.storageFormat, frame.storageLocation) match {
       case (_, None) | (None, _) =>
         //  nothing has been saved to disk yet)
-        new FrameRdd(frame.schema, sc.parallelize[sql.Row](Nil, SparkEngineConfig.minPartitions))
+        new FrameRdd(frame.schema, sc.parallelize[sql.Row](Nil, EngineConfig.minPartitions))
       case (Some("file/parquet"), Some(absPath)) =>
         val sqlContext = new SQLContext(sc)
         val rows = sqlContext.parquetFile(absPath.toString)

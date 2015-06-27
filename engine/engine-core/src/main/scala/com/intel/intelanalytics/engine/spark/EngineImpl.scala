@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
-import com.intel.event.{ EventLogging }
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity }
@@ -37,7 +37,6 @@ import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 import spray.json._
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import org.apache.spark.frame.FrameRdd
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -45,8 +44,7 @@ import spray.json._
 
 import scala.concurrent._
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.intelanalytics.domain.schema.{ DataTypes }
-import com.intel.intelanalytics.domain.{ CreateEntityArgs }
+import com.intel.intelanalytics.domain.CreateEntityArgs
 
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameReference
@@ -60,19 +58,19 @@ import com.intel.intelanalytics.engine.spark.user.UserStorage
 import scala.util.{ Try, Success, Failure }
 import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext.global
 
-object SparkEngine {
+object EngineImpl {
   private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
-class SparkEngine(val sparkContextFactory: SparkContextFactory,
-                  commands: CommandExecutor,
-                  commandStorage: CommandStorage,
-                  val frames: SparkFrameStorage,
-                  val graphs: SparkGraphStorage,
-                  val models: SparkModelStorage,
-                  users: UserStorage,
-                  val sparkAutoPartitioner: SparkAutoPartitioner,
-                  commandPluginRegistry: CommandPluginRegistry) extends Engine
+class EngineImpl(val sparkContextFactory: SparkContextFactory,
+                 commands: CommandExecutor,
+                 commandStorage: CommandStorage,
+                 val frames: SparkFrameStorage,
+                 val graphs: SparkGraphStorage,
+                 val models: SparkModelStorage,
+                 users: UserStorage,
+                 val sparkAutoPartitioner: SparkAutoPartitioner,
+                 commandPluginRegistry: CommandPluginRegistry) extends Engine
     with EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
@@ -80,8 +78,8 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   type Data = FrameRdd
   type Context = SparkContext
 
-  val fsRoot = SparkEngineConfig.fsRoot
-  override val pageSize: Int = SparkEngineConfig.pageSize
+  val fsRoot = EngineConfig.fsRoot
+  override val pageSize: Int = EngineConfig.pageSize
 
   // Administrative plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
@@ -94,7 +92,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
       require(offset >= 0, "offset cannot be negative")
       require(count >= 0, "count cannot be negative")
       future {
-        commandStorage.scan(offset, Math.min(count, SparkEngineConfig.pageSize))
+        commandStorage.scan(offset, Math.min(count, EngineConfig.pageSize))
       }
     }
   }

@@ -16,17 +16,14 @@
 
 package com.intel.intelanalytics.engine.spark.command
 
-import com.intel.intelanalytics.domain.Error
-import com.jcraft.jsch.Session
-import org.joda.time.DateTime
 import scala.util.{ Success, Failure, Try }
 import spray.json.JsObject
 import com.intel.intelanalytics.domain.command.{ CommandTemplate, Command }
-import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo, CommandStorage }
-import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent }
+import com.intel.intelanalytics.engine.{ ProgressInfo, CommandStorage }
+import com.intel.intelanalytics.repository.SlickMetaStoreComponent
 import com.intel.event.{ EventContext, EventLogging }
 
-class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends CommandStorage with EventLogging {
+class CommandStorageImpl(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends CommandStorage with EventLogging {
   val repo = metaStore.commandRepo
 
   override def lookup(id: Long): Option[Command] =
@@ -58,13 +55,13 @@ class SparkCommandStorage(val metaStore: SlickMetaStoreComponent#SlickMetaStore)
   override def complete(id: Long, result: Try[JsObject]): Unit = {
     require(id > 0, "invalid ID")
     require(result != null, "result must not be null")
-    updateResult(id, result, true)
+    updateResult(id, result, markComplete = true)
   }
 
   override def storeResult(id: Long, result: Try[JsObject]): Unit = {
     require(id > 0, "invalid ID")
     require(result != null, "result must not be null")
-    updateResult(id, result, false)
+    updateResult(id, result, markComplete = false)
   }
 
   private def updateResult(id: Long, result: Try[JsObject], markComplete: Boolean): Unit = {

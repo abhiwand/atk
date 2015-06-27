@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.frame.plugins.load
 
 import com.intel.intelanalytics.domain.frame.load.{ LineParser, LineParserArguments }
 import com.intel.intelanalytics.domain.schema._
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import com.intel.intelanalytics.engine.spark.frame._
 import org.apache.hadoop.io.LongWritable
 import org.apache.spark.frame.FrameRdd
@@ -112,8 +112,8 @@ object LoadRddFunctions extends Serializable {
                                                     parser: LineParser): Unit = {
 
     //parse the first number of lines specified as sample size and make sure the file is acceptable
-    val sampleSize = SparkEngineConfig.frameLoadTestSampleSize
-    val threshold = SparkEngineConfig.frameLoadTestFailThresholdPercentage
+    val sampleSize = EngineConfig.frameLoadTestSampleSize
+    val threshold = EngineConfig.frameLoadTestFailThresholdPercentage
 
     val sampleRdd = MiscFrameFunctions.getPagedRdd[T](fileContentRdd, 0, sampleSize, sampleSize)
 

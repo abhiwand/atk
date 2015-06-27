@@ -25,7 +25,7 @@ import com.intel.intelanalytics.engine.spark.util.{ EnvironmentLogger, JvmVersio
  */
 class SparkEngineComponent extends AbstractEngineComponent(new CommandLoader) {
   EnvironmentLogger.log()
-  SparkEngineConfig.logSettings()
+  EngineConfig.logSettings()
   JvmVersionReporter.check()
   DiskSpaceReporter.checkDiskSpace()
   metaStore.initializeSchema()

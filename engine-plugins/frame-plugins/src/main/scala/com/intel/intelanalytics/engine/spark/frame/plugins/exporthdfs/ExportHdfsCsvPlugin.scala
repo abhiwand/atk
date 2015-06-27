@@ -22,7 +22,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ExportHdfsCsvArgs
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage }
+import com.intel.intelanalytics.engine.spark.{ EngineConfig, HdfsFileStorage }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.hadoop.fs.Path
@@ -72,7 +72,7 @@ class ExportHdfsCsvPlugin extends SparkCommandPlugin[ExportHdfsCsvArgs, UnitRetu
    */
   override def execute(arguments: ExportHdfsCsvArgs)(implicit invocation: Invocation): UnitReturn = {
 
-    val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
+    val fileStorage = new HdfsFileStorage(EngineConfig.fsRoot)
     require(!fileStorage.exists(new Path(arguments.folderName)), "File or Directory already exists")
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD
