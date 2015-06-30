@@ -118,7 +118,7 @@ private[intelanalytics] object JsonSchemaExtractor {
         //}
         // then use this line...
         //JsonPropertyNameConverter.camelCaseToUnderscores(sym.name.decoded) -> (func(sym, i, description, defaultValue), optional)
-        (name, (schema, isTypeOption))
+        (name, (schema, isTypeOption || optional))
     })
 
     val required = propertyInfo.filter { case (name, (_, optional)) => !optional }.map { case (n, _) => n }
@@ -221,11 +221,12 @@ private[intelanalytics] object JsonSchemaExtractor {
    */
   def getSchemaForType(typeSignature: ru.Type, order: Int, description: Option[String] = None, defaultValue: Option[Any]): (JsonSchema, Boolean) = { // JsonSchema = { //}, Boolean) = {
     val schema = typeSignature match {
-      case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"))
-      case t if t =:= typeTag[String].tpe => StringSchema(description = description)
+      case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"), description = description, defaultValue = defaultValue)
+      case t if t =:= typeTag[String].tpe => StringSchema(description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[Int].tpe => JsonSchema.verbose_int(description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[Long].tpe => JsonSchema.verbose_long(description = description, defaultValue = defaultValue)
-      // TODO: noticed floating-point types are missing - blbarker 2/25/15
+      case t if t =:= typeTag[Float].tpe => JsonSchema.verbose_float(description = description, defaultValue = defaultValue)
+      case t if t =:= typeTag[Double].tpe => JsonSchema.verbose_double(description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[DateTime].tpe => JsonSchema.dateTime
       case t if t =:= typeTag[FrameReference].tpe =>
         val s = JsonSchema.verbose_frame(description, defaultValue)
@@ -256,11 +257,11 @@ private[intelanalytics] object JsonSchemaExtractor {
         subSchema
       //parameterized types need special handling
       case t if t.erasure =:= typeTag[Map[Any, Any]].tpe => ObjectSchema()
-      case t if t.erasure =:= typeTag[Seq[Any]].tpe => ArraySchema()
-      case t if t.erasure =:= typeTag[Iterable[Any]].tpe => ArraySchema()
-      case t if t.erasure =:= typeTag[List[Any]].tpe => ArraySchema()
+      case t if t.erasure =:= typeTag[Seq[Any]].tpe => ArraySchema(description = description, defaultValue = defaultValue)
+      case t if t.erasure =:= typeTag[Iterable[Any]].tpe => ArraySchema(description = description, defaultValue = defaultValue)
+      case t if t.erasure =:= typeTag[List[Any]].tpe => ArraySchema(description = description, defaultValue = defaultValue)
       //array type system works a little differently
-      case t if t.typeConstructor =:= typeTag[Array[Any]].tpe.typeConstructor => ArraySchema()
+      case t if t.typeConstructor =:= typeTag[Array[Any]].tpe.typeConstructor => ArraySchema(description = description, defaultValue = defaultValue)
       case t => JsonSchema.empty
     }
     //schema

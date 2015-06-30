@@ -88,11 +88,25 @@ def request_server_command_defs(server):
         raise IaError(logger)
 
 
-def dump_server_command_defs_to_file(server, file_name):
-    """Gets command defs from server and dumps them to a file, as raw JSON"""
+def dump_server_command_defs(server, where=None, select=None):
+    """Gets command defs from server and returns raw JSON"""
     response = request_server_command_defs(server)
+    if not where:
+        def w(command):
+            return True
+        where = w
+    if not select:
+        def s(command):
+            return command
+        select = s
+    return [select(c) for c in response.json() if where(c)]
+
+
+def dump_server_command_defs_to_file(server, file_name, where=None, select=None):
+    """Gets command defs from server and dumps them to a file, as raw JSON"""
+    commands = dump_server_command_defs(server, where, select)
     with open(file_name, "w") as f:
-        json.dump(response.json(), f, indent=2)
+        json.dump(commands, f, indent=2)
 
 
 def download_server_details(server):

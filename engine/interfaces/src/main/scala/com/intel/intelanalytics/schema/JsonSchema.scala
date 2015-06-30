@@ -57,13 +57,21 @@ object JsonSchema {
 
   val long = verbose_long(None, None)
 
-  val float = NumberSchema(id = Some(new URI("ia:float")),
+  def verbose_float(description: Option[String], defaultValue: Option[Any]) = NumberSchema(id = Some(new URI("ia:float")),
+    description = description,
+    defaultValue = defaultValue,
     minimum = Some(Float.MinValue),
     maximum = Some(Float.MaxValue))
 
-  val double = NumberSchema(id = Some(new URI("ia:double")),
+  val float = verbose_float(None, None)
+
+  def verbose_double(description: Option[String], defaultValue: Option[Any]) = NumberSchema(id = Some(new URI("ia:double")),
+    description = description,
+    defaultValue = defaultValue,
     minimum = Some(Double.MinValue),
     maximum = Some(Double.MaxValue))
+
+  val double = verbose_double(None, None)
 
   val dateTime = StringSchema(format = Some("date-time"))
 

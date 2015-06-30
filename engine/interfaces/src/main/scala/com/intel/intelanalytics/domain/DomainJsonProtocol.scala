@@ -479,7 +479,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
 
   implicit object CommandDocFormat extends JsonFormat[CommandDoc] {
     override def read(value: JsValue): CommandDoc = {
-      throw new NotImplementedError("CommandDoc JSON read")  // We only dump these
+      throw new NotImplementedError("CommandDoc JSON read") // We only dump these, no need to impl. read
     }
 
     override def write(doc: CommandDoc): JsValue = {
