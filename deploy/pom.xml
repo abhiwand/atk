@@ -7,7 +7,7 @@
     <packaging>jar</packaging>
 
     <description>
-        This module is for creating an uber jar needed for deployment on DP2.
+        This module is for creating an uber jar needed for deployment on Analytics PaaS.
 
         The uber jar contains all of our plugin code and dependencies.
     </description>
