@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark
 
 import java.util.{ ArrayList => JArrayList, List => JList }
 
-import com.intel.event.{ EventLogging }
+import com.intel.event.EventLogging
 import com.intel.intelanalytics.component.ClassLoaderAware
 import com.intel.intelanalytics.domain.graph._
 import com.intel.intelanalytics.domain.model.{ ModelReference, ModelEntity }
@@ -32,13 +32,11 @@ import com.intel.intelanalytics.engine.spark.frame._
 import com.intel.intelanalytics.{ EventLoggingImplicits, NotFoundException }
 import org.apache.spark.SparkContext
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
-import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.engine.{ ProgressInfo, _ }
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 import spray.json._
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import org.apache.spark.frame.FrameRdd
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -46,8 +44,7 @@ import spray.json._
 
 import scala.concurrent._
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.intelanalytics.domain.schema.{ DataTypes }
-import com.intel.intelanalytics.domain.{ CreateEntityArgs }
+import com.intel.intelanalytics.domain.CreateEntityArgs
 
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.domain.frame.FrameReference
@@ -61,20 +58,19 @@ import com.intel.intelanalytics.engine.spark.user.UserStorage
 import scala.util.{ Try, Success, Failure }
 import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext.global
 
-object SparkEngine {
+object EngineImpl {
   private val pythonRddDelimiter = "YoMeDelimiter"
 }
 
-class SparkEngine(val sparkContextFactory: SparkContextFactory,
-                  commands: CommandExecutor,
-                  commandStorage: CommandStorage,
-                  val frames: SparkFrameStorage,
-                  val graphs: SparkGraphStorage,
-                  val models: SparkModelStorage,
-                  users: UserStorage,
-                  queryStorage: SparkQueryStorage,
-                  val sparkAutoPartitioner: SparkAutoPartitioner,
-                  commandPluginRegistry: CommandPluginRegistry) extends Engine
+class EngineImpl(val sparkContextFactory: SparkContextFactory,
+                 commands: CommandExecutor,
+                 commandStorage: CommandStorage,
+                 val frames: SparkFrameStorage,
+                 val graphs: SparkGraphStorage,
+                 val models: SparkModelStorage,
+                 users: UserStorage,
+                 val sparkAutoPartitioner: SparkAutoPartitioner,
+                 commandPluginRegistry: CommandPluginRegistry) extends Engine
     with EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
@@ -82,8 +78,8 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   type Data = FrameRdd
   type Context = SparkContext
 
-  val fsRoot = SparkEngineConfig.fsRoot
-  override val pageSize: Int = SparkEngineConfig.pageSize
+  val fsRoot = EngineConfig.fsRoot
+  override val pageSize: Int = EngineConfig.pageSize
 
   // Administrative plugins
   commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
@@ -96,7 +92,7 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
       require(offset >= 0, "offset cannot be negative")
       require(count >= 0, "count cannot be negative")
       future {
-        commandStorage.scan(offset, Math.min(count, SparkEngineConfig.pageSize))
+        commandStorage.scan(offset, Math.min(count, EngineConfig.pageSize))
       }
     }
   }
@@ -104,54 +100,6 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
   override def getCommand(id: Long)(implicit invocation: Invocation): Future[Option[Command]] = withContext("se.getCommand") {
     future {
       commandStorage.lookup(id)
-    }
-  }
-
-  /**
-   * return a list of the existing queries
-   * @param offset First query to obtain.
-   * @param count Number of queries to obtain.
-   * @return sequence of queries
-   */
-  override def getQueries(offset: Int, count: Int)(implicit invocation: Invocation): Future[Seq[Query]] = withContext("se.getQueries") {
-    future {
-      queryStorage.scan(offset, count)
-    }
-  }
-
-  /**
-   * return a query object
-   * @param id query id
-   * @return Query
-   */
-  override def getQuery(id: Long)(implicit invocation: Invocation): Future[Option[Query]] = withContext("se.getQuery") {
-    future {
-      queryStorage.lookup(id)
-    }
-  }
-
-  /**
-   * returns the data found in a specific query result page
-   *
-   * @param id query id
-   * @param pageId page id
-   * @return data of specific page
-   */
-  override def getQueryPage(id: Long, pageId: Long)(implicit invocation: Invocation) = withContext("se.getQueryPage") {
-    withMyClassLoader {
-      val sc = sparkContextFactory.context("query")
-      try {
-        val data = queryStorage.getQueryPage(sc, id, pageId)
-        com.intel.intelanalytics.domain.query.QueryDataResult(data, None)
-      }
-      finally {
-        if (SparkEngineConfig.reuseSparkContext) {
-          info("not stopping local SparkContext so that it can be re-used")
-        }
-        else {
-          sc.stop()
-        }
-      }
     }
   }
 
@@ -378,10 +326,10 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     GarbageCollector.shutdown()
   }
 
-  override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = {
+  override def getVertex(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[FrameEntity] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
-      Some(seamless.vertexMeta(label))
+      seamless.vertexMeta(label)
     }
   }
 
@@ -392,10 +340,10 @@ class SparkEngine(val sparkContextFactory: SparkContextFactory,
     }
   }
 
-  override def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[Option[FrameEntity]] = {
+  override def getEdge(graphId: Identifier, label: String)(implicit invocation: Invocation): Future[FrameEntity] = {
     future {
       val seamless = graphs.expectSeamless(graphId)
-      Some(seamless.edgeMeta(label))
+      seamless.edgeMeta(label)
     }
   }
 

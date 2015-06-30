@@ -24,11 +24,9 @@ import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameStorage, FrameFil
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, HBaseAdminFactory, SparkGraphHBaseBackend }
 import com.intel.intelanalytics.engine.spark.model.SparkModelStorage
 import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitioner
-import com.intel.intelanalytics.engine.spark.queries.SparkQueryStorage
 import com.intel.intelanalytics.engine.spark.threading.EngineExecutionContext
 import com.intel.intelanalytics.engine.spark.user.UserStorage
 import com.intel.intelanalytics.engine.spark.command._
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import com.intel.intelanalytics.repository.{ Profile, SlickMetaStoreComponent, DbProfileComponent }
 
 /**
@@ -50,13 +48,13 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
 
   val sparkContextFactory = SparkContextFactory
 
-  val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
+  val fileStorage = new HdfsFileStorage(EngineConfig.fsRoot)
 
   val sparkAutoPartitioner = new SparkAutoPartitioner(fileStorage)
 
-  val frameFileStorage = new FrameFileStorage(SparkEngineConfig.fsRoot, fileStorage)
+  val frameFileStorage = new FrameFileStorage(EngineConfig.fsRoot, fileStorage)
 
-  val frameStorage = new SparkFrameStorage(frameFileStorage, SparkEngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
+  val frameStorage = new SparkFrameStorage(frameFileStorage, EngineConfig.pageSize, metaStore.asInstanceOf[SlickMetaStore], sparkAutoPartitioner)
 
   protected val backendGraphStorage: SparkGraphHBaseBackend = new SparkGraphHBaseBackend(hbaseAdminFactory = new HBaseAdminFactory)
   val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, backendGraphStorage, frameStorage)
@@ -65,25 +63,23 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
 
   val userStorage = new UserStorage(metaStore.asInstanceOf[SlickMetaStore])
 
-  val commands = new SparkCommandStorage(metaStore.asInstanceOf[SlickMetaStore])
+  val commands = new CommandStorageImpl(metaStore.asInstanceOf[SlickMetaStore])
 
   lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands)
 
   override lazy val profile = withContext("engine connecting to metastore") {
 
     // Initialize a Profile from settings in the config
-    val driver = SparkEngineConfig.metaStoreConnectionDriver
+    val driver = EngineConfig.metaStoreConnectionDriver
     new Profile(Profile.jdbcProfileForDriver(driver),
-      connectionString = SparkEngineConfig.metaStoreConnectionUrl,
+      connectionString = EngineConfig.metaStoreConnectionUrl,
       driver,
-      username = SparkEngineConfig.metaStoreConnectionUsername,
-      password = SparkEngineConfig.metaStoreConnectionPassword,
-      poolMaxActive = SparkEngineConfig.metaStorePoolMaxActive)
+      username = EngineConfig.metaStoreConnectionUsername,
+      password = EngineConfig.metaStoreConnectionPassword,
+      poolMaxActive = EngineConfig.metaStorePoolMaxActive)
   }(startupCall.eventContext)
 
-  val queries = new SparkQueryStorage(metaStore.asInstanceOf[SlickMetaStore], fileStorage)
-
-  val engine = new SparkEngine(sparkContextFactory,
-    commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage, queries,
+  val engine = new EngineImpl(sparkContextFactory,
+    commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage,
     sparkAutoPartitioner, commandPluginRegistry) {}
 }

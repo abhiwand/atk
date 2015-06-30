@@ -26,8 +26,7 @@ import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.intelanalytics.component.Boot
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
+import com.intel.intelanalytics.engine.spark.{ SparkContextFactory, EngineConfig }
 import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
 import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.intelanalytics.security.UserPrincipal

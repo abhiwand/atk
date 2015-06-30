@@ -25,11 +25,11 @@ import com.intel.intelanalytics.domain.frame.ExportHdfsHiveArgs
 import com.intel.intelanalytics.engine.PluginDocAnnotation
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.HdfsFileStorage
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.frame.plugins.cumulativedist.EcdfJsonFormat
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage }
+import com.intel.intelanalytics.engine.spark.{ EngineConfig, HdfsFileStorage }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.hadoop.fs.Path

@@ -37,8 +37,7 @@ class StandardServiceFactory(override val name: String) extends AbstractServiceF
     val dataFrameService = new v1.FrameService(commonDirectives, engine)
     val graphService = new v1.GraphService(commonDirectives, engine)
     val modelService = new v1.ModelService(commonDirectives, engine)
-    val queryService = new v1.QueryService(commonDirectives, engine)
-    val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService, modelService, queryService)
+    val apiV1Service = new v1.ApiV1Service(dataFrameService, commandService, graphService, modelService)
 
     // setup main entry point
     new ApiService(commonDirectives, apiV1Service)
