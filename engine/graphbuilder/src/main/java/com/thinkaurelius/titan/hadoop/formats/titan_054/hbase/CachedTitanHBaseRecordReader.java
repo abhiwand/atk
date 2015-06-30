@@ -23,7 +23,8 @@ import com.thinkaurelius.titan.hadoop.FaunusVertexQueryFilter;
 import com.thinkaurelius.titan.hadoop.config.ModifiableHadoopConfiguration;
 import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseHadoopGraph;
 import com.thinkaurelius.titan.hadoop.formats.util.input.TitanHadoopSetup;
-import org.apache.hadoop.hbase.mapreduce.TableRecordReader;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -70,7 +71,8 @@ public class CachedTitanHBaseRecordReader extends RecordReader<NullWritable, Fau
         });
     }
 
-    private TableRecordReader reader;
+
+    private RecordReader<ImmutableBytesWritable, Result> reader;
     private CachedTitanHBaseInputFormat inputFormat;
     private TitanHBaseHadoopGraph graph;
     private FaunusVertexQueryFilter vertexQuery;
@@ -82,7 +84,7 @@ public class CachedTitanHBaseRecordReader extends RecordReader<NullWritable, Fau
 
     public CachedTitanHBaseRecordReader(final CachedTitanHBaseInputFormat inputFormat,
                                         final FaunusVertexQueryFilter vertexQuery,
-                                        final TableRecordReader reader,
+                                        final RecordReader<ImmutableBytesWritable, Result> reader,
                                         final byte[] edgestoreFamilyBytes) {
         this.inputFormat = inputFormat;
         this.vertexQuery = vertexQuery;
@@ -139,7 +141,7 @@ public class CachedTitanHBaseRecordReader extends RecordReader<NullWritable, Fau
     }
 
     @Override
-    public float getProgress() {
+    public float getProgress() throws IOException, InterruptedException  {
         return this.reader.getProgress();
     }
 

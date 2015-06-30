@@ -17,14 +17,11 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.rdd.{ UnionRDD, RDD }
+import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.domain.schema.{ DataTypes, SchemaUtil, Schema }
-import org.apache.spark.sql.catalyst.types._
-import org.apache.spark.sql.{ SQLContext, SchemaRDD }
-import org.apache.spark.sql.catalyst.expressions.{ GenericRow, AttributeReference, GenericMutableRow }
-import org.apache.spark.sql.execution.{ SparkLogicalPlan, ExistingRdd }
-import org.apache.spark.{ SparkContext, Partition, TaskContext }
+import com.intel.intelanalytics.domain.schema.{ SchemaUtil, Schema }
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.{ Partition, TaskContext }
 
 /**
  * A LegacyFrame RDD is an RDD of type Row with an associated schema
@@ -39,7 +36,7 @@ import org.apache.spark.{ SparkContext, Partition, TaskContext }
 @deprecated("use FrameRdd instead")
 class LegacyFrameRdd(val schema: Schema, val rows: RDD[Row]) extends RDD[Row](rows) {
 
-  def this(schema: Schema, schemaRDD: SchemaRDD) = this(schema, schemaRDD.map(row => row.toArray))
+  def this(schema: Schema, dataframe: DataFrame) = this(schema, dataframe.map(row => row.toSeq.toArray))
 
   override def compute(split: Partition, context: TaskContext): Iterator[Row] = rows.compute(split, context)
 

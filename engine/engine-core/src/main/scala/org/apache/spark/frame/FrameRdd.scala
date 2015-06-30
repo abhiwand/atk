@@ -17,25 +17,22 @@
 package org.apache.spark.frame
 
 import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.intelanalytics.domain.CreateEntityArgs
-import com.intel.intelanalytics.domain.frame.FrameMeta
-import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.DataTypes._
 import com.intel.intelanalytics.domain.schema._
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData, MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
-import org.apache.spark.{ Partition, SparkContext, sql }
-import org.apache.spark.sql.catalyst.expressions.{ AttributeReference, GenericMutableRow }
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.types._
-import org.apache.spark.sql.execution.{ ExistingRdd, SparkLogicalPlan }
-import org.apache.spark.sql.{ SQLContext, SchemaRDD }
+import org.apache.spark.{ TaskContext, Partition, SparkContext, sql }
+import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
+import org.apache.spark.sql.{ types => SparkType }
+import SparkType.{ ArrayType, DateType, DoubleType, FloatType }
+import SparkType.{ IntegerType, LongType, StringType, StructField, StructType, TimestampType, ByteType, BooleanType, ShortType, DecimalType }
+import org.apache.spark.sql.{ SQLContext, DataFrame }
 import SparkContext._
 import parquet.hadoop.ParquetInputSplit
 
@@ -47,23 +44,17 @@ import scala.reflect.ClassTag
  * This is our preferred format for loading frames as RDDs.
  *
  * @param frameSchema  the schema describing the columns of this frame
- * @param sqlContext a spark SQLContext
- * @param logicalPlan a logical plan describing the SchemaRDD
  */
-class FrameRdd(val frameSchema: Schema,
-               sqlContext: SQLContext,
-               logicalPlan: LogicalPlan)
-    extends SchemaRDD(sqlContext, logicalPlan) {
-
-  def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema, new SQLContext(rowRDD.context), FrameRdd.createLogicalPlanFromSql(schema, rowRDD))
+class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
+    extends RDD[sql.Row](prev) {
 
   /**
    * A Frame RDD is a SchemaRDD with our version of the associated schema
    *
    * @param schema  the schema describing the columns of this frame
-   * @param schemaRDD an existing schemaRDD that this FrameRdd will represent
+   * @param dataframe an existing schemaRDD that this FrameRdd will represent
    */
-  def this(schema: Schema, schemaRDD: SchemaRDD) = this(schema, schemaRDD.sqlContext, schemaRDD.queryExecution.logical)
+  def this(schema: Schema, dataframe: DataFrame) = this(schema, dataframe.rdd)
 
   /** This wrapper provides richer API for working with Rows */
   val rowWrapper = new RowWrapper(frameSchema)
@@ -72,8 +63,20 @@ class FrameRdd(val frameSchema: Schema,
    * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]]
    */
   def toLegacyFrameRdd: LegacyFrameRdd = {
-    new LegacyFrameRdd(this.frameSchema, this.baseSchemaRDD)
+    new LegacyFrameRdd(this.frameSchema, this.toDataFrame)
   }
+
+  /**
+   * Spark schema representation of Frame Schema to be used with Spark SQL APIs
+   */
+  lazy val sparkSchema = FrameRdd.schemaToStructType(frameSchema.columnTuples)
+
+  /**
+   * Convert a FrameRdd to a Spark Dataframe
+   * @return Dataframe representing the FrameRdd
+   */
+  def toDataFrame = new SQLContext(this.sparkContext).createDataFrame(this, sparkSchema)
+  def toDataFrameUsingHiveContext = new org.apache.spark.sql.hive.HiveContext(this.sparkContext).createDataFrame(this, sparkSchema)
 
   /**
    * Convert FrameRdd into RDD[LabeledPoint] format required by MLLib
@@ -86,6 +89,9 @@ class FrameRdd(val frameSchema: Schema,
       })
   }
 
+  override def compute(split: Partition, context: TaskContext): Iterator[sql.Row] =
+    firstParent[sql.Row].iterator(split, context)
+
   /**
    * overrides the default behavior so new partitions get created in the sorted order to maintain the data order for the
    * user
@@ -93,7 +99,7 @@ class FrameRdd(val frameSchema: Schema,
    * @return an array of partitions
    */
   override def getPartitions(): Array[org.apache.spark.Partition] = {
-    val partitions = super.getPartitions
+    val partitions = firstParent[sql.Row].partitions
 
     if (partitions.length > 0 && partitions(0).isInstanceOf[NewHadoopPartition]) {
       val sorted = partitions.toList.sortBy(partition => {
@@ -210,7 +216,7 @@ class FrameRdd(val frameSchema: Schema,
   /* Please see documentation. Zip works if 2 SchemaRDDs have the same number of partitions
      and same number of elements in  each partition */
   def zipFrameRdd(frameRdd: FrameRdd): FrameRdd = {
-    new FrameRdd(frameSchema.addColumns(frameRdd.frameSchema.columns), this.zip(frameRdd).map { case (a, b) => sql.Row.fromSeq(a ++ b) })
+    new FrameRdd(frameSchema.addColumns(frameRdd.frameSchema.columns), this.zip(frameRdd).map { case (a, b) => sql.Row.merge(a, b) })
   }
 
   /**
@@ -234,9 +240,9 @@ class FrameRdd(val frameSchema: Schema,
    */
   def union(other: FrameRdd): FrameRdd = {
     val unionedSchema = frameSchema.union(other.frameSchema)
-    val part1 = convertToNewSchema(unionedSchema)
-    val part2 = other.convertToNewSchema(unionedSchema)
-    val unionedRdd = part1.toSchemaRDD.union(part2)
+    val part1 = convertToNewSchema(unionedSchema).prev
+    val part2 = other.convertToNewSchema(unionedSchema).prev
+    val unionedRdd = part1.union(part2)
     new FrameRdd(unionedSchema, unionedRdd)
   }
 
@@ -311,14 +317,14 @@ class FrameRdd(val frameSchema: Schema,
     else
       frameSchema
 
-    new FrameRdd(newSchema, this.sqlContext, FrameRdd.createLogicalPlanFromSql(newSchema, newRows))
+    new FrameRdd(newSchema, newRows)
   }
 
   /**
    * Convert Vertex or Edge Frames to plain data frames
    */
   def toPlainFrame(): FrameRdd = {
-    new FrameRdd(frameSchema.toFrameSchema, this.toSchemaRDD)
+    new FrameRdd(frameSchema.toFrameSchema, this)
   }
 
   /**
@@ -328,8 +334,8 @@ class FrameRdd(val frameSchema: Schema,
    */
   def save(absolutePath: String, storageFormat: String = "file/parquet"): Unit = {
     storageFormat match {
-      case "file/sequence" => toSchemaRDD.saveAsObjectFile(absolutePath)
-      case "file/parquet" => toSchemaRDD.saveAsParquetFile(absolutePath)
+      case "file/sequence" => this.saveAsObjectFile(absolutePath)
+      case "file/parquet" => this.toDataFrame.saveAsParquetFile(absolutePath)
       case format => throw new IllegalArgumentException(s"Unrecognized storage format: $format")
     }
   }
@@ -342,18 +348,7 @@ class FrameRdd(val frameSchema: Schema,
 object FrameRdd {
 
   def toFrameRdd(schema: Schema, rowRDD: RDD[Row]) = {
-    new FrameRdd(schema, new SQLContext(rowRDD.context), FrameRdd.createLogicalPlan(schema, rowRDD))
-  }
-
-  /**
-   * Creates a logical plan for creating a SchemaRDD from an existing Row object and our schema representation
-   * @param schema Schema describing the rdd
-   * @param rows the RDD containing the data
-   * @return A SchemaRDD with a schema corresponding to the schema object
-   */
-  def createLogicalPlan(schema: Schema, rows: RDD[Array[Any]]): LogicalPlan = {
-    val rdd = FrameRdd.toRowRDD(schema, rows)
-    createLogicalPlanFromSql(schema, rdd)
+    new FrameRdd(schema, FrameRdd.toRowRDD(schema, rowRDD))
   }
 
   /**
@@ -412,19 +407,6 @@ object FrameRdd {
   }
 
   /**
-   * Creates a logical plan for creating a SchemaRDD from an existing sql.Row object and our schema representation
-   * @param schema Schema describing the rdd
-   * @param rows RDD[org.apache.spark.sql.Row] containing the data
-   * @return A SchemaRDD with a schema corresponding to the schema object
-   */
-  def createLogicalPlanFromSql(schema: Schema, rows: RDD[sql.Row]): LogicalPlan = {
-    val structType = this.schemaToStructType(schema.columnTuples)
-    val attributes = structType.fields.map(f => AttributeReference(f.name, f.dataType, f.nullable)())
-
-    SparkLogicalPlan(ExistingRdd(attributes, rows))(new SQLContext(rows.context))
-  }
-
-  /**
    * Converts row object from an RDD[Array[Any]] to an RDD[Product] so that it can be used to create a SchemaRDD
    * @return RDD[org.apache.spark.sql.Row] with values equal to row object
    */
@@ -478,7 +460,7 @@ object FrameRdd {
    * Converts the spark DataTypes to our schema Datatypes
    * @return our schema DataType
    */
-  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.catalyst.types.DataType): com.intel.intelanalytics.domain.schema.DataTypes.DataType = {
+  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.types.DataType): com.intel.intelanalytics.domain.schema.DataTypes.DataType = {
     val intType = IntegerType.getClass()
     val longType = LongType.getClass()
     val floatType = FloatType.getClass()
@@ -488,7 +470,7 @@ object FrameRdd {
     val timeStampType = TimestampType.getClass()
     val byteType = ByteType.getClass()
     val booleanType = BooleanType.getClass()
-    val decimalType = classOf[org.apache.spark.sql.catalyst.types.DecimalType]
+    val decimalType = DecimalType.getClass()
     val shortType = ShortType.getClass()
 
     val a = dataType.getClass()

@@ -95,7 +95,7 @@ object JoinRddFunctions extends Serializable {
     }
     innerJoinedRDD.map {
       case (key, (leftValues, rightValues)) => {
-        Row.fromSeq(leftValues ++ rightValues)
+        Row.merge(leftValues, rightValues)
       }
     }
   }
@@ -116,11 +116,11 @@ object JoinRddFunctions extends Serializable {
       case (_, outerJoinResult) =>
         outerJoinResult match {
           case (Some(leftValues), Some(rightValues)) =>
-            Row.fromSeq(leftValues ++ rightValues)
+            Row.merge(leftValues, rightValues)
           case (Some(leftValues), None) =>
-            Row.fromSeq(leftValues ++ (1 to right.columnCount).map(i => null))
+            Row.fromSeq(leftValues.toSeq ++ (1 to right.columnCount).map(i => null))
           case (None, Some(rightValues)) =>
-            Row.fromSeq((1 to left.columnCount).map(i => null) ++ rightValues)
+            Row.fromSeq((1 to left.columnCount).map(i => null) ++ rightValues.toSeq)
           case (None, None) =>
             throw new IllegalArgumentException("No join parameters were supplied")
         }
@@ -151,8 +151,8 @@ object JoinRddFunctions extends Serializable {
     rightJoinedRDD.map {
       case (_, (leftValues, rightValues)) => {
         leftValues match {
-          case s: Some[Row] => Row.fromSeq(s.get ++ rightValues)
-          case None => Row.fromSeq((1 to left.columnCount).map(i => null) ++ rightValues)
+          case s: Some[Row] => Row.merge(s.get, rightValues)
+          case None => Row.fromSeq((1 to left.columnCount).map(i => null) ++ rightValues.toSeq)
         }
       }
     }
@@ -180,8 +180,8 @@ object JoinRddFunctions extends Serializable {
     leftJoinedRDD.map {
       case (_, (leftValues, rightValues)) => {
         rightValues match {
-          case s: Some[Row] => Row.fromSeq(leftValues ++ s.get)
-          case None => Row.fromSeq(leftValues ++ (1 to right.columnCount).map(i => null))
+          case s: Some[Row] => Row.merge(leftValues, s.get)
+          case None => Row.fromSeq(leftValues.toSeq ++ (1 to right.columnCount).map(i => null))
         }
       }
     }

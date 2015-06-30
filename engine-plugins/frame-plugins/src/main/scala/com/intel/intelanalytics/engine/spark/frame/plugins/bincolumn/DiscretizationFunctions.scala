@@ -72,7 +72,7 @@ object DiscretizationFunctions extends Serializable {
       val element = DataTypes.toDouble(row(index))
       //if lower than first cutoff
       val binIndex = binElement(element, cutoffs, lowerInclusive, strictBinning)
-      new GenericRow(row.toArray :+ binIndex)
+      new GenericRow(row.toSeq.toArray :+ binIndex)
     }
   }
 
@@ -223,7 +223,7 @@ object DiscretizationFunctions extends Serializable {
 
   def binUsingBroadcast(index: Int, binNumberMap: Map[Double, Int], rdd: RDD[Row]): RDD[Row] = {
     val broadcastBinMap = rdd.sparkContext.broadcast(binNumberMap)
-    rdd.map(row => new GenericRow(row.toArray :+ (broadcastBinMap.value.get(DataTypes.toDouble(row(index))).get - 1).asInstanceOf[Any]))
+    rdd.map(row => new GenericRow(row.toSeq.toArray :+ (broadcastBinMap.value.get(DataTypes.toDouble(row(index))).get - 1).asInstanceOf[Any]))
   }
 
   def getBinEqualDepthNumberMap(index: Int, numBins: Int, weightedIndex: Option[Int], rdd: RDD[Row]): Map[Double, Int] = {

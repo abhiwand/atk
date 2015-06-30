@@ -59,6 +59,7 @@ class CollaborativeFilteringPlugin
 
     giraphConf.setConfig(collaborativeFilteringConfig)
     GiraphConfigurationUtil.set(giraphConf, "giraphjob.maxSteps", arguments.maxIterations)
+    GiraphConfigurationUtil.set(giraphConf, "mapreduce.input.fileinputformat.inputdir", Some(inputFormatConfig.parquetFileLocation))
 
     giraphConf.setEdgeInputFormatClass(classOf[CollaborativeFilteringEdgeInputFormat])
 
