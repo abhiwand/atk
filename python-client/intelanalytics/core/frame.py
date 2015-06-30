@@ -627,6 +627,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Notes
         -----
+        *   Column order is not guaranteed when columns are added
         *   The column names created by aggregation functions in the new frame
             are the original column name appended with the '_' character and
             the aggregation function.
