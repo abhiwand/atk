@@ -16,13 +16,16 @@
 package org.apache.spark.mllib.evaluation
 
 import breeze.linalg.support.CanCopy
-import breeze.linalg.{ DenseMatrix, DenseVector }
+import breeze.linalg.{DenseMatrix, DenseVector}
 import breeze.math.VectorSpace
 import breeze.optimize.DiffFunction
-import com.intel.intelanalytics.domain.schema.{ DataTypes, FrameSchema }
+import com.intel.intelanalytics.domain.schema.{Column, DataTypes, FrameSchema}
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.optimization.{CostFunction, Gradient, Updater}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.{ SparkContext, sql }
+import org.apache.spark.{SparkContext, sql}
 
 /**
  * Calculate the approximate Hessian matrix using central difference.
@@ -88,23 +91,35 @@ case class ApproximateHessianMatrix(df: DiffFunction[DenseVector[Double]],
 }
 
 object ApproximateHessianMatrix {
+
   /**
-   * Convert hessian matrix to FrameRdd
+   * Compute hessian matrix for RDD of label, and feature variables
    *
-   * @param matrix Hessian matrix
-   * @return Frame RDD
+   * @param data RDD of the set of data examples, each of the form (label, [feature values])
+   * @param weights
+   * @param gradient Gradient object (used to compute the gradient of the loss function of
+   *                 one single data example)
+   * @param updater Updater function to actually perform a gradient step in a given direction
+   * @param regParam Regularization parameter
+   * @param numExamples Number of training examples in RDD
+   * @param computeHessian If true, compute Hessian matrix at the solution (i.e., final iteration)
+   * @return Hessian matrix, if computeHessian is true, otherwise None
    */
-  def toFrameRdd(sparkContext: SparkContext,
-                 matrix: DenseMatrix[Double],
-                 schema: FrameSchema): FrameRdd = {
-
-    val numCols = matrix.cols
-    val rows: IndexedSeq[sql.Row] = for {
-      i <- 0 until matrix.rows
-      rowArray = matrix(i, ::).t.toArray
-    } yield (new GenericRow(Array[Any](DataTypes.toVector(numCols)(rowArray))))
-
-    val rdd = sparkContext.parallelize(rows)
-    new FrameRdd(schema, rdd)
+  def computeHessianMatrix(data: RDD[(Double, Vector)],
+                           weights: Vector,
+                           gradient: Gradient,
+                           updater: Updater,
+                           regParam: Double,
+                           numExamples: Long,
+                           computeHessian: Boolean = true): Option[DenseMatrix[Double]] = {
+    if (computeHessian) {
+      val costFun =
+        new CostFunction(data, gradient, updater, regParam, numExamples)
+      Some(ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate())
+    }
+    else {
+      None
+    }
   }
+
 }

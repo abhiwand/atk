@@ -17,11 +17,9 @@
 
 package org.apache.spark.mllib.classification
 
-import breeze.linalg.{ DenseMatrix => BDM }
 import org.apache.spark.SparkContext
 import org.apache.spark.annotation.Experimental
 import org.apache.spark.mllib.classification.impl.GLMClassificationModel
-import org.apache.spark.mllib.evaluation.Hessian
 import org.apache.spark.mllib.linalg.BLAS.dot
 import org.apache.spark.mllib.linalg.{ DenseVector, Vector }
 import org.apache.spark.mllib.optimization._

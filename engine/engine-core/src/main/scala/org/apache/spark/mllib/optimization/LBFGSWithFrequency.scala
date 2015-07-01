@@ -21,7 +21,7 @@ import breeze.linalg.{ DenseMatrix => BDM, DenseVector => BDV }
 import breeze.optimize.{ CachedDiffFunction, LBFGS => BreezeLBFGS }
 import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.mllib.evaluation.{ Hessian, ApproximateHessianMatrix }
+import org.apache.spark.mllib.evaluation.{ HessianMatrix, ApproximateHessianMatrix }
 import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.rdd.RDD
 
@@ -36,7 +36,7 @@ import scala.collection.mutable
  */
 @DeveloperApi
 class LBFGSWithFrequency(private var gradient: Gradient, private var updater: Updater)
-    extends Optimizer with Logging with Hessian {
+    extends Optimizer with Logging with HessianMatrix {
 
   private var numCorrections = 10
   private var convergenceTol = 1E-4
@@ -156,6 +156,7 @@ object LBFGSWithFrequency extends Logging {
    *                       cause more iterations to be run.
    * @param maxNumIterations - Maximal number of iterations that L-BFGS can be run.
    * @param regParam - Regularization parameter
+   * @param computeHessian If true, compute
    *
    * @return A tuple containing three elements. The first element is a column matrix containing
    *         weights for every feature, the second element is an array containing the loss
@@ -199,17 +200,13 @@ object LBFGSWithFrequency extends Logging {
     val lossHistoryArray = lossHistory.result()
 
     // Compute the approximate Hessian matrix using weights for the final iteration
-    val hessian = if (computeHessian) {
-      Some(ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate())
-    }
-    else {
-      None
-    }
+    val hessianMatrix = ApproximateHessianMatrix.computeHessianMatrix(data, weights, gradient,
+      updater, regParam, numExamples, computeHessian)
 
     logInfo("LBFGS.runLBFGS finished. Last 10 losses %s".format(
       lossHistoryArray.takeRight(10).mkString(", ")))
 
-    (weights, lossHistoryArray, hessian)
+    (weights, lossHistoryArray, hessianMatrix)
   }
 }
 

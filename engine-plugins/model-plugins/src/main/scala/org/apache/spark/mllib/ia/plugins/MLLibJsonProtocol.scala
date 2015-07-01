@@ -17,6 +17,7 @@
 package org.apache.spark.mllib.ia.plugins
 
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.intelanalytics.domain.frame.FrameEntity
 import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
@@ -278,6 +279,36 @@ object MLLibJsonProtocol {
 
   }
 
+  implicit object LogRegTrainResultsFormat extends JsonFormat[LogisticRegressionTrainResults] {
+    override def write(obj: LogisticRegressionTrainResults) : JsValue = {
+      obj.covarianceMatrix match {
+        case Some(matrix) => JsObject(
+          "numFeatures" -> JsNumber(obj.numFeatures),
+          "numClasses" -> JsNumber(obj.numClasses),
+          "coefficients" -> obj.coefficients.toJson,
+          "covarianceMatrix" -> matrix.toJson)
+        case _ => {
+          JsObject(
+            "numFeatures" -> JsNumber(obj.numFeatures),
+            "numClasses" -> JsNumber(obj.numClasses),
+            "coefficients" -> obj.coefficients.toJson)
+        }
+      }
+    }
+
+    override def read(json: JsValue): LogisticRegressionTrainResults = {
+      val fields = json.asJsObject.fields
+      val numFeatures = getOrInvalid(fields, "numFeatures").convertTo[Int]
+      val numClasses = getOrInvalid(fields, "numClasses").convertTo[Int]
+      val coefficients = getOrInvalid(fields, "coefficients").convertTo[Map[String, Double]]
+      val covarianceMatrix = fields.get("covarianceMatrix") match {
+        case Some(matrixFrame) => Some(matrixFrame.convertTo[FrameEntity])
+        case _ => None
+      }
+      LogisticRegressionTrainResults(numFeatures, numClasses, coefficients, covarianceMatrix)
+    }
+  }
+
   def getOrInvalid[T](map: Map[String, T], key: String): T = {
     // throw exception if a programmer made a mistake
     map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
@@ -296,8 +327,7 @@ object MLLibJsonProtocol {
   implicit val naiveBayesDataFormat = jsonFormat2(NaiveBayesData)
   implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
-  implicit val logRegTrainFormat = jsonFormat17(LogisticRegressionTrainArgs)
-  implicit val logRegTrainReturnFormat = jsonFormat4(LogisticRegressionTrainResults)
+  implicit val logRegTrainFormat = jsonFormat18(LogisticRegressionTrainArgs)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)

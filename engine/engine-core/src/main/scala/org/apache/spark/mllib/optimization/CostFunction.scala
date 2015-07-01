@@ -7,8 +7,11 @@ import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.rdd.RDD
 
 /**
- * LBFGSCostFun implements Breeze's DiffFunction[T], which returns the loss and gradient
+ * CostFunction implements Breeze's DiffFunction[T], which returns the loss and gradient
  * at a particular point (weights). It's used in Breeze's convex optimization routines.
+ *
+ * This is a copy of the private CostFun class in MLlib's LBFGS class
+ * @see org.apache.spark.mllib.optimization.LBFGS
  */
 class CostFunction(
     data: RDD[(Double, Vector)],
