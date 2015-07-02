@@ -35,7 +35,7 @@ case class LibSvmTrainArgs(@ArgDoc("""Handle to the model to be used.""") model:
                            @ArgDoc("""Column(s) containing the observations.""") observationColumns: List[String],
 
                            @ArgDoc("""Set type of SVM.
-Default is 2.
+Default is one-class SVM.
 
                             0 -- C-SVC
 
@@ -45,10 +45,10 @@ Default is 2.
 
                             3 -- epsilon-SVR
 
-                            4 -- nu-SVR""") svmType: Option[Int],
+                            4 -- nu-SVR""") svmType: Int = 2,
 
                            @ArgDoc("""Specifies the kernel type to be used in the algorithm.
-Default is 2.
+Default is RBF.
 
                             0 -- linear: u\'\*v
 
@@ -56,61 +56,50 @@ Default is 2.
 
                             2 -- radial basis function: exp(-gamma*|u-v|^2)
 
-                            3 -- sigmoid: tanh(gamma*u\'\*v + coef0)""") kernelType: Option[Int],
+                            3 -- sigmoid: tanh(gamma*u\'\*v + coef0)""") kernelType: Int = 2,
 
-                           @ArgDoc("""Default is (Array[Int](0))""") weightLabel: Option[Array[Int]],
+                           @ArgDoc("""Default is (Array[Int](0))""") weightLabel: Option[Array[Int]] = None,
 
-                           @ArgDoc("""Default is (Array[Double](0.0))""") weight: Option[Array[Double]],
+                           @ArgDoc("""Default is (Array[Double](0.0))""") weight: Option[Array[Double]] = None,
 
-                           @ArgDoc("""Set tolerance of termination criterion.
-Default is 0.001.""") epsilon: Option[Double] = None,
+                           @ArgDoc("""Set tolerance of termination criterion""") epsilon: Double = 0.001,
 
                            @ArgDoc("""Degree of the polynomial kernel function ('poly').
-Ignored by all other kernels.
-Default is 3.""") degree: Option[Int] = None,
+Ignored by all other kernels.""") degree: Int = 3,
 
                            @ArgDoc("""Kernel coefficient for 'rbf', 'poly' and 'sigmoid'.
 Default is 1/n_features.""") gamma: Option[Double] = None,
 
                            @ArgDoc("""Independent term in kernel function.
-It is only significant in 'poly' and 'sigmoid'.
-Default is 0.0.""") coef: Option[Double] = None,
+It is only significant in 'poly' and 'sigmoid'.""") coef: Double = 0,
 
-                           @ArgDoc("""Set the parameter nu of nu-SVC, one-class SVM, and nu-SVR.
-Default is 0.5.""") nu: Option[Double] = None,
+                           @ArgDoc("""Set the parameter nu of nu-SVC, one-class SVM, and nu-SVR.""") nu: Double = 0.5,
 
-                           @ArgDoc("""Specify the size of the kernel cache (in MB).
-Default is 100.0.""") cacheSize: Option[Double] = None,
+                           @ArgDoc("""Specify the size of the kernel cache (in MB).""") cacheSize: Double = 100.0,
 
                            @ArgDoc("""Whether to use the shrinking heuristic.
-Default is 1 (true).""") shrinking: Option[Int] = None,
+Default is 1 (true).""") shrinking: Int = 1,
 
                            @ArgDoc("""Whether to enable probability estimates.
-Default is 0 (false).""") probability: Option[Int] = None,
+Default is 0 (false).""") probability: Int = 0,
 
-                           @ArgDoc("""Default is 0.""") nrWeight: Option[Int] = None,
+                           @ArgDoc("""NR Weight""") nrWeight: Int = 1,
 
-                           @ArgDoc("""Penalty parameter C of the error term.
-Default is 1.0.""") C: Option[Double] = None,
+                           @ArgDoc("""Penalty parameter c of the error term.""") c: Double = 1.0,
 
-                           @ArgDoc("""Set the epsilon in loss function of epsilon-SVR.
-Default is 0.1.""") p: Option[Double] = None) {
+                           @ArgDoc("""Set the epsilon in loss function of epsilon-SVR.""") p: Double = 0.1) {
   require(model != null, "model must not be null")
   require(frame != null, "frame must not be null")
-  require(observationColumns != null && !observationColumns.isEmpty, "One or more observation columns is required")
+  require(observationColumns != null && observationColumns.nonEmpty, "One or more observation columns is required")
 
   def getEpsilon: Double = {
-    if (epsilon.isDefined) {
-      require(epsilon.get > 0.0, "epsilon must be a positive value")
-    }
-    epsilon.getOrElse(0.001)
+    require(epsilon > 0.0, "epsilon must be a positive value")
+    epsilon
   }
 
   def getDegree: Int = {
-    if (degree.isDefined) {
-      require(degree.get > 0, "degree must be a positive value")
-    }
-    degree.getOrElse(3)
+    require(degree > 0, "degree must be a positive value")
+    degree
   }
 
   def getGamma: Double = {
@@ -118,43 +107,45 @@ Default is 0.1.""") p: Option[Double] = None) {
   }
 
   def getNu: Double = {
-    nu.getOrElse(0.5)
+    nu
   }
 
   def getCoef0: Double = {
-    coef.getOrElse(0.0)
+    coef
   }
 
   def getCacheSize: Double = {
-    cacheSize.getOrElse(100.0)
+    cacheSize
   }
 
   def getP: Double = {
-    p.getOrElse(0.1)
+    p
   }
 
   def getShrinking: Int = {
-    shrinking.getOrElse(1)
+    shrinking
   }
 
   def getProbability: Int = {
-    probability.getOrElse(0)
+    probability
   }
 
   def getNrWeight: Int = {
-    nrWeight.getOrElse(1)
+    nrWeight
   }
 
   def getC: Double = {
-    C.getOrElse(1.0)
+    c
   }
 
   def getSvmType: Int = {
-    svmType.getOrElse(2)
+    require(svmType >= 0 && svmType <= 4)
+    svmType
   }
 
   def getKernelType: Int = {
-    kernelType.getOrElse(2)
+    require(kernelType >= 0 && kernelType <= 3)
+    kernelType
   }
 
   def getWeightLabel: Array[Int] = {
