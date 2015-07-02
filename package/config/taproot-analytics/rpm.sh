@@ -18,13 +18,13 @@ mkdir -p $SCRIPTPATH/rpm/SOURCES
 log "cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
-GROUP="Intel Analytics Server"
-LICENSE="Confidential"
+
+LICENSE="Apache"
 #SUMMARY="$packageName$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION="$SUMMARY \\n
-start the server with 'service intelanalytics status' \\n
-config files are in /etc/intelanalytics/rest-server \\n
-log files live in /var/log/intelanalytics/rest-server \\n
+start the server with 'service taproot-analytics status' \\n
+config files are in /etc/taproot/analytics \\n
+log files live in /var/log/taproot/analytics \\n
 
 Intel ATK Release Notes - 2014-10-28 \\n
 
@@ -44,16 +44,16 @@ The following changes have been made as part of the ATK 0.8.7 release.\\n
 
 "
 
-REQUIRES=" java-1.7.0-openjdk, intelanalytics-python-rest-client >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api, postgresql-server"
+REQUIRES=" java-1.7.0-openjdk, taproot-analytics-python-client >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api, postgresql-server"
 
 PRE="
-restUser=iauser
+restUser=taproot
 if [ \"\`cat /etc/passwd | grep \$restUser\`\" == \"\" ]; then
 	echo create \$restUser
-	useradd -G hadoop \$restUser	
+	useradd -G hadoop \$restUser
 fi
 
-hadoop fs -ls /user/iauser 2>/dev/null
+hadoop fs -ls /user/\$restUser 2>/dev/null
 if [ \$? -eq 1 ]; then
 	echo create \$restUser hdfs home directory
 	su -c \"hadoop fs -mkdir /user/\$restUser\" hdfs
@@ -63,46 +63,46 @@ fi
 "
 
 POST="
-restUser=iauser
+restUser=
 deployJar=deploy.jar
 
 jars=\"engine-core.jar giraph-plugins.jar frame-plugins.jar graph-plugins.jar model-plugins.jar\"
 
 for jar in \$jars
 do
-if [ -f /usr/lib/intelanalytics/rest-server/lib/\$jar ]; then
-   rm /usr/lib/intelanalytics/rest-server/lib/\$jar
+if [ -f /usr/lib/taproot/analytics/lib/\$jar ]; then
+   rm /usr/lib/taproot/analytics/lib/\$jar
  fi
 
- ln -s /usr/lib/intelanalytics/rest-server/lib/\$deployJar  /usr/lib/intelanalytics/rest-server/lib/\$jar
+ ln -s /usr/lib/taproot/analytics/lib/\$deployJar  /usr/lib/taproot/analytics/lib/\$jar
 done
 
 if [ \$1 -eq 2 ]; then
-  echo start intelanalytics
-  service intelanalytics restart
+  echo start taproot-analytics
+  service taproot-analytics restart
 fi
 
-hadoop fs -ls /user/iauser/datasets 2>/dev/null
+hadoop fs -ls /user/\$restUser/datasets 2>/dev/null
 if [ \$? -eq 1 ]; then
 	echo move sample data scripts and data sets
-	cp -R /usr/lib/intelanalytics/rest-server/examples /home/\$restUser
-	chown -R iauser:iauser /home/\$restUser/examples
-	su -c \"hadoop fs -put ~/examples/datasets \" iauser
+	cp -R /usr/lib/taproot/analytics/examples /home/\$restUser
+	chown -R \$restUser:\$restUser /home/\$restUser/examples
+	su -c \"hadoop fs -put ~/examples/datasets \" \$restUser
 fi
- 
+
 "
 
 PREUN="
- checkStatus=\$(service intelanalytics status | grep start/running)
+ checkStatus=\$(service taproot-analytics status | grep start/running)
  if  [ \$1 -eq 0 ] && [ \"\$checkStatus\" != \"\" ]; then
-    echo stopping intelanalytics
-    service intelanalytics stop
+    echo stopping taproot-analytics
+    service taproot-analytics stop
  fi
 "
 
 FILES="
-/etc/intelanalytics/rest-server
-/usr/lib/intelanalytics/rest-server
+/etc/taproot/analytics
+/usr/lib/taproot/analytics
 "
 
 
@@ -128,5 +128,5 @@ rpmbuild --define "_topdir $topDir"  --define "BUILD_NUMBER $BUILD_NUMBER" --def
 
 cleanRpm
 
-popd 
+popd
 

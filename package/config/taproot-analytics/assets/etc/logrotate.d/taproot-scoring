@@ -1,4 +1,4 @@
-/var/log/intelanalytics/rest-server/*.log {
+/var/log/taproot/scoring/*.log {
     daily
     rotate 2
     size=20M
