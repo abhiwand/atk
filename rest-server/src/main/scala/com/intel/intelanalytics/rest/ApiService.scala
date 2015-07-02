@@ -94,14 +94,14 @@ class ApiService(val commonDirectives: CommonDirectives, val apiV1Service: ApiV1
             complete(description)
           }
         }
-      }
-    path("oauth_server") {
-      respondWithMediaType(`application/json`) {
-        commonDirectives.respondWithBuildId {
-          complete(oauthServer)
+      } ~
+      path("oauth_server") {
+        respondWithMediaType(`application/json`) {
+          commonDirectives.respondWithBuildId {
+            complete(oauthServer)
+          }
         }
       }
-    }
   }
 }
 
