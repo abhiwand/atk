@@ -14,13 +14,14 @@
 // limitations under the License.
 */
 
-package org.apache.spark.mllib.ia.plugins.classification
+package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.intelanalytics.domain.frame.ClassificationMetricValue
 import com.intel.intelanalytics.engine.Rows.Row
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import spray.json._
@@ -52,7 +53,7 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 <object>.f_measure : double
 <object>.precision : double
 <object>.recall : double""")
-class LogisticRegressionWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestArgs, ClassificationMetricValue] {
+class LogisticRegressionTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestArgs, ClassificationMetricValue] {
   /**
    * The name of the command.
    *
