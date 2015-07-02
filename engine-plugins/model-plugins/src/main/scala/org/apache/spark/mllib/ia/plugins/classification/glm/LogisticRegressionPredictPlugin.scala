@@ -14,18 +14,17 @@
 // limitations under the License.
 */
 
-package org.apache.spark.mllib.ia.plugins.classification
+package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.intelanalytics.domain.CreateEntityArgs
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.SparkContext._
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDPredictArgs
 import org.apache.spark.mllib.linalg.Vectors
-import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
@@ -47,7 +46,7 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
   extended = """Predict the labels for a test frame and create a new frame revision with
 existing columns and a new predicted label's column.""",
   returns = "Frame containing the original frame's columns and a column with the predicted label.")
-class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPredictArgs, FrameEntity] {
+class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPredictArgs, FrameEntity] {
   /**
    * The name of the command.
    *
@@ -90,7 +89,8 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifi
       val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
       val logRegModel = logRegData.logRegModel
       if (arguments.observationColumns.isDefined) {
-        require(logRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
+        require(logRegData.observationColumns.length == arguments.observationColumns.get.length,
+          "Number of columns for train and predict should be same")
       }
       val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
 
@@ -106,7 +106,7 @@ class LogisticRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifi
       val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_label", DataTypes.int32)
       val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-      tryNew(CreateEntityArgs(description = Some("created by LogisticRegressionWithSGDs predict operation"))) {
+      tryNew(CreateEntityArgs(description = Some("created by LogisticRegression predict operation"))) {
         newPredictedFrame: FrameMeta =>
           save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
       }.meta

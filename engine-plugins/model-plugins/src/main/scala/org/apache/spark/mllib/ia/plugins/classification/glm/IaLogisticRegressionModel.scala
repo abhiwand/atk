@@ -13,17 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
+package org.apache.spark.mllib.ia.plugins.classification.glm
 
-package org.apache.spark.mllib.ia.plugins.classification
+import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
+import org.apache.spark.mllib.evaluation.HessianMatrix
+import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
 
-import org.apache.spark.mllib.classification.LogisticRegressionModel
+trait IaLogisticRegressionModel extends HessianMatrix {
 
-/**
- * Command for loading model data into existing model in the model database.
- * @param logRegModel Trained MLLib's LogisticRegressionModel object
- * @param observationColumns Handle to the observation columns of the data frame
- */
-case class LogisticRegressionData(logRegModel: LogisticRegressionModel, observationColumns: List[String]) {
-  require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
-  require(logRegModel != null, "logRegModel must not be null")
+  /**
+   * Initialize logistic regression model
+   *
+   * @param arguments model arguments
+   */
+  def initialize(arguments: LogisticRegressionTrainArgs): Unit
+
+  /**
+   * Get logistic regression model
+   */
+  def getModel: GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency]
 }
