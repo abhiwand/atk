@@ -76,16 +76,16 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
       //Compute optional covariance matrix
       val covarianceFrame = ApproximateCovarianceMatrix(model)
         .toFrameRdd(labeledTrainRdd.sparkContext, "covariance") match {
-        case Some(frameRdd) => {
-          val frame = tryNew(CreateEntityArgs(
-            description = Some("covariance matrix created by LogisticRegression train operation"))) {
-            newTrainFrame: FrameMeta =>
-              save(new SparkFrameData(newTrainFrame.meta, frameRdd))
-          }.meta
-          Some(frame)
+          case Some(frameRdd) => {
+            val frame = tryNew(CreateEntityArgs(
+              description = Some("covariance matrix created by LogisticRegression train operation"))) {
+              newTrainFrame: FrameMeta =>
+                save(new SparkFrameData(newTrainFrame.meta, frameRdd))
+            }.meta
+            Some(frame)
+          }
+          case _ => None
         }
-        case _ => None
-      }
 
       // Save model to metastore and return results
       val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns)

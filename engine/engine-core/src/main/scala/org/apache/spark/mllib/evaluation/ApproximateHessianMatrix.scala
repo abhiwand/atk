@@ -16,16 +16,16 @@
 package org.apache.spark.mllib.evaluation
 
 import breeze.linalg.support.CanCopy
-import breeze.linalg.{DenseMatrix, DenseVector}
+import breeze.linalg.{ DenseMatrix, DenseVector }
 import breeze.math.VectorSpace
 import breeze.optimize.DiffFunction
-import com.intel.intelanalytics.domain.schema.{Column, DataTypes, FrameSchema}
+import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.Vector
-import org.apache.spark.mllib.optimization.{CostFunction, Gradient, Updater}
+import org.apache.spark.mllib.optimization.{ CostFunction, Gradient, Updater }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.{SparkContext, sql}
+import org.apache.spark.{ SparkContext, sql }
 
 /**
  * Calculate the approximate Hessian matrix using central difference.

@@ -25,22 +25,21 @@ case class LogisticRegressionTrainResults(numFeatures: Int,
                                           numClasses: Int,
                                           coefficients: Map[String, Double],
                                           covarianceMatrix: Option[FrameEntity]) {
-  
+
   def this(logRegModel: LogisticRegressionModelWithFrequency,
            observationColumns: List[String],
            covarianceMatrix: Option[FrameEntity]) = {
     this(logRegModel.numFeatures,
       logRegModel.numClasses,
-      LogisticRegressionTrainResults.getCoefficients(logRegModel, observationColumns),
+      logisticRegressionTrainResults.getCoefficients(logRegModel, observationColumns),
       covarianceMatrix)
   }
 
-
 }
 
-object LogisticRegressionTrainResults {
+object logisticRegressionTrainResults {
   def getCoefficients(logRegModel: LogisticRegressionModelWithFrequency,
-                              observationColumns: List[String]): Map[String, Double] = {
+                      observationColumns: List[String]): Map[String, Double] = {
     val coefficients = logRegModel.intercept +: logRegModel.weights.toArray
     val coefficientNames = List("intercept") ++ observationColumns
     (coefficientNames zip coefficients).toMap

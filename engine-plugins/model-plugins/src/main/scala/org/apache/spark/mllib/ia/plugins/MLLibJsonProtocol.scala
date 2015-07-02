@@ -279,8 +279,8 @@ object MLLibJsonProtocol {
 
   }
 
-  implicit object LogRegTrainResultsFormat extends JsonFormat[LogisticRegressionTrainResults] {
-    override def write(obj: LogisticRegressionTrainResults) : JsValue = {
+  /* implicit object LogRegTrainResultsFormat extends JsonFormat[LogisticRegressionTrainResults] {
+    override def write(obj: LogisticRegressionTrainResults): JsValue = {
       obj.covarianceMatrix match {
         case Some(matrix) => JsObject(
           "numFeatures" -> JsNumber(obj.numFeatures),
@@ -307,7 +307,7 @@ object MLLibJsonProtocol {
       }
       LogisticRegressionTrainResults(numFeatures, numClasses, coefficients, covarianceMatrix)
     }
-  }
+  }*/
 
   def getOrInvalid[T](map: Map[String, T], key: String): T = {
     // throw exception if a programmer made a mistake
@@ -328,6 +328,7 @@ object MLLibJsonProtocol {
   implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
   implicit val logRegTrainFormat = jsonFormat18(LogisticRegressionTrainArgs)
+  implicit val logRegTrainResultsFormat = jsonFormat4(LogisticRegressionTrainResults)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)
