@@ -1,5 +1,5 @@
 #!/bin/bash
-package="intelanalytics-scoring-tar"
+package="taproot-analytics-tar"
 workDir=$(pwd)
 baseDir=${workDir##*/}
 gitRoot="."
@@ -22,15 +22,16 @@ rm $package-source.tar.gz
 mkdir -p  tarballs/$package/bin
 mkdir -p  tarballs/$package/conf
 mkdir -p  tarballs/$package/lib
-mkdir -p  tarballs/$package/data
-
-cp -v  config/intelanalytics-scoring-tar/logback.xml tarballs/$package/conf
-#cp -Rv config/intelanalytics-rest-server/assets/etc/intelanalytics/rest-server/* tarballs/$package/conf
-cp -v config/intelanalytics-scoring-tar/scoring-server.sh tarballs/$package/bin/
-cp -v config/intelanalytics-scoring-tar/application.conf tarballs/$package/conf
 
 
-jars="scoring-models.jar  interfaces.jar"
+cp -v  config/$package/application.conf tarballs/$package/conf
+cp -v  config/$package/logback.xml tarballs/$package/conf
+cp -Rv config/taproot-analytics/assets/etc/intelanalytics/rest-server/* tarballs/$package/conf
+cp -v  config/$package/rest-server.sh tarballs/$package/bin/
+
+
+
+jars="rest-server.jar  engine-core.jar  interfaces.jar  deploy.jar"
 
 #popd
 
@@ -54,7 +55,7 @@ popd
 
 
 pushd tarballs/$package
-    tar -pczf ../../atk-scoring.tar.gz .
+    tar -pczf ../../taproot-analytics.tar.gz .
 popd
 
 
