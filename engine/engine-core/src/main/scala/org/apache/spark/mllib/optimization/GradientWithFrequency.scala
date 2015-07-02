@@ -175,7 +175,7 @@ class LogisticGradientWithFrequency(numClasses: Int) extends GradientWithFrequen
         val frequencyTerm = frequency - label
         val multiplier = (1.0 / (1.0 + math.exp(margin))) - label
         val multiplierForFrequency = frequency * (1.0 / (1.0 + math.exp(margin))) + frequencyTerm
-        axpy(multiplier, data, cumGradient)
+        axpy(multiplierForFrequency, data, cumGradient)
         if (label > 0) {
           // The following is equivalent to log(1 + exp(margin)) but more numerically stable.
           frequency * MLUtils.log1pExp(margin)
