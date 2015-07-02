@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphclustering
+package com.intel.taproot.spark.graphon.graphclustering
 
 import org.scalatest.{ FlatSpec, Matchers }
 

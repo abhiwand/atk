@@ -16,7 +16,7 @@
 
 # -*- coding: utf-8 -*-
 #
-# IntelAnalytics documentation build configuration file, created by
+# TapRootAnalytics documentation build configuration file, created by
 # sphinx-quickstart on Tue Apr  8 15:19:15 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -54,8 +54,8 @@ rst_epilog = """
 .. |EM|     unicode:: U+02014 .. Long dash
 .. |ETL|    replace:: :abbr:`ETL (extract, transform, and load)`
 .. |HDFS|   replace:: :abbr:`HDFS (Hadoop Distributed File System)`
-.. |IA|     replace:: Intel Analytics
-.. |IAT|    replace:: :abbr:`ATK (Intel Analytics Toolkit)`
+.. |IA|     replace:: TapRoot Analytics
+.. |IAT|    replace:: :abbr:`ATK (TapRoot Analytics Toolkit)`
 .. |JSON|   replace:: :abbr:`JSON (JavaScript Object Notation)`
 .. |K-S|    replace:: :abbr:`K-S (Kolmogorov-Smirnov)`
 .. |LDA|    replace:: :abbr:`LDA (Latent Dirichlet Allocation)`
@@ -126,7 +126,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Intel Analytics'
+project = u'TapRoot Analytics'
 #project = 'Welcome to the Intel Big Data Platform: Analytics Toolkit'
 copyright = u'2015, Intel - INTEL CONFIDENTIAL'
 
@@ -218,7 +218,7 @@ html_theme_path = ['_theme']
 #html_title = None
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = "Intel Analytics"
+html_short_title = "TapRoot Analytics"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -281,7 +281,7 @@ html_show_copyright = True
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-#htmlhelp_basename = 'IntelAnalyticsDoc'
+#htmlhelp_basename = 'TapRootAnalyticsDoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -302,7 +302,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'IntelAnalytics.tex', u'Intel Analytics Documentation', u'Intel', 'manual'),
+    ('index', 'TapRootAnalytics.tex', u'TapRoot Analytics Documentation', u'Intel', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -331,7 +331,7 @@ latex_domain_indices = True
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pythonapi', u'IntelAnalytics Documentation',
+    ('index', 'pythonapi', u'TapRootAnalytics Documentation',
      [u'Intel'], 1)
 ]
 
@@ -345,8 +345,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'IntelAnalytics', u'IntelAnalytics Documentation',
-   u'Intel', 'IntelAnalytics', 'One line description of project.',
+  ('index', 'TapRootAnalytics', u'TapRootAnalytics Documentation',
+   u'Intel', 'TapRootAnalytics', 'One line description of project.',
    'Miscellaneous'),
 ]
 

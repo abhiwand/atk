@@ -17,4 +17,4 @@
 /**
  * Titan/HBase Input/Output for Giraph.
  */
-package com.intel.giraph.io.titan.formats;
+package com.intel.taproot.giraph.io.titan.formats;

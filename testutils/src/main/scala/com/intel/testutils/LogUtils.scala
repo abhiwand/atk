@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.testutils
+package com.intel.taproot.testutils
 
 import org.apache.log4j.{ Level, Logger }
 

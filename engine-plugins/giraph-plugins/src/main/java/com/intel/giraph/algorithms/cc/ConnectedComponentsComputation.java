@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.cc;
+package com.intel.taproot.giraph.algorithms.cc;
 
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;

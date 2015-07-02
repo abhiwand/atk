@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.event;
+package com.intel.taproot.event;
 
 
-import com.intel.event.adapter.SLF4JLogAdapter;
+import com.intel.taproot.event.adapter.SLF4JLogAdapter;
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
 import org.junit.Before;
@@ -32,7 +32,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
-import static com.intel.event.RegularExpressionMatcher.matchesPattern;
+import static com.intel.taproot.event.RegularExpressionMatcher.matchesPattern;
 import static org.junit.Assert.assertThat;
 
 /* Copyright (C) 2014 Intel Corporation.
@@ -116,7 +116,7 @@ public class SLF4JLogAdapterTest {
         }
 
         String pattern = "^[0-9\\-.:]+ \\[[^\\]]+\\] "
-                + severityString + " Ctx - data \\|com\\.intel\\.event\\.SLF4JLogAdapterTest" +
+                + severityString + " Ctx - data \\|com\\.intel.taproot\\.event\\.SLF4JLogAdapterTest" +
                 "\\$Msg\\.SOMETHING_HAPPENED\\|0\\[reasonably good\\]:\\[HELLO, WORLD\\]$";
 
         //Trace is lower than DEBUG, so trace messages shouldn't show at all based on the

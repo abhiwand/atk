@@ -17,4 +17,4 @@
 /**
  * Package of Giraph io formats.
  */
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;

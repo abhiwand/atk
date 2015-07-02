@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser
+package com.intel.taproot.graphbuilder.parser
 
 /**
  * Parser parses objects of type T from rows using the supplied InputSchema.

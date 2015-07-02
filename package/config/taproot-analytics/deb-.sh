@@ -21,9 +21,9 @@ SOURCE=$packageName
 SUMMARY="zombies "
 DESCRIPTION=$SUMMARY
 SUBJECT="$DESCRIPTION
-start the server with 'service intelanalytics-rest-server status'
-config files are in /etc/intelanalytics/rest-server
-log files live in /var/log/intelanalytics/rest-server
+start the server with 'service taprootanalytics-rest-server status'
+config files are in /etc/taprootanalytics/rest-server
+log files live in /var/log/taprootanalytics/rest-server
 "
 
 debDir=${packageName}-${version}
@@ -52,7 +52,7 @@ chmod +x $SCRIPTPATH/$debDir/debian/rules
 
 pushd $SCRIPTPATH/$debDir
 
-rm -rf debian/intelanalytics
+rm -rf debian/taprootanalytics
 
 log "clean debian/source dir"
 rm -rf debian/source

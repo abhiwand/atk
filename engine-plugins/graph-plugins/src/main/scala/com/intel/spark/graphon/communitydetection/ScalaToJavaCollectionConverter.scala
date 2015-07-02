@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection
+package com.intel.taproot.spark.graphon.communitydetection
 
 import scala.collection.JavaConversions._
 

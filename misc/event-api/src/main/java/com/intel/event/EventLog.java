@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.event;
+package com.intel.taproot.event;
 
 /**
  * Event logging implementations must implement this interface.

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.graph.titan
+package com.intel.taproot.graphbuilder.graph.titan
 
 import com.thinkaurelius.titan.hadoop.formats.titan_054.hbase.CachedTitanHBaseRecordReader
 import org.apache.spark.scheduler.{ SparkListener, SparkListenerApplicationEnd }

@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.testutils
+package com.intel.taproot.spark.graphon.testutils
 
-import com.intel.graphbuilder.elements.{ Property, GBVertex }
-import com.intel.spark.graphon.VectorMath
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.spark.graphon.VectorMath
 
 /**
  * Provides methods for comparing vertices and sets of vertices when approximate equality is acceptable in a

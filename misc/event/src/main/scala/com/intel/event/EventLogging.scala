@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.event
+package com.intel.taproot.event
 
 import java.nio.file.attribute.UserPrincipal
 
-import com.intel.event.adapter.{ ConsoleEventLog, SLF4JLogAdapter }
+import com.intel.taproot.event.adapter.{ ConsoleEventLog, SLF4JLogAdapter }
 
 import scala.util.control.NonFatal
 

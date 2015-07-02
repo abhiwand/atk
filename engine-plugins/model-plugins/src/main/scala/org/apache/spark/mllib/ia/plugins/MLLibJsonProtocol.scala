@@ -16,8 +16,8 @@
 
 package org.apache.spark.mllib.ia.plugins
 
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._

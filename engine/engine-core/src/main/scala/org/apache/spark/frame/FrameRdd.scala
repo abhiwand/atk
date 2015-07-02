@@ -16,13 +16,13 @@
 
 package org.apache.spark.frame
 
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.intelanalytics.domain.schema.DataTypes._
-import com.intel.intelanalytics.domain.schema._
-import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.spark.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.taproot.analytics.domain.schema.DataTypes._
+import com.intel.taproot.analytics.domain.schema._
+import com.intel.taproot.analytics.engine.Rows.Row
+import com.intel.taproot.analytics.engine.spark.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
-import com.intel.intelanalytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.taproot.analytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -379,7 +379,7 @@ object FrameRdd {
    */
   def toFrameRddMap(gbVertexRDD: RDD[GBVertex]): Map[String, FrameRdd] = {
 
-    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+    import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
     // make sure all of the vertices have a label
     val labeledVertices = gbVertexRDD.labelVertices(Nil)
@@ -411,7 +411,7 @@ object FrameRdd {
    */
   def toFrameRddMap(gbEdgeRDD: RDD[GBEdge], gbVertexRDD: RDD[GBVertex]): Map[String, FrameRdd] = {
 
-    import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+    import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
     val edgeHolders = gbEdgeRDD.map(edge => EdgeHolder(edge, null, null))
 
@@ -461,7 +461,7 @@ object FrameRdd {
    * Converts the schema object to a StructType for use in creating a SchemaRDD
    * @return StructType with StructFields corresponding to the columns of the schema object
    */
-  def schemaToStructType(columns: List[(String, com.intel.intelanalytics.domain.schema.DataTypes.DataType)]): StructType = {
+  def schemaToStructType(columns: List[(String, com.intel.taproot.analytics.domain.schema.DataTypes.DataType)]): StructType = {
     val fields: Seq[StructField] = columns.map {
       case (name, dataType) =>
         StructField(name.replaceAll("\\s", ""), dataType match {
@@ -481,7 +481,7 @@ object FrameRdd {
    * Converts the spark DataTypes to our schema Datatypes
    * @return our schema DataType
    */
-  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.types.DataType): com.intel.intelanalytics.domain.schema.DataTypes.DataType = {
+  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.types.DataType): com.intel.taproot.analytics.domain.schema.DataTypes.DataType = {
     val intType = IntegerType.getClass()
     val longType = LongType.getClass()
     val floatType = FloatType.getClass()

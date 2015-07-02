@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan;
+package com.intel.taproot.giraph.io.titan;
 
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;

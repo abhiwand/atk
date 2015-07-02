@@ -18,9 +18,9 @@ package org.apache.spark.sql.parquet.ia.giraph.frame
 
 import java.util
 
-import com.intel.giraph.io.{ LdaVertexId, LdaEdgeData }
-import com.intel.ia.giraph.lda.v2.LdaConfiguration
-import com.intel.intelanalytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.giraph.io.{ LdaVertexId, LdaEdgeData }
+import com.intel.taproot.ia.giraph.lda.v2.LdaConfiguration
+import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration

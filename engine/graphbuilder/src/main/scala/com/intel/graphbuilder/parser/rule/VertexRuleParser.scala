@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser.rule
+package com.intel.taproot.graphbuilder.parser.rule
 
-import com.intel.graphbuilder.elements.GBVertex
-import com.intel.graphbuilder.parser.{ InputRow, InputSchema, Parser }
+import com.intel.taproot.graphbuilder.elements.GBVertex
+import com.intel.taproot.graphbuilder.parser.{ InputRow, InputSchema, Parser }
 
 /**
  * Parse an InputRow into Vertices using VertexRules

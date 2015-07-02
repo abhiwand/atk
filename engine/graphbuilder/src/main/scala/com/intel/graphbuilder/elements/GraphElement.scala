@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.elements
+package com.intel.taproot.graphbuilder.elements
 
 /**
  * Marker interface for GraphElements (Vertices and Edges).

@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write.dao
+package com.intel.taproot.graphbuilder.write.dao
 
 import java.util
 
-import com.intel.graphbuilder.elements.{ GBEdge, Property }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property }
 import com.tinkerpop.blueprints
 import com.tinkerpop.blueprints.{ Direction, Graph }
 

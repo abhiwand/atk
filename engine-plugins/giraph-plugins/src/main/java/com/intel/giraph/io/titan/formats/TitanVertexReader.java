@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan.formats;
+package com.intel.taproot.giraph.io.titan.formats;
 
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
+import com.intel.taproot.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
 import com.thinkaurelius.titan.hadoop.formats.util.TitanInputFormat;
 import org.apache.giraph.io.VertexReader;

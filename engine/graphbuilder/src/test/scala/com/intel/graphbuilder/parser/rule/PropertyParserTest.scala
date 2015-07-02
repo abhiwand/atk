@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser.rule
+package com.intel.taproot.graphbuilder.parser.rule
 
 import RuleParserDSL._
-import com.intel.graphbuilder.parser.InputRow
-import com.intel.graphbuilder.parser.InputSchema
+import com.intel.taproot.graphbuilder.parser.InputRow
+import com.intel.taproot.graphbuilder.parser.InputSchema
 import org.scalatest.{ Matchers, WordSpec }
 
 class PropertyParserTest extends WordSpec with Matchers {

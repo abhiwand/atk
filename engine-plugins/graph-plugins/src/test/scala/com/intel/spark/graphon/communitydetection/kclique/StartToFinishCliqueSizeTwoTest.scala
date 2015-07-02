@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.combiner;
+package com.intel.taproot.giraph.combiner;
 
 import org.apache.giraph.combiner.MessageCombiner;
 import org.apache.hadoop.io.LongWritable;

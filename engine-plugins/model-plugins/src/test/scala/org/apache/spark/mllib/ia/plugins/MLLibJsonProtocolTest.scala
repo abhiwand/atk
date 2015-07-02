@@ -18,7 +18,7 @@ package org.apache.spark.mllib.ia.plugins
 
 import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.classification.glm.LogisticRegressionData
 import org.apache.spark.mllib.ia.plugins.classification.{ LinearRegressionData, SVMData }

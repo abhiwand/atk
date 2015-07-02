@@ -14,15 +14,15 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan;
+package com.intel.taproot.giraph.io.titan;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import java.util.Iterator;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BATCH_LOADING;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BATCH_LOADING;
 
 /**
  * Converts a Giraph configuration file to a Titan configuration file. For all

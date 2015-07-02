@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
-import com.intel.giraph.utils.LongPair;
+import com.intel.taproot.giraph.utils.LongPair;
 import org.apache.giraph.io.EdgeReader;
 import org.apache.giraph.io.formats.TextEdgeInputFormat;
 import org.apache.hadoop.io.LongWritable;

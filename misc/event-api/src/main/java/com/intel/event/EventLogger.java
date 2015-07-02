@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.event;
+package com.intel.taproot.event;
 
 /**
  * EventLogger logs events to log files, message queues, or other destinations based on

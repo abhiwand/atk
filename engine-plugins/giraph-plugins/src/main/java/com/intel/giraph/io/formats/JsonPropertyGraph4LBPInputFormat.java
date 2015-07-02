@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
 import com.google.common.collect.Lists;
-import com.intel.giraph.io.VertexData4LBPWritable;
-import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
+import com.intel.taproot.giraph.io.VertexData4LBPWritable;
+import com.intel.taproot.giraph.io.VertexData4LBPWritable.VertexType;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;

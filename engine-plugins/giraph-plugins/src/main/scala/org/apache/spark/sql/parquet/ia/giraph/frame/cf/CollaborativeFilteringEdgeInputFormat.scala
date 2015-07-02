@@ -18,10 +18,10 @@ package org.apache.spark.sql.parquet.ia.giraph.frame.cf
 
 import java.util
 
-import com.intel.giraph.io.EdgeData4CFWritable.EdgeType
-import com.intel.giraph.io.{ CFVertexId, EdgeData4CFWritable }
-import com.intel.ia.giraph.cf.CollaborativeFilteringConfiguration
-import com.intel.intelanalytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.giraph.io.EdgeData4CFWritable.EdgeType
+import com.intel.taproot.giraph.io.{ CFVertexId, EdgeData4CFWritable }
+import com.intel.taproot.ia.giraph.cf.CollaborativeFilteringConfiguration
+import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration

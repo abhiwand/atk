@@ -93,8 +93,8 @@ public class NameMigration {
             if (rootDirectory.exists() && (null != patternTuples) && (patternTuples.length > 0)) {
 
                 //file and directory names
-                String fileAndDirectoryPatterns = configValues.get(this.fileAndDirectoryPatterns);
-                sanitizeFilesAndDirs(configValues.get(root), fileAndDirectoryPatterns.split(patternSeparator));
+                //String fileAndDirectoryPatterns = configValues.get(this.fileAndDirectoryPatterns);
+                //sanitizeFilesAndDirs(configValues.get(root), fileAndDirectoryPatterns.split(patternSeparator));
 
                 //file content
                 sanitizeFileContent(filenames, configValues, patternTuples);

@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphclustering
+package com.intel.taproot.spark.graphon.graphclustering
 
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 
 case class GraphClusteringStorageFactory(dbConnectionConfig: SerializableBaseConfiguration)
     extends GraphClusteringStorageFactoryInterface {

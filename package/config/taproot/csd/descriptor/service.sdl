@@ -1,7 +1,7 @@
 {
     "name": "INTELANALYTICS",
-    "label": "Intel Analytics",
-    "description": "The Intel Analytics graph machine learning platform",
+    "label": "TapRoot Analytics",
+    "description": "The TapRoot Analytics graph machine learning platform",
     "version": "VERSION.BUILD",
     "runAs": {
         "user": "iauser",
@@ -88,7 +88,7 @@
             },
             "externalLink" : {
                             "name" : "ATK_DOCUMENTATION",
-                            "label" : "Intel Analytics Documentation",
+                            "label" : "TapRoot Analytics Documentation",
                             "url" : "http://${host}:${atk_docs_port}/static/index.html"
             },
             "topology" : {
@@ -154,25 +154,25 @@
                 },
                 {
                     "name": "atk_api_port",
-                    "configName": "intel.analytics.api.port",
+                    "configName": "intel.taproot.analytics.api.port",
                     "label": "Rest Server Port",
-                    "description": "The port used to serve the Intel Analytics service. Make sure the python clients configuration is updated to use the same port.",
+                    "description": "The port used to serve the TapRoot Analytics service. Make sure the python clients configuration is updated to use the same port.",
                     "required": "true",
                     "type": "port",
                     "default": 9099
                 },
                 {
                     "name": "atk_api_host",
-                    "configName": "intel.analytics.api.host",
+                    "configName": "intel.taproot.analytics.api.host",
                     "label": "Rest Server Host",
-                    "description": "Intel Analytics service bind address. Set to 0.0.0.0 to bind to all address.",
+                    "description": "TapRoot Analytics service bind address. Set to 0.0.0.0 to bind to all address.",
                     "required": "true",
                     "type": "string",
                     "default": "127.0.0.1"
                 },
                 {
                      "name": "atk_postgres_host",
-                     "configName": "intel.analytics.metastore.connection-postgresql.host",
+                     "configName": "intel.taproot.analytics.metastore.connection-postgresql.host",
                      "label": "Postgres host",
                      "description": "Postgresql Host name",
                      "required": "true",
@@ -182,7 +182,7 @@
                 },
                 {
                      "name": "atk_postgres_port",
-                     "configName": "intel.analytics.metastore.connection-postgresql.port",
+                     "configName": "intel.taproot.analytics.metastore.connection-postgresql.port",
                      "label": "Postgres port",
                      "description": "Postgresql port number",
                      "required": "true",
@@ -192,7 +192,7 @@
                 },
                 {
                      "name": "atk_postgres_database",
-                     "configName": "intel.analytics.metastore.connection-postgresql.database",
+                     "configName": "intel.taproot.analytics.metastore.connection-postgresql.database",
                      "label": "Postgres Database Name",
                      "description": "Postgresql database name",
                      "required": "true",
@@ -202,7 +202,7 @@
                 },
                 {
                      "name": "atk_postgres_username",
-                     "configName": "intel.analytics.metastore.connection-postgresql.username",
+                     "configName": "intel.taproot.analytics.metastore.connection-postgresql.username",
                      "label": "Postgres User Name",
                      "description": "Postgresql user name",
                      "required": "true",
@@ -212,7 +212,7 @@
                 },
                 {
                      "name": "atk_postgres_password",
-                     "configName": "intel.analytics.metastore.connection-postgresql.password",
+                     "configName": "intel.taproot.analytics.metastore.connection-postgresql.password",
                      "label": "Postgres Password",
                      "description": "Postgresql password",
                      "required": "true",
@@ -256,7 +256,7 @@
                 },
                 {
                      "name": "atk_default_count",
-                     "configName": "intel.analytics.api.default-count",
+                     "configName": "intel.taproot.analytics.api.default-count",
                      "label": "Page size",
                      "description": "The default page size for result pagination.",
                      "required": "false",
@@ -265,7 +265,7 @@
                 },
                 {
                      "name": "atk_default_timeout",
-                     "configName": "intel.analytics.api.default-timeout",
+                     "configName": "intel.taproot.analytics.api.default-timeout",
                      "label": "Default Timeout",
                      "description": "Timeout for waiting for results from the engine in seconds.",
                      "required": "false",
@@ -274,7 +274,7 @@
                 },
                 {
                      "name": "atk_spark_akka_framesize",
-                     "configName": "intel.analytics.engine.spark.conf.properties.spark.akka.frameSize",
+                     "configName": "intel.taproot.analytics.engine.spark.conf.properties.spark.akka.frameSize",
                      "label": "Akka frame size",
                      "description": "Increased Akka frame size from default of 10MB to 100MB to allow tasks to send large results to Spark driver (e.g., using collect() on large datasets)",
                      "required": "false",
@@ -283,7 +283,7 @@
                 },
                 {
                       "name": "atk_spark_rdd_compression",
-                      "configName": "intel.analytics.engine.spark.conf.properties.spark.rdd.compress",
+                      "configName": "intel.taproot.analytics.engine.spark.conf.properties.spark.rdd.compress",
                       "label": "Spark rdd compression",
                       "description": "Whether to compress serialized RDD partitions. Can save substantial space at the cost of some extra CPU time.",
                       "required": "false",
@@ -292,7 +292,7 @@
                 },
                 {
                       "name": "atk_spark_io_compression_codec",
-                      "configName": "intel.analytics.engine.spark.conf.properties.spark.io.compression.codec",
+                      "configName": "intel.taproot.analytics.engine.spark.conf.properties.spark.io.compression.codec",
                       "label": "Spark io compression codec",
                       "description": "The codec used to compress internal data such as RDD partitions and shuffle outputs. By default, Spark provides three codecs: lz4, lzf, and snappy. You can also use fully qualified class names to specify the codec, e.g. org.apache.spark.io.LZ4CompressionCodec, org.apache.spark.io.LZFCompressionCodec, and org.apache.spark.io.SnappyCompressionCodec",
                       "required": "false",
@@ -301,7 +301,7 @@
                 },
                 {
                       "name": "atk_spark_storage_block_manager_heartbeat",
-                      "configName": "intel.analytics.engine.spark.conf.properties.spark.storage.blockManagerHeartBeatMs",
+                      "configName": "intel.taproot.analytics.engine.spark.conf.properties.spark.storage.blockManagerHeartBeatMs",
                       "label": "Spark storage block manager heart beat",
                       "description": "The grace period in milliseconds before considering a the worker process dead.If set too low the spark master might kill worker process prematurely. If you have long running GC operation this might prevent heartbeats from going out.",
                       "required": "false",
@@ -310,7 +310,7 @@
                 },
                 {
                       "name": "atk_giraph_max_workers",
-                      "configName": "intel.analytics.engine.giraph.giraph.maxWorkers",
+                      "configName": "intel.taproot.analytics.engine.giraph.giraph.maxWorkers",
                       "label": "Girpah max workers",
                       "description": "Minimum number of simultaneous workers before this job can run",
                       "required": "false",
@@ -319,7 +319,7 @@
                 },
                 {
                       "name": "atk_giraph_min_workers",
-                      "configName": "intel.analytics.engine.giraph.giraph.minWorkers",
+                      "configName": "intel.taproot.analytics.engine.giraph.giraph.minWorkers",
                       "label": "Girpah min workers",
                       "description": "Maximum number of simultaneous worker tasks started by this job",
                       "required": "false",
@@ -328,7 +328,7 @@
                 },
                 {
                       "name": "atk_giraph_split_master_worker",
-                      "configName": "intel.analytics.engine.giraph.giraph.SplitMasterWorker",
+                      "configName": "intel.taproot.analytics.engine.giraph.giraph.SplitMasterWorker",
                       "label": "Girpah split master worker",
                       "description": "Separate the workers and the master tasks.",
                       "required": "false",
@@ -337,7 +337,7 @@
                 },
                 {
                       "name": "atk_giraph_mapreduce_map_memory_mb",
-                      "configName": "intel.analytics.engine.giraph.mapreduce.map.memory.mb",
+                      "configName": "intel.taproot.analytics.engine.giraph.mapreduce.map.memory.mb",
                       "label": "Resource Limit For Maps",
                       "description": "resource limit for maps. make sure it's not higher that was is configured in yarn.",
                       "required": "false",
@@ -347,16 +347,16 @@
                 },
                 {
                       "name": "atk_giraph_mapreduce_map_java_opts",
-                      "configName": "intel.analytics.engine.giraph.mapreduce.map.java.opts",
+                      "configName": "intel.taproot.analytics.engine.giraph.mapreduce.map.java.opts",
                       "label": "Resource Limit For Child jvm ",
-                      "description": "heap-size for child jvms of maps. should be less than intel.analytics.engine.giraph.mapreduce.map.memory.mb.",
+                      "description": "heap-size for child jvms of maps. should be less than intel.taproot.analytics.engine.giraph.mapreduce.map.memory.mb.",
                       "required": "false",
                       "type" : "string",
                       "default" : "-Xmx6554m"
                 },
                 {
                       "name": "atk_titan_storage_batch_loading",
-                      "configName": "intel.analytics.engine.titan.load.storage.batch-loading",
+                      "configName": "intel.taproot.analytics.engine.titan.load.storage.batch-loading",
                       "label": "Titan Storage Batch Loading",
                       "description": "Whether to enable batch loading into the storage backend. Set to true for bulk loads. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                       "required": "false",
@@ -365,7 +365,7 @@
                 },
                 {
                       "name": "atk_titan_storage_buffer_size",
-                      "configName": "intel.analytics.engine.titan.load.storage.buffer-size",
+                      "configName": "intel.taproot.analytics.engine.titan.load.storage.buffer-size",
                       "label": "Titan Storage Batch size",
                       "description": "Size of the batch in which mutations are persisted. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                       "required": "false",
@@ -374,7 +374,7 @@
                 },
                 {
                     "name": "atk_titan_storage_lock_wait_time",
-                    "configName": "intel.analytics.engine.titan.load.storage.lock.wait-time",
+                    "configName": "intel.taproot.analytics.engine.titan.load.storage.lock.wait-time",
                     "label": "Titan Storage Lock Wait Time",
                     "description": "Number of milliseconds the system waits for a lock application to be acknowledged by the storage backend. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -383,7 +383,7 @@
                 },
                 {
                     "name": "atk_titan_storage_lock_retries",
-                    "configName": "intel.analytics.engine.titan.load.storage.lock.retries",
+                    "configName": "intel.taproot.analytics.engine.titan.load.storage.lock.retries",
                     "label": "Titan Storage Lock Retries",
                     "description": "Number of times the system attempts to acquire a lock before giving up and throwing an exception. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -392,7 +392,7 @@
                 },
                 {
                     "name": "atk_titan_storage_hbase_region_count",
-                    "configName": "intel.analytics.engine.titan.load.storage.hbase.region-count",
+                    "configName": "intel.taproot.analytics.engine.titan.load.storage.hbase.region-count",
                     "label": "Titan Storage Hbase Region Count",
                     "description": "The number of initial regions set when creating Titan’s HBase table. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -401,7 +401,7 @@
                 },
                 {
                     "name": "atk_titan_storage_hbase_compression_algorithm",
-                    "configName": "intel.analytics.engine.titan.load.storage.hbase.compression-algorithm",
+                    "configName": "intel.taproot.analytics.engine.titan.load.storage.hbase.compression-algorithm",
                     "label": "Titan Storage Hbase Compression Algorithm",
                     "description": "An HBase Compression.Algorithm enum string which will be applied to newly created column families. The compression algorithm must be installed and available on the HBase cluster. Titan cannot install and configure new compression algorithms on the HBase cluster by itself. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -410,7 +410,7 @@
                 },
                 {
                     "name": "atk_titan_ids_block_size",
-                    "configName": "intel.analytics.engine.titan.load.ids.block-size",
+                    "configName": "intel.taproot.analytics.engine.titan.load.ids.block-size",
                     "label": "Id Block Size",
                     "description": "Globally reserve graph element IDs in chunks of this size. Setting this too low will make commits frequently block on slow reservation requests. Setting it too high will result in IDs wasted when a graph instance shuts down with reserved but mostly-unused blocks. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -419,7 +419,7 @@
                 },
                 {
                     "name": "atk_titan_ids_num_partitions",
-                    "configName": "intel.analytics.engine.titan.load.ids.num-partitions",
+                    "configName": "intel.taproot.analytics.engine.titan.load.ids.num-partitions",
                     "label": "Number of Partitions",
                     "description": "Number of partition block to allocate for placement of vertices. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -428,7 +428,7 @@
                 },
                 {
                     "name": "atk_titan_ids_renew_timeout",
-                    "configName": "intel.analytics.engine.titan.load.ids.renew-timeout",
+                    "configName": "intel.taproot.analytics.engine.titan.load.ids.renew-timeout",
                     "label": "Renew Timeout",
                     "description": "The number of milliseconds that the Titan id pool manager will wait before giving up on allocating a new block of ids. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -437,7 +437,7 @@
                 },
                 {
                     "name": "atk_titan_ids_flush",
-                    "configName": "intel.analytics.engine.titan.load.ids.flush",
+                    "configName": "intel.taproot.analytics.engine.titan.load.ids.flush",
                     "label": "Renew Timeout",
                     "description": "When true, vertices and edges are assigned IDs immediately upon creation. When false, IDs are assigned only when the transaction commits. Must be disabled for graph partitioning to work. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -446,7 +446,7 @@
                 },
                 {
                     "name": "atk_titan_ids_authority_conflict_avoidance_mode",
-                    "configName": "intel.analytics.engine.titan.load.ids.authority.conflict-avoidance-mode",
+                    "configName": "intel.taproot.analytics.engine.titan.load.ids.authority.conflict-avoidance-mode",
                     "label": "Conflict Avoidance Mode",
                     "description": "This setting helps separate Titan instances sharing a single graph storage backend avoid contention when reserving ID blocks, increasing overall throughput. The options available are: NONE = Default in Titan. LOCAL_MANUAL = Expert feature: user manually assigns each Titan instance a unique conflict avoidance tag in its local graph configuration. GLOBAL_MANUAL = User assigns a tag to each Titan instance. The tags should be globally unique for optimal performance, but duplicates will not compromise correctness. GLOBAL_AUTO = Titan randomly selects a tag from the space of all possible tags when performing allocations. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -455,7 +455,7 @@
                 },
                 {
                     "name": "atk_titan_ids_authority_wait_time",
-                    "configName": "intel.analytics.engine.titan.load.ids.authority.wait-time",
+                    "configName": "intel.taproot.analytics.engine.titan.load.ids.authority.wait-time",
                     "label": "Id Wait Time",
                     "description": "The number of milliseconds the system waits for an ID block reservation to be acknowledged by the storage backend. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -465,7 +465,7 @@
                 },
                 {
                     "name": "atk_titan_ids_authority_randomized_conflict_avoidance_retries",
-                    "configName": "intel.analytics.engine.titan.load.ids.authority.randomized-conflict-avoidance-retries",
+                    "configName": "intel.taproot.analytics.engine.titan.load.ids.authority.randomized-conflict-avoidance-retries",
                     "label": "Id Randomized Conflict Avoidance Retries",
                     "description": "Number of times the system attempts ID block reservations with random conflict avoidance tags before giving up and throwing an exception. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -474,7 +474,7 @@
                 },
                 {
                     "name": "atk_titan_auto_partitioner_hbase_regions_per_server",
-                    "configName": "intel.analytics.engine.titan.load.auto-partitioner.hbase.regions-per-server",
+                    "configName": "intel.taproot.analytics.engine.titan.load.auto-partitioner.hbase.regions-per-server",
                     "label": "Regions Per Server",
                     "description": "Number of regions per region server to set when creating Titan/HBase table. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -483,7 +483,7 @@
                 },
                 {
                     "name": "atk_titan_auto_partitioner_hbase_input_splits_per_spark_core",
-                    "configName": "intel.analytics.engine.titan.load.auto-partitioner.hbase.input-splits-per-spark-core",
+                    "configName": "intel.taproot.analytics.engine.titan.load.auto-partitioner.hbase.input-splits-per-spark-core",
                     "label": "Input Splits Per Spark Core",
                     "description": "Number of input splits for Titan reader is based on number of available cores and size of the graph in HBase as follows: Number of splits = input-splits-per-spark-core * log(available spark-cores) * log(graph size in HBase in MB). http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -492,7 +492,7 @@
                 },
                 {
                     "name": "atk_titan_auto_partitioner_enable",
-                    "configName": "intel.analytics.engine.titan.load.auto-partitioner.enable",
+                    "configName": "intel.taproot.analytics.engine.titan.load.auto-partitioner.enable",
                     "label": "Enable Titan Auto Partitioner",
                     "description": ". http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -501,16 +501,16 @@
                 },
                 {
                     "name": "atk_titan_query_db_cache",
-                    "configName": "intel.analytics.engine.titan.query.cache.db-cache",
+                    "configName": "intel.taproot.analytics.engine.titan.query.cache.db-cache",
                     "label": "Enable Titan DB Query Cache",
-                    "description": "Adjust cache size parameters if you experience OutOfMemory errors during Titan queries either increase heap allocation for IntelAnalytics Engine, or reduce db-cache-size Reducing db-cache will result in cache misses and increased reads from disk. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
+                    "description": "Adjust cache size parameters if you experience OutOfMemory errors during Titan queries either increase heap allocation for TapRootAnalytics Engine, or reduce db-cache-size Reducing db-cache will result in cache misses and increased reads from disk. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
                     "type" : "boolean",
                     "default" : "true"
                 },
                 {
                     "name": "atk_titan_query_db_cache_clean_wait",
-                    "configName": "intel.analytics.engine.titan.query.cache.db-cache-clean-wait",
+                    "configName": "intel.taproot.analytics.engine.titan.query.cache.db-cache-clean-wait",
                     "label": "Titan DB Query Cache Clean Wait",
                     "description": "How long, in milliseconds, database-level cache will keep entries after flushing them. This option is only useful on distributed storage backends that are capable of acknowledging writes without necessarily making them immediately visible. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -519,7 +519,7 @@
                 },
                 {
                     "name": "atk_titan_query_db_cache_time",
-                    "configName": "intel.analytics.engine.titan.query.cache.db-cache-time",
+                    "configName": "intel.taproot.analytics.engine.titan.query.cache.db-cache-time",
                     "label": "Titan Query Cache Time",
                     "description": "Default expiration time, in milliseconds, for entries in the database-level cache. Entries are evicted when they reach this age even if the cache has room to spare. Set to 0 to disable expiration (cache entries live forever or until memory pressure triggers eviction when set to 0). http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -529,7 +529,7 @@
                 },
                 {
                     "name": "atk_titan_query_db_cache_size",
-                    "configName": "intel.analytics.engine.titan.query.cache.db-cache-size",
+                    "configName": "intel.taproot.analytics.engine.titan.query.cache.db-cache-size",
                     "label": "Titan Query DB Cache Size",
                     "description": "Size of Titan’s database level cache. Values between 0 and 1 are interpreted as a percentage of VM heap, while larger values are interpreted as an absolute size in bytes. http://s3.thinkaurelius.com/docs/titan/current/titan-config-ref.html",
                     "required": "false",
@@ -574,7 +574,7 @@
                 {
                   "name" : "ATK-Start-IA",
                   "label" : "Start",
-                  "description" : "Start Intel Analytics Rest Server",
+                  "description" : "Start TapRoot Analytics Rest Server",
                   "expectedExitCodes" : [0],
                   "requiredRoleState" : "stopped",
                   "commandRunner" : {

@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io;
+package com.intel.taproot.giraph.io;
 
-import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
-import com.intel.giraph.io.VertexData4CFWritable.VertexType;
+import com.intel.taproot.giraph.io.EdgeData4CFWritable.EdgeType;
+import com.intel.taproot.giraph.io.VertexData4CFWritable.VertexType;
 import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.SequentialAccessSparseVector;
 import org.apache.mahout.math.Vector;

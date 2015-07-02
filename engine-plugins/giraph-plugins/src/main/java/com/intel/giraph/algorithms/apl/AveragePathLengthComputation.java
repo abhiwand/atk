@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.apl;
+package com.intel.taproot.giraph.algorithms.apl;
 
-import com.intel.giraph.io.DistanceMapWritable;
-import com.intel.giraph.io.HopCountWritable;
+import com.intel.taproot.giraph.io.DistanceMapWritable;
+import com.intel.taproot.giraph.io.HopCountWritable;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;

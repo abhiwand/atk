@@ -28,8 +28,8 @@
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>com.intel.ia</groupId>
-        <artifactId>IntelAnalytics</artifactId>
+        <groupId>com.intel.taproot.ia</groupId>
+        <artifactId>TapRootAnalytics</artifactId>
         <relativePath>../../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
@@ -155,15 +155,15 @@
 
         <!--START dependencies to our modules-->
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>launcher</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>engine-core</artifactId>
         </dependency>
 
@@ -190,7 +190,7 @@
 
         <!-- START Titan dependencies -->
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>titan-shaded</artifactId>
             <exclusions>
                 <exclusion>

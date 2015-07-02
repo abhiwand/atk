@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import com.typesafe.config.Config
 
 class TitanConfigurator(config: Config) {

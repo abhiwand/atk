@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.schema
+package com.intel.taproot.graphbuilder.schema
 
 import org.apache.spark.AccumulableParam
-import com.intel.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
+import com.intel.taproot.graphbuilder.elements.{ GraphElement, GBVertex, GBEdge }
 
 /**
  * Implements AccumulableParam to allow inferring graph schema from data.

@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.rdd
+package com.intel.taproot.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.driver.spark.titan.JoinBroadcastVariable
-import com.intel.graphbuilder.elements._
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.write.EdgeWriter
-import com.intel.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
+import com.intel.taproot.graphbuilder.driver.spark.titan.JoinBroadcastVariable
+import com.intel.taproot.graphbuilder.elements._
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.write.EdgeWriter
+import com.intel.taproot.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
 import org.apache.spark.SparkContext._
 import org.apache.spark.{ RangePartitioner, TaskContext }
 import org.apache.spark.broadcast.Broadcast

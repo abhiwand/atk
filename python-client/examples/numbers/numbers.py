@@ -49,7 +49,7 @@
 #       execfile('/path/to/numbers.py')
 #
 
-import intelanalytics as ia
+import taprootanalytics as ia
 
 # show full stack traces
 ia.errors.show_details = True

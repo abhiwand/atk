@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan;
+package com.intel.taproot.giraph.io.titan;
 
 import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration;
@@ -29,7 +29,7 @@ import org.junit.Before;
 
 import java.io.IOException;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.*;
 
 /** 
  * Base class for all Titan/HBase related Giraph tests.

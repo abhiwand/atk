@@ -42,9 +42,9 @@ Before IPython can operate properly, it is necessary to configure the |IAT|
 REST client.
 The REST client needs to know where to find the |IAT| REST server.
 This is done by updating the host address in
-'/usr/lib/intelanalytics/rest-client/python/rest/config.py'::
+'/usr/lib/taprootanalytics/rest-client/python/rest/config.py'::
 
-    $ sudo vim /usr/lib/intelanalytics/rest-client/python/rest/config.py
+    $ sudo vim /usr/lib/taprootanalytics/rest-client/python/rest/config.py
 
 The 'config.py' file will look similar to this::
 
@@ -80,7 +80,7 @@ Test the |IAT| IPython installation by importing the REST client libraries
 inside of a notebook or IPython shell and ping the REST server.
 ::
 
-    # testing IPython/Intel Analytics
+    # testing IPython/TapRoot Analytics
 
     $ ipython
     Python 2.7.5 (default, Sep  4 2014, 17:06:50)
@@ -91,10 +91,10 @@ inside of a notebook or IPython shell and ping the REST server.
     help      -> Python's own help system.
     object?   -> Details about 'object', use 'object??' for extra details.
 
-    In [1]: import intelanalytics as ia
+    In [1]: import taprootanalytics as ia
 
     In [2]: ia.server.ping()
-    Successful ping to Intel Analytics at http://localhost:9099/info
+    Successful ping to TapRoot Analytics at http://localhost:9099/info
 
     In [3]: ia.connect()
 

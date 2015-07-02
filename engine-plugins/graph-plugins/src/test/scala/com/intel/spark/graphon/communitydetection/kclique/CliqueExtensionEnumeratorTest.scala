@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Clique, Edge }
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Clique, Edge }
 
 class CliqueExtensionEnumeratorTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -23,8 +23,8 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.giraph.io.formats.TextVertexValueInputFormat;
 
-import com.intel.giraph.io.GaussianDistWritable;
-import com.intel.giraph.io.VertexData4GBPWritable;
+import com.intel.taproot.giraph.io.GaussianDistWritable;
+import com.intel.taproot.giraph.io.VertexData4GBPWritable;
 
 import org.json.JSONArray;
 import org.json.JSONException;

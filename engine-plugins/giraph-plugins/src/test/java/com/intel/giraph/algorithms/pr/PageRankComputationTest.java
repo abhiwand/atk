@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.pr;
+package com.intel.taproot.giraph.algorithms.pr;
 
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.intel.giraph.io.formats.LongNullTextEdgeInputFormat;
+import com.intel.taproot.giraph.io.formats.LongNullTextEdgeInputFormat;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.io.formats.IdWithValueTextOutputFormat;
 import org.apache.giraph.utils.InternalVertexRunner;

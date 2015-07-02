@@ -31,7 +31,7 @@
  * limitations under the License.
  */
 
-package com.intel.graphbuilder.util;
+package com.intel.taproot.graphbuilder.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write.titan
+package com.intel.taproot.graphbuilder.write.titan
 
 import com.thinkaurelius.titan.core.TitanElement
 import com.tinkerpop.blueprints

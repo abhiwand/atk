@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
-import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Clique, Edge }
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Clique, Edge }
 
 /**
  * This test checks that end-to-end run of k-clique percolation works with k = 3 on a small graph consisting of

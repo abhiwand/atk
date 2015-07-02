@@ -32,7 +32,7 @@
 
 
 
-import intelanalytics as ia
+import taprootanalytics as ia
 ia.connect()
 
 for name in ia.get_frame_names():

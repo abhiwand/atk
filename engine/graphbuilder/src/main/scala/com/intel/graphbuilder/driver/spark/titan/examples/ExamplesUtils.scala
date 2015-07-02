@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.examples
+package com.intel.taproot.graphbuilder.driver.spark.titan.examples
 
 // $COVERAGE-OFF$
 // This is utility code only, not part of the main product
@@ -22,7 +22,7 @@ package com.intel.graphbuilder.driver.spark.titan.examples
 import java.io.File
 import java.net.InetAddress
 
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
 import com.tinkerpop.blueprints.Graph
 
 import scala.collection.JavaConversions._

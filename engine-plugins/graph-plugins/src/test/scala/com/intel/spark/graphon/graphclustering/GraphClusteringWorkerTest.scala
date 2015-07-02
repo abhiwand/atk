@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphclustering
+package com.intel.taproot.spark.graphon.graphclustering
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.scalatest.{ FlatSpec, Matchers }
 import org.apache.spark.rdd.RDD
 

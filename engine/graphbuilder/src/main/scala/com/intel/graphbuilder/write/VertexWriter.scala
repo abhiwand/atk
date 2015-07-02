@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write
+package com.intel.taproot.graphbuilder.write
 
-import com.intel.graphbuilder.elements.GBVertex
-import com.intel.graphbuilder.write.dao.VertexDAO
+import com.intel.taproot.graphbuilder.elements.GBVertex
+import com.intel.taproot.graphbuilder.write.dao.VertexDAO
 import com.tinkerpop.blueprints
 
 /**

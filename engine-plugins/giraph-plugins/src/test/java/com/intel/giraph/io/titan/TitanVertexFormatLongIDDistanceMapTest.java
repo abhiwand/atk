@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan;
+package com.intel.taproot.giraph.io.titan;
 
-import com.intel.giraph.algorithms.apl.AveragePathLengthComputation;
-import com.intel.giraph.io.DistanceMapWritable;
-import com.intel.giraph.io.titan.formats.TitanVertexInputFormatLongDistanceMapNull;
-import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatLongIDDistanceMap;
+import com.intel.taproot.giraph.algorithms.apl.AveragePathLengthComputation;
+import com.intel.taproot.giraph.io.DistanceMapWritable;
+import com.intel.taproot.giraph.io.titan.formats.TitanVertexInputFormatLongDistanceMapNull;
+import com.intel.taproot.giraph.io.titan.formats.TitanVertexOutputFormatLongIDDistanceMap;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.giraph.utils.InternalVertexRunner;
@@ -28,8 +28,8 @@ import org.apache.hadoop.io.NullWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

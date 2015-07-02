@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.lp;
+package com.intel.taproot.giraph.algorithms.lp;
 
-import com.intel.giraph.io.VertexData4LPWritable;
-import com.intel.giraph.io.IdWithVectorMessage;
-import com.intel.ia.giraph.lp.LabelPropagationConfig;
-import com.intel.ia.giraph.lp.LabelPropagationConfiguration;
+import com.intel.taproot.giraph.io.VertexData4LPWritable;
+import com.intel.taproot.giraph.io.IdWithVectorMessage;
+import com.intel.taproot.ia.giraph.lp.LabelPropagationConfig;
+import com.intel.taproot.ia.giraph.lp.LabelPropagationConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;

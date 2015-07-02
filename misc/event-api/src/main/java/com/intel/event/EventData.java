@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.event;
+package com.intel.taproot.event;
 
 import java.text.MessageFormat;
 import java.util.HashMap;

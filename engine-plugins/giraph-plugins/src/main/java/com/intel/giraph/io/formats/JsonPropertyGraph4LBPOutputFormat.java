@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
-import com.intel.giraph.io.VertexData4LBPWritable;
-import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
+import com.intel.taproot.giraph.io.VertexData4LBPWritable;
+import com.intel.taproot.giraph.io.VertexData4LBPWritable.VertexType;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.apache.hadoop.io.LongWritable;

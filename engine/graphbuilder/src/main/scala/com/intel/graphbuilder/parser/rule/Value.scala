@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser.rule
+package com.intel.taproot.graphbuilder.parser.rule
 
-import com.intel.graphbuilder.parser.InputRow
+import com.intel.taproot.graphbuilder.parser.InputRow
 import org.apache.commons.lang3.StringUtils
 
 /**

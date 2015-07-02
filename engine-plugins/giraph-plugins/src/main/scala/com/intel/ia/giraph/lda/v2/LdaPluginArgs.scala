@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.ia.giraph.lda.v2
+package com.intel.taproot.ia.giraph.lda.v2
 
-import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference }
-import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.domain.model.ModelReference
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.graph.GraphReference
+import com.intel.taproot.analytics.domain.model.ModelReference
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -85,7 +85,7 @@ case class LdaTrainResult(docResults: FrameEntity, wordResults: FrameEntity, rep
 
 /** Json conversion for arguments and return value case classes */
 object LdaJsonFormat {
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+  import com.intel.taproot.analytics.domain.DomainJsonProtocol._
   implicit val ldaFormat = jsonFormat11(LdaTrainArgs)
   implicit val ldaResultFormat = jsonFormat3(LdaTrainResult)
 }

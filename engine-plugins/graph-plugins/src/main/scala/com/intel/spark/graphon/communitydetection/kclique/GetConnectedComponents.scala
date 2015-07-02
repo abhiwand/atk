@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
-import com.intel.spark.graphon.connectedcomponents.ConnectedComponentsGraphXDefault
-import com.intel.spark.graphon.idassigner._
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import com.intel.taproot.spark.graphon.connectedcomponents.ConnectedComponentsGraphXDefault
+import com.intel.taproot.spark.graphon.idassigner._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 

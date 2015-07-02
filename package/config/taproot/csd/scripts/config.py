@@ -284,14 +284,14 @@ def update_spark_env(group, spark_config_env_sh):
         found_ia_class_path = find_ia_class_path(found_class_path_value)
         if found_ia_class_path is None:
             #no existing ia classpath
-            print "No existing Intel Analytics class path found."
+            print "No existing TapRoot Analytics class path found."
             updated_class_path = create_updated_class_path(found_class_path_value, spark_config_env_sh)
             print "Updating to: " + updated_class_path
             group.update_config({args.config: updated_class_path})
             return True
         else:
             #existing ia classpath
-            print "Found existing Intel Analytics class path no update needed."
+            print "Found existing TapRoot Analytics class path no update needed."
             return False
     return False
 

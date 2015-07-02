@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.ia.giraph.lp
+package com.intel.taproot.ia.giraph.lp
 
-import com.intel.intelanalytics.domain.schema.Schema
+import com.intel.taproot.analytics.domain.schema.Schema
 import org.apache.commons.lang3.StringUtils
 import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.hadoop.conf.Configuration
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Config for Input

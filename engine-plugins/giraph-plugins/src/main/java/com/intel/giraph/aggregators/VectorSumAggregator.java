@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.aggregators;
+package com.intel.taproot.giraph.aggregators;
 
 import org.apache.giraph.aggregators.BasicAggregator;
 import org.apache.mahout.math.DenseVector;

@@ -15,7 +15,7 @@
 #
 
 import unittest
-import intelanalytics as ia
+import taprootanalytics as ia
 import math
 import numpy
 

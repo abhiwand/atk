@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan;
+package com.intel.taproot.giraph.io.titan;
 
-import com.intel.giraph.algorithms.pr.PageRankComputation;
-import com.intel.giraph.io.titan.formats.TitanVertexInputFormatLongDoubleNull;
-import com.intel.giraph.io.titan.formats.TitanVertexOutputFormatLongIDDoubleValue;
+import com.intel.taproot.giraph.algorithms.pr.PageRankComputation;
+import com.intel.taproot.giraph.io.titan.formats.TitanVertexInputFormatLongDoubleNull;
+import com.intel.taproot.giraph.io.titan.formats.TitanVertexOutputFormatLongIDDoubleValue;
 import com.thinkaurelius.titan.core.PropertyKey;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanTransaction;
@@ -32,7 +32,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 

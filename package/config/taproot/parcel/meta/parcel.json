@@ -19,17 +19,17 @@
   },
   "packages": [],
   "components": [
-    { "name":     "intel-analytics-rest-server",
+    { "name":     "taproot-analytics-rest-server",
       "version":  "VERSION"
     }
-    ,{ "name":     "intel-analytics-python-rest-client",
+    ,{ "name":     "taproot-analytics-python-rest-client",
       "version":  "VERSION"
     }
   ],
   "users": {
      "iauser": {
        "longname"    : "iauser",
-       "home"        : "/var/lib/intelanalytics",
+       "home"        : "/var/lib/taprootanalytics",
        "shell"       : "/bin/bash",
        "extra_groups": ["hadoop"]
      }

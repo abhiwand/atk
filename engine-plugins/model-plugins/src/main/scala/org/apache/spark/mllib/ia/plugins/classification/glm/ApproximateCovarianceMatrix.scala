@@ -16,7 +16,7 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import breeze.linalg.{ DenseMatrix => BDM, inv }
-import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema }
+import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.{ SparkContext, sql }

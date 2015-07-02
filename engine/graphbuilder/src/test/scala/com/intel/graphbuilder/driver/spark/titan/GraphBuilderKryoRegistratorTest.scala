@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan
+package com.intel.taproot.graphbuilder.driver.spark.titan
 
 import org.scalatest.{ Matchers, WordSpec }
 import org.mockito.Mockito._
 import com.esotericsoftware.kryo.Kryo
-import com.intel.graphbuilder.parser.rule.{ ConstantValue, Value, ParsedValue, EdgeRule }
-import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, Property, GBVertex, GBEdge }
-import com.intel.graphbuilder.parser.ColumnDef
+import com.intel.taproot.graphbuilder.parser.rule.{ ConstantValue, Value, ParsedValue, EdgeRule }
+import com.intel.taproot.graphbuilder.elements.{ GbIdToPhysicalId, Property, GBVertex, GBEdge }
+import com.intel.taproot.graphbuilder.parser.ColumnDef
 import org.scalatest.mock.MockitoSugar
 
 class GraphBuilderKryoRegistratorTest extends WordSpec with Matchers with MockitoSugar {

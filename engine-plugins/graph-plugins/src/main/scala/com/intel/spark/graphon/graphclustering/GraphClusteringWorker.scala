@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphclustering
+package com.intel.taproot.spark.graphon.graphclustering
 
-import com.intel.event.EventLogging
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.event.EventLogging
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.rdd.RDD
 import java.io.Serializable
 import org.apache.spark.SparkContext._

@@ -31,9 +31,9 @@ do
     tar -xvf python/${pythonPackage} -C $parcelDir/
 done
 
-mkdir -p $parcelDir/usr/lib/python2.7/site-packages/intelanalytics
-cp -Rv $parcelDir/usr/lib/intelanalytics/rest-client/python/* $parcelDir/usr/lib/python2.7/site-packages/intelanalytics
-rm -rf $parcelDir/usr/lib/intelanalytics/rest-client/python
+mkdir -p $parcelDir/usr/lib/python2.7/site-packages/taprootanalytics
+cp -Rv $parcelDir/usr/lib/taprootanalytics/rest-client/python/* $parcelDir/usr/lib/python2.7/site-packages/taprootanalytics
+rm -rf $parcelDir/usr/lib/taprootanalytics/rest-client/python
 
 tar zcvf $parcelDir-el6.parcel $parcelDir/ --owner=root --group=root
 

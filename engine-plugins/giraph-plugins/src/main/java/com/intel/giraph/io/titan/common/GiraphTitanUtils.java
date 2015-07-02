@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan.common;
+package com.intel.taproot.giraph.io.titan.common;
 
-import com.intel.giraph.io.titan.TitanGraphWriter;
+import com.intel.taproot.giraph.io.titan.TitanGraphWriter;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.core.schema.TitanManagement;
 import org.apache.commons.lang.StringUtils;
@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.*;
 
 
 /**

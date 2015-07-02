@@ -68,8 +68,8 @@ if [ -f $DIR/../lib/$jar ]; then
  ln -s $DIR/../lib/deploy.jar $DIR/../lib/$jar
 done
 
-echo java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot rest-server
-java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.intelanalytics.component.Boot rest-server
+echo java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot rest-server
+java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot rest-server
 
 popd
 

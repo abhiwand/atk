@@ -14,16 +14,16 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark
+package com.intel.taproot.graphbuilder.driver.spark
 
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
-import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.{ TestingTitan, TestingSparkContextWordSpec }
+import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.taproot.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
+import com.intel.taproot.graphbuilder.parser.{ ColumnDef, InputSchema }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.testutils.{ TestingTitan, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ BeforeAndAfter, Matchers }

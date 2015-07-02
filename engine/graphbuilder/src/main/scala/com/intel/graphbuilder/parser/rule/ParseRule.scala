@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser.rule
+package com.intel.taproot.graphbuilder.parser.rule
 
-import com.intel.graphbuilder.parser._
+import com.intel.taproot.graphbuilder.parser._
 
 /**
  * Marker interface

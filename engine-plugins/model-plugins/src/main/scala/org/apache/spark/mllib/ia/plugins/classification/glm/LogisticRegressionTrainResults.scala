@@ -15,7 +15,7 @@
 */
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import com.intel.intelanalytics.domain.frame.FrameEntity
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
 
 /**

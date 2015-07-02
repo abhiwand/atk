@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write.dao
+package com.intel.taproot.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
-import com.intel.graphbuilder.write.titan.TitanIdUtils.titanId
-import com.intel.testutils.TestingTitan
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.graphbuilder.write.titan.TitanIdUtils.titanId
+import com.intel.taproot.testutils.TestingTitan
 import com.tinkerpop.blueprints.Direction
 import org.scalatest.{ BeforeAndAfter, Matchers, WordSpec }
 

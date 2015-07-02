@@ -16,8 +16,8 @@
 
 package org.apache.spark.ia.graph
 
-import com.intel.graphbuilder.elements.GBEdge
-import com.intel.intelanalytics.domain.schema.{ EdgeSchema, GraphSchema, Schema }
+import com.intel.taproot.graphbuilder.elements.GBEdge
+import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, GraphSchema, Schema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql

@@ -20,7 +20,7 @@ Log Files
 ---------
 
 The |IAT| service writes two log files to the system, both of which are located
-in 'var/log/intelanalytics/rest-server/'.
+in 'var/log/taprootanalytics/rest-server/'.
 
 output.log
 ==========
@@ -56,13 +56,13 @@ Open The Configuration File
 ---------------------------
 First, open the configuration file::
 
-    $ sudo vim /etc/intelanalytics/rest-server/logback.xml
+    $ sudo vim /etc/taprootanalytics/rest-server/logback.xml
 
 The file should be something like this::
 
     <configuration scan="true">
         <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-            <file>/var/log/intelanalytics/rest-server/application.log</file>
+            <file>/var/log/taprootanalytics/rest-server/application.log</file>
             <encoder>
                 <pattern>%date - [%level] - from %logger in %thread %message
                     %n%ex{full}%n</pattern>

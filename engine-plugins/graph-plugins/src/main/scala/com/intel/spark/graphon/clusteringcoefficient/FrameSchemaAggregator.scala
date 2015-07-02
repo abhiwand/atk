@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.clusteringcoefficient
+package com.intel.taproot.spark.graphon.clusteringcoefficient
 
-import com.intel.graphbuilder.elements.GBVertex
-import com.intel.intelanalytics.domain.schema._
+import com.intel.taproot.graphbuilder.elements.GBVertex
+import com.intel.taproot.analytics.domain.schema._
 
 /**
  * Convert a GBVertex to a FrameSchema

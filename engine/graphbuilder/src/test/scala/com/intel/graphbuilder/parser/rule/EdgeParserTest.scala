@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser.rule
+package com.intel.taproot.graphbuilder.parser.rule
 
 import RuleParserDSL._
-import com.intel.graphbuilder.parser.{ InputSchema, InputRow }
+import com.intel.taproot.graphbuilder.parser.{ InputSchema, InputRow }
 import org.scalatest.{ Matchers, WordSpec }
 
 class EdgeParserTest extends WordSpec with Matchers {

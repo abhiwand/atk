@@ -17,4 +17,4 @@
 /**
  * Package of Giraph io.
  */
-package com.intel.giraph.io;
+package com.intel.taproot.giraph.io;

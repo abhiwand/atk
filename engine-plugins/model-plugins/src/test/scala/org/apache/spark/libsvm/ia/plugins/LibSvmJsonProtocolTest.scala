@@ -18,7 +18,7 @@ package org.apache.spark.libsvm.ia.plugins
 
 //import org.apache.commons.math3.geometry.VectorFormat
 
-import com.intel.intelanalytics.libSvmPlugins.LibSvmData
+import com.intel.taproot.analytics.libSvmPlugins.LibSvmData
 import libsvm.{ svm_model, svm_node, svm_parameter }
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import org.scalatest.WordSpec

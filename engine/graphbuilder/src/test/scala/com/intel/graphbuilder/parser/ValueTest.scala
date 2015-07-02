@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser
+package com.intel.taproot.graphbuilder.parser
 
 import org.scalatest.{ Matchers, WordSpec }
-import com.intel.graphbuilder.parser.rule.{ Value, ParsedValue, CompoundValue, ConstantValue }
+import com.intel.taproot.graphbuilder.parser.rule.{ Value, ParsedValue, CompoundValue, ConstantValue }
 import org.mockito.Mockito._
-import com.intel.graphbuilder.parser.rule.ParsedValue
-import com.intel.graphbuilder.parser.rule.CompoundValue
-import com.intel.graphbuilder.parser.rule.ConstantValue
+import com.intel.taproot.graphbuilder.parser.rule.ParsedValue
+import com.intel.taproot.graphbuilder.parser.rule.CompoundValue
+import com.intel.taproot.graphbuilder.parser.rule.ConstantValue
 import org.scalatest.mock.MockitoSugar
 
 class ValueTest extends WordSpec with Matchers with MockitoSugar {

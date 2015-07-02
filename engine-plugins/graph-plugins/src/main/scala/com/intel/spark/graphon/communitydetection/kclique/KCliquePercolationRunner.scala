@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Edge }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Edge }
 import org.apache.spark.rdd.RDD
 
 /**
@@ -115,10 +115,10 @@ object KCliquePercolationRunner {
 
   /**
    * Convert ATK edge to the K Clique Percolation internal edge format
-   * [[com.intel.spark.graphon.communitydetection.kclique.datatypes.Edge]]
+   * [[com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Edge]]
    *
    * @param gbEdgeList RDD of edges in ATK common format.
-   * @return An RDD of the edges as [[com.intel.spark.graphon.communitydetection.kclique.datatypes.Edge]]
+   * @return An RDD of the edges as [[com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Edge]]
    */
   def edgeListFromGBEdgeList(gbEdgeList: RDD[GBEdge]): RDD[Edge] = {
 

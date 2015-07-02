@@ -26,7 +26,7 @@ mkdir -p  tarballs/$package/lib
 
 cp -v  config/$package/application.conf tarballs/$package/conf
 cp -v  config/$package/logback.xml tarballs/$package/conf
-cp -Rv config/taproot-analytics/assets/etc/intelanalytics/rest-server/* tarballs/$package/conf
+cp -Rv config/taproot-analytics/assets/etc/taprootanalytics/rest-server/* tarballs/$package/conf
 cp -v  config/$package/rest-server.sh tarballs/$package/bin/
 
 

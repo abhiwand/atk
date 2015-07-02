@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.titan.cache
+package com.intel.taproot.graphbuilder.titan.cache
 
 import com.thinkaurelius.titan.hadoop.config.ModifiableHadoopConfiguration
 import com.thinkaurelius.titan.hadoop.config.TitanHadoopConfiguration.TITAN_INPUT_VERSION

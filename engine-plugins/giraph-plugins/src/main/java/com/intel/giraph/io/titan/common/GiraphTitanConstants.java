@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan.common;
+package com.intel.taproot.giraph.io.titan.common;
 
 import org.apache.giraph.conf.StrConfOption;
 

@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.gbp;
+package com.intel.taproot.giraph.algorithms.gbp;
 
-import com.intel.giraph.io.GaussianDistWritable;
-import com.intel.giraph.io.MessageData4GBPWritable;
-import com.intel.giraph.io.VertexData4GBPWritable;
-import com.intel.giraph.io.EdgeData4GBPWritable;
+import com.intel.taproot.giraph.io.GaussianDistWritable;
+import com.intel.taproot.giraph.io.MessageData4GBPWritable;
+import com.intel.taproot.giraph.io.VertexData4GBPWritable;
+import com.intel.taproot.giraph.io.EdgeData4GBPWritable;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleMaxAggregator;

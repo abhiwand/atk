@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
 import com.google.common.collect.Lists;
-import com.intel.giraph.io.GaussianDistWritable;
-import com.intel.giraph.io.VertexData4GBPWritable;
+import com.intel.taproot.giraph.io.GaussianDistWritable;
+import com.intel.taproot.giraph.io.VertexData4GBPWritable;
 import org.apache.giraph.edge.Edge;
-import com.intel.giraph.io.EdgeData4GBPWritable;
+import com.intel.taproot.giraph.io.EdgeData4GBPWritable;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexInputFormat;

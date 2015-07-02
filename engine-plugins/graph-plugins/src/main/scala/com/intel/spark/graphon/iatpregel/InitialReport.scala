@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.iatpregel
+package com.intel.taproot.spark.graphon.iatpregel
 
 import org.apache.spark.rdd.RDD
 

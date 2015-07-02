@@ -27,7 +27,7 @@ setup(
 
     # Application author details:
     author="Intel",
-    author_email="iatsupport@intel.com",
+    author_email="iatsupport@intel.taproot.com",
 
     # Packages
     packages=["taproot","taproot/core","taproot/rest","taproot/tests"],
@@ -36,7 +36,7 @@ setup(
     include_package_data=True,
 
     # Details
-    url="https://analyticstoolkit.intel.com",
+    url="https://analyticstoolkit.intel.taproot.com",
 
     #
     license="LICENSE.txt",

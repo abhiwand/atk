@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.connectedcomponents
+package com.intel.taproot.spark.graphon.connectedcomponents
 
 import org.scalatest.{ FlatSpec, Matchers }
 import org.apache.spark.rdd.RDD
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 
 class ConnectedComponentsPluginGraphXDefaultTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

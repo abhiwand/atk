@@ -19,7 +19,7 @@ import breeze.linalg.support.CanCopy
 import breeze.linalg.{ DenseMatrix, DenseVector }
 import breeze.math.VectorSpace
 import breeze.optimize.DiffFunction
-import com.intel.intelanalytics.domain.schema.{ Column, DataTypes, FrameSchema }
+import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.optimization.{ CostFunction, Gradient, Updater }
