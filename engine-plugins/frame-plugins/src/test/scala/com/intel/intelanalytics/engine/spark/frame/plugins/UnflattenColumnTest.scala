@@ -63,7 +63,7 @@ class UnflattenColumnTest extends FlatSpec with Matchers with BeforeAndAfterEach
     val result = executeTest(dailyHeartbeats_4_1, rowInResult)
 
     assert(result.length == rowInResult)
-    result.apply(rowInResult - 1) shouldBe Array[Any]("Bob", "1/1/2015", "1,2,3,4", "60,70,65,55")
+    result.apply(rowInResult - 1) shouldBe sql.Row("Bob", "1/1/2015", "1,2,3,4", "60,70,65,55")
   }
 
   "UnflattenRddByCompositeKey::2" should "compress data in a single row" in {
@@ -72,7 +72,7 @@ class UnflattenColumnTest extends FlatSpec with Matchers with BeforeAndAfterEach
     val result = executeTest(dailyHeartbeats_1_1, rowInResult)
 
     assert(result.length == rowInResult)
-    result.apply(rowInResult - 1) shouldBe Array[Any]("Bob", "1/1/2015", "1", "60")
+    result.apply(rowInResult - 1) shouldBe sql.Row("Bob", "1/1/2015", "1", "60")
   }
 
   "UnflattenRddByCompositeKey::3" should "compress data in two rows" in {

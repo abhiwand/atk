@@ -22,7 +22,6 @@ import com.intel.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
-import com.intel.intelanalytics.engine.Rows._
 
 class CorrelationMatrixTest extends TestingSparkContextFlatSpec with Matchers {
   "correlation matrix calculations" should "return the correct values" in {
@@ -41,8 +40,9 @@ class CorrelationMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     val frameRdd = new FrameRdd(schema, rdd)
     val result = Correlation.correlationMatrix(frameRdd, columnsList).collect()
     result.size shouldBe 3
-    result(0) shouldBe Array(1.0, 0.8451542547285167, 0.2988071523335984)
-    result(1) shouldBe Array(0.8451542547285167, 1.0, 0.0)
-    result(2) shouldBe Array(0.2988071523335984, 0.0, 1.0)
+
+    result(0) shouldBe sql.Row(1.0, 0.8451542547285167, 0.2988071523335984)
+    result(1) shouldBe sql.Row(0.8451542547285167, 1.0, 0.0)
+    result(2) shouldBe sql.Row(0.2988071523335984, 0.0, 1.0)
   }
 }

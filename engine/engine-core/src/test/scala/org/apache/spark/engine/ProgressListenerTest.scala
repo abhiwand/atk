@@ -74,7 +74,7 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
 
     when(job.finalStage).thenReturn(finalStage1)
 
-    val jobStart = SparkListenerJobStart(job.jobId, stageIds)
+    val jobStart = SparkListenerJobStart(job.jobId, 1, stageIds)
 
     listener onJobStart jobStart
     listener
@@ -96,13 +96,13 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     val job1 = mock[ActiveJob]
     when(job1.jobId).thenReturn(1)
 
-    val jobStart1 = SparkListenerJobStart(job1.jobId, stageIds)
+    val jobStart1 = SparkListenerJobStart(job1.jobId, 1, stageIds)
     listener onJobStart jobStart1
 
     val job2 = mock[ActiveJob]
     when(job2.jobId).thenReturn(2)
 
-    val jobStart2 = SparkListenerJobStart(job2.jobId, Array(stagefour, stagefive, stagesix, stageseven))
+    val jobStart2 = SparkListenerJobStart(job2.jobId, 2, Array(stagefour, stagefive, stagesix, stageseven))
     listener onJobStart jobStart2
 
     listener
@@ -138,7 +138,7 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     val job = mock[ActiveJob]
     when(job.jobId).thenReturn(1)
 
-    val jobStart = SparkListenerJobStart(job.jobId, Seq(stageOne, stageTwo, stageThree, stageFour, stageFive), null)
+    val jobStart = SparkListenerJobStart(job.jobId, 1, Seq(stageOne, stageTwo, stageThree, stageFour, stageFive), null)
     listener onJobStart jobStart
 
     listener.jobIdToStagesIds(1).toList.sorted shouldEqual List(1, 2, 3, 4, 5)

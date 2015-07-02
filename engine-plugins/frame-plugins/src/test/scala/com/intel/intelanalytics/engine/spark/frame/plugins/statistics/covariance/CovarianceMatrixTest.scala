@@ -42,9 +42,9 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     val frameRdd = new FrameRdd(schema, rdd)
     val result = CovarianceFunctions.covarianceMatrix(frameRdd, columnsList).collect()
     result.size shouldBe 3
-    result(0) shouldBe Array(630.0, 450.0, 225.0)
-    result(1) shouldBe Array(450.0, 450.0, 0.0)
-    result(2) shouldBe Array(225.0, 0.0, 900.0)
+    result(0) shouldBe sql.Row(630.0, 450.0, 225.0)
+    result(1) shouldBe sql.Row(450.0, 450.0, 0.0)
+    result(2) shouldBe sql.Row(225.0, 0.0, 900.0)
   }
   "CovarianceFunctions matrix calculations" should "return the correct values for vector data types" in {
     val arrGenericRow: Array[sql.Row] = inputArray.map(row => {
@@ -74,9 +74,9 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     val result = CovarianceFunctions.covarianceMatrix(frameRdd, List("col_0", "col_1")).collect()
 
     result.size shouldBe 3
-    result(0) shouldBe Array(630.0, 450.0, 225.0)
-    result(1) shouldBe Array(450.0, 450.0, 0.0)
-    result(2) shouldBe Array(225.0, 0.0, 900.0)
+    result(0) shouldBe sql.Row(630.0, 450.0, 225.0)
+    result(1) shouldBe sql.Row(450.0, 450.0, 0.0)
+    result(2) shouldBe sql.Row(225.0, 0.0, 900.0)
   }
 
 }
