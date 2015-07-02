@@ -27,7 +27,7 @@ from decorator import decorator
 from intelanalytics.core.api import api_status
 import intelanalytics.rest.config as config
 from intelanalytics.rest.server import Server
-from intelanalytics.rest.uaa import get_oauth_token, get_refreshed_oauth_token
+from intelanalytics.rest.uaa import get_oauth_token, get_refreshed_oauth_token, get_oauth_server_uri
 from intelanalytics.meta.installapi import install_api
 
 
@@ -268,7 +268,7 @@ server = IaServer()
 
 class _CreateCredentialsCache(object):
     """caches the most recent user entries, to prevent retyping  (excludes password)"""
-    oauth_uri=None
+    uri=None
     user=None
 
 
@@ -286,32 +286,53 @@ def create_credentials_file(filename):
         pass
 
     cache = _CreateCredentialsCache  # alias the cache singleton for convenience
-    cache.oauth_uri = default_input("OAuth server URI", cache.oauth_uri)
+    cache.uri = default_input("URI of ATK or OAuth server", cache.uri)
     cache.user = default_input("User name", cache.user)
-    if cache.oauth_uri:
+    atk_uri = None
+    oauth_uri = None
+    connect_now = False
+    if cache.uri:
         password = getpass.getpass()
         stars = "*" * len(password)
+        # Get OAuth server URI from ATK server or else return given URI
         try:
-            token_type, token, refresh_token = get_oauth_token(cache.oauth_uri, cache.user, password)
+            oauth_uri = get_oauth_server_uri(cache.uri)  # try using ATK URI first
+        except:
+            oauth_uri = cache.uri
+            logger.info("Using UAA uri %s provided explicitly." % oauth_uri)
+        else:
+            atk_uri = cache.uri  # save fact that this was an ATK URI
+            logger.info("Using UAA uri %s obtained from ATK server." % oauth_uri)
+        try:
+            token_type, token, refresh_token = get_oauth_token(oauth_uri, cache.user, password)
         except Exception as error:
             raise RuntimeError("""
 Unable to acquire oauth token with these credentials.
-  OAuth server URI: %s
+  URI: %s
   User name: %s
   Password: %s
 
   Error msg: %s
-""" % (cache.oauth_uri, cache.user, stars, str(error)))
+""" % (cache.uri, cache.user, stars, str(error)))
+
+        if atk_uri:
+            connect_prompt = raw_input("Connect now? [y/N] ")
+            connect_now = False if not connect_prompt else connect_prompt[0].lower() == 'y'
+
     else:
         token_type, token, refresh_token = None, None, None
 
     creds = dict({ 'user': cache.user,
-                   'oauth_uri': cache.oauth_uri,
+                   'oauth_uri': oauth_uri,
                    'token_type': token_type,
                    'token': token,
                    'refresh_token': refresh_token })
-    # call uaa and get the token...
-    # entanglement with server
+
     with open(cleaned_path, "w") as f:
         f.write(json.dumps(creds, indent=2))
     print "\nCredentials file created at '%s'" % cleaned_path
+
+    if connect_now:
+        print "Attempting to connect to %s now..." % atk_uri
+        server.uri = atk_uri
+        server.connect(cleaned_path)
