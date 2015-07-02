@@ -4,7 +4,7 @@
 #intelanalytics init script
 #
 #chkconfig: 345 99 25
-#description: intel analytics rest server for doing big data analytics
+#description: intel analytics rest server for big data analytics
 #
 
 # Source function library.
@@ -32,7 +32,7 @@ verifySparkHome(){
 
 initctlFunc() {
 	local event=$1
-	initctl $event $prog 
+	initctl $event $prog
 	RETVAL=$?
 	return $RETVAL
 }

@@ -20,7 +20,23 @@ import intelanalytics.rest.http as http
 from intelanalytics.rest.server import Server
 
 
+def get_oauth_server_uri(atk_uri):
+    """Get the UAA server URI from the ATK Server"""
+    server = _get_simple_atk_server(atk_uri)
+    response = http.get(server, "oauth_server")
+    server._check_response(response)
+    return response.json()['uri']
+
+
+def _get_simple_atk_server(atk_uri):
+    """Gets ATK Server object for very simple HTTP"""
+    scheme = Server._get_value_from_config('scheme')
+    headers = Server._get_value_from_config('headers')
+    return Server(atk_uri, scheme, headers)
+
+
 def _get_uaa_server(uaa_uri):
+    """Gets a Server object for UAA comms"""
     scheme = Server._get_value_from_config('uaa_scheme')
     headers = Server._get_value_from_config('uaa_headers')
     return Server(uaa_uri, scheme, headers)

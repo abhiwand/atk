@@ -25,7 +25,7 @@ import com.intel.intelanalytics.domain.graph.construction.{ EdgeRule, PropertyRu
 import com.intel.intelanalytics.domain.graph.{ GraphName, GraphEntity, LoadGraphArgs }
 import com.intel.intelanalytics.domain.schema.DataTypes.DataType
 import com.intel.intelanalytics.domain.schema.Schema
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import com.typesafe.config.Config
 
 /**
@@ -149,7 +149,7 @@ object GraphBuilderConfigFactory {
 
     // load settings from titan.conf file...
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
-    val titanConfiguration = SparkEngineConfig.titanLoadConfiguration
+    val titanConfiguration = EngineConfig.titanLoadConfiguration
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
     titanConfiguration.setProperty(titanGraphNameKey, backendStorageName)
     titanConfiguration
@@ -168,7 +168,7 @@ object GraphBuilderConfigFactory {
 
     // load settings from titan.conf file...
     // ... the configurations are Java objects and the conversion requires jumping through some hoops...
-    val titanConfiguration = SparkEngineConfig.createTitanConfiguration(commandConfig, titanPath)
+    val titanConfiguration = EngineConfig.createTitanConfiguration(commandConfig, titanPath)
     val titanGraphNameKey = getTitanGraphNameKey(titanConfiguration)
     titanConfiguration.setProperty(titanGraphNameKey, backendStorageName)
     titanConfiguration

@@ -160,7 +160,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                                   label match {
                                     case Some(label) => {
                                       onComplete(engine.getVertex(id, label)) {
-                                        case Success(Some(frame)) => {
+                                        case Success(frame) => {
                                           import spray.httpx.SprayJsonSupport._
                                           import ViewModelJsonImplicits.getDataFrameFormat
                                           complete(FrameDecorator.decorateEntity(uri.toString, Nil, frame))
@@ -197,7 +197,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                                   label match {
                                     case Some(label) => {
                                       onComplete(engine.getEdge(id, label)) {
-                                        case Success(Some(frame)) => {
+                                        case Success(frame) => {
                                           import spray.httpx.SprayJsonSupport._
                                           import ViewModelJsonImplicits.getDataFrameFormat
                                           complete(FrameDecorator.decorateEntity(uri.toString, Nil, frame))

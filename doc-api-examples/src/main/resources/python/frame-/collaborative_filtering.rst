@@ -18,6 +18,9 @@ Examples
     c = ia.CsvFile(d,s)
     f = ia.Frame(c)
     r = f.collaborative_filtering("a", "b", "c", "als")
+    r['user_frame'].inspect()
+    r['item_frame'].inspect()
+    r['report']
 
 .. only:: latex
 
@@ -27,7 +30,7 @@ Examples
         ... userColName = "a",
         ... itemColName  = "b",
         ... ratingColName = "c",
-        ... alsOrCgd = "als")
+        ... evaluationFunction = "als")
 
 
 The expected output for ALS is like this:

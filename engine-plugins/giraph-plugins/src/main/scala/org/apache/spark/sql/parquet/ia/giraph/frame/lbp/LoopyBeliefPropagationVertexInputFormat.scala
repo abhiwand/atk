@@ -58,17 +58,7 @@ class LoopyBeliefPropagationVertexInputFormat extends VertexValueInputFormat[Lon
   }
 
   override def getSplits(context: JobContext, minSplitCountHint: Int): java.util.List[InputSplit] = {
-    val path: String = new LoopyBeliefPropagationConfiguration(context.getConfiguration).getConfig.inputFormatConfig.parquetFileLocation
-    val fs: FileSystem = FileSystem.get(context.getConfiguration)
-    val statuses = if (fs.isDirectory(new Path(path))) {
-      fs.globStatus(new Path(path + "/*.parquet"))
-    }
-    else {
-      fs.globStatus(new Path(path))
-    }
-
-    val footers = parquetInputFormat.getFooters(context.getConfiguration, statuses.toList.asJava)
-    parquetInputFormat.getSplits(context.getConfiguration, footers).asInstanceOf[java.util.List[InputSplit]]
+    parquetInputFormat.getSplits(context)
   }
 }
 

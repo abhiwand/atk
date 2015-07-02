@@ -70,10 +70,13 @@ class ApiService(val commonDirectives: CommonDirectives, val apiV1Service: ApiV1
       versions = List("v1"))
   }
 
+  lazy val oauthServer = { new OAuthServer(RestServerConfig.uaaUri) }
+
   import spray.json._
   import spray.httpx.SprayJsonSupport._
   import IADefaultJsonProtocol._
   implicit val descFormat = jsonFormat3(ServiceDescription)
+  implicit val oauthServerFormat = jsonFormat1(OAuthServer)
 
   /**
    * Main Route entry point to the API Server
@@ -91,8 +94,16 @@ class ApiService(val commonDirectives: CommonDirectives, val apiV1Service: ApiV1
             complete(description)
           }
         }
+      } ~
+      path("oauth_server") {
+        respondWithMediaType(`application/json`) {
+          commonDirectives.respondWithBuildId {
+            complete(oauthServer)
+          }
+        }
       }
   }
 }
 
 case class ServiceDescription(name: String, identifier: String, versions: List[String])
+case class OAuthServer(uri: String)

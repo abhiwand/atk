@@ -18,7 +18,7 @@ package com.intel.giraph.io.titan.formats;
 
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.thinkaurelius.titan.hadoop.formats.titan_050.util.CachedTitanInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.util.TitanInputFormat;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.hadoop.conf.Configuration;
@@ -42,7 +42,7 @@ import java.util.List;
 public abstract class TitanVertexInputFormat<I extends WritableComparable, V extends Writable, E extends Writable>
         extends VertexInputFormat<I, V, E> {
 
-    protected CachedTitanInputFormat titanInputFormat = null;
+    protected TitanInputFormat titanInputFormat = null;
 
 
     /**

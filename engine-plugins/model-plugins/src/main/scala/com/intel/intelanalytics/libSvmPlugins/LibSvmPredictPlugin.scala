@@ -16,7 +16,7 @@
 
 package com.intel.intelanalytics.libSvmPlugins
 
-import com.intel.intelanalytics.domain.{ CreateEntityArgs }
+import com.intel.intelanalytics.domain.CreateEntityArgs
 import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
 import com.intel.intelanalytics.domain.schema.DataTypes
 import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }

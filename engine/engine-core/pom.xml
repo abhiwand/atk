@@ -77,6 +77,12 @@
                                     </includes>
                                 </filter>
                                 <filter>
+                                    <artifact>org.apache.spark:spark-core_${scala.short.version}</artifact>
+                                    <excludes>
+                                        <exclude>org/apache/spark/api/java/JavaRDD</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>*.html</exclude>

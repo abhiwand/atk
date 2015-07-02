@@ -17,8 +17,8 @@
 package com.intel.giraph.io.titan.formats;
 
 import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat;
-import com.thinkaurelius.titan.hadoop.formats.titan_050.cassandra.CachedTitanCassandraInputFormat;
-import com.thinkaurelius.titan.hadoop.formats.titan_050.util.CachedTitanInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.util.TitanInputFormat;
 import org.apache.hadoop.conf.Configuration;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
@@ -31,11 +31,11 @@ public class TitanInputFormatFactory {
     /**
      * Get the TitanInputFormat based on the storage backend (either HBase or Cassandra)
      */
-    public static CachedTitanInputFormat getTitanInputFormat(Configuration conf) {
-        CachedTitanInputFormat titanInputFormat;
+    public static TitanInputFormat getTitanInputFormat(Configuration conf) {
+        TitanInputFormat titanInputFormat;
 
         if ("cassandra".equals(GIRAPH_TITAN_STORAGE_BACKEND.get(conf))) {
-            titanInputFormat = new CachedTitanCassandraInputFormat();
+            titanInputFormat = new TitanCassandraInputFormat();
         } else {
             titanInputFormat = new GBTitanHBaseInputFormat();
         }

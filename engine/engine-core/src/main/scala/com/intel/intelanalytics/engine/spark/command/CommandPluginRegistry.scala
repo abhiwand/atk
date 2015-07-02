@@ -58,51 +58,6 @@ class CommandPluginRegistry(loader: CommandLoader) {
   }
 
   /**
-   * Registers a function as a command using FunctionCommand. This is a convenience method,
-   * it is also possible to construct a FunctionCommand explicitly and pass it to the
-   * registerCommand method that takes a CommandPlugin.
-   *
-   * For where numberOfJobs is constant for a command.
-   *
-   * @param name the name of the command
-   * @param function the function to be called when running the command
-   * @param numberOfJobs the number of jobs that this command will create (constant)
-   * @tparam A the argument type of the command
-   * @tparam R the return type of the command
-   * @return the CommandPlugin instance created during the registration process.
-   */
-  def registerCommand[A <: Product: JsonFormat: ClassManifest: TypeTag, R <: Product: JsonFormat: ClassManifest: TypeTag](name: String,
-                                                                                                                          function: (A, UserPrincipal, SparkInvocation) => R,
-                                                                                                                          numberOfJobs: Int = 1,
-                                                                                                                          doc: Option[CommandDoc] = None): CommandPlugin[A, R] = {
-    registerCommand(name, function, (A) => numberOfJobs, doc)
-  }
-
-  /**
-   * Registers a function as a command using FunctionCommand. This is a convenience method,
-   * it is also possible to construct a FunctionCommand explicitly and pass it to the
-   * registerCommand method that takes a CommandPlugin.
-   *
-   * For where numberOfJobs can change based on the arguments to a command.
-   *
-   * @param name the name of the command
-   * @param function the function to be called when running the command
-   * @param numberOfJobsFunc function for determining the number of jobs that this command will create
-   * @tparam A the argument type of the command
-   * @tparam R the return type of the command
-   * @return the CommandPlugin instance created during the registration process.
-   */
-  def registerCommand[A <: Product: JsonFormat: ClassManifest: TypeTag, R <: Product: JsonFormat: ClassManifest: TypeTag](name: String,
-                                                                                                                          function: (A, UserPrincipal, SparkInvocation) => R,
-                                                                                                                          numberOfJobsFunc: (A) => Int,
-                                                                                                                          doc: Option[CommandDoc]): CommandPlugin[A, R] = {
-    // Note: providing a default =None to the doc parameter causes a strange compiler error where it can't
-    // distinguish this method from the one which takes a plain Int for the numberOfJobs. Since the
-    // numberOfJobsFunc variation is much less frequently used, we'll make doc a required parameter
-    registerCommand(new SparkFunctionCommand(name, function.asInstanceOf[(A, UserPrincipal, Invocation) => R], numberOfJobsFunc, doc))
-  }
-
-  /**
    * Returns all the command definitions registered with this command executor.
    *
    * NOTE: this is a val because the underlying operations are not thread-safe -- Todd 3/10/2015

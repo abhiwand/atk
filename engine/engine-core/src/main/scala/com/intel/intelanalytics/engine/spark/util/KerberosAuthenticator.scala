@@ -18,7 +18,7 @@ package com.intel.intelanalytics.engine.spark.util
 
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.spark.deploy.SparkHadoopUtil
@@ -38,12 +38,12 @@ object KerberosAuthenticator extends EventLogging with EventLoggingImplicits wit
    * Login to Kerberos cluster using a keytab and principal name specified in config files
    */
   def loginWithKeyTab(): Unit = {
-    if (SparkEngineConfig.enableKerberos) {
+    if (EngineConfig.enableKerberos) {
       println("What's in my path?")
       Directory.Current.get.deepFiles.foreach(println)
       //if kerberos is enabled the following configs will have been set.
-      val keyTabPrincipal: String = SparkEngineConfig.kerberosPrincipalName.get
-      val keyTabFile: String = SparkEngineConfig.kerberosKeyTabPath.get
+      val keyTabPrincipal: String = EngineConfig.kerberosPrincipalName.get
+      val keyTabFile: String = EngineConfig.kerberosKeyTabPath.get
       info(s"Authenticate with Kerberos\n\tPrincipal: $keyTabPrincipal\n\tKeyTab File: $keyTabFile")
       UserGroupInformation.loginUserFromKeytab(
         keyTabPrincipal,
@@ -58,7 +58,7 @@ object KerberosAuthenticator extends EventLogging with EventLoggingImplicits wit
    * @return UserGroupInformation for Kerberos TGT ticket
    */
   def loginConfigurationWithKeyTab(configuration: Configuration): Unit = withMyClassLoader {
-    if (SparkEngineConfig.enableKerberos) {
+    if (EngineConfig.enableKerberos) {
       UserGroupInformation.setConfiguration(configuration)
       KerberosAuthenticator.loginWithKeyTab()
     }
@@ -69,10 +69,10 @@ object KerberosAuthenticator extends EventLogging with EventLoggingImplicits wit
    */
   def loginWithKeyTabCLI(): Unit = {
     //Note this method logs executes kinit for the user running ATK Rest Server. This user must be able to get a valid TGT.
-    if (SparkEngineConfig.enableKerberos) {
+    if (EngineConfig.enableKerberos) {
       try {
         info("Authenticate to Kerberos using kinit")
-        val command = s"kinit ${SparkEngineConfig.kerberosPrincipalName.get} -k -t ${SparkEngineConfig.kerberosKeyTabPath.get}"
+        val command = s"kinit ${EngineConfig.kerberosPrincipalName.get} -k -t ${EngineConfig.kerberosKeyTabPath.get}"
         val p = Runtime.getRuntime.exec(command)
         val exitValue = p.waitFor()
         info(s"kinit exited with Exit Value: $exitValue")

@@ -18,7 +18,6 @@ package com.intel.graphbuilder.titan.cache;
 
 import com.intel.graphbuilder.util.SerializableBaseConfiguration;
 import com.thinkaurelius.titan.hadoop.config.ModifiableHadoopConfiguration;
-import com.thinkaurelius.titan.hadoop.formats.titan_050.util.CachedTitanInputFormat;
 import org.apache.hadoop.conf.Configuration;
 
 import java.util.Iterator;
@@ -38,6 +37,12 @@ public class TitanHadoopCacheConfiguration {
      * Prefix that identifies Titan/Hadoop specific configurations
      */
     public static String TITAN_HADOOP_PREFIX = "titan.hadoop.input.conf.";
+
+    /**
+     * Class name for Titan Hadoop Setup
+     */
+    public static final String SETUP_PACKAGE_PREFIX = "com.thinkaurelius.titan.hadoop.formats.util.input.";
+    public static final String SETUP_CLASS_NAME = ".TitanHadoopSetupImpl";
 
     /**
      * Titan configuration properties
@@ -87,8 +92,8 @@ public class TitanHadoopCacheConfiguration {
      */
     public String getInputFormatClassName() {
         String titanVersion = faunusConf.get(TITAN_INPUT_VERSION);
-        String inputFormatClassName = CachedTitanInputFormat.SETUP_PACKAGE_PREFIX +
-                titanVersion + CachedTitanInputFormat.SETUP_CLASS_NAME;
+        String inputFormatClassName = SETUP_PACKAGE_PREFIX +
+                titanVersion + SETUP_CLASS_NAME;
         return(inputFormatClassName);
     }
 

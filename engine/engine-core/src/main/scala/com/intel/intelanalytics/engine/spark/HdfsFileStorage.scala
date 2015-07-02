@@ -57,7 +57,7 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
   }(null)
 
   def configuration: Configuration = {
-    if (SparkEngineConfig.enableKerberos) {
+    if (EngineConfig.enableKerberos) {
       KerberosAuthenticator.loginConfigurationWithKeyTab(securedConfiguration)
     }
     securedConfiguration
@@ -70,7 +70,7 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
    * @return Hadoop FileSystem
    */
   def fs: FileSystem = {
-    if (SparkEngineConfig.enableKerberos) {
+    if (EngineConfig.enableKerberos) {
       KerberosAuthenticator.loginConfigurationWithKeyTab(securedConfiguration)
     }
     fileSystem

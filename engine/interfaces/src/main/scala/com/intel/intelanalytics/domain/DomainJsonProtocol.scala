@@ -278,7 +278,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
         case n: Float => new JsNumber(n)
         case n: Double => new JsNumber(n)
         case s: String => new JsString(s)
-        case v: ArrayBuffer[Double] => new JsArray(v.map(d => JsNumber(d)).toList) // for vector DataType
+        case v: ArrayBuffer[_] => new JsArray(v.map { case d: Double => JsNumber(d) }.toList) // for vector DataType
         case n: java.lang.Long => new JsNumber(n.longValue())
         case unk => serializationError("Cannot serialize " + unk.getClass.getName)
       }

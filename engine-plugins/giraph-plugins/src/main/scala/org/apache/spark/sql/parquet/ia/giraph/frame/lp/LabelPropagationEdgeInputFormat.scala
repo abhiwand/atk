@@ -60,20 +60,7 @@ class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LongWritable, Doub
    * @return a list of input splits
    */
   override def getSplits(context: JobContext, minSplitCountHint: Int): java.util.List[InputSplit] = {
-    //TODO refactor into a utility method and use it for all readers
-    val conf = context.getConfiguration
-    val path: String = new LabelPropagationConfiguration(conf).getConfig.inputFormatConfig.parquetFileLocation
-    val fs: FileSystem = FileSystem.get(conf)
-
-    val statuses = if (fs.isDirectory(new Path(path))) {
-      fs.globStatus(new Path(path + "/*.parquet"))
-    }
-    else {
-      fs.globStatus(new Path(path))
-    }
-    val footers = parquetInputFormat.getFooters(context.getConfiguration, statuses.toList.asJava)
-
-    parquetInputFormat.getSplits(conf, footers).asInstanceOf[java.util.List[InputSplit]]
+    parquetInputFormat.getSplits(context)
   }
 }
 

@@ -42,7 +42,7 @@ To connect to a specific server:
 Connections requiring OAuth
 ---------------------------
 
-To connect to a DP2 instance of |ATK|, the python client must have an OAuth
+To connect to a Analytics PaaS instance of |ATK|, the python client must have an OAuth
 access token (see
 `oauth tokens <http://self-issued.info/docs/draft-ietf-oauth-v2-bearer.html>`).
 The user must have a credentials file which holds an OAuth access token and

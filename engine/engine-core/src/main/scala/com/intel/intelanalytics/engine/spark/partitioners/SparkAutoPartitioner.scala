@@ -20,7 +20,7 @@ import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
 import com.intel.intelanalytics.engine.plugin.Invocation
 import com.intel.intelanalytics.engine.spark.partitioners.SparkAutoPartitionStrategy.{ ShrinkOnly, ShrinkOrGrow }
-import com.intel.intelanalytics.engine.spark.{ HdfsFileStorage, SparkEngineConfig }
+import com.intel.intelanalytics.engine.spark.{ HdfsFileStorage, EngineConfig }
 import org.apache.spark.frame.FrameRdd
 
 /**
@@ -59,7 +59,7 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging wi
    * @return repartitioned frame RDD
    */
   def repartitionFromFileSize(path: String, frameRdd: FrameRdd)(implicit invocation: Invocation): FrameRdd = withContext[FrameRdd]("spark-auto-partitioning") {
-    val repartitionedRdd = SparkEngineConfig.repartitionStrategy match {
+    val repartitionedRdd = EngineConfig.repartitionStrategy match {
       case ShrinkOnly =>
         repartition(path, frameRdd, false)
       case ShrinkOrGrow =>
@@ -85,11 +85,11 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging wi
     val framePartitions = frameRdd.partitions.length
 
     // Frame compression ratio prevents us from under-estimating actual file size for compressed formats like Parquet
-    val approxFileSize = fileStorage.size(path) * SparkEngineConfig.frameCompressionRatio
+    val approxFileSize = fileStorage.size(path) * EngineConfig.frameCompressionRatio
     val desiredPartitions = partitionsFromFileSize(approxFileSize.toLong)
 
     val delta = Math.abs(desiredPartitions - framePartitions) / framePartitions.toDouble
-    if (delta >= SparkEngineConfig.repartitionThreshold) {
+    if (delta >= EngineConfig.repartitionThreshold) {
       val repartitionedRdd = frameRdd.coalesce(desiredPartitions, shuffle)
       new FrameRdd(frameRdd.frameSchema, repartitionedRdd)
     }
@@ -104,8 +104,8 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging wi
    * @return partition count that should be used
    */
   private[spark] def partitionsFromFileSize(fileSize: Long): Int = {
-    var partitionCount = SparkEngineConfig.maxPartitions
-    SparkEngineConfig.autoPartitionerConfig.foreach(partitionConfig => {
+    var partitionCount = EngineConfig.maxPartitions
+    EngineConfig.autoPartitionerConfig.foreach(partitionConfig => {
       if (fileSize <= partitionConfig.fileSizeUpperBound) {
         partitionCount = partitionConfig.partitionCount
       }

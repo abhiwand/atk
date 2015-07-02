@@ -22,7 +22,7 @@ import com.intel.intelanalytics.UnitReturn
 import com.intel.intelanalytics.domain.command.CommandDoc
 import com.intel.intelanalytics.domain.frame.ExportHdfsJsonArgs
 import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.{ SparkEngineConfig, HdfsFileStorage }
+import com.intel.intelanalytics.engine.spark.{ EngineConfig, HdfsFileStorage }
 import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
 import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.hadoop.fs.Path
@@ -71,7 +71,7 @@ class ExportHdfsJsonPlugin extends SparkCommandPlugin[ExportHdfsJsonArgs, UnitRe
    */
   override def execute(arguments: ExportHdfsJsonArgs)(implicit invocation: Invocation): UnitReturn = {
 
-    val fileStorage = new HdfsFileStorage(SparkEngineConfig.fsRoot)
+    val fileStorage = new HdfsFileStorage(EngineConfig.fsRoot)
     require(!fileStorage.exists(new Path(arguments.folderName)), "File or Directory already exists")
     val frame: SparkFrameData = resolve(arguments.frame)
     // load frame as RDD

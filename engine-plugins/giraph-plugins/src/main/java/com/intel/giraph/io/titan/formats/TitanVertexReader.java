@@ -18,7 +18,7 @@ package com.intel.giraph.io.titan.formats;
 
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
-import com.thinkaurelius.titan.hadoop.formats.titan_050.util.CachedTitanInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.util.TitanInputFormat;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
@@ -43,7 +43,7 @@ public abstract class TitanVertexReader<I extends WritableComparable, V extends 
         extends VertexReader<I, V, E> {
 
     protected TitanVertexBuilder vertexBuilder = null;
-    protected CachedTitanInputFormat titanInputFormat = null;
+    protected TitanInputFormat titanInputFormat = null;
     private final RecordReader<NullWritable, FaunusVertex> recordReader;
     private TaskAttemptContext context;
     private final Logger LOG = Logger.getLogger(TitanVertexReader.class);

@@ -627,6 +627,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Notes
         -----
+        *   Column order is not guaranteed when columns are added
         *   The column names created by aggregation functions in the new frame
             are the original column name appended with the '_' character and
             the aggregation function.
@@ -830,7 +831,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         The column from the *left* frame (originally the current frame) will be
         copied and the column name will have the string "_L" added to it.
         The same thing will happen with the column from the *right* frame,
-        except its name has the string "_R" appended.
+        except its name has the string "_R" appended. The order of columns
+        after this method is called is not guaranteed.
 
         It is recommended that you rename the columns to meaningful terms prior
         to using the ``join`` method.

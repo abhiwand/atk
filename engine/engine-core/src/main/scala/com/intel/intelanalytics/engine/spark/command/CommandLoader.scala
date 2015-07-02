@@ -17,7 +17,7 @@
 package com.intel.intelanalytics.engine.spark.command
 
 import com.intel.intelanalytics.engine.plugin.CommandPlugin
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.intelanalytics.engine.spark.EngineConfig
 import com.intel.intelanalytics.component.{ Archive, Boot }
 
 /**
@@ -29,7 +29,7 @@ class CommandLoader {
    * @return mapping between name and plugin, mapping between name and archive's name the plugin was loaded from
    */
   def loadFromConfig(): CommandPluginRegistryMaps = {
-    val commandPluginsWithArchiveName = SparkEngineConfig.archives.flatMap {
+    val commandPluginsWithArchiveName = EngineConfig.archives.flatMap {
       archive =>
         Archive.getArchive(archive)
           .getAll[CommandPlugin[_ <: Product, _ <: Product]]("command")

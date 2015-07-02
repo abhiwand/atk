@@ -40,6 +40,9 @@ LOG=$TARGET_DIR/rest-server.log
 
 mkdir -p $FS_ROOT
 
+export SPARK_EVENTS_DIR=$TARGET_DIR/spark-events
+mkdir -p $SPARK_EVENTS_DIR
+
 echo "$NAME remove old rest-server.log and datasets from target dir"
 rm -f $LOG $TARGET_DIR/datasets
 
@@ -53,6 +56,8 @@ echo "starting"
 java $@ -XX:MaxPermSize=256m -Xss10m -cp "$CONF:$LAUNCHER" \
     -Dconfig.resource=integration-test.conf \
     -Dintel.analytics.engine.fs.root=file:$FS_ROOT \
+    -Dintel.analytics.engine.spark.conf.properties.spark.sql.parquet.useDataSourceApi=false \
+    -Dintel.analytics.engine.spark.conf.properties.spark.eventLog.dir=file:$SPARK_EVENTS_DIR\
     com.intel.intelanalytics.component.Boot rest-server com.intel.intelanalytics.rest.RestServerApplication > $LOG 2>&1 &
 
 API_SERVER_PID=$!

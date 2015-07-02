@@ -632,9 +632,9 @@ object DataTypes extends EventLogging {
       case v: VectorScalaTypeAlias => v
       case ab: ArrayBuffer[_] => ab.map(value => toDouble(value)).toVector
       case a: Array[_] => a.map(value => toDouble(value)).toVector
-      case l: List[Any] => l.map(value => toDouble(value)).toVector
-      case i: Iterator[Any] => i.map(value => toDouble(value)).toVector
-      case i: java.util.Iterator[Any] => i.map(value => toDouble(value)).toVector
+      case l: List[_] => l.map(value => toDouble(value)).toVector
+      case i: Iterator[_] => i.map(value => toDouble(value)).toVector
+      case i: java.util.Iterator[_] => i.map(value => toDouble(value)).toVector
       case wa: mutable.WrappedArray[_] => wa.map(value => toDouble(value)).toVector
       case _ => throw new RuntimeException(s"${value.getClass.getName} toVector is not implemented")
     }

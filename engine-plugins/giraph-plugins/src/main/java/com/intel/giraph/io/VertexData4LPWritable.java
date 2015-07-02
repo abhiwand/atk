@@ -172,6 +172,12 @@ public final class VertexData4LPWritable implements Writable {
     }
 
     /**
+       Sets the status of a vertex
+     */
+    public void setLabeledStatus (boolean wasLabeled) {
+        this.wasLabeled = wasLabeled;
+    }
+    /**
      * Initialize the labels on vertex
      */
     private void setStatusAndUnlabeledValues(boolean wasLabeled) {

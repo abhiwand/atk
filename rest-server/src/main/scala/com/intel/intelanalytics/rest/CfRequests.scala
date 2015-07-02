@@ -18,7 +18,6 @@ package com.intel.intelanalytics.rest
 
 import com.intel.event.EventLogging
 import com.intel.intelanalytics.EventLoggingImplicits
-import com.intel.intelanalytics.rest.RestServerConfig
 import org.apache.commons.httpclient.{ HttpURL, HttpsURL }
 import org.apache.http.HttpHost
 import org.apache.http.client.config.RequestConfig

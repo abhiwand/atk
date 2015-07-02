@@ -23,7 +23,6 @@ import com.intel.intelanalytics.engine.spark.command._
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.intel.intelanalytics.domain.command.{ Command, CommandTemplate }
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
 import org.apache.spark.SparkContext
 import spray.json._
 import com.intel.intelanalytics.domain.DomainJsonProtocol
@@ -71,7 +70,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
   val commandPluginRegistry = new CommandPluginRegistry(loader)
   def createCommandExecutor(): CommandExecutor = {
-    val engine = mock[SparkEngine]
+    val engine = mock[EngineImpl]
     val commandStorage = new FakeCommandStorage
     val contextFactory = mock[SparkContextFactory]
     val sc = mock[SparkContext]

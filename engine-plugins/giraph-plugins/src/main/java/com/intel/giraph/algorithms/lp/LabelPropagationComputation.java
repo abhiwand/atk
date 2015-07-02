@@ -36,6 +36,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
+import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 
 import java.io.File;
@@ -67,12 +68,16 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
     /** The trade-off parameter between prior and posterior */
     private float lambda;
 
+    /** Default to an invalid value */
+    private Vector initialVectorValues;
+
     @Override
     public void preSuperstep() {
         LabelPropagationConfig config = new LabelPropagationConfiguration(getConf()).getConfig();
 
         maxSupersteps = config.maxIterations();
         lambda = config.lambda();
+        initialVectorValues = null;
     }
 
     /**
@@ -84,8 +89,20 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
         
         // normalize prior and initialize posterior
         VertexData4LPWritable vertexValue = vertex.getValue();
-        Vector priorValues = vertexValue.getPriorVector().normalize(1d);
-        
+        Vector priorValues = vertexValue.getPriorVector();
+        if (null != priorValues) {
+            priorValues = priorValues.normalize(1d);
+            initialVectorValues = priorValues;
+        }
+        else if (initialVectorValues != null) {
+            priorValues = initialVectorValues;
+            vertexValue.setLabeledStatus(false);
+        }
+        else {
+         throw new RuntimeException("Vector labels missing from input data for vertex " +
+                                    vertex.getId() +
+                                    ". Add edge with vertex as first column.");
+        }
         vertexValue.setPriorVector(priorValues);
         vertexValue.setPosteriorVector(priorValues.clone());
         vertexValue.setDegree(initializeEdge(vertex));

@@ -16,7 +16,14 @@
 
 package com.intel.intelanalytics.domain.frame
 
-case class AddColumnsArgs(frame: FrameReference, columnNames: List[String], columnTypes: List[String], udf: Udf, columnsAccessed: List[String]) {
+import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation }
+
+case class AddColumnsArgs(
+    @ArgDoc("") frame: FrameReference,
+    @ArgDoc("") columnNames: List[String],
+    @ArgDoc("") columnTypes: List[String],
+    @ArgDoc("") udf: Udf,
+    @ArgDoc("") columnsAccessed: List[String]) {
   require(frame != null, "frame is required")
   require(columnNames != null, "column names is required")
   for {

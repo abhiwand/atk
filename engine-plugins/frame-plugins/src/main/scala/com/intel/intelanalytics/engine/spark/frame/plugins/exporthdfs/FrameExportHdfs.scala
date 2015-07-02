@@ -53,7 +53,7 @@ object FrameExportHdfs extends Serializable {
       val stringBuilder = new java.lang.StringBuilder
       val printer = new CSVPrinter(stringBuilder, csvFormat)
       val array = row.toSeq.map(col => if (col == null) "" else {
-        if (col.isInstanceOf[ArrayBuffer[Double]]) {
+        if (col.isInstanceOf[ArrayBuffer[_]]) {
           col.asInstanceOf[ArrayBuffer[Double]].mkString(",")
         }
         else {
@@ -61,7 +61,7 @@ object FrameExportHdfs extends Serializable {
         }
       })
       for (i <- array) printer.print(i)
-      stringBuilder.toString()
+      stringBuilder.toString
     })
 
     val addHeaders = frameRdd.sparkContext.parallelize(List(headers)) ++ csvRdd
@@ -91,7 +91,7 @@ object FrameExportHdfs extends Serializable {
           val value = row.toSeq.zip(headers).map {
             case (k, v) => new String("\"" + v.toString + "\":" + (if (k == null) "null"
             else if (k.isInstanceOf[String]) { "\"" + k.toString + "\"" }
-            else if (k.isInstanceOf[ArrayBuffer[Double]]) { k.asInstanceOf[ArrayBuffer[Double]].mkString("[", ",", "]") }
+            else if (k.isInstanceOf[ArrayBuffer[_]]) { k.asInstanceOf[ArrayBuffer[Double]].mkString("[", ",", "]") }
             else k.toString)
             )
           }
@@ -112,10 +112,9 @@ object FrameExportHdfs extends Serializable {
     frameRdd: FrameRdd,
     tablename: String) {
 
-    val sqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
-    // TODO move this function to sql package for access. Also this changes to registerRDDAsDataframe
-    //    sqlContext.registerRDDAsTable(frameRdd, "mytable")
-    sqlContext.sql("CREATE TABLE " + tablename + " STORED AS AVRO AS SELECT * FROM mytable")
+    val df = frameRdd.toDataFrameUsingHiveContext
+    df.registerTempTable("mytable")
+    df.sqlContext.asInstanceOf[org.apache.spark.sql.hive.HiveContext].sql("CREATE TABLE " + tablename + " STORED AS AVRO AS SELECT * FROM mytable")
   }
 
 }

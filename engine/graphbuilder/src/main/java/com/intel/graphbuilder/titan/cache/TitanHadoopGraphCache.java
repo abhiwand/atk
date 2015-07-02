@@ -19,21 +19,12 @@ package com.intel.graphbuilder.titan.cache;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-import com.intel.graphbuilder.util.SerializableBaseConfiguration;
-import com.thinkaurelius.titan.core.TitanFactory;
-import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.hadoop.config.ModifiableHadoopConfiguration;
-import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraHadoopGraph;
-import com.thinkaurelius.titan.hadoop.formats.hbase.TitanHBaseHadoopGraph;
-import com.thinkaurelius.titan.hadoop.formats.util.TitanHadoopGraph;
 import com.thinkaurelius.titan.hadoop.formats.util.input.TitanHadoopSetup;
-import com.thinkaurelius.titan.hadoop.formats.util.input.current.TitanHadoopSetupImpl;
 import com.thinkaurelius.titan.util.system.ConfigurationUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-
-import java.io.IOException;
 
 /**
  * This class caches Titan/Hadoop graphs so that multiple threads in a single JVM can share a Titan connection.
@@ -76,10 +67,10 @@ public class TitanHadoopGraphCache extends AbstractTitanGraphCache<TitanHadoopCa
                 ModifiableHadoopConfiguration faunusConf = config.getFaunusConfiguration();
                 TitanHadoopSetup titanHadoopSetup = ConfigurationUtil.instantiate(inputFormatClassName, new Object[]{faunusConf.getHadoopConfiguration()},
                         new Class[]{Configuration.class});
-                return(titanHadoopSetup);
+                return (titanHadoopSetup);
             }
         };
-        return(cacheLoader);
+        return (cacheLoader);
     }
 
 
@@ -96,7 +87,7 @@ public class TitanHadoopGraphCache extends AbstractTitanGraphCache<TitanHadoopCa
                 }
             }
         };
-        return(removalListener);
+        return (removalListener);
     }
 
 
