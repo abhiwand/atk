@@ -64,7 +64,7 @@ class FrameConstruction(unittest.TestCase):
         for i in column_names:
             self.assertNotEqual(None,frame[i])
 
-    @patch("intelanalytics.meta.installapi.download_server_commands", fake_download)
+    @patch("intelanalytics.meta.installapi.download_server_details", fake_download)
     def test_create(self, patched_be):
         connect()
         f = Frame()

@@ -71,7 +71,7 @@ ia.connect()
 from intelanalytics.meta.metaprog import get_installation, has_entity_collection, get_entity_collection, get_function_text
 from intelanalytics.meta.docstub import get_doc_stub_modules_text, get_doc_stub_init_text
 from intelanalytics.meta.names import upper_first, entity_type_to_class_name, indent, get_type_name
-from intelanalytics.meta.installapi import download_server_commands
+from intelanalytics.meta.installapi import download_server_details
 from intelanalytics.doc.pyrst import  get_command_def_rst, get_class_rst
 from intelanalytics.doc.restrst import get_command_def_rest_rst, get_commands_rest_index_content, get_command_rest_rst_file_name
 
@@ -330,7 +330,7 @@ delete_folder(dst_rest_api_dir)
 copy_template(rest_api)
 path = dst_rest_api_commands_dir  # the autogen stuff is just for commands/
 print "Creating rst files for REST API docs, using root_path %s" % path
-server_build_id, server_commands = download_server_commands(ia.server)  # rather than walk api, use all the defs from the server
+server_build_id, server_commands = download_server_details(ia.server)  # rather than walk api, use all the defs from the server
 for c in server_commands:
     write_command_def_rest_rst_file(path, c)
 write_commands_index_rest_rst_file(path, server_commands)
