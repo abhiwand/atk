@@ -70,7 +70,7 @@ public class CachedTitanHBaseInputFormat extends TitanHBaseInputFormat {
     public RecordReader<NullWritable, FaunusVertex> createRecordReader(final InputSplit inputSplit, final TaskAttemptContext taskAttemptContext) throws IOException, InterruptedException {
         return new CachedTitanHBaseRecordReader(this,
                 vertexQuery,
-                (TableRecordReader) cachedTableInputFormat.createRecordReader(inputSplit, taskAttemptContext),
+                cachedTableInputFormat.createRecordReader(inputSplit, taskAttemptContext),
                 cachedEdgestoreFamily);
     }
 

@@ -15,6 +15,7 @@
 */
 
 package com.intel.intelanalytics.engine.spark.command
+
 import com.intel.event.{ EventLogging }
 import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.engine.plugin.{ Invocation, Call }
@@ -89,6 +90,7 @@ object CommandDriver {
 
       println(s"Java Class Path is: ${System.getProperty("java.class.path")}")
       println(s"Current PWD is ${Directory.Current.get.toString()}")
+
       try {
         /* Set to true as for some reason in yarn cluster mode, this doesn't seem to be set on remote driver container */
         sys.props += Tuple2("SPARK_SUBMIT", "true")

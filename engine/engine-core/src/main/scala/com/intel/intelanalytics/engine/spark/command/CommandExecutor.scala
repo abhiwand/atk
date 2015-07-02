@@ -182,8 +182,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
   }
 
   private def getPluginJarPath(pluginJarsList: List[String], delimiter: String = ","): String = {
-    pluginJarsList.filter(_ != "engine-core")
-      .map(j => SparkContextFactory.jarPath(j)).mkString(delimiter)
+    pluginJarsList.map(j => SparkContextFactory.jarPath(j)).mkString(delimiter)
   }
 
   private def executeCommandOnYarn[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R], archiveName: Option[String])(implicit invocation: Invocation): Int = {
@@ -228,7 +227,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
           val executorClassPathString = "spark.executor.extraClassPath"
           val executorClassPathTuple = EngineConfig.sparkAppJarsLocal match {
             case true => (executorClassPathString,
-              s"${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
+              s".:${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
               s"${EngineConfig.hiveLib}:${getPluginJarPath(pluginJarsList, ":")}" +
               s"${EngineConfig.sparkConfProperties.get(executorClassPathString).getOrElse("")}")
             case false => (executorClassPathString,
@@ -237,7 +236,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
 
           val driverClassPathString = "spark.driver.extraClassPath"
           val driverClassPathTuple = (driverClassPathString,
-            s"${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
+            s".:interfaces.jar:launcher.jar:engine-core.jar:frame-plugins.jar:graph-plugins.jar:model-plugins.jar:application.conf:" +
             s"${pluginExtraClasspath.mkString(":")}:${EngineConfig.hiveLib}:${EngineConfig.hiveConf}:" +
             s"${EngineConfig.sparkConfProperties.get(driverClassPathString).getOrElse("")}")
 

@@ -1,17 +1,17 @@
 /*
-// Copyright (c) 2015 Intel Corporation 
+// Copyright (c) 2015 Intel Corporation
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 */
 
 /*
@@ -33,15 +33,21 @@
 
 package org.apache.spark.api.java
 
+import java.util.Comparator
+
+import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
 import org.apache.spark._
-import org.apache.spark.rdd.RDD
+import org.apache.spark.api.java.JavaSparkContext.fakeClassTag
 import org.apache.spark.api.java.function.{ Function => JFunction }
+import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
+import org.apache.spark.util.Utils
 
-@SerialVersionUID(-205673586731292241L)
-class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T]) extends JavaRDDLike[T, JavaRDD[T]] {
+@SerialVersionUID(3722068943746726131L)
+class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T])
+    extends JavaRDDLike[T, JavaRDD[T]] {
 
   override def wrapRDD(rdd: RDD[T]): JavaRDD[T] = JavaRDD.fromRDD(rdd)
 
@@ -113,14 +119,49 @@ class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T]) extends Ja
   /**
    * Return a sampled subset of this RDD.
    */
-  def sample(withReplacement: Boolean, fraction: Double, seed: Int): JavaRDD[T] =
+  def sample(withReplacement: Boolean, fraction: Double): JavaRDD[T] =
+    sample(withReplacement, fraction, Utils.random.nextLong)
+
+  /**
+   * Return a sampled subset of this RDD.
+   */
+  def sample(withReplacement: Boolean, fraction: Double, seed: Long): JavaRDD[T] =
     wrapRDD(rdd.sample(withReplacement, fraction, seed))
+
+  /**
+   * Randomly splits this RDD with the provided weights.
+   *
+   * @param weights weights for splits, will be normalized if they don't sum to 1
+   *
+   * @return split RDDs in an array
+   */
+  def randomSplit(weights: Array[Double]): Array[JavaRDD[T]] =
+    randomSplit(weights, Utils.random.nextLong)
+
+  /**
+   * Randomly splits this RDD with the provided weights.
+   *
+   * @param weights weights for splits, will be normalized if they don't sum to 1
+   * @param seed random seed
+   *
+   * @return split RDDs in an array
+   */
+  def randomSplit(weights: Array[Double], seed: Long): Array[JavaRDD[T]] =
+    rdd.randomSplit(weights, seed).map(wrapRDD)
 
   /**
    * Return the union of this RDD and another one. Any identical elements will appear multiple
    * times (use `.distinct()` to eliminate them).
    */
   def union(other: JavaRDD[T]): JavaRDD[T] = wrapRDD(rdd.union(other.rdd))
+
+  /**
+   * Return the intersection of this RDD and another one. The output will not contain any duplicate
+   * elements, even if the input RDDs did.
+   *
+   * Note that this method performs a shuffle internally.
+   */
+  def intersection(other: JavaRDD[T]): JavaRDD[T] = wrapRDD(rdd.intersection(other.rdd))
 
   /**
    * Return an RDD with the elements from `this` that are not in `other`.
@@ -149,6 +190,19 @@ class JavaRDD[T](val rdd: RDD[T])(implicit val classTag: ClassTag[T]) extends Ja
     rdd.setName(name)
     this
   }
+
+  /**
+   * Return this RDD sorted by the given key function.
+   */
+  def sortBy[S](f: JFunction[T, S], ascending: Boolean, numPartitions: Int): JavaRDD[T] = {
+    import scala.collection.JavaConverters._
+    def fn = (x: T) => f.call(x)
+    import com.google.common.collect.Ordering // shadows scala.math.Ordering
+    implicit val ordering = Ordering.natural().asInstanceOf[Ordering[S]]
+    implicit val ctag: ClassTag[S] = fakeClassTag
+    wrapRDD(rdd.sortBy(fn, ascending, numPartitions))
+  }
+
 }
 
 object JavaRDD {

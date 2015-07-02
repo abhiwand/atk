@@ -17,9 +17,8 @@
 package com.intel.intelanalytics.engine.spark.frame
 
 import com.intel.intelanalytics.domain.schema.{ DataTypes, Schema }
-import com.intel.testutils.{ TestingSparkContextWordSpec, TestingSparkContextFlatSpec }
-import org.apache.spark.sql.{ SQLContext, SchemaRDD }
-import org.apache.spark.sql.catalyst.types.{ StringType, IntegerType }
+import com.intel.testutils.TestingSparkContextWordSpec
+import org.apache.spark.sql.SQLContext
 import org.scalatest.Matchers
 import org.apache.spark.frame.FrameRdd
 
@@ -44,17 +43,17 @@ class LegacyFrameRddTest extends TestingSparkContextWordSpec with Matchers {
 
       frameRdd.getClass should be(classOf[FrameRdd])
       frameRdd.frameSchema should be(schema)
-      frameRdd.first should equal(rdd.first)
+      frameRdd.first.toSeq.toArray should equal(rdd.first)
     }
 
     // ignoring because of OutOfMemory errors, these weren't showing up in engine until most of shared was merged in
     "allow a SchemaRDD in its constructor" in {
       val rows = sparkContext.parallelize((1 to 100).map(i => new TestCase(i, i.toString)))
       val sqlContext = new SQLContext(sparkContext)
-      val schemaRdd = sqlContext.createSchemaRDD(rows)
+      val dataframe = sqlContext.createDataFrame(rows)
       val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
 
-      val legacyFrameRdd = new LegacyFrameRdd(schema, schemaRdd)
+      val legacyFrameRdd = new LegacyFrameRdd(schema, dataframe)
 
       legacyFrameRdd.take(1) should be(Array(Array(1, "1")))
     }
