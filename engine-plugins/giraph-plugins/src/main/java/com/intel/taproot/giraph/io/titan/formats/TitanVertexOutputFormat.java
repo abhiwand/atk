@@ -27,10 +27,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.CLOSED_GRAPH;
 import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.TITAN_MAX_VERTICES_PER_COMMIT;
 

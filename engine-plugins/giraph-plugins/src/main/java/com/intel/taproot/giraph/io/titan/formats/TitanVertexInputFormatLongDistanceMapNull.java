@@ -20,8 +20,6 @@ import com.intel.taproot.giraph.io.DistanceMapWritable;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.giraph.edge.Edge;
-import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.io.LongWritable;

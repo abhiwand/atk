@@ -16,44 +16,46 @@
 
 package com.intel.taproot.giraph.io.titan.formats;
 
-import com.intel.taproot.giraph.io.DistanceMapWritable;
-import com.intel.taproot.giraph.io.titan.TitanGraphWriter;
-import com.intel.taproot.giraph.io.titan.common.GiraphTitanUtils;
-import com.thinkaurelius.titan.core.TitanGraph;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.io.formats.TextVertexOutputFormat;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.CLOSED_GRAPH;
-import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.CURRENT_VERTEX;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.EXPECTED_SIZE_OF_VERTEX_PROPERTY;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.REAL_SIZE_OF_VERTEX_PROPERTY;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPERTY_MISMATCH;
 
 /**
  * The Vertex Output Format which writes back Giraph algorithm results
  * to Titan.
  * <p/>
  * Each Vertex is with <code>Long</code> id,
- * and <code>DistanceMap</code> values.
+ * and <code>Double</code> values.
  *
  * @param <I> Vertex index value
  * @param <V> Vertex value
  * @param <E> Edge value
  */
-public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
-    V extends DistanceMapWritable, E extends NullWritable>
-    extends TitanVertexOutputFormat<I,V,E> {
+public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
+    V extends DoubleWritable, E extends Writable>
+    extends TitanVertexOutputFormat<I, V, E> {
+
+    /**
+     * LOG class
+     */
+    private static final Logger LOG = Logger
+        .getLogger(TitanVertexOutputFormatLongIDDoubleValue.class);
+
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new TitanLongIDDistanceMapWriter();
+        return new TitanLongIDDoubleValueWriter();
     }
 
     /**
@@ -61,33 +63,25 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    public class TitanLongIDDistanceMapWriter extends TitanVertexWriterToEachLine {
+    protected class TitanLongIDDoubleValueWriter extends TitanVertexWriterToEachLine {
 
-        /**
-         * Write results to Titan vertex
-         *
-         * @param vertex Giraph vertex
-         * @return   Text line to be written
-         * @throws IOException
-         */
         @Override
         public Text convertVertexToLine(Vertex<I, V, E> vertex) throws IOException {
-            long vertexId = vertex.getId().get();
-            long numSources = 0;
-            long sumHopCounts = 0;
-            com.tinkerpop.blueprints.Vertex bluePrintVertex = this.graph.getVertex(vertexId);
-            HashMap<Long, Integer> distanceMap = vertex.getValue().getDistanceMap();
 
-            for (Map.Entry<Long, Integer> entry : distanceMap.entrySet()) {
-                numSources++;
-                sumHopCounts += entry.getValue();
+            long vertexId = vertex.getId().get();
+            com.tinkerpop.blueprints.Vertex bluePrintVertex = this.graph.getVertex(vertexId);
+            if (1 == vertexValuePropertyKeyList.length) {
+                bluePrintVertex.setProperty(vertexValuePropertyKeyList[0], vertex.getValue().toString());
+                //  LOG.info("saved " + vertexId);
+            } else {
+                LOG.error(VERTEX_PROPERTY_MISMATCH + EXPECTED_SIZE_OF_VERTEX_PROPERTY + "1" +
+                    REAL_SIZE_OF_VERTEX_PROPERTY + vertexValuePropertyKeyList.length);
+                throw new IllegalArgumentException(VERTEX_PROPERTY_MISMATCH +
+                    CURRENT_VERTEX + vertex.getId());
             }
 
-            bluePrintVertex.setProperty(vertexValuePropertyKeyList[0], Long.toString(numSources));
-            bluePrintVertex.setProperty(vertexValuePropertyKeyList[1], Long.toString(sumHopCounts));
             commitVerticesInBatches();
             return null;
         }
-
     }
 }
