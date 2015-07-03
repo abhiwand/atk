@@ -21,7 +21,7 @@ import com.intel.taproot.giraph.algorithms.als.AlternatingLeastSquaresComputatio
 import com.intel.taproot.giraph.algorithms.cgd.ConjugateGradientDescentComputation
 import com.intel.taproot.giraph.algorithms.cgd.ConjugateGradientDescentComputation.{ ConjugateGradientDescentAggregatorWriter, ConjugateGradientDescentMasterCompute }
 import com.intel.taproot.giraph.io.{ VertexData4CGDWritable, VertexData4CFWritable }
-import com.intel.taproot.ia.giraph.cf._
+import com.intel.taproot.giraph.cf._
 import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobManager }
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Column, FrameSchema }

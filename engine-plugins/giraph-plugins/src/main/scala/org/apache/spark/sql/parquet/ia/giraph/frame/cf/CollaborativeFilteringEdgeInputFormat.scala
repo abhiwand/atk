@@ -20,12 +20,11 @@ import java.util
 
 import com.intel.taproot.giraph.io.EdgeData4CFWritable.EdgeType
 import com.intel.taproot.giraph.io.{ CFVertexId, EdgeData4CFWritable }
-import com.intel.taproot.ia.giraph.cf.CollaborativeFilteringConfiguration
+import com.intel.taproot.giraph.cf.CollaborativeFilteringConfiguration
 import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.mapreduce.{ InputSplit, JobContext, TaskAttemptContext }
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.parquet.RowReadSupport

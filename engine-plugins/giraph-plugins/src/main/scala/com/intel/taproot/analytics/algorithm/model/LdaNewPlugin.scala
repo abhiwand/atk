@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.algorithm.model
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.model.{ GenericNewModelArgs, ModelEntity }
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._

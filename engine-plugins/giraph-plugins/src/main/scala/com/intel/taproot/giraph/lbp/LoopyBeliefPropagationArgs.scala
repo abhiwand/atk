@@ -14,25 +14,28 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.ia.giraph.lp
+package com.intel.taproot.giraph.lbp
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import org.apache.commons.lang3.StringUtils
 
 /**
  * Arguments to the plugin - see user docs for more on the parameters
  */
-case class LabelPropagationArgs(@ArgDoc("""""") frame: FrameReference,
-                                @ArgDoc("""""") srcColName: String,
-                                @ArgDoc("""""") destColName: String,
-                                @ArgDoc("""""") weightColName: String,
-                                @ArgDoc("""""") srcLabelColName: String,
-                                @ArgDoc("""""") resultColName: Option[String] = None,
-                                @ArgDoc("""""") maxIterations: Option[Int] = None,
-                                @ArgDoc("""""") convergenceThreshold: Option[Float] = None,
-                                @ArgDoc("""""") alpha: Option[Float] = None) {
+case class LoopyBeliefPropagationArgs(frame: FrameReference,
+                                      srcColName: String,
+                                      destColName: String,
+                                      weightColName: String,
+                                      srcLabelColName: String,
+                                      resultColName: Option[String] = None,
+                                      ignoreVertexType: Option[Boolean] = None,
+                                      maxIterations: Option[Int] = None,
+                                      convergenceThreshold: Option[Float] = None,
+                                      anchorThreshold: Option[Double] = None,
+                                      smoothing: Option[Float] = None,
+                                      maxProduct: Option[Boolean] = None,
+                                      power: Option[Float] = None) {
 
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(srcColName), "source column name property list is required")
@@ -45,6 +48,10 @@ case class LabelPropagationArgs(@ArgDoc("""""") frame: FrameReference,
     resultColName.getOrElse("resultLabels")
   }
 
+  def getIgnoreVertexType: Boolean = {
+    ignoreVertexType.getOrElse(true)
+  }
+
   def getMaxIterations: Int = {
     val value = maxIterations.getOrElse(10)
     if (value < 1) 10 else value
@@ -54,20 +61,34 @@ case class LabelPropagationArgs(@ArgDoc("""""") frame: FrameReference,
     convergenceThreshold.getOrElse(0.00000001f)
   }
 
-  def getLambda: Float = {
-    val value = alpha.getOrElse(0.9999999f)
-    1 - Math.min(1, Math.max(0, value))
+  def getAnchorThreshold: Double = {
+    val value = anchorThreshold.getOrElse(1d)
+    if (value < 0d) 1d else value
+  }
+
+  def getSmoothing: Float = {
+    val value = smoothing.getOrElse(2f)
+    if (value < 0f) 2f else value
+  }
+
+  def getMaxProduct: Boolean = {
+    maxProduct.getOrElse(false)
+  }
+
+  def getPower: Float = {
+    val value = power.getOrElse(0f)
+    if (value < 0f) 0f else value
   }
 }
 
-case class LabelPropagationResult(outputFrame: FrameEntity, report: String) {
+case class LoopyBeliefPropagationResult(outputFrame: FrameEntity, report: String) {
   require(outputFrame != null, "label results are required")
   require(StringUtils.isNotBlank(report), "report is required")
 }
 
 /** Json conversion for arguments and return value case classes */
-object LabelPropagationJsonFormat {
+object LoopyBeliefPropagationJsonFormat {
 
-  implicit val argsFormat = jsonFormat9(LabelPropagationArgs)
-  implicit val resultFormat = jsonFormat2(LabelPropagationResult)
+  implicit val argsFormat = jsonFormat13(LoopyBeliefPropagationArgs)
+  implicit val resultFormat = jsonFormat2(LoopyBeliefPropagationResult)
 }

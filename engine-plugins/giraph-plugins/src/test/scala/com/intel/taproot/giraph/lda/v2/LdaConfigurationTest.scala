@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.ia.giraph.lda.v2
+package com.intel.taproot.giraph.lda.v2
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
