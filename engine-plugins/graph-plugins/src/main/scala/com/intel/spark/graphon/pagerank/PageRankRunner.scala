@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.pagerank
+package com.intel.taproot.spark.graphon.pagerank
 
-import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
-import com.intel.spark.graphon.graphconversions.GraphConversions
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.spark.graphon.graphconversions.GraphConversions
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.graphx.lib.{ PageRank => GraphXPageRank }
 import org.apache.spark.rdd.RDD

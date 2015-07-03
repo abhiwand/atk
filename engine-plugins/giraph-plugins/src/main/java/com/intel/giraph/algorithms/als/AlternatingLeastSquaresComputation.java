@@ -14,16 +14,16 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.als;
+package com.intel.taproot.giraph.algorithms.als;
 
-import com.intel.giraph.io.CFVertexId;
-import com.intel.giraph.io.EdgeData4CFWritable;
-import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
-import com.intel.giraph.io.MessageData4CFWritable;
-import com.intel.giraph.io.VertexData4CFWritable;
-import com.intel.giraph.io.VertexData4CFWritable.VertexType;
-import com.intel.ia.giraph.cf.CollaborativeFilteringConfig;
-import com.intel.ia.giraph.cf.CollaborativeFilteringConfiguration;
+import com.intel.taproot.giraph.io.CFVertexId;
+import com.intel.taproot.giraph.io.EdgeData4CFWritable;
+import com.intel.taproot.giraph.io.EdgeData4CFWritable.EdgeType;
+import com.intel.taproot.giraph.io.MessageData4CFWritable;
+import com.intel.taproot.giraph.io.VertexData4CFWritable;
+import com.intel.taproot.giraph.io.VertexData4CFWritable.VertexType;
+import com.intel.taproot.ia.giraph.cf.CollaborativeFilteringConfig;
+import com.intel.taproot.ia.giraph.cf.CollaborativeFilteringConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;

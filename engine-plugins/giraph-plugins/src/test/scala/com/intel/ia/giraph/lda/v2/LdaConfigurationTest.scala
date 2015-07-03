@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.ia.giraph.lda.v2
+package com.intel.taproot.ia.giraph.lda.v2
 
-import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.model.ModelReference
-import com.intel.intelanalytics.domain.schema.FrameSchema
+import com.intel.taproot.analytics.domain.frame.FrameReference
+import com.intel.taproot.analytics.domain.model.ModelReference
+import com.intel.taproot.analytics.domain.schema.FrameSchema
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.WordSpec
 

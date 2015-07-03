@@ -14,15 +14,15 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.gbp;
+package com.intel.taproot.giraph.algorithms.gbp;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.intel.giraph.algorithms.gbp.GaussianBeliefPropagationComputation.GaussianBeliefPropagationAggregatorWriter;
-import com.intel.giraph.algorithms.gbp.GaussianBeliefPropagationComputation.GaussianBeliefPropagationMasterCompute;
-import com.intel.giraph.io.formats.JsonGBPEdgeInputFormat;
-import com.intel.giraph.io.formats.JsonGBPVertexValueInputFormat;
-import com.intel.giraph.io.formats.JsonPropertyGraph4GBPOutputFormat;
+import com.intel.taproot.giraph.algorithms.gbp.GaussianBeliefPropagationComputation.GaussianBeliefPropagationAggregatorWriter;
+import com.intel.taproot.giraph.algorithms.gbp.GaussianBeliefPropagationComputation.GaussianBeliefPropagationMasterCompute;
+import com.intel.taproot.giraph.io.formats.JsonGBPEdgeInputFormat;
+import com.intel.taproot.giraph.io.formats.JsonGBPVertexValueInputFormat;
+import com.intel.taproot.giraph.io.formats.JsonPropertyGraph4GBPOutputFormat;
 
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;

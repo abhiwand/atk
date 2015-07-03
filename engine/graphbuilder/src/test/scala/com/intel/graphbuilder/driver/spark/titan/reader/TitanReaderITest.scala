@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.reader
+package com.intel.taproot.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRdd
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderTestData._
-import com.intel.graphbuilder.elements.{ GBVertex, GBEdge, GraphElement }
-import com.intel.testutils.TestingSparkContextWordSpec
+import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.graphbuilder.driver.spark.rdd.TitanReaderRdd
+import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReaderTestData._
+import com.intel.taproot.graphbuilder.elements.{ GBVertex, GBEdge, GraphElement }
+import com.intel.taproot.testutils.TestingSparkContextWordSpec
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import org.apache.hadoop.hbase.CellUtil
 import org.apache.hadoop.hbase.client.Result

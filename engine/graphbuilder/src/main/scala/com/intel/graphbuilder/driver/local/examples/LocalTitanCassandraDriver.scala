@@ -14,19 +14,19 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.local.examples
+package com.intel.taproot.graphbuilder.driver.local.examples
 
 import java.util.Date
 
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.parser._
-import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule._
-import com.intel.graphbuilder.schema.InferSchemaFromRules
-import com.intel.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
-import com.intel.graphbuilder.write.titan.TitanSchemaWriter
-import com.intel.graphbuilder.write.{ EdgeWriter, VertexWriter }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.parser._
+import com.intel.taproot.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.taproot.graphbuilder.parser.rule._
+import com.intel.taproot.graphbuilder.schema.InferSchemaFromRules
+import com.intel.taproot.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
+import com.intel.taproot.graphbuilder.write.titan.TitanSchemaWriter
+import com.intel.taproot.graphbuilder.write.{ EdgeWriter, VertexWriter }
 import com.thinkaurelius.titan.core.TitanGraph
 import org.apache.commons.configuration.BaseConfiguration
 

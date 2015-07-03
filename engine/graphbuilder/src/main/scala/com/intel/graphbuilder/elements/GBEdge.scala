@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.elements
+package com.intel.taproot.graphbuilder.elements
 
-import com.intel.graphbuilder.util.StringUtils
+import com.intel.taproot.graphbuilder.util.StringUtils
 
 /**
  * An Edge links two Vertices.

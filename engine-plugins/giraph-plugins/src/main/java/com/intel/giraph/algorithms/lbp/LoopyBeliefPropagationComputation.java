@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.lbp;
+package com.intel.taproot.giraph.algorithms.lbp;
 
-import com.intel.giraph.io.VertexData4LBPWritable;
-import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
-import com.intel.giraph.io.IdWithVectorMessage;
+import com.intel.taproot.giraph.io.VertexData4LBPWritable;
+import com.intel.taproot.giraph.io.VertexData4LBPWritable.VertexType;
+import com.intel.taproot.giraph.io.IdWithVectorMessage;
 
-import com.intel.ia.giraph.lbp.LoopyBeliefPropagationConfig;
-import com.intel.ia.giraph.lbp.LoopyBeliefPropagationConfiguration;
+import com.intel.taproot.ia.giraph.lbp.LoopyBeliefPropagationConfig;
+import com.intel.taproot.ia.giraph.lbp.LoopyBeliefPropagationConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;

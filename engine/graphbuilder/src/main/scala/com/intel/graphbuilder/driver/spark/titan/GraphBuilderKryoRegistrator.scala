@@ -14,39 +14,39 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan
+package com.intel.taproot.graphbuilder.driver.spark.titan
 
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import org.apache.hadoop.io.NullWritable
 import org.apache.spark.serializer.KryoRegistrator
 import com.esotericsoftware.kryo.Kryo
-import com.intel.graphbuilder.elements._
-import com.intel.graphbuilder.graph.GraphConnector
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.parser._
-import com.intel.graphbuilder.parser.rule._
+import com.intel.taproot.graphbuilder.elements._
+import com.intel.taproot.graphbuilder.graph.GraphConnector
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.parser._
+import com.intel.taproot.graphbuilder.parser.rule._
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.client.Result
-import com.intel.graphbuilder.schema._
-import com.intel.graphbuilder.parser.rule.ParsedValue
-import com.intel.graphbuilder.parser.rule.SingleEdgeRuleParser
-import com.intel.graphbuilder.schema.EdgeLabelDef
-import com.intel.graphbuilder.elements.GBVertex
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.parser.rule.PropertyRuleParser
-import com.intel.graphbuilder.elements.GBEdge
-import com.intel.graphbuilder.parser.rule.SinglePropertyRuleParser
-import com.intel.graphbuilder.parser.rule.SingleVertexRuleParser
-import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.schema.PropertyDef
-import com.intel.graphbuilder.parser.rule.VertexRuleParser
-import com.intel.graphbuilder.elements.GbIdToPhysicalId
-import com.intel.graphbuilder.parser.rule.EdgeRuleParser
-import com.intel.graphbuilder.parser.rule.CompoundValue
-import com.intel.graphbuilder.parser.rule.ConstantValue
-import com.intel.graphbuilder.parser.rule.EdgeRule
-import com.intel.graphbuilder.parser.ColumnDef
-import com.intel.graphbuilder.parser.rule.VertexRule
+import com.intel.taproot.graphbuilder.schema._
+import com.intel.taproot.graphbuilder.parser.rule.ParsedValue
+import com.intel.taproot.graphbuilder.parser.rule.SingleEdgeRuleParser
+import com.intel.taproot.graphbuilder.schema.EdgeLabelDef
+import com.intel.taproot.graphbuilder.elements.GBVertex
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.parser.rule.PropertyRuleParser
+import com.intel.taproot.graphbuilder.elements.GBEdge
+import com.intel.taproot.graphbuilder.parser.rule.SinglePropertyRuleParser
+import com.intel.taproot.graphbuilder.parser.rule.SingleVertexRuleParser
+import com.intel.taproot.graphbuilder.parser.InputSchema
+import com.intel.taproot.graphbuilder.schema.PropertyDef
+import com.intel.taproot.graphbuilder.parser.rule.VertexRuleParser
+import com.intel.taproot.graphbuilder.elements.GbIdToPhysicalId
+import com.intel.taproot.graphbuilder.parser.rule.EdgeRuleParser
+import com.intel.taproot.graphbuilder.parser.rule.CompoundValue
+import com.intel.taproot.graphbuilder.parser.rule.ConstantValue
+import com.intel.taproot.graphbuilder.parser.rule.EdgeRule
+import com.intel.taproot.graphbuilder.parser.ColumnDef
+import com.intel.taproot.graphbuilder.parser.rule.VertexRule
 
 /**
  * Register GraphBuilder classes that are going to be serialized by Kryo.
@@ -59,7 +59,7 @@ import com.intel.graphbuilder.parser.rule.VertexRule
  * <p>
  *  Usage:
  *   conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
- *   conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+ *   conf.set("spark.kryo.registrator", "com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
  * </p>
  */
 class GraphBuilderKryoRegistrator extends KryoRegistrator {

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.testutils
+package com.intel.taproot.testutils
 
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONTokens
 import com.tinkerpop.blueprints.{ Direction, Edge, Vertex }

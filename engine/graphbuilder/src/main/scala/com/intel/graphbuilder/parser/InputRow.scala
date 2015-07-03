@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser
+package com.intel.taproot.graphbuilder.parser
 
 import org.apache.commons.lang3.StringUtils
 

@@ -16,7 +16,7 @@
 
 package org.apache.spark.ia.graph
 
-import com.intel.intelanalytics.domain.schema.{ VertexSchema, Schema }
+import com.intel.taproot.analytics.domain.schema.{ VertexSchema, Schema }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 

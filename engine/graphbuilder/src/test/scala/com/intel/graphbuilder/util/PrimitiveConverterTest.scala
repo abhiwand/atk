@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.util
+package com.intel.taproot.graphbuilder.util
 
-import com.intel.graphbuilder.elements.GBVertex
+import com.intel.taproot.graphbuilder.elements.GBVertex
 import org.scalatest.FlatSpec
 
 class PrimitiveConverterTest extends FlatSpec {

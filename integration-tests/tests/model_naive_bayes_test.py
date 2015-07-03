@@ -16,7 +16,7 @@
 
 
 import unittest
-import intelanalytics as ia
+import taprootanalytics as ia
 
 # show full stack traces
 ia.errors.show_details = True

@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.schema
+package com.intel.taproot.graphbuilder.schema
 
-import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 
 import scala.collection.mutable.Map
 

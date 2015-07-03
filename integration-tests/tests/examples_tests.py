@@ -15,7 +15,7 @@
 #
 
 import unittest
-import intelanalytics as ia
+import taprootanalytics as ia
 
 # show full stack traces
 ia.errors.show_details = True
@@ -28,7 +28,7 @@ ia.connect()
 
 
 
-#import intelanalytics as ia
+#import taprootanalytics as ia
 #ia.server.port = 19099
 #ia.connect()
 
@@ -43,7 +43,7 @@ current_module = sys.modules[__name__]
 import os
 #print "examples=%s" % examples
 here = os.path.dirname(os.path.abspath(__file__))
-#path_to_examples = os.path.join(here, "../../python/intelanalytics/doc/examples")
+#path_to_examples = os.path.join(here, "../../python/taprootanalytics/doc/examples")
 import fnmatch
 
 __test__ = {}
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 # option 4
 # def run_example(relative_path, verbose=False):
 #     here = os.path.dirname(os.path.abspath(__file__))
-#     path_to_examples = os.path.join(here, "../../python/intelanalytics/doc/examples")
+#     path_to_examples = os.path.join(here, "../../python/taprootanalytics/doc/examples")
 #
 #     __test__['bin_column'] = content
 #     print "Running examples in %s" % relative_path
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 # option 2
 #connection_header = """
-#>>> import intelanalytics as ia
+#>>> import taprootanalytics as ia
 #>>> ia.server.port = 19099
 #>>> ia.connect()
 #-etc-

@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser.rule
+package com.intel.taproot.graphbuilder.parser.rule
 
-import com.intel.graphbuilder.parser.{ InputRow, ColumnDef, InputSchema }
+import com.intel.taproot.graphbuilder.parser.{ InputRow, ColumnDef, InputSchema }
 import java.util.Date
 import org.mockito.Mockito._
 import org.scalatest.{ Matchers, WordSpec }

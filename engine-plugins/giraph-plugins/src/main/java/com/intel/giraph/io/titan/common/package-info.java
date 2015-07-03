@@ -17,4 +17,4 @@
 /**
  * Package of configuration constants for data transmission between Titan and Giraph.
  */
-package com.intel.giraph.io.titan.common;
+package com.intel.taproot.giraph.io.titan.common;

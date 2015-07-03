@@ -16,16 +16,16 @@
 
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import com.intel.intelanalytics.domain.CreateEntityArgs
-import com.intel.intelanalytics.domain.frame.FrameMeta
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.intelanalytics.engine.plugin.PluginDoc
+import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.frame.FrameMeta
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.PluginDoc
 
 //Implicits needed for JSON conversion
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 @PluginDoc(oneLine = "Build logistic regression model.",

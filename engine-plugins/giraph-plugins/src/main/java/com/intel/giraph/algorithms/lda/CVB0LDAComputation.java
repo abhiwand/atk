@@ -14,15 +14,15 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.lda;
+package com.intel.taproot.giraph.algorithms.lda;
 
-import com.intel.giraph.aggregators.VectorSumAggregator;
-import com.intel.giraph.io.LdaEdgeData;
-import com.intel.giraph.io.LdaMessage;
-import com.intel.giraph.io.LdaVertexData;
-import com.intel.giraph.io.LdaVertexId;
-import com.intel.ia.giraph.lda.v2.LdaConfig;
-import com.intel.ia.giraph.lda.v2.LdaConfiguration;
+import com.intel.taproot.giraph.aggregators.VectorSumAggregator;
+import com.intel.taproot.giraph.io.LdaEdgeData;
+import com.intel.taproot.giraph.io.LdaMessage;
+import com.intel.taproot.giraph.io.LdaVertexData;
+import com.intel.taproot.giraph.io.LdaVertexId;
+import com.intel.taproot.ia.giraph.lda.v2.LdaConfig;
+import com.intel.taproot.ia.giraph.lda.v2.LdaConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleMaxAggregator;

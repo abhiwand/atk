@@ -14,24 +14,24 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.sampling
+package com.intel.taproot.spark.graphon.sampling
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.domain.frame.FrameName
-import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.graph.GraphBackendName
-import com.intel.intelanalytics.engine.spark.{ SparkContextFactory, EngineConfig }
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.intelanalytics.security.UserPrincipal
-import com.intel.intelanalytics.domain.{ StorageFormats, DomainJsonProtocol }
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.component.Boot
+import com.intel.taproot.analytics.domain.frame.FrameName
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.graph.GraphBackendName
+import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.spark.graph.GraphBuilderConfigFactory
+import com.intel.taproot.analytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.taproot.analytics.security.UserPrincipal
+import com.intel.taproot.analytics.domain.{ StorageFormats, DomainJsonProtocol }
+import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphReference }
 import spray.json._
 import scala.concurrent._
 import java.util.UUID
-import com.intel.spark.graphon.sampling.VertexSampleSparkOps._
-import com.intel.intelanalytics.domain.command.CommandDoc
+import com.intel.taproot.spark.graphon.sampling.VertexSampleSparkOps._
+import com.intel.taproot.analytics.domain.command.CommandDoc
 
 /**
  * Represents the arguments for vertex sampling

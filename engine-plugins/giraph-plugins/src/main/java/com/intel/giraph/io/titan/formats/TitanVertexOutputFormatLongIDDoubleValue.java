@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan.formats;
+package com.intel.taproot.giraph.io.titan.formats;
 
-import com.intel.giraph.io.titan.TitanGraphWriter;
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
+import com.intel.taproot.giraph.io.titan.TitanGraphWriter;
+import com.intel.taproot.giraph.io.titan.common.GiraphTitanUtils;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
@@ -31,12 +31,12 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CLOSED_GRAPH;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CURRENT_VERTEX;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EXPECTED_SIZE_OF_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.REAL_SIZE_OF_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPERTY_MISMATCH;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.CLOSED_GRAPH;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.CURRENT_VERTEX;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.EXPECTED_SIZE_OF_VERTEX_PROPERTY;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.REAL_SIZE_OF_VERTEX_PROPERTY;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPERTY_MISMATCH;
 
 /**
  * The Vertex Output Format which writes back Giraph algorithm results

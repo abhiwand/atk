@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.beliefpropagation
+package com.intel.taproot.spark.graphon.beliefpropagation
 
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
-import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.rdd.RDD
-import com.intel.spark.graphon.testutils.ApproximateVertexEquality
+import com.intel.taproot.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
  * These tests make sure that belief propagation can correctly handle graphs with no edges and even graphs with

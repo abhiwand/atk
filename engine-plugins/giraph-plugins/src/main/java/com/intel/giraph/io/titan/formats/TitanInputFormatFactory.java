@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan.formats;
+package com.intel.taproot.giraph.io.titan.formats;
 
-import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat;
+import com.intel.taproot.graphbuilder.titan.io.GBTitanHBaseInputFormat;
 import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraInputFormat;
 import com.thinkaurelius.titan.hadoop.formats.util.TitanInputFormat;
 import org.apache.hadoop.conf.Configuration;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
 
 /**
  * Create a TitanInputFormat based on the storage backend.

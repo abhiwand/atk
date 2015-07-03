@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Clique }
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.{ CliqueExtension, Clique }
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }
 

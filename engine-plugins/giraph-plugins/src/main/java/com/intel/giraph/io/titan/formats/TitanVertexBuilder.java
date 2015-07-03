@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan.formats;
+package com.intel.taproot.giraph.io.titan.formats;
 
-import com.intel.giraph.io.EdgeData4CFWritable;
-import com.intel.giraph.io.VertexData4CFWritable;
+import com.intel.taproot.giraph.io.EdgeData4CFWritable;
+import com.intel.taproot.giraph.io.VertexData4CFWritable;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanProperty;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
@@ -33,9 +33,9 @@ import org.apache.mahout.math.DenseVector;
 
 import java.util.*;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 
 public class TitanVertexBuilder {
 

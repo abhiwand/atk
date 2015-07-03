@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.titan.cache;
+package com.intel.taproot.graphbuilder.titan.cache;
 
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.RemovalListener;

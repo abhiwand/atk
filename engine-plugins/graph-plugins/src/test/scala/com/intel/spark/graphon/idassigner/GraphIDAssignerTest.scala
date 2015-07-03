@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.idassigner
+package com.intel.taproot.spark.graphon.idassigner
 
 import org.scalatest.{ FlatSpec, Matchers }
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 
 class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

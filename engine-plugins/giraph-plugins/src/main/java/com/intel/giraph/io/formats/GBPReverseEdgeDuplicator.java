@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
 import java.io.IOException;
 import org.apache.giraph.edge.Edge;
@@ -23,7 +23,7 @@ import org.apache.giraph.io.EdgeReader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import com.intel.giraph.io.EdgeData4GBPWritable;
+import com.intel.taproot.giraph.io.EdgeData4GBPWritable;
 
 /**
  * A JsonGBPEdgeReader that creates the opposite direction edge for each edge read.

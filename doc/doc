@@ -296,7 +296,7 @@ function main() {
         # debug: Update the additional python documentation files
         echo $ModifiedArguments | grep -i "/-p/" > /dev/null
         if [ "$?" == "1" ]; then
-            pushd ../python-client/intelanalytics/doc > /dev/null
+            pushd ../python-client/taprootanalytics/doc > /dev/null
             build_docstubs $AskThem $DisplayStatus $TempFile $LogFile
             Return=$?
             popd > /dev/null
@@ -324,13 +324,13 @@ function main() {
             RunCommand="which pdflatex"
             do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
             if [ "$?" != "0" ]; then return 1; fi
-            pdf_build latex IntelAnalytics $AskThem $DisplayStatus $TempFile $LogFile
+            pdf_build latex TapRootAnalytics $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" != "0" ]; then return 1; fi
-            if [[ -f build/latex/IntelAnalytics.pdf && -d build/html/_downloads ]]; then
+            if [[ -f build/latex/TapRootAnalytics.pdf && -d build/html/_downloads ]]; then
                 let Count=6
                 while [ $Count -gt 0 ]
                 do
-                    if [ -s build/latex/IntelAnalytics.pdf ]; then
+                    if [ -s build/latex/TapRootAnalytics.pdf ]; then
                         let Count=-1
                     else
                         sleep 10s
@@ -343,7 +343,7 @@ function main() {
                         return 1
                     fi
                 else
-                    RunCommand="cp build/latex/IntelAnalytics.pdf build/html/_downloads/"
+                    RunCommand="cp build/latex/TapRootAnalytics.pdf build/html/_downloads/"
                     do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
                     if [ "$?" != "0" ]; then return 1; fi
                 fi
@@ -476,7 +476,7 @@ function pdf_build() {
 
 ############################################################################################################
 function server_running() {
-    ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep" > /dev/null
+    ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.taproot.analytics.component.Boot" | grep -v "grep" > /dev/null
     Return=$?
     if [ "$Return" != "0" ]; then
         return $Return
@@ -555,7 +555,7 @@ function server_stop() {
     server_running
     Looping=$?
     while [ "$Looping" == "0" ]; do
-        Servers=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.intelanalytics.component.Boot" | grep -v "grep")
+        Servers=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.taproot.analytics.component.Boot" | grep -v "grep")
         if [ "$?" == "0" ]; then
             Process_ID=$(echo $Servers | head -n 1 |  awk '{print $2}')
             echo -n "Stop server $Process_ID"

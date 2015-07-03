@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write.titan
+package com.intel.taproot.graphbuilder.write.titan
 
-import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, GBVertex }
-import com.intel.graphbuilder.write.VertexWriter
-import com.intel.graphbuilder.write.titan.TitanIdUtils.titanId
+import com.intel.taproot.graphbuilder.elements.{ GbIdToPhysicalId, GBVertex }
+import com.intel.taproot.graphbuilder.write.VertexWriter
+import com.intel.taproot.graphbuilder.write.titan.TitanIdUtils.titanId
 
 /**
  * Wraps a blueprints VertexWriter to add some Titan specific functionality that is needed

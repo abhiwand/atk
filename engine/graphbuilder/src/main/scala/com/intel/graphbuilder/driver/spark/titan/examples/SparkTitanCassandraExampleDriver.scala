@@ -14,19 +14,19 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.examples
+package com.intel.taproot.graphbuilder.driver.spark.titan.examples
 
 // $COVERAGE-OFF$
 // This is example code only, not part of the main product
 
 import java.util.Date
 
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
-import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule._
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.parser.{ ColumnDef, InputSchema }
+import com.intel.taproot.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.taproot.graphbuilder.parser.rule._
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkConf, SparkContext }
 

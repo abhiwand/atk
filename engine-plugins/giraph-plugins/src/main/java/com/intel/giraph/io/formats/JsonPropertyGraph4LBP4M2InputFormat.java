@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -32,8 +32,8 @@ import org.json.JSONException;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.DenseVector;
 import org.apache.giraph.io.formats.TextVertexInputFormat;
-import com.intel.giraph.io.VertexData4LBPWritable;
-import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
+import com.intel.taproot.giraph.io.VertexData4LBPWritable;
+import com.intel.taproot.giraph.io.VertexData4LBPWritable.VertexType;
 
 /**
   * VertexInputFormat that features <code>long</code> vertex ID's,

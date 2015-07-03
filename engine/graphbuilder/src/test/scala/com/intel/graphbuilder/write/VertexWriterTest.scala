@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write
+package com.intel.taproot.graphbuilder.write
 
 import org.mockito.Mockito._
 import org.scalatest.{ Matchers, WordSpec }
-import com.intel.graphbuilder.write.dao.VertexDAO
-import com.intel.graphbuilder.elements.GBVertex
+import com.intel.taproot.graphbuilder.write.dao.VertexDAO
+import com.intel.taproot.graphbuilder.elements.GBVertex
 import org.scalatest.mock.MockitoSugar
 
 class VertexWriterTest extends WordSpec with Matchers with MockitoSugar {

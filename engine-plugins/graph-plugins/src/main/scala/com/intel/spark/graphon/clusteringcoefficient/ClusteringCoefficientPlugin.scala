@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.clusteringcoefficient
+package com.intel.taproot.spark.graphon.clusteringcoefficient
 
-import com.intel.intelanalytics.domain.frame.FrameEntity
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
-import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.{ SparkContextFactory, EngineConfig }
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.domain.frame.FrameEntity
+import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
+import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 
 case class ClusteringCoefficientArgs(graph: GraphReference,
                                      @ArgDoc("") outputPropertyName: Option[String],
@@ -50,7 +50,7 @@ case class ClusteringCoefficientResult(globalClusteringCoefficient: Double, fram
 
 /** Json conversion for arguments and return value case classes */
 object ClusteringCoefficientJsonFormat {
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+  import com.intel.taproot.analytics.domain.DomainJsonProtocol._
   implicit val CCFormat = jsonFormat3(ClusteringCoefficientArgs)
   implicit val CCResultFormat = jsonFormat2(ClusteringCoefficientResult)
 }

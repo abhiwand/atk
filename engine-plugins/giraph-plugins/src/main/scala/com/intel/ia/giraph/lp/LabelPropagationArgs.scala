@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.ia.giraph.lp
+package com.intel.taproot.ia.giraph.lp
 
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference }
-import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import org.apache.commons.lang3.StringUtils
 
 /**

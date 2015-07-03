@@ -18,7 +18,7 @@
  * Message class for average path length computation.
  */
 
-package com.intel.giraph.io;
+package com.intel.taproot.giraph.io;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;

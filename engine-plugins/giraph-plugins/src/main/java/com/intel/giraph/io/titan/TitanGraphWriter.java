@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan;
+package com.intel.taproot.giraph.io.titan;
 
-import com.intel.graphbuilder.titan.cache.TitanGraphCache;
+import com.intel.taproot.graphbuilder.titan.cache.TitanGraphCache;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
@@ -29,8 +29,8 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_GRAPH_NOT_OPEN;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.TITAN_GRAPH_NOT_OPEN;
 
 /**
  * The titan graph writer which connects Giraph to Titan

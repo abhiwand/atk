@@ -16,8 +16,8 @@
 
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.model.ModelReference
+import com.intel.taproot.analytics.domain.frame.FrameReference
+import com.intel.taproot.analytics.domain.model.ModelReference
 
 /**
  * Input arguments for logistic regression train plugin

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.utils;
+package com.intel.taproot.giraph.utils;
 
 /**
  * A pair of long.

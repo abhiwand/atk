@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.beliefpropagation
+package com.intel.taproot.spark.graphon.beliefpropagation
 
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.graphx.{ PartitionStrategy, Graph, Edge }
-import com.intel.intelanalytics._
-import com.intel.spark.graphon.VectorMath
+import com.intel.taproot.analytics._
+import com.intel.taproot.spark.graphon.VectorMath
 
 /**
  * Arguments for the BeliefPropagationRunner

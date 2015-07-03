@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.utils.NoOpComputation;
 import org.apache.hadoop.io.LongWritable;
-import com.intel.giraph.io.EdgeData4GBPWritable;
+import com.intel.taproot.giraph.io.EdgeData4GBPWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;

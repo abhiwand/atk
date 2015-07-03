@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
 import org.apache.giraph.io.EdgeReader;
 import org.apache.hadoop.io.LongWritable;
@@ -23,7 +23,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.giraph.io.formats.TextEdgeInputFormat;
 import org.apache.hadoop.io.Text;
 
-import com.intel.giraph.io.EdgeData4GBPWritable;
+import com.intel.taproot.giraph.io.EdgeData4GBPWritable;
 
 import org.json.JSONArray;
 import org.json.JSONException;

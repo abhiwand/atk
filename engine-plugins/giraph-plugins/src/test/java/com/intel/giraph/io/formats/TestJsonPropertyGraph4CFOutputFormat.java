@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.formats;
+package com.intel.taproot.giraph.io.formats;
 
-import com.intel.giraph.io.VertexData4CFWritable;
-import com.intel.giraph.io.VertexData4CFWritable.VertexType;
+import com.intel.taproot.giraph.io.VertexData4CFWritable;
+import com.intel.taproot.giraph.io.VertexData4CFWritable.VertexType;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;

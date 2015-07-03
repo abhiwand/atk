@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.cc;
+package com.intel.taproot.giraph.algorithms.cc;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
-import com.intel.giraph.combiner.MinimumLongCombiner;
+import com.intel.taproot.giraph.combiner.MinimumLongCombiner;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.edge.ByteArrayEdges;
 import org.apache.giraph.io.formats.IdWithValueTextOutputFormat;

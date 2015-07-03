@@ -14,17 +14,17 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.examples
+package com.intel.taproot.graphbuilder.driver.spark.titan.examples
 
 // $COVERAGE-OFF$
 // This is example code only, not part of the main product
 
 import java.util.Date
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReader
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
@@ -39,7 +39,7 @@ object TitanReaderExample {
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+    conf.set("spark.kryo.registrator", "com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
     conf.set("spark.kryoserializer.buffer.mb", "32")
 
     val sc = new SparkContext(conf)
@@ -58,7 +58,7 @@ object TitanReaderExample {
     val titanReader = new TitanReader(sc, titanConnector)
     val titanReaderRDD = titanReader.read()
 
-    // Remember to import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._ to access filter methods
+    // Remember to import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRDDImplicits._ to access filter methods
     val vertexRDD = titanReaderRDD.filterVertices()
     val edgeRDD = titanReaderRDD.filterEdges()
 

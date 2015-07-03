@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io.titan.formats;
+package com.intel.taproot.giraph.io.titan.formats;
 
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;

@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write
+package com.intel.taproot.graphbuilder.write
 
-import com.intel.graphbuilder.schema.GraphSchema
+import com.intel.taproot.graphbuilder.schema.GraphSchema
 
 /**
  * Write the GraphSchema to the underlying Graph database

@@ -33,7 +33,7 @@
 
 
 #!/usr/bin/python2.7
-import intelanalytics as ia
+import taprootanalytics as ia
 
 ia.connect()
 

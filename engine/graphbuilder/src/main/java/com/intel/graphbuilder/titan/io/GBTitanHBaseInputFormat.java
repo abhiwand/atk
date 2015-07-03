@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.titan.io;
+package com.intel.taproot.graphbuilder.titan.io;
 
 import com.thinkaurelius.titan.hadoop.formats.titan_054.hbase.CachedTitanHBaseInputFormat;
 import org.apache.commons.logging.Log;

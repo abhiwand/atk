@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser.rule
+package com.intel.taproot.graphbuilder.parser.rule
 
-import com.intel.graphbuilder.elements.Property
-import com.intel.graphbuilder.parser._
+import com.intel.taproot.graphbuilder.elements.Property
+import com.intel.taproot.graphbuilder.parser._
 
 /**
  * Parse zero or more properties using a list of rules

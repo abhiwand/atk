@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.util
+package com.intel.taproot.graphbuilder.util
 
 /**
  * Prefer org.apache.commons.lang3.StringUtils over writing your own methods below

@@ -1,5 +1,5 @@
 =======================
-Intel Analytics Toolkit
+TapRoot Analytics Toolkit
 =======================
 
 .. toctree::
@@ -23,7 +23,7 @@ References
 * :doc:`Index <genindex>`
 * :doc:`appendices`
 * :doc:`errata`
-* :download:`PDF <_downloads/IntelAnalytics.pdf>`
+* :download:`PDF <_downloads/TapRootAnalytics.pdf>`
 
 .. toctree::
     :hidden:

@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.schema
+package com.intel.taproot.graphbuilder.schema
 
 import org.scalatest.{ Matchers, WordSpec }
-import com.intel.graphbuilder.elements.{ GBVertex, Property, GBEdge }
+import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property, GBEdge }
 import java.util.Date
 
 class InferSchemaFromDataTest extends WordSpec with Matchers {

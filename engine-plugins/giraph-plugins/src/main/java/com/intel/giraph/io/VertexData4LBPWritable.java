@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.io;
+package com.intel.taproot.giraph.io;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.SequentialAccessSparseVector;

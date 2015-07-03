@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.giraph.algorithms.lbp;
+package com.intel.taproot.giraph.algorithms.lbp;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter;
-import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute;
-import com.intel.giraph.io.formats.JsonPropertyGraph4LBPInputFormat;
-import com.intel.giraph.io.formats.JsonPropertyGraph4LBPOutputFormat;
+import com.intel.taproot.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter;
+import com.intel.taproot.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute;
+import com.intel.taproot.giraph.io.formats.JsonPropertyGraph4LBPInputFormat;
+import com.intel.taproot.giraph.io.formats.JsonPropertyGraph4LBPOutputFormat;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;

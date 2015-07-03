@@ -17,4 +17,4 @@
 /**
  * Package of data transmission between Titan and Giraph.
  */
-package com.intel.giraph.io.titan;
+package com.intel.taproot.giraph.io.titan;

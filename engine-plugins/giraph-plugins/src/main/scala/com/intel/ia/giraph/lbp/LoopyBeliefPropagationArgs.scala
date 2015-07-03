@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.ia.giraph.lbp
+package com.intel.taproot.ia.giraph.lbp
 
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
-import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import org.apache.commons.lang3.StringUtils
 
 /**

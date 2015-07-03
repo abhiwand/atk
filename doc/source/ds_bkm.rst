@@ -20,9 +20,9 @@ Ping the server:
 
 .. code::
 
-    >>> import intelanalytics as ia
+    >>> import taprootanalytics as ia
     >>> ia.server.ping()
-    Successful ping to Intel Analytics at http://localhost:9099/info
+    Successful ping to TapRoot Analytics at http://localhost:9099/info
     >>> ia.connect()
 
 View and edit the server connection:
@@ -73,7 +73,7 @@ property:
 
 .. code::
 
-    >>> import intelanalytics as ia
+    >>> import taprootanalytics as ia
 
     # show full stack traces
     >>> ia.errors.show_details = True

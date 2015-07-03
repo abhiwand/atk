@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.testutils
+package com.intel.taproot.testutils
 
 import scala.concurrent.Lock
 import org.apache.spark.{ SparkConf, SparkContext }
@@ -68,7 +68,7 @@ private[testutils] object TestingSparkContext {
 
   private def createLocalSparkContext(
     serializer: String = "org.apache.spark.serializer.KryoSerializer",
-    registrator: String = "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator"): SparkContext = {
+    registrator: String = "com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator"): SparkContext = {
     // LogUtils.silenceSpark()
     System.setProperty("spark.driver.allowMultipleContexts", "true")
     val conf = new SparkConf()

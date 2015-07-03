@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.reader
+package com.intel.taproot.graphbuilder.driver.spark.titan.reader
 
 import java.io.File
 
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.DirectoryUtils
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.testutils.DirectoryUtils
 import com.thinkaurelius.titan.core.TitanVertex
 import org.apache.hadoop.io.NullWritable
 import org.scalatest.{ BeforeAndAfterAll, Suite }
@@ -40,7 +40,7 @@ import scala.collection.JavaConversions._
  */
 object TitanReaderTestData extends Suite with BeforeAndAfterAll {
 
-  import com.intel.graphbuilder.driver.spark.titan.reader.TitanReaderUtils._
+  import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReaderUtils._
 
   val gbID = TitanReader.TITAN_READER_DEFAULT_GB_ID
   private var tmpDir: File = DirectoryUtils.createTempDirectory("titan-graph-for-unit-testing-")

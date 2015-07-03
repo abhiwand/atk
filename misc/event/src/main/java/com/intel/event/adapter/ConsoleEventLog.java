@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.event.adapter;
+package com.intel.taproot.event.adapter;
 
-import com.intel.event.Event;
-import com.intel.event.EventLog;
+import com.intel.taproot.event.Event;
+import com.intel.taproot.event.EventLog;
 
 import java.io.PrintStream;
 

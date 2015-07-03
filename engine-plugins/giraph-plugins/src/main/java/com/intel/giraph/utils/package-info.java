@@ -17,4 +17,4 @@
 /**
  * Package of Giraph utils.
  */
-package com.intel.giraph.utils;
+package com.intel.taproot.giraph.utils;

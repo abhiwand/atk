@@ -13,8 +13,8 @@
     </description>
 
     <parent>
-        <groupId>com.intel.ia</groupId>
-        <artifactId>IntelAnalytics</artifactId>
+        <groupId>com.intel.taproot.ia</groupId>
+        <artifactId>TapRootAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
@@ -124,27 +124,27 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>graphbuilder</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>engine-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>giraph-plugins</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>frame-plugins</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>graph-plugins</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>model-plugins</artifactId>
         </dependency>
         <dependency>

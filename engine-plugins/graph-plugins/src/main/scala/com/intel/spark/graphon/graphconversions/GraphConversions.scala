@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphconversions
+package com.intel.taproot.spark.graphon.graphconversions
 
-import com.intel.graphbuilder.elements.GBEdge
+import com.intel.taproot.graphbuilder.elements.GBEdge
 import org.apache.spark.graphx.{ Edge => GraphXEdge }
 
 object GraphConversions {

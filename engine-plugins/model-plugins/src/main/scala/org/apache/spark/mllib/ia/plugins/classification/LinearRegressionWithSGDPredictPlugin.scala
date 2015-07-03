@@ -16,15 +16,15 @@
 
 package org.apache.spark.mllib.ia.plugins.classification
 
-import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame.{ FrameEntity, FrameMeta }
-import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.Rows.Row
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.UnitReturn
+import com.intel.taproot.analytics.domain.{ CreateEntityArgs, Naming }
+import com.intel.taproot.analytics.domain.command.CommandDoc
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameMeta }
+import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.Rows.Row
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.regression.LinearRegressionModel
@@ -34,7 +34,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 /**

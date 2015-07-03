@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.graph.titan
+package com.intel.taproot.graphbuilder.graph.titan
 
 import java.io.File
 
-import com.intel.graphbuilder.graph.GraphConnector
+import com.intel.taproot.graphbuilder.graph.GraphConnector
 import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
 import com.tinkerpop.blueprints.Graph
-import com.intel.graphbuilder.titan.cache.TitanGraphCache
+import com.intel.taproot.graphbuilder.titan.cache.TitanGraphCache
 
 import org.apache.commons.configuration.{ Configuration, PropertiesConfiguration }
 

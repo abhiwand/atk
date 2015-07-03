@@ -16,21 +16,21 @@
 
 package org.apache.spark.mllib.ia.plugins.clustering
 
-import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.frame._
-import com.intel.intelanalytics.domain.schema.Column
-import com.intel.intelanalytics.domain.schema.{ FrameSchema, DataTypes }
-import com.intel.intelanalytics.domain.schema.DataTypes._
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
+import com.intel.taproot.analytics.UnitReturn
+import com.intel.taproot.analytics.domain.{ CreateEntityArgs, Naming }
+import com.intel.taproot.analytics.domain.command.CommandDoc
+import com.intel.taproot.analytics.domain.frame._
+import com.intel.taproot.analytics.domain.schema.Column
+import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes }
+import com.intel.taproot.analytics.domain.schema.DataTypes._
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
 import org.apache.spark.frame.FrameRdd
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.VectorUtils._
 

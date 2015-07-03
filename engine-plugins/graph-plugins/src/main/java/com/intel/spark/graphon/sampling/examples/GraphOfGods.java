@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.sampling.examples;
+package com.intel.taproot.spark.graphon.sampling.examples;
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration;
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.example.GraphOfTheGodsFactory;
