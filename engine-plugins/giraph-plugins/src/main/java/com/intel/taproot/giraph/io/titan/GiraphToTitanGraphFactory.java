@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
-import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BATCH_LOADING;
 
 /**
  * Converts a Giraph configuration file to a Titan configuration file. For all

@@ -20,10 +20,9 @@ import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanProperty;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.giraph.edge.Edge;
-import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -34,46 +33,44 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
- * TitanHBaseVertexInputFormatLongLongNull loads vertex
+ * TitanHBaseVertexInputFormatLongDoubleNull loads vertex
  * with <code>Long</code> vertex ID's,
- * <code>Long</code> vertex values,
- * and <code>Null</code> edge weights.
+ * <code>Double</code> vertex values,
+ * and <code>Float</code> edge weights.
  */
-public class TitanVertexInputFormatLongLongNull extends
-        TitanVertexInputFormat<LongWritable, LongWritable, NullWritable> {
+public class TitanVertexInputFormatLongDoubleNull extends
+        TitanVertexInputFormat<LongWritable, DoubleWritable, NullWritable> {
 
-    private static final Logger LOG = Logger.getLogger(TitanVertexInputFormatLongLongNull.class);
+    private static final Logger LOG = Logger.getLogger(TitanVertexInputFormatLongDoubleNull.class);
 
     /**
-     * Create vertex reader
+     * Create vertex reader for Titan vertices
      *
-     * @param split   : inputsplits from TableInputFormat
-     * @param context : task context
-     * @return VertexReader
+     * @param split   Input splits for HBase table
+     * @param context Giraph task context
+     * @return VertexReader Vertex reader for Giraph vertices
      * @throws IOException
-     * @throws RuntimeException
      */
     @Override
-    public VertexReader<LongWritable, LongWritable, NullWritable> createVertexReader(
+    public VertexReader<LongWritable, DoubleWritable, NullWritable> createVertexReader(
             InputSplit split, TaskAttemptContext context) throws IOException {
 
-        return new LongLongNullVertexReader(split, context);
+        return new LongDoubleNullVertexReader(split, context);
     }
 
     /**
-     * Vertex Reader that constructs Giraph vertices from Titan Vertices
+     * Uses the RecordReader to return HBase data
      */
-    protected static class LongLongNullVertexReader extends TitanVertexReaderCommon<LongWritable, NullWritable> {
+    protected static class LongDoubleNullVertexReader extends TitanVertexReaderCommon<DoubleWritable, NullWritable> {
 
         /**
-         * Constructs vertex reader
+         * Constructs Giraph vertex reader to read Giraph vertices from Titan/HBase table.
          *
          * @param split   Input split from HBase table
          * @param context Giraph task context
          * @throws IOException
          */
-        public LongLongNullVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
-
+        public LongDoubleNullVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
             super(split, context);
         }
 
@@ -85,41 +82,41 @@ public class TitanVertexInputFormatLongLongNull extends
          * @return Giraph vertex
          */
         @Override
-        public Vertex<LongWritable, LongWritable, NullWritable> readGiraphVertex(
+        public Vertex<LongWritable, DoubleWritable, NullWritable> readGiraphVertex(
                 final ImmutableClassesGiraphConfiguration conf, final FaunusVertex faunusVertex) {
+
             // Initialize Giraph vertex
-            Vertex<LongWritable, LongWritable, NullWritable> vertex = conf.createVertex();
-            vertex.initialize(new LongWritable(faunusVertex.getLongId()), new LongWritable(0));
+            Vertex<LongWritable, DoubleWritable, NullWritable> newGiraphVertex = conf.createVertex();
+            newGiraphVertex.initialize(new LongWritable(faunusVertex.getLongId()), new DoubleWritable(0));
 
             // Add vertex properties
             Iterator<TitanProperty> titanProperties = vertexBuilder.buildTitanProperties(faunusVertex);
-            vertex.setValue(getLongWritableProperty(titanProperties));
+            newGiraphVertex.setValue(getDoubleWritableProperty(titanProperties));
 
             // Add edges
             Iterator<TitanEdge> titanEdges = vertexBuilder.buildBlueprintsEdges(faunusVertex);
-            addGiraphEdges(vertex, faunusVertex, titanEdges);
+            addGiraphEdges(newGiraphVertex, faunusVertex, titanEdges);
 
-            return (vertex);
+            return (newGiraphVertex);
         }
 
-
         /**
-         * Create Long writable from value of first Titan property in iterator
+         * Create Double writable from value of first Titan property in iterator
          *
          * @param titanProperties Iterator of Titan properties
-         * @return Long writable containing value of first property in list
+         * @return Double writable containing value of first property in list
          */
-        private LongWritable getLongWritableProperty(Iterator<TitanProperty> titanProperties) {
-            long vertexValue = 0;
+        private DoubleWritable getDoubleWritableProperty(Iterator<TitanProperty> titanProperties) {
+            double vertexValue = 0;
             if (titanProperties.hasNext()) {
                 Object propertyValue = titanProperties.next().getValue();
                 try {
-                    vertexValue = Long.parseLong(propertyValue.toString());
+                    vertexValue = Double.parseDouble(propertyValue.toString());
                 } catch (NumberFormatException e) {
-                    LOG.warn("Unable to parse long value for property: " + propertyValue);
+                    LOG.warn("Unable to parse double value for property: " + propertyValue);
                 }
             }
-            return (new LongWritable(vertexValue));
+            return (new DoubleWritable(vertexValue));
         }
     }
 }

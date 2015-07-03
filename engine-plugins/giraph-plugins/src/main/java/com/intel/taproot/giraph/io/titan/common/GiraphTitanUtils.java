@@ -24,8 +24,6 @@ import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
-
 import static com.intel.taproot.giraph.io.titan.common.GiraphTitanConstants.*;
 
 
