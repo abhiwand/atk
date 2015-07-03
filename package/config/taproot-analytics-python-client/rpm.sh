@@ -20,17 +20,17 @@ REQUIRES="python27, python27-ordereddict, python27-numpy >= 1.8.1, python27-bott
 
 POST="
  #sim link to python sites packages
- if [ -d /usr/lib/python2.7/site-packages/taproot ]; then
-   rm /usr/lib/python2.7/site-packages/taproot
+ if [ -d /usr/lib/python2.7/site-packages/taprootanalytics ]; then
+   rm /usr/lib/python2.7/site-packages/taprootanalytics
  fi
 
- ln -s /usr/lib/taproot/analytics/python-client  /usr/lib/python2.7/site-packages/taproot
+ ln -s /usr/lib/taproot/analytics/python-client  /usr/lib/python2.7/site-packages/taprootanalytics
 "
 
 #delete the sym link only if we are uninstalling not updating
 POSTUN="
  if  [ \$1 -eq 0 ]; then
-    rm /usr/lib/python2.7/site-packages/taproot
+    rm /usr/lib/python2.7/site-packages/taprootanalytics
  fi
 "
 

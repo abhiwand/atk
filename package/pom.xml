@@ -78,7 +78,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                     <executable>bash</executable>
                                     <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
-                                        <argument>${basedir}/config/taprootanalytics-rest-server-tar/package.sh</argument>
+                                        <argument>${basedir}/config/taproot-analytics-tar/package.sh</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -92,7 +92,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                     <executable>bash</executable>
                                     <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
-                                        <argument>${basedir}/config/taprootanalytics-scoring-tar/package.sh</argument>
+                                        <argument>${basedir}/config/taproot-scoring-tar/package.sh</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

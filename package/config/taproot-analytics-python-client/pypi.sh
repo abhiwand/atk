@@ -13,21 +13,21 @@ log "package name: $packageName, tar file: $tarFile, version: $version, script p
 pushd $SCRIPTPATH
 
 #create directory
-mkdir -p taproot/taproot
+mkdir -p taprootanalytics/taprootanalytics
 
 
-tar -xvf $tarFile -C taproot/
+tar -xvf $tarFile -C taprootanalytics/
 
-cp -Rv taproot/usr/lib/taproot/analytics/python-client/* taproot/taproot
+cp -Rv ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/* taprootanalytics/taprootanalytics
 
 rm -rf usr
 
 #copy assest files
-cp -Rv assets/* taproot/
-cp -v  requirements-windows.txt taproot/
-cp -v  requirements-linux.txt taproot/
+cp -Rv assets/* taprootanalytics/
+cp -v  requirements-windows.txt taprootanalytics/
+cp -v  requirements-linux.txt taprootanalytics/
 
-pushd taproot
+pushd taprootanalytics
 
 sed -i "s/\#VERSION\#/${version}/g" setup.py
 sed -i "s/\#BUILD_NUMBER\#/${BUILD_NUMBER}/g" setup.py
