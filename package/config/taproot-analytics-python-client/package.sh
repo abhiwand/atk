@@ -28,25 +28,11 @@ pushd $SCRIPTPATH
     cp -v requirements-linux.txt ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/
 popd
 
-#releaseNumber=$(echo $BRANCH | awk '/release_[0-9.]*$/{print substr($0, match($0,"[0-9.]*$"))}')
-#if [ "$releaseNumber" != "" ]; then
 
-#    python -m compileall ../python-client/taproot/
-
-#    mkdir -p ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/rest
-#    cp ../python-client/taproot/rest/config.py ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/rest/config.py
-#    log "remove py files"
-#    #find ../python-client/taproot -name *.py -type f -delete
-#    ls -l ../python-client/taproot/core
-#    cp -Rv  ../python-client/taproot/* ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/
-
-#else
-    log "regular package"
-    cp -Rv  ../python-client/taproot/* ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/
-    log "delete pyc files"
-    find ../python-client/taproot -name *.pyc -type f -delete
-
-#fi
+log "regular package"
+cp -Rv  ../python-client/taprootanalytics/* ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/
+log "delete pyc files"
+find ../python-client/taprootanalytics -name *.pyc -type f -delete
 
 cp -Rv  ../python-client/cmdgen.py ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/
 

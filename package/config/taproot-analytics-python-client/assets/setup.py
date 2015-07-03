@@ -30,7 +30,7 @@ setup(
     author_email="iatsupport@intel.taproot.com",
 
     # Packages
-    packages=["taproot","taproot/core","taproot/rest","taproot/tests"],
+    packages=["taprootanalytics","taprootanalytics/core","taprootanalytics/rest","taprootanalytics/tests"],
 
     # Include additional files into the package
     include_package_data=True,
