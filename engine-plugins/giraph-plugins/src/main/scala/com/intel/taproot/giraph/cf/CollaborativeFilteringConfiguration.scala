@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.ia.giraph.cf
+package com.intel.taproot.giraph.cf
 
 import com.intel.taproot.analytics.domain.schema.Schema
 import org.apache.commons.lang3.StringUtils

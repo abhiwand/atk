@@ -20,8 +20,8 @@ import com.intel.taproot.giraph.io.VertexData4LBPWritable;
 import com.intel.taproot.giraph.io.VertexData4LBPWritable.VertexType;
 import com.intel.taproot.giraph.io.IdWithVectorMessage;
 
-import com.intel.taproot.ia.giraph.lbp.LoopyBeliefPropagationConfig;
-import com.intel.taproot.ia.giraph.lbp.LoopyBeliefPropagationConfiguration;
+import com.intel.taproot.giraph.lbp.LoopyBeliefPropagationConfig;
+import com.intel.taproot.giraph.lbp.LoopyBeliefPropagationConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;

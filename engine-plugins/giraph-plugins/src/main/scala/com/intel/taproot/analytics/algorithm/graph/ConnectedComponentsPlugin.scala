@@ -17,12 +17,10 @@
 package com.intel.taproot.analytics.algorithm.graph
 
 import com.intel.taproot.giraph.algorithms.cc.ConnectedComponentsComputation.{ ConnectedComponentsAggregatorWriter, ConnectedComponentsMasterCompute }
-import com.intel.taproot.giraph.algorithms.pr.PageRankComputation
-import com.intel.taproot.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDLongValue, TitanVertexInputFormatLongLongNull, TitanVertexInputFormatLongDoubleNull }
+import com.intel.taproot.giraph.io.titan.formats.{ TitanVertexOutputFormatLongIDLongValue, TitanVertexInputFormatLongLongNull }
 import com.intel.taproot.analytics.domain.DomainJsonProtocol
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
-import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
@@ -31,7 +29,6 @@ import scala.concurrent.duration._
 
 import scala.concurrent._
 import com.intel.taproot.giraph.algorithms.cc.ConnectedComponentsComputation
-import com.intel.taproot.analytics.domain.command.CommandDoc
 
 case class ConnectedComponentsCommand(graph: GraphReference,
                                       @ArgDoc("""The name of edge label used to for performing the connected components

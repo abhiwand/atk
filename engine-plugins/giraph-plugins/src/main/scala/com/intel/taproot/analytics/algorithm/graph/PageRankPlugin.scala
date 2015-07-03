@@ -22,7 +22,6 @@ import com.intel.taproot.giraph.io.titan.formats.{ TitanVertexOutputFormatLongID
 import com.intel.taproot.analytics.domain.DomainJsonProtocol
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
-import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.algorithm.util.{ GiraphJobManager, GiraphConfigurationUtil }
 import org.apache.giraph.conf.GiraphConfiguration
 import spray.json.DefaultJsonProtocol._
@@ -30,7 +29,6 @@ import spray.json._
 import scala.concurrent.duration._
 
 import scala.concurrent._
-import com.intel.taproot.analytics.domain.command.CommandDoc
 
 case class PageRank(graph: GraphReference,
                     @ArgDoc("""The name(s) of edge label(s).""") inputEdgeLabelList: List[String],

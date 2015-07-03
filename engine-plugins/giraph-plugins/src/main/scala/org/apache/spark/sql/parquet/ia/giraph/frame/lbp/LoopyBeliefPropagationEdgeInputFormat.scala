@@ -16,7 +16,7 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame.lbp
 
-import com.intel.taproot.ia.giraph.lbp.LoopyBeliefPropagationConfiguration
+import com.intel.taproot.giraph.lbp.LoopyBeliefPropagationConfiguration
 import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._

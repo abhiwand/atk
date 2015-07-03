@@ -18,12 +18,11 @@ package com.intel.taproot.analytics.algorithm.model
 
 import com.intel.taproot.giraph.algorithms.lda.CVB0LDAComputation
 import com.intel.taproot.giraph.algorithms.lda.CVB0LDAComputation.{ CVB0LDAAggregatorWriter, CVB0LDAMasterCompute }
-import com.intel.taproot.ia.giraph.lda.v2._
+import com.intel.taproot.giraph.lda.v2._
 import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobManager }
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Column, FrameSchema }
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, CommandInvocation, CommandPlugin, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, CommandInvocation, CommandPlugin, Invocation, PluginDoc }
 import org.apache.spark.sql.parquet.ia.giraph.frame.{ LdaParquetFrameEdgeInputFormat, LdaParquetFrameVertexOutputFormat }
 import spray.json._
 import LdaJsonFormat._

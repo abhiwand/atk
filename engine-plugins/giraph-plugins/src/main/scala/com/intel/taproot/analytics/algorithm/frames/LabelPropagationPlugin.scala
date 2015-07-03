@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.algorithm.frames
 
 import com.intel.taproot.giraph.algorithms.lp.LabelPropagationComputation
 import com.intel.taproot.giraph.algorithms.lp.LabelPropagationComputation.{ LabelPropagationAggregatorWriter, LabelPropagationMasterCompute }
-import com.intel.taproot.ia.giraph.lp._
+import com.intel.taproot.giraph.lp._
 import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobManager }
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.{ Column, FrameSchema }

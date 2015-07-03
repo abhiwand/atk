@@ -16,12 +16,11 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame.lp
 
-import com.intel.taproot.ia.giraph.lp.LabelPropagationConfiguration
+import com.intel.taproot.giraph.lp.LabelPropagationConfiguration
 import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.io.{ DoubleWritable, LongWritable }
 import org.apache.hadoop.mapreduce.{ InputSplit, JobContext, TaskAttemptContext }
 import org.apache.spark.sql.catalyst.expressions.Row
