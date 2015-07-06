@@ -176,13 +176,8 @@ class LogisticGradientWithFrequency(numClasses: Int) extends GradientWithFrequen
         val multiplier = (1.0 / (1.0 + math.exp(margin))) - label
         val multiplierForFrequency = frequency * (1.0 / (1.0 + math.exp(margin))) + frequencyTerm
         axpy(multiplierForFrequency, data, cumGradient)
-        if (label > 0) {
-          // The following is equivalent to log(1 + exp(margin)) but more numerically stable.
-          frequency * MLUtils.log1pExp(margin)
-        }
-        else {
-          frequency * MLUtils.log1pExp(margin) - margin * frequencyTerm
-        }
+        frequency * MLUtils.log1pExp(margin) - margin * frequencyTerm
+
       case _ =>
         /**
          * For Multinomial Logistic Regression.
@@ -246,7 +241,7 @@ class LogisticGradientWithFrequency(numClasses: Int) extends GradientWithFrequen
         }
 
         for (i <- 0 until numClasses - 1) {
-          val multiplier = math.exp(margins(i)) / (sum + 1.0) - {
+          val multiplier = frequency * math.exp(margins(i)) / (sum + 1.0) - (frequency - label) * {
             if (label != 0.0 && label == i + 1) 1.0 else 0.0
           }
           data.foreachActive { (index, value) =>
@@ -254,13 +249,13 @@ class LogisticGradientWithFrequency(numClasses: Int) extends GradientWithFrequen
           }
         }
 
-        val loss = if (label > 0.0) math.log1p(sum) - marginY else math.log1p(sum)
+        val lossWithFrequency = frequency * math.log1p(sum) - (frequency - label) * marginY
 
         if (maxMargin > 0) {
-          loss + maxMargin
+          lossWithFrequency + frequency * maxMargin
         }
         else {
-          loss
+          lossWithFrequency
         }
     }
   }
