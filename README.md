@@ -1,5 +1,5 @@
-Intel Analytics Toolkit (ATK)
-=============================
+Taproot Analytics
+=================
 
 # Folders Overview
 * bin/ - script for starting REST server, gremlin shell
