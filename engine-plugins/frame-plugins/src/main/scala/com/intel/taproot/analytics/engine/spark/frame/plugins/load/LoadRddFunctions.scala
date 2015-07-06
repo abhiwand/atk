@@ -222,7 +222,7 @@ object LoadRddFunctions extends Serializable {
             else if (array(i).dataType.getClass == ByteType.getClass) {
               mutableRow(i) = row.getByte(i).toInt
             }
-            else if (array(i).dataType.getClass == DecimalType.getClass) {
+            else if (array(i).dataType.getClass == classOf[DecimalType]) { // DecimalType.getClass return value (DecimalType$) differs from expected DecimalType
               mutableRow(i) = row.getAs[BigDecimal](i).doubleValue()
             }
             else {
