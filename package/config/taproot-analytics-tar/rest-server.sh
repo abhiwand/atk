@@ -26,6 +26,7 @@ export UAA_URI=$(echo $VCAP_APPLICATION | $jq  '.application_uris[0]' | sed -e "
 export USE_HTTP=false
 
 export FS_ROOT=$(echo $VCAP_SERVICES |  $jq '.cdh | .[0].credentials.hdfs_root' | tr -d '"')
+export SPARK_EVENT_LOG_DIR=$(echo $FS_ROOT | cut -d'/' -f1-3)
 
 export ZOOKEEPER_HOST=$(echo $VCAP_SERVICES | $jq '.zookeeper | .[0].credentials.uri  / "," | map(. / ":" | .[0]) | join(",")'  | tr -d '"')
 export ZOOKEEPER_PORT=$(echo $VCAP_SERVICES | $jq '.zookeeper | .[0].credentials.uri / "," | .[0] / ":" | .[1]' | tr -d '"')
