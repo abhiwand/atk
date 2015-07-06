@@ -491,7 +491,7 @@ object FrameRdd {
     val timeStampType = TimestampType.getClass()
     val byteType = ByteType.getClass()
     val booleanType = BooleanType.getClass()
-    val decimalType = DecimalType.getClass()
+    val decimalType = classOf[DecimalType] // DecimalType.getClass return value (DecimalType$) differs from expected DecimalType
     val shortType = ShortType.getClass()
 
     val a = dataType.getClass()
