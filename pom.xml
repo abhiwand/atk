@@ -75,7 +75,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </repository>
         <repository>
             <id>gaomaven</id>
-            <url>http://gaomaven.jf.intel.taproot.com:8081/nexus/content/repositories/releases</url>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/releases</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -85,7 +85,7 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         </repository>
         <repository>
             <id>gaomaven-snapshots</id>
-            <url>http://gaomaven.jf.intel.taproot.com:8081/nexus/content/repositories/snapshots</url>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -930,12 +930,6 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-graphx_${scala.short.version}</artifactId>
                 <version>${dep.spark.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-test_${scala.short.version}</artifactId>
-                <version>${dep.spark.version}</version>
-                <scope>test</scope>
             </dependency>
             <!--org.apache.mahout-->
             <dependency>
