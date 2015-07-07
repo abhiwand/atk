@@ -115,7 +115,11 @@ object ApproximateHessianMatrix {
     if (computeHessian) {
       val costFun =
         new CostFunction(data, gradient, updater, regParam, numExamples)
-      Some(ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate())
+      val hessianMatrix = ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate()
+
+      // Multiply hessian matrix by number of examples so that Hessian is comparable to R's glm()
+      hessianMatrix :*= numExamples.toDouble
+      Some(hessianMatrix)
     }
     else {
       None
