@@ -20,7 +20,7 @@ import os
 
 setup(
     # Application name:
-    name="taproot",
+    name="taprootanalytics",
 
     # Version number (initial):
     version=u"#VERSION#-#BUILD_NUMBER#",
