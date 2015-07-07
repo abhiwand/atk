@@ -35,13 +35,8 @@ import scala.collection.mutable
  * @param updater Updater to be used to update weights after every iteration.
  */
 @DeveloperApi
-<<<<<<< HEAD
 class LBFGSWithFrequency(private var gradient: GradientWithFrequency, private var updater: Updater)
-    extends OptimizerWithFrequency with Logging with Hessian {
-=======
-class LBFGSWithFrequency(private var gradient: Gradient, private var updater: Updater)
-    extends Optimizer with Logging with HessianMatrix {
->>>>>>> fa5b9f3eb4fdc62636e2280ad5dfecd5c427f64f
+    extends OptimizerWithFrequency with Logging with HessianMatrix {
 
   private var numCorrections = 10
   private var convergenceTol = 1E-4

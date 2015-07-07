@@ -40,13 +40,9 @@ import org.apache.spark.mllib.linalg.{ Vectors, Vector }
  * @param gradient Gradient function to be used.
  * @param updater Updater to be used to update weights after every iteration.
  */
-<<<<<<< HEAD
+
 class GradientDescentWithFrequency private[mllib] (private var gradient: GradientWithFrequency, private var updater: Updater)
-    extends OptimizerWithFrequency with Logging with Hessian {
-=======
-class GradientDescentWithFrequency private[mllib] (private var gradient: Gradient, private var updater: Updater)
-    extends Optimizer with Logging with HessianMatrix {
->>>>>>> fa5b9f3eb4fdc62636e2280ad5dfecd5c427f64f
+    extends OptimizerWithFrequency with Logging with HessianMatrix {
 
   private var stepSize: Double = 1.0
   private var numIterations: Int = 100
@@ -236,8 +232,7 @@ object GradientDescentWithFrequency extends Logging {
     }
 
     // Compute the approximate Hessian matrix using weights for the final iteration
-<<<<<<< HEAD
-    val hessian = if (computeHessian) {
+    val hessianMatrix = if (computeHessian) {
       val costFun =
         new CostFunctionWithFrequency(data, gradient, updater, regParam, numExamples)
       Some(ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate())
@@ -245,10 +240,6 @@ object GradientDescentWithFrequency extends Logging {
     else {
       None
     }
-=======
-    val hessianMatrix = ApproximateHessianMatrix.computeHessianMatrix(data, weights, gradient,
-      updater, regParam, numExamples, computeHessian)
->>>>>>> fa5b9f3eb4fdc62636e2280ad5dfecd5c427f64f
 
     logInfo("GradientDescent.runMiniBatchSGD finished. Last 10 stochastic losses %s".format(
       stochasticLossHistory.takeRight(10).mkString(", ")))

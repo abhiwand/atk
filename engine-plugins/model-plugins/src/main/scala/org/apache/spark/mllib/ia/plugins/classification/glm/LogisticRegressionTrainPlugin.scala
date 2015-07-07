@@ -25,67 +25,9 @@ import com.intel.taproot.analytics.engine.plugin.PluginDoc
 
 //Implicits needed for JSON conversion
 import spray.json._
-<<<<<<< HEAD
 
-case class LogisticRegressionTrainArgs(model: ModelReference,
-                                       frame: FrameReference,
-                                       labelColumn: String,
-                                       observationColumns: List[String],
-                                       frequencyColumn: Option[String] = None,
-                                       optimizer: Option[String] = None,
-                                       intercept: Option[Boolean] = None,
-                                       featureScaling: Option[Boolean] = None,
-                                       numIterations: Option[Int] = None,
-                                       stepSize: Option[Int] = None,
-                                       regType: Option[String] = None,
-                                       regParam: Option[Double] = None,
-                                       miniBatchFraction: Option[Double] = None,
-                                       threshold: Option[Double] = None,
-                                       //TODO: What input type should this be?
-                                       //gradient : Option[Double] = None,
-                                       numClasses: Option[Int] = None,
-                                       convergenceTolerance: Option[Double] = None,
-                                       numCorrections: Option[Int] = None) {
-  require(model != null, "model is required")
-  require(frame != null, "frame is required")
-  require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
-  require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
-
-  def getNumIterations: Int = {
-    if (numIterations.isDefined) { require(numIterations.get > 0, "numIterations must be a positive value") }
-    numIterations.getOrElse(100)
-  }
-
-  def getOptimizer: String = {
-    if (optimizer.isDefined) { require(optimizer.get == "LBFGS" || optimizer.get == "SGD", "valid optimizer name needed") }
-    optimizer.getOrElse("LBFGS")
-  }
-
-  def getIntercept: Boolean = { intercept.getOrElse(true) }
-  def getStepSize: Int = { stepSize.getOrElse(1) }
-  def getRegParam: Double = { regParam.getOrElse(0.01) }
-  def getMiniBatchFraction: Double = { miniBatchFraction.getOrElse(1.0) }
-  def getFeatureScaling: Boolean = { featureScaling.getOrElse(false) }
-  def getNumClasses: Int = { numClasses.getOrElse(2) }
-  def getConvergenceTolerance: Double = {
-    if (convergenceTolerance.isDefined) { require(convergenceTolerance.get >= 0, "convergenceTolerance must be non negative") }
-    convergenceTolerance.getOrElse(1E-4)
-  }
-  def getNumCorrections: Int = {
-    if (numCorrections.isDefined) { require(numCorrections.get > 0, "numCorrections must be greater than 0") }
-    numCorrections.getOrElse(10)
-  }
-  def getThreshold: Double = { threshold.getOrElse(0.5) }
-}
-
-case class LogisticRegressionTrainResults(numFeatures: Int,
-                                          numClasses: Int,
-                                          coefficients: Map[String, Double],
-                                          covarianceMatrix: FrameEntity)
-=======
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
->>>>>>> fa5b9f3eb4fdc62636e2280ad5dfecd5c427f64f
 
 /**
  * Parameters
