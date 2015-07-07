@@ -22,7 +22,7 @@ import breeze.optimize.DiffFunction
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.Vector
-import org.apache.spark.mllib.optimization.{ CostFunction, Gradient, Updater }
+import org.apache.spark.mllib.optimization._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.{ SparkContext, sql }
@@ -105,16 +105,16 @@ object ApproximateHessianMatrix {
    * @param computeHessian If true, compute Hessian matrix at the solution (i.e., final iteration)
    * @return Hessian matrix, if computeHessian is true, otherwise None
    */
-  def computeHessianMatrix(data: RDD[(Double, Vector)],
+  def computeHessianMatrix(data: RDD[(Double, Vector, Double)],
                            weights: Vector,
-                           gradient: Gradient,
+                           gradient: GradientWithFrequency,
                            updater: Updater,
                            regParam: Double,
                            numExamples: Long,
                            computeHessian: Boolean = true): Option[DenseMatrix[Double]] = {
     if (computeHessian) {
       val costFun =
-        new CostFunction(data, gradient, updater, regParam, numExamples)
+        new CostFunctionWithFrequency(data, gradient, updater, regParam, numExamples)
       val hessianMatrix = ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate()
 
       // Multiply hessian matrix by number of examples so that Hessian is comparable to R's glm()

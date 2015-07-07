@@ -100,7 +100,7 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
   protected val validators: Seq[RDD[LabeledPointWithFrequency] => Boolean] = List()
 
   /** The optimizer to solve the problem. */
-  def optimizer: Optimizer
+  def optimizer: OptimizerWithFrequency
 
   /** Whether to add intercept (default: false). */
   protected var addIntercept: Boolean = false
@@ -277,18 +277,18 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
     val data =
       if (addIntercept) {
         if (useFeatureScaling) {
-          input.map(lp => (lp.label, appendBias(scaler.transform(lp.features)))).cache()
+          input.map(lp => (lp.label, appendBias(scaler.transform(lp.features)), lp.frequency)).cache()
         }
         else {
-          input.map(lp => (lp.label, appendBias(lp.features))).cache()
+          input.map(lp => (lp.label, appendBias(lp.features), lp.frequency)).cache()
         }
       }
       else {
         if (useFeatureScaling) {
-          input.map(lp => (lp.label, scaler.transform(lp.features))).cache()
+          input.map(lp => (lp.label, scaler.transform(lp.features), lp.frequency)).cache()
         }
         else {
-          input.map(lp => (lp.label, lp.features))
+          input.map(lp => (lp.label, lp.features, lp.frequency))
         }
       }
 
@@ -305,7 +305,7 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
       initialWeights
     }
 
-    val weightsWithIntercept = optimizer.optimize(data, initialWeightsWithIntercept)
+    val weightsWithIntercept = optimizer.optimizeWithFrequency(data, initialWeightsWithIntercept)
 
     val intercept = if (addIntercept && numOfLinearPredictor == 1) {
       weightsWithIntercept(weightsWithIntercept.size - 1)
