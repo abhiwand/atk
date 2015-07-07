@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
-import com.intel.graphbuilder.elements.{ GBVertex, Property }
+import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
+import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReader
+import com.intel.taproot.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
 
 /**
  * Class to set the vertex Ids as required by Graph Builder, by formatting as (physicalId, gbId, propertyList)

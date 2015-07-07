@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser.rule
+package com.intel.taproot.graphbuilder.parser.rule
 
-import com.intel.graphbuilder.parser.InputSchema
+import com.intel.taproot.graphbuilder.parser.InputSchema
 
 /**
  * Figure out the dataType of the supplied value using the InputSchema, if needed.

@@ -16,17 +16,16 @@
 
 package org.apache.spark.mllib.ia.plugins.classification
 
-import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.domain.command.CommandDoc
-import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
-import com.intel.intelanalytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.UnitReturn
+import com.intel.taproot.analytics.domain.command.CommandDoc
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 //Implicits needed for JSON conversion

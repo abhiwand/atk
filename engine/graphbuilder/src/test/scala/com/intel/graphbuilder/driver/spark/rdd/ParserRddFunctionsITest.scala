@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.rdd
+package com.intel.taproot.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule.{ EdgeRule, EdgeRuleParser, VertexRule, VertexRuleParser }
-import com.intel.graphbuilder.parser.{ ColumnDef, CombinedParser, InputSchema }
-import com.intel.testutils.TestingSparkContextWordSpec
+import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.taproot.graphbuilder.parser.rule.{ EdgeRule, EdgeRuleParser, VertexRule, VertexRuleParser }
+import com.intel.taproot.graphbuilder.parser.{ ColumnDef, CombinedParser, InputSchema }
+import com.intel.taproot.testutils.TestingSparkContextWordSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar

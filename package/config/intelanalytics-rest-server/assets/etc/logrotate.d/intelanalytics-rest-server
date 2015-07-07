@@ -1,8 +1,0 @@
-/var/log/intelanalytics/rest-server/*.log {
-    daily
-    rotate 2
-    size=20M
-    copytruncate
-    notifempty
-    missingok
-}

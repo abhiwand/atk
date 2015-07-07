@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.titan.cache
+package com.intel.taproot.graphbuilder.titan.cache
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import org.scalatest.{ FlatSpec, Matchers }
 
 class TitanGraphCacheTest extends FlatSpec with Matchers {

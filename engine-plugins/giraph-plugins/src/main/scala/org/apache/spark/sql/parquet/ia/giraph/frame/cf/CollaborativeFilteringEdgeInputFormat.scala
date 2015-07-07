@@ -18,14 +18,13 @@ package org.apache.spark.sql.parquet.ia.giraph.frame.cf
 
 import java.util
 
-import com.intel.giraph.io.EdgeData4CFWritable.EdgeType
-import com.intel.giraph.io.{ CFVertexId, EdgeData4CFWritable }
-import com.intel.ia.giraph.cf.CollaborativeFilteringConfiguration
-import com.intel.intelanalytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.giraph.io.EdgeData4CFWritable.EdgeType
+import com.intel.taproot.giraph.io.{ CFVertexId, EdgeData4CFWritable }
+import com.intel.taproot.giraph.cf.CollaborativeFilteringConfiguration
+import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.mapreduce.{ InputSplit, JobContext, TaskAttemptContext }
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.parquet.RowReadSupport
@@ -52,20 +51,7 @@ class CollaborativeFilteringEdgeInputFormat extends EdgeInputFormat[CFVertexId, 
   }
 
   override def getSplits(context: JobContext, minSplitCountHint: Int): util.List[InputSplit] = {
-
-    val config = new CollaborativeFilteringConfiguration(context.getConfiguration).getConfig
-    val path = config.inputFormatConfig.parquetFileLocation
-    val fs = FileSystem.get(context.getConfiguration)
-
-    val statuses = if (fs.isDirectory(new Path(path))) {
-      fs.globStatus(new Path(path + "/*.parquet"))
-    }
-    else {
-      fs.globStatus(new Path(path))
-    }
-
-    val footers = parquetInputFormat.getFooters(context.getConfiguration, statuses.toList.asJava)
-    parquetInputFormat.getSplits(context.getConfiguration, footers).asInstanceOf[java.util.List[InputSplit]]
+    parquetInputFormat.getSplits(context)
   }
 }
 

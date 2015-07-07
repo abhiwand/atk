@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.schema
+package com.intel.taproot.graphbuilder.schema
 
-import com.intel.graphbuilder.parser._
-import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule.{ DataTypeResolver, EdgeRule, ParsedValue, VertexRule }
+import com.intel.taproot.graphbuilder.parser._
+import com.intel.taproot.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.taproot.graphbuilder.parser.rule.{ DataTypeResolver, EdgeRule, ParsedValue, VertexRule }
 import org.scalatest.{ Matchers, WordSpec }
 
 class InferSchemaFromRulesTest extends WordSpec with Matchers {

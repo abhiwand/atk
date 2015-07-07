@@ -14,24 +14,22 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
 import java.util.Date
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.intelanalytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.domain.CreateEntityArgs
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.intelanalytics.component.Boot
-import com.intel.intelanalytics.domain.command.CommandDoc
-import com.intel.intelanalytics.domain.graph.GraphReference
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.intelanalytics.security.UserPrincipal
-import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseRecordReader
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.analytics.component.Boot
+import com.intel.taproot.analytics.domain.command.CommandDoc
+import com.intel.taproot.analytics.domain.graph.GraphReference
+import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
+import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.taproot.analytics.security.UserPrincipal
 import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent._
@@ -58,7 +56,7 @@ case class KCliqueResult(frameDictionaryOutput: Map[String, FrameEntity], time: 
  */
 
 object KCliquePercolationJsonFormat {
-  import com.intel.intelanalytics.domain.DomainJsonProtocol._
+  import com.intel.taproot.analytics.domain.DomainJsonProtocol._
   implicit val kcliqueFormat = jsonFormat3(KCliqueArgs)
   implicit val kcliqueResultFormat = jsonFormat2(KCliqueResult)
 }

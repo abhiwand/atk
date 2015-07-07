@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.testutils
+package com.intel.taproot.testutils
 
 import java.io.File
 
@@ -48,6 +48,10 @@ trait TestingTitan {
     titanBaseConfig = new BaseConfiguration()
     titanBaseConfig.setProperty("storage.backend", "berkeleyje")
     titanBaseConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
+
+    // Setting batch-loading to true to prevent uniqueness checks when appending to graph
+    // Batch-loading disables automatic schema creation so the schema must be explictly defined
+    titanBaseConfig.setProperty("storage.batch-loading", "true")
 
     //Trying to fix OutOfMemory errors during builds
     titanBaseConfig.setProperty("cache.tx-cache-size", 100)

@@ -14,17 +14,38 @@
     </description>
 
     <parent>
-        <groupId>com.intel.ia</groupId>
-        <artifactId>IntelAnalytics</artifactId>
+        <groupId>com.intel.taproot.ia</groupId>
+        <artifactId>TapRootAnalytics</artifactId>
         <relativePath>../../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
 
     <build>
         <plugins>
+            <!--
+                More about mixed Scala/Java projects here:
+                http://davidb.github.io/scala-maven-plugin/example_java.html
+            -->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-test-compile</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.scalatest</groupId>
@@ -40,20 +61,20 @@
     <dependencies>
         <!--START dependencies to our modules-->
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>testutils</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>titan-shaded</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
         <!-- END BDA dependencies to our modules -->

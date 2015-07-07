@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.util
+package com.intel.taproot.graphbuilder.util
 
 /**
  * Convert Primitives to their Object equivalents

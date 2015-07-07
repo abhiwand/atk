@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.schema
+package com.intel.taproot.graphbuilder.schema
 
 // TODO: we can add support for: isDirected, isManyToOne, sortKey, signature, etc
 

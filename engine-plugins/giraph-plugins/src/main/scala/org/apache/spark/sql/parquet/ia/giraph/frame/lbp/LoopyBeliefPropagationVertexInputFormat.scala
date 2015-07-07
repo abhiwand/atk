@@ -16,10 +16,10 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame.lbp
 
-import com.intel.giraph.io.VertexData4LBPWritable.VertexType
-import com.intel.giraph.io.{ VertexData4LBPWritable }
-import com.intel.ia.giraph.lbp.LoopyBeliefPropagationConfiguration
-import com.intel.intelanalytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.giraph.io.VertexData4LBPWritable.VertexType
+import com.intel.taproot.giraph.io.{ VertexData4LBPWritable }
+import com.intel.taproot.giraph.lbp.LoopyBeliefPropagationConfiguration
+import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.io.{ VertexValueReader, VertexValueInputFormat }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem }
@@ -58,17 +58,7 @@ class LoopyBeliefPropagationVertexInputFormat extends VertexValueInputFormat[Lon
   }
 
   override def getSplits(context: JobContext, minSplitCountHint: Int): java.util.List[InputSplit] = {
-    val path: String = new LoopyBeliefPropagationConfiguration(context.getConfiguration).getConfig.inputFormatConfig.parquetFileLocation
-    val fs: FileSystem = FileSystem.get(context.getConfiguration)
-    val statuses = if (fs.isDirectory(new Path(path))) {
-      fs.globStatus(new Path(path + "/*.parquet"))
-    }
-    else {
-      fs.globStatus(new Path(path))
-    }
-
-    val footers = parquetInputFormat.getFooters(context.getConfiguration, statuses.toList.asJava)
-    parquetInputFormat.getSplits(context.getConfiguration, footers).asInstanceOf[java.util.List[InputSplit]]
+    parquetInputFormat.getSplits(context)
   }
 }
 

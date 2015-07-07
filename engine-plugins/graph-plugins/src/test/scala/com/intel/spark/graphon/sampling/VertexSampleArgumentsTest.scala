@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.sampling
+package com.intel.taproot.spark.graphon.sampling
 
 import org.scalatest.WordSpec
 import org.scalatest.mock.MockitoSugar
-import com.intel.intelanalytics.domain.graph.GraphReference
+import com.intel.taproot.analytics.domain.graph.GraphReference
 
 class VertexSampleArgumentsTest extends WordSpec with MockitoSugar {
 

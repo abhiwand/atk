@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.titan.cache
+package com.intel.taproot.graphbuilder.titan.cache
 
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import com.thinkaurelius.titan.hadoop.config.ModifiableHadoopConfiguration
 import org.apache.hadoop.conf.Configuration
 import org.mockito.Mockito._

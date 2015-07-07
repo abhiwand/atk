@@ -12,8 +12,8 @@
     </description>
 
     <parent>
-        <groupId>com.intel.ia</groupId>
-        <artifactId>IntelAnalytics</artifactId>
+        <groupId>com.intel.taproot.ia</groupId>
+        <artifactId>TapRootAnalytics</artifactId>
         <relativePath>../../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
@@ -91,7 +91,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
 

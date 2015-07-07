@@ -38,9 +38,9 @@ shuffle data.
 
 Resolution:
 
-1)  Stop the intelanalytics service::
+1)  Stop the taprootanalytics service::
 
-        sudo service intelanalytics stop
+        sudo service taprootanalytics stop
 
 #)  From |CDH| Web UI: first stop "Cloudera Management Service",
     and then stop the |CDH|.

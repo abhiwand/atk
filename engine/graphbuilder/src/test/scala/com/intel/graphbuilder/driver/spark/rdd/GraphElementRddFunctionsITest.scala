@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.rdd
+package com.intel.taproot.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, _ }
-import com.intel.testutils.TestingSparkContextWordSpec
+import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, _ }
+import com.intel.taproot.testutils.TestingSparkContextWordSpec
 import org.scalatest.Matchers
 
 class GraphElementRddFunctionsITest extends TestingSparkContextWordSpec with Matchers {

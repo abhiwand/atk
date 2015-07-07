@@ -16,8 +16,8 @@
 
 package org.apache.spark.mllib.ia.plugins.clustering
 
-import com.intel.intelanalytics.domain.frame.FrameReference
-import com.intel.intelanalytics.domain.model.ModelReference
+import com.intel.taproot.analytics.domain.frame.FrameReference
+import com.intel.taproot.analytics.domain.model.ModelReference
 
 /**
  * Command for loading model data into existing model in the model database.

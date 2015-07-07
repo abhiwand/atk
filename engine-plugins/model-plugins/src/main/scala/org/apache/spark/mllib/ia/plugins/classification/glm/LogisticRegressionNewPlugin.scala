@@ -16,11 +16,11 @@
 
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import com.intel.intelanalytics.domain.CreateEntityArgs
-import com.intel.intelanalytics.domain.model.{ GenericNewModelArgs, ModelEntity }
-import com.intel.intelanalytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.model.{ GenericNewModelArgs, ModelEntity }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 @PluginDoc(oneLine = "Create a 'new' instance of logistic regression model.",

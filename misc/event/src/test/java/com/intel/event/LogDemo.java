@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.event;
+package com.intel.taproot.event;
 
-import com.intel.event.adapter.SLF4JLogAdapter;
+import com.intel.taproot.event.adapter.SLF4JLogAdapter;
 
 /* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.

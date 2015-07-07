@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.rdd
+package com.intel.taproot.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.driver.spark.titan.JoinBroadcastVariable
-import com.intel.graphbuilder.elements._
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.write.EdgeWriter
-import com.intel.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
+import com.intel.taproot.graphbuilder.driver.spark.titan.JoinBroadcastVariable
+import com.intel.taproot.graphbuilder.elements._
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.write.EdgeWriter
+import com.intel.taproot.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
 import org.apache.spark.SparkContext._
 import org.apache.spark.{ RangePartitioner, TaskContext }
 import org.apache.spark.broadcast.Broadcast
@@ -138,7 +138,7 @@ class EdgeRddFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
 
     self.context.runJob(self, (context: TaskContext, iterator: Iterator[GBEdge]) => {
 
-      val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
+      val graph = TitanGraphConnector.getGraphFromCache(titanConnector)
       val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
       val writer = new EdgeWriter(edgeDAO, append)
 
@@ -159,7 +159,7 @@ class EdgeRddFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
       finally {
         //Do not shut down graph when using cache since graph instances are automatically shutdown when
         //no more references are held
-        graph.shutdown()
+        //graph.shutdown()
       }
     })
   }
@@ -172,7 +172,7 @@ class EdgeRddFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
   def write(titanConnector: TitanGraphConnector, gbIdToPhysicalIdMap: JoinBroadcastVariable[Property, AnyRef], append: Boolean): Unit = {
 
     self.context.runJob(self, (context: TaskContext, iterator: Iterator[GBEdge]) => {
-      val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
+      val graph = TitanGraphConnector.getGraphFromCache(titanConnector)
       val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
       val writer = new EdgeWriter(edgeDAO, append)
 
@@ -196,7 +196,7 @@ class EdgeRddFunctions(self: RDD[GBEdge], val maxEdgesPerCommit: Long = 10000L) 
       finally {
         //Do not shut down graph when using cache since graph instances are automatically shutdown when
         //no more references are held
-        graph.shutdown()
+        //graph.shutdown()
       }
     })
   }

@@ -17,7 +17,7 @@
 
 package org.apache.spark.mllib.optimization
 
-import org.apache.spark.mllib.evaluation.{ Hessian, ApproximateHessianMatrix }
+import org.apache.spark.mllib.evaluation.{ HessianMatrix, ApproximateHessianMatrix }
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -31,15 +31,22 @@ import org.apache.spark.mllib.linalg.{ Vectors, Vector }
 /**
  * Class used to solve an optimization problem using Gradient Descent.
  *
- * Copy of MlLib's gradient descent that supports a frequency column.
+ * Copy of MlLib's gradient descent that supports a frequency column, and Hessian matrix.
  * The frequency column contains the frequency of occurrence of each observation.
+ * The Hessian matrix is numerically estimated using the weights for the final solution.
+ *
  * @see org.apache.spark.mllib.optimization.GradientDescent
  *
  * @param gradient Gradient function to be used.
  * @param updater Updater to be used to update weights after every iteration.
  */
+<<<<<<< HEAD
 class GradientDescentWithFrequency private[mllib] (private var gradient: GradientWithFrequency, private var updater: Updater)
     extends OptimizerWithFrequency with Logging with Hessian {
+=======
+class GradientDescentWithFrequency private[mllib] (private var gradient: Gradient, private var updater: Updater)
+    extends Optimizer with Logging with HessianMatrix {
+>>>>>>> fa5b9f3eb4fdc62636e2280ad5dfecd5c427f64f
 
   private var stepSize: Double = 1.0
   private var numIterations: Int = 100
@@ -229,6 +236,7 @@ object GradientDescentWithFrequency extends Logging {
     }
 
     // Compute the approximate Hessian matrix using weights for the final iteration
+<<<<<<< HEAD
     val hessian = if (computeHessian) {
       val costFun =
         new CostFunctionWithFrequency(data, gradient, updater, regParam, numExamples)
@@ -237,11 +245,15 @@ object GradientDescentWithFrequency extends Logging {
     else {
       None
     }
+=======
+    val hessianMatrix = ApproximateHessianMatrix.computeHessianMatrix(data, weights, gradient,
+      updater, regParam, numExamples, computeHessian)
+>>>>>>> fa5b9f3eb4fdc62636e2280ad5dfecd5c427f64f
 
     logInfo("GradientDescent.runMiniBatchSGD finished. Last 10 stochastic losses %s".format(
       stochasticLossHistory.takeRight(10).mkString(", ")))
 
-    (weights, stochasticLossHistory.toArray, hessian)
+    (weights, stochasticLossHistory.toArray, hessianMatrix)
 
   }
 }

@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write.dao
+package com.intel.taproot.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
-import com.intel.graphbuilder.write.titan.TitanIdUtils.titanId
-import com.intel.testutils.TestingTitan
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.graphbuilder.write.titan.TitanIdUtils.titanId
+import com.intel.taproot.testutils.TestingTitan
 import com.tinkerpop.blueprints.Direction
 import org.scalatest.{ BeforeAndAfter, Matchers, WordSpec }
 
@@ -29,6 +29,16 @@ class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAn
 
   before {
     setupTitan()
+
+    // Create schema before setting properties -- Needed in Titan 0.5.4+
+    val graphManager = titanGraph.getManagementSystem()
+    graphManager.makePropertyKey("gbId").dataType(classOf[Integer]).make()
+    graphManager.makePropertyKey("newKey").dataType(classOf[String]).make()
+    graphManager.makePropertyKey("key1").dataType(classOf[String]).make()
+    graphManager.makePropertyKey("key2").dataType(classOf[String]).make()
+    graphManager.makeEdgeLabel("myLabel").make()
+    graphManager.commit()
+
     vertexDAO = new VertexDAO(titanGraph)
     edgeDAO = new EdgeDAO(titanGraph, vertexDAO)
   }

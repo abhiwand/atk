@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.connectedcomponents
+package com.intel.taproot.spark.graphon.connectedcomponents
 
-import com.intel.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{ Edge => GraphXEdge }

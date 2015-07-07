@@ -28,8 +28,8 @@
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>com.intel.ia</groupId>
-        <artifactId>IntelAnalytics</artifactId>
+        <groupId>com.intel.taproot.ia</groupId>
+        <artifactId>TapRootAnalytics</artifactId>
         <relativePath>../../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
@@ -105,6 +105,18 @@
                                     </excludes>
                                 </filter>
                                 <filter>
+                                    <artifact>org.apache.hive:hive-exec</artifact>
+                                    <includes>
+                                        <include>org/apache/hadoop/hive/**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.python:jython</artifact>
+                                    <includes>
+                                        <exclude>org/google/common/**</exclude>
+                                    </includes>
+                                </filter>
+                                <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>*.html</exclude>
@@ -143,15 +155,15 @@
 
         <!--START dependencies to our modules-->
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>launcher</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>engine-core</artifactId>
         </dependency>
 
@@ -178,7 +190,7 @@
 
         <!-- START Titan dependencies -->
         <dependency>
-            <groupId>com.intel.ia</groupId>
+            <groupId>com.intel.taproot.ia</groupId>
             <artifactId>titan-shaded</artifactId>
             <exclusions>
                 <exclusion>

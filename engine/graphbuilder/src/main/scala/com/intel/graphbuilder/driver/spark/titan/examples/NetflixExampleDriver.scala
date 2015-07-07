@@ -14,18 +14,18 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.examples
+package com.intel.taproot.graphbuilder.driver.spark.titan.examples
 
 // $COVERAGE-OFF$
 // This is example code only, not part of the main product
 
 import java.util.Date
 
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
-import com.intel.graphbuilder.parser.{ ColumnDef, InputSchema }
-import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.taproot.graphbuilder.parser.{ ColumnDef, InputSchema }
+import com.intel.taproot.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.taproot.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
@@ -82,7 +82,7 @@ object NetflixExampleDriver {
     // conf.set("spark.executor.memory", "32g")
     // conf.set("spark.cores.max", "33")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+    conf.set("spark.kryo.registrator", "com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
 
     val sc = new SparkContext(conf)
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.event
+package com.intel.taproot.event
 
 import org.scalatest.{ FlatSpec, Matchers }
 import org.scalatest.mock.MockitoSugar

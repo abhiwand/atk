@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.scalatest.{ FlatSpec, Matchers }
 
 class GetConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {

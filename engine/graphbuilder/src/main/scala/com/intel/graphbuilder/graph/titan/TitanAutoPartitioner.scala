@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.graph.titan
+package com.intel.taproot.graphbuilder.graph.titan
 
 import com.google.common.annotations.VisibleForTesting
-import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat
+import com.intel.taproot.graphbuilder.titan.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.diskstorage.hbase.HBaseStoreManager
 import org.apache.commons.configuration.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -35,7 +35,7 @@ import scala.util.Try
  */
 case class TitanAutoPartitioner(titanConfig: Configuration) {
 
-  import com.intel.graphbuilder.graph.titan.TitanAutoPartitioner._
+  import com.intel.taproot.graphbuilder.graph.titan.TitanAutoPartitioner._
 
   val enableAutoPartition = titanConfig.getBoolean(ENABLE_AUTO_PARTITION, false)
 

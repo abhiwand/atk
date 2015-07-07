@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.schema
+package com.intel.taproot.graphbuilder.schema
 
-import com.intel.graphbuilder.parser.rule._
-import com.intel.graphbuilder.util.StringUtils
+import com.intel.taproot.graphbuilder.parser.rule._
+import com.intel.taproot.graphbuilder.util.StringUtils
 
 /**
  * Infer Graph schema as best as possible from the supplied parameters.  This means if only part

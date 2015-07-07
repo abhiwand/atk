@@ -16,7 +16,7 @@
 
 package org.apache.spark.frame.ordering
 
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.domain.schema.DataTypes
 
 /**
  * Ordering for sorting frame RDDs by multiple columns

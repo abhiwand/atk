@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphstatistics
+package com.intel.taproot.spark.graphon.graphstatistics
 
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex, Property }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.titan.io;
+package com.intel.taproot.graphbuilder.titan.io;
 
 import com.esotericsoftware.minlog.Log;
 import org.apache.hadoop.hbase.HConstants;

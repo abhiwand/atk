@@ -28,14 +28,14 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
     <name>package</name>
 
     <parent>
-        <groupId>com.intel.ia</groupId>
-        <artifactId>IntelAnalytics</artifactId>
+        <groupId>com.intel.taproot.ia</groupId>
+        <artifactId>TapRootAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <pkg.version>1.1</pkg.version>
+        <pkg.version>0.4.0</pkg.version>
     </properties>
     <profiles>
         <profile>
@@ -78,7 +78,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                     <executable>bash</executable>
                                     <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
-                                        <argument>${basedir}/config/intelanalytics-rest-server-tar/package.sh</argument>
+                                        <argument>${basedir}/config/taproot-analytics-tar/package.sh</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -92,7 +92,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                     <executable>bash</executable>
                                     <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
-                                        <argument>${basedir}/config/intelanalytics-scoring-tar/package.sh</argument>
+                                        <argument>${basedir}/config/taproot-scoring-tar/package.sh</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -108,7 +108,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                     <arguments>
                                         <argument>package.sh</argument>>
                                         <argument>-p</argument>
-                                        <argument>intelanalytics-rest-server</argument>
+                                        <argument>taproot-analytics</argument>
                                         <argument>-b</argument>
                                         <argument>${env.BUILD_NUMBER}</argument>
                                         <argument>-v</argument>
@@ -129,7 +129,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                     <arguments>
                                         <argument>package.sh</argument>
                                         <argument>-p</argument>
-                                        <argument>intelanalytics-python-rest-client</argument>
+                                        <argument>taproot-analytics-python-client</argument>
                                         <argument>-b</argument>
                                         <argument>${env.BUILD_NUMBER}</argument>
                                         <argument>-v</argument>
@@ -138,33 +138,8 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                 </configuration>
                             </execution>
 
-                           <!-- <execution>
-                                <id>package-spark-deps</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>bash</executable>
-                                    <workingDirectory>${basedir}</workingDirectory>
-                                    <arguments>
-                                        <argument>package.sh</argument>
-                                        <argument>-m</argument>
-                                        <argument>yes</argument>
-                                        <argument>-p</argument>
-                                        <argument>intelanalytics-spark-deps</argument>
-                                        <argument>-b</argument>
-                                        <argument>${env.BUILD_NUMBER}</argument>
-                                        <argument>-v</argument>
-                                        <argument>${pkg.version}</argument>
-                                        <argument>tar</argument>
-                                        <argument>${basedir}/intelanalytics-spark-deps-source.tar.gz</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>-->
-
                             <execution>
-                                <id>package-intelanalytics-parcel</id>
+                                <id>package-taprootanalytics-parcel</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>exec</goal>
@@ -175,7 +150,7 @@ RUN apt-get install -y dh-make gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-
                                     <arguments>
                                         <argument>package.sh</argument>
                                         <argument>-p</argument>
-                                        <argument>intelanalytics</argument>
+                                        <argument>taproot</argument>
                                         <argument>-b</argument>
                                         <argument>${env.BUILD_NUMBER}</argument>
                                         <argument>-v</argument>

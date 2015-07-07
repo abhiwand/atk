@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.connectedcomponents
+package com.intel.taproot.spark.graphon.connectedcomponents
 
 import org.scalatest.Matchers
 
@@ -23,7 +23,7 @@ import org.apache.spark.SparkContext
 import scala.concurrent.Lock
 import org.scalatest.{ FlatSpec, BeforeAndAfter }
 import org.apache.log4j.{ Logger, Level }
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 
 class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

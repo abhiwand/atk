@@ -16,8 +16,8 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame.lbp
 
-import com.intel.giraph.io.VertexData4LBPWritable
-import com.intel.ia.giraph.lbp.LoopyBeliefPropagationConfiguration
+import com.intel.taproot.giraph.io.VertexData4LBPWritable
+import com.intel.taproot.giraph.lbp.LoopyBeliefPropagationConfiguration
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.fs.Path

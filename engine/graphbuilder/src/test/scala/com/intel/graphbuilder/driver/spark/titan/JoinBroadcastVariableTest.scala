@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan
+package com.intel.taproot.graphbuilder.driver.spark.titan
 
-import com.intel.graphbuilder.elements.Property
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.graphbuilder.elements.Property
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
 

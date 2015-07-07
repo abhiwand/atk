@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.elements
+package com.intel.taproot.graphbuilder.elements
 
 /**
  * This wrapper maps a gbId to a Physical ID

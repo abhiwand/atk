@@ -1,6 +1,6 @@
-echo "[intel-analytics]
+echo "[taproot-analytics]
 name=intel analytics
-baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/latest/yum/dists/rhel/6
+baseurl=https://taproot-analytics-repo.s3-us-west-2.amazonaws.com/release/latest/yum/dists/rhel/6
 gpgcheck=0
 priority=1
 s3_enabled=1

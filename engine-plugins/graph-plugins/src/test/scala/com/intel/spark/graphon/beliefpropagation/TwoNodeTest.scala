@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.beliefpropagation
+package com.intel.taproot.spark.graphon.beliefpropagation
 
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
-import com.intel.spark.graphon.testutils.ApproximateVertexEquality
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.spark.graphon.testutils.ApproximateVertexEquality
 
 /**
  * These tests validate loopy belief propagation on two node graphs.

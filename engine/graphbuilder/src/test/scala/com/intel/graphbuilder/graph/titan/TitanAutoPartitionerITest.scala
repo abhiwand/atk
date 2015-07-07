@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.graph.titan
+package com.intel.taproot.graphbuilder.graph.titan
 
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.commons.configuration.BaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.hbase.{ ClusterStatus, HBaseConfiguration, HRegionInfo, TableName }

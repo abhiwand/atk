@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
-import com.intel.graphbuilder.elements._
+import com.intel.taproot.graphbuilder.elements._
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.graphbuilder.parser.InputSchema
+import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.graphbuilder.parser.InputSchema
 
 /**
  * Write back to each vertex in Titan graph the set of communities to which it

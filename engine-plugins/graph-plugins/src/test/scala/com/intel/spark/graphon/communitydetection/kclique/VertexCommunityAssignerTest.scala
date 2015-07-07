@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
-import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 class VertexCommunityAssignerTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

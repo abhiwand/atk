@@ -14,15 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.reader
+package com.intel.taproot.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRdd
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
-import com.intel.graphbuilder.elements.GraphElement
-import com.intel.graphbuilder.graph.titan.{ TitanHadoopHBaseCacheListener, TitanAutoPartitioner, TitanGraphConnector }
-import com.intel.graphbuilder.titan.io.GBTitanHBaseInputFormat
+import com.intel.taproot.graphbuilder.driver.spark.rdd.TitanReaderRdd
+import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReader._
+import com.intel.taproot.graphbuilder.elements.GraphElement
+import com.intel.taproot.graphbuilder.graph.titan.{ TitanHadoopHBaseCacheListener, TitanAutoPartitioner, TitanGraphConnector }
+import com.intel.taproot.graphbuilder.titan.io.GBTitanHBaseInputFormat
 import com.thinkaurelius.titan.hadoop.FaunusVertex
-import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseRecordReader
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.io.NullWritable

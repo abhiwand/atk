@@ -16,8 +16,8 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame.lbp
 
-import com.intel.ia.giraph.lbp.LoopyBeliefPropagationConfiguration
-import com.intel.intelanalytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.giraph.lbp.LoopyBeliefPropagationConfiguration
+import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
@@ -60,20 +60,7 @@ class LoopyBeliefPropagationEdgeInputFormat extends EdgeInputFormat[LongWritable
    * @return a list of input splits
    */
   override def getSplits(context: JobContext, minSplitCountHint: Int): java.util.List[InputSplit] = {
-    //TODO refactor into a utility method and use it for all readers
-    val conf = context.getConfiguration
-    val path: String = new LoopyBeliefPropagationConfiguration(conf).getConfig.inputFormatConfig.parquetFileLocation
-    val fs: FileSystem = FileSystem.get(conf)
-
-    val statuses = if (fs.isDirectory(new Path(path))) {
-      fs.globStatus(new Path(path + "/*.parquet"))
-    }
-    else {
-      fs.globStatus(new Path(path))
-    }
-    val footers = parquetInputFormat.getFooters(context.getConfiguration, statuses.toList.asJava)
-
-    parquetInputFormat.getSplits(conf, footers).asInstanceOf[java.util.List[InputSplit]]
+    parquetInputFormat.getSplits(context)
   }
 }
 

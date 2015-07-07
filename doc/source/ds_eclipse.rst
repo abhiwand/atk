@@ -80,7 +80,7 @@ Setup
     #)  Choose *Add source folder* button.
     #)  Browse for the |IAT| Python REST Client libraries.
         On RedHat and Centos these are found under
-        '/usr/lib/intelanalytics/rest-client/python'.
+        '/usr/lib/taprootanalytics/rest-client/python'.
     #)  Choose the *OK* button.
 
 #)  Right click your project folder, for example, "myproject".
@@ -95,7 +95,7 @@ Setup
     #)  Close the *Help keeping PyDev alive* dialog, if it appears.
     #)  Type the following code into test.py::
 
-            import intelanalytics as ia
+            import taprootanalytics as ia
             ia.server.host = "correct host name or IP address"
             ia.connect()
             ia.server.ping()
@@ -105,7 +105,7 @@ Setup
     #)  Choose *Python Run* and choose the *OK* button, you should see the
         output::
 
-            Successful ping to Intel Analytics at http://localhost:9099/info
+            Successful ping to TapRoot Analytics at http://localhost:9099/info
 
 #)  Next take a look at the included examples.
 

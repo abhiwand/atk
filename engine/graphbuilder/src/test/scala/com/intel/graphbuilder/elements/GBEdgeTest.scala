@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.elements
+package com.intel.taproot.graphbuilder.elements
 
 import org.scalatest.{ Matchers, WordSpec }
 

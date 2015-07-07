@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write
+package com.intel.taproot.graphbuilder.write
 
 import org.scalatest.{ Matchers, WordSpec }
-import com.intel.graphbuilder.write.dao.EdgeDAO
-import com.intel.graphbuilder.elements.GBEdge
+import com.intel.taproot.graphbuilder.write.dao.EdgeDAO
+import com.intel.taproot.graphbuilder.elements.GBEdge
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 

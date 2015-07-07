@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.event;
+package com.intel.taproot.event;
 
 /**
  * An exception that packages an Event as its payload

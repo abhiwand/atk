@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan
+package com.intel.taproot.graphbuilder.driver.spark.titan
 
-import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.graphbuilder.parser.InputSchema
+import com.intel.taproot.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 
 /**
  * Configuration options for GraphBuilder
