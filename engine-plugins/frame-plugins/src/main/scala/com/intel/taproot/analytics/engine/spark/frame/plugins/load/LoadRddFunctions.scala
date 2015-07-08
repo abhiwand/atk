@@ -223,7 +223,7 @@ object LoadRddFunctions extends Serializable {
               mutableRow(i) = row.getByte(i).toInt
             }
             else if (array(i).dataType.getClass == classOf[DecimalType]) { // DecimalType.getClass return value (DecimalType$) differs from expected DecimalType
-              mutableRow(i) = row.getAs[BigDecimal](i).doubleValue()
+              mutableRow(i) = row.getAs[java.math.BigDecimal](i).doubleValue()
             }
             else {
               val colType = schema.columnTuples(i)._2
