@@ -13,8 +13,9 @@ echo $DIR
 LAUNCHER=$DIR/../launcher.jar
 LAUNCHER=$DIR/../conf/logback.xml:$LAUNCHER
 echo "Downloading jquery exectuable to parse environment variables"
+
 jq=$DIR/../jq
-wget http://stedolan.github.io/jq/download/linux64/jq -O $jq
+echo "make jq executable"
 chmod +x $jq
 
 
