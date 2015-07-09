@@ -591,7 +591,7 @@ class HiveQuery(DataFile):
     Only a subset of Hive data types are supported.
 
     The supported data types are tinyint(cast to int), smallint(cast to int),
-    int, bigint, float, double , decimal(cast to float, may lose precision), timestamp(cast to string),
+    int, bigint, float, double , decimal(cast to double, may lose precision), timestamp(cast to string),
     date(cast to string), string, varchar(cast to string) and boolean(cast to int)
 
     There is no support currently for char, arrays, maps, binary, structs and union
