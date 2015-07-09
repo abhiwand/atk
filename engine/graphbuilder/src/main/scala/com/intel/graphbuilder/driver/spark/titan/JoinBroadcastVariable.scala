@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan
+package com.intel.taproot.graphbuilder.driver.spark.titan
 
 import java.util.Random
 

@@ -14,29 +14,27 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphstatistics
+package com.intel.taproot.spark.graphon.graphstatistics
 
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
-import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
-import com.intel.intelanalytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.intelanalytics.engine.spark.graph._
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.graphbuilder.parser.InputSchema
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
+import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.graph.GraphBuilderConfigFactory
+import com.intel.taproot.analytics.engine.spark.graph._
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
 import scala.concurrent.Await
 

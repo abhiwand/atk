@@ -14,21 +14,19 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphstatistics
+package com.intel.taproot.spark.graphon.graphstatistics
 
-import com.intel.graphbuilder.elements.{ GBVertex, Property }
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
-import com.intel.intelanalytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.frame.SparkFrameData
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property }
+import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
+import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 
 case class AnnotateWeightedDegreesArgs(graph: GraphReference,
                                        @ArgDoc("") outputPropertyName: String,

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.graph
+package com.intel.taproot.graphbuilder.graph
 
 import com.tinkerpop.blueprints.TransactionalGraph
 

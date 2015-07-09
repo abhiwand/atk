@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.sampling
+package com.intel.taproot.spark.graphon.sampling
 
-import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.testutils.{ TestingSparkContextWordSpec, TestingTitan }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.testutils.{ TestingSparkContextWordSpec, TestingTitan }
 import org.scalatest.{ BeforeAndAfter, Matchers }
 
 import scala.collection.JavaConversions._

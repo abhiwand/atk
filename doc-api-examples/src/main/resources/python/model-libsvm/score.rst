@@ -1,15 +1,3 @@
-Calculate the prediction label for a single observation.
-
-Parameters
-----------
-observation : Vector
-    A single observation of features.
-
-Returns
--------
-int
-    Predicted label.
-
 Examples
 --------
 

@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.beliefpropagation
+package com.intel.taproot.spark.graphon.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.testutils.TestingSparkContextFlatSpec
-import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkException
 

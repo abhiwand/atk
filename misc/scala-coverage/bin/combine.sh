@@ -30,7 +30,7 @@ do
     cd $module
 
     # fix issue with links in overview.html
-    sed -i 's:a href=".*com/intel/:a href="com/intel/:g' target/site/scoverage/overview.html
+    sed -i 's:a href=".*com/taproot/:a href="com/taproot/:g' target/site/scoverage/overview.html
 
     # save coverage report to code-coverage project
     cp -r target/site/scoverage ../${report_target}/${module}-scoverage-report

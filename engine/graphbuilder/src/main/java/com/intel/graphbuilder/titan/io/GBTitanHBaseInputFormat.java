@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.titan.io;
+package com.intel.taproot.graphbuilder.titan.io;
 
-import com.thinkaurelius.titan.hadoop.formats.titan_050.hbase.CachedTitanHBaseInputFormat;
+import com.thinkaurelius.titan.hadoop.formats.titan_054.hbase.CachedTitanHBaseInputFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -99,7 +99,4 @@ public class GBTitanHBaseInputFormat extends CachedTitanHBaseInputFormat {
         LOG.info("Set requested input splits for HBase table to: " + requestedSplitCount);
         return requestedSplitCount;
     }
-
-
-
 }

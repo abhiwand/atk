@@ -1,5 +1,3 @@
-
-
 Examples
 --------
 Calculate the dot product for a sequence of columns in Frame object *my_frame*:

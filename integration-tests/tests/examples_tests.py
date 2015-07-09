@@ -15,7 +15,7 @@
 #
 
 import unittest
-import intelanalytics as ia
+import taprootanalytics as ia
 
 # show full stack traces
 ia.errors.show_details = True
@@ -28,12 +28,13 @@ ia.connect()
 
 
 
-#import intelanalytics as ia
+#import taprootanalytics as ia
 #ia.server.port = 19099
 #ia.connect()
 
 
 import doctest
+#doctest.ELLIPSIS_MARKER = "..."
 doctest.ELLIPSIS_MARKER = "-etc-"
 
 import sys
@@ -42,7 +43,7 @@ current_module = sys.modules[__name__]
 import os
 #print "examples=%s" % examples
 here = os.path.dirname(os.path.abspath(__file__))
-path_to_examples = os.path.join(here, "../../python/intelanalytics/doc/examples")
+#path_to_examples = os.path.join(here, "../../python/taprootanalytics/doc/examples")
 import fnmatch
 
 __test__ = {}
@@ -57,10 +58,17 @@ def get_all_example_rst_file_paths():
     return paths
 
 
+def clean_for_ignores(line):
+    if line.lstrip()[:2] == '[=':
+        return "-etc-"
+    return line
+
 def add_rst_file(full_path):
     with open(full_path) as f:
         content = f.read()
-    __test__[full_path] = content
+    cleansed = '\n'.join([clean_for_ignores(line) for line in content.split('\n')])
+    print "Adding content for %s" % full_path
+    __test__[full_path] = cleansed
 
 
 def init_tests(files):
@@ -74,7 +82,7 @@ def init_tests(files):
 def run_tests(files=None, verbose=False):
     init_tests(files or get_all_example_rst_file_paths())
     return doctest.testmod(m=current_module,
-                    raise_on_error=True,
+                    raise_on_error=False,
                     exclude_empty=True,
                     verbose=verbose,
                     optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
@@ -84,8 +92,8 @@ class ExampleDocTests(unittest.TestCase):
 
     def test_examples(self):
         print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-
-        results = run_tests()
+        #results = run_tests(["/home/blbarker/dev/atk/doc-api-examples/src/main/resources/python/frame/simple.doctest"], verbose=True)
+        results = run_tests(["/home/blbarker/dev/atk/doc-api-examples/src/main/resources/python/frame/ecdf.rst"], verbose=True)
         self.assertEqual(0, results.failed, "Tests in the example documentation failed.")
         print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
@@ -99,7 +107,7 @@ if __name__ == "__main__":
 # option 4
 # def run_example(relative_path, verbose=False):
 #     here = os.path.dirname(os.path.abspath(__file__))
-#     path_to_examples = os.path.join(here, "../../python/intelanalytics/doc/examples")
+#     path_to_examples = os.path.join(here, "../../python/taprootanalytics/doc/examples")
 #
 #     __test__['bin_column'] = content
 #     print "Running examples in %s" % relative_path
@@ -135,7 +143,7 @@ if __name__ == "__main__":
 
 # option 2
 #connection_header = """
-#>>> import intelanalytics as ia
+#>>> import taprootanalytics as ia
 #>>> ia.server.port = 19099
 #>>> ia.connect()
 #-etc-

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique.datatypes
+package com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes
 
 /**
  * Represents an undirected edge as a pair of vertex identifiers.

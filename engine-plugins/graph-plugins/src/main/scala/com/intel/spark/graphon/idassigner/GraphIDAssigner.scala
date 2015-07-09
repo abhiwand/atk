@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.idassigner
+package com.intel.taproot.spark.graphon.idassigner
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd._

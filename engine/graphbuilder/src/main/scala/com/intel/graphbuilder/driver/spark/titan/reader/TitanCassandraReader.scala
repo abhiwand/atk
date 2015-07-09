@@ -14,15 +14,15 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.reader
+package com.intel.taproot.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.driver.spark.rdd.TitanReaderRdd
-import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
-import com.intel.graphbuilder.elements.GraphElement
-import com.intel.graphbuilder.graph.titan.{ TitanHadoopCassandraCacheListener, TitanGraphConnector }
+import com.intel.taproot.graphbuilder.driver.spark.rdd.TitanReaderRdd
+import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReader._
+import com.intel.taproot.graphbuilder.elements.GraphElement
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
 import com.thinkaurelius.titan.diskstorage.Backend
 import com.thinkaurelius.titan.hadoop.FaunusVertex
-import com.thinkaurelius.titan.hadoop.formats.titan_050.cassandra.CachedTitanCassandraInputFormat
+import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraInputFormat
 import org.apache.cassandra.hadoop.ConfigHelper
 import org.apache.cassandra.thrift.{ SlicePredicate, SliceRange }
 import org.apache.hadoop.io.NullWritable
@@ -52,11 +52,10 @@ class TitanCassandraReader(sparkContext: SparkContext, titanConnector: TitanGrap
   override def read(): RDD[GraphElement] = {
     val cassandraConfig = createCassandraConfiguration()
 
-    val cassandraRDD = sparkContext.newAPIHadoopRDD(cassandraConfig, classOf[CachedTitanCassandraInputFormat],
+    val cassandraRDD = sparkContext.newAPIHadoopRDD(cassandraConfig, classOf[TitanCassandraInputFormat],
       classOf[NullWritable],
       classOf[FaunusVertex])
 
-    sparkContext.addSparkListener(new TitanHadoopCassandraCacheListener())
     new TitanReaderRdd(cassandraRDD, titanConnector)
   }
 

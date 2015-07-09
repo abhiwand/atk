@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan
+package com.intel.taproot.graphbuilder.driver.spark.titan
 
-import com.intel.graphbuilder.elements.{ GraphElement, GBEdge, GBVertex }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.parser.rule.DataTypeResolver
-import com.intel.graphbuilder.schema.{ SchemaAccumulableParam, GraphSchema, InferSchemaFromData, InferSchemaFromRules }
-import com.intel.graphbuilder.write.titan.TitanSchemaWriter
+import com.intel.taproot.graphbuilder.elements.{ GraphElement, GBEdge, GBVertex }
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.parser.rule.DataTypeResolver
+import com.intel.taproot.graphbuilder.schema.{ SchemaAccumulableParam, GraphSchema, InferSchemaFromData, InferSchemaFromRules }
+import com.intel.taproot.graphbuilder.write.titan.TitanSchemaWriter
 import org.apache.spark.Accumulable
 import org.apache.spark.rdd.RDD
 

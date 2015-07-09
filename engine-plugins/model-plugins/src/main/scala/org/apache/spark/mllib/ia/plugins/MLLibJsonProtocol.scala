@@ -16,14 +16,16 @@
 
 package org.apache.spark.mllib.ia.plugins
 
-import org.apache.spark.mllib.classification.{ NaiveBayesModel, LogisticRegressionModel, SVMModel }
-import org.apache.spark.mllib.regression.LinearRegressionModel
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.frame.FrameEntity
+import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
-import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn, KMeansData }
+import org.apache.spark.mllib.ia.plugins.classification.glm.{ LogisticRegressionTrainResults, LogisticRegressionData, LogisticRegressionTrainArgs }
+import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn }
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
+import org.apache.spark.mllib.regression.LinearRegressionModel
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON
@@ -71,6 +73,7 @@ object MLLibJsonProtocol {
         "values" -> new JsArray(obj.values.map(d => JsNumber(d)).toList)
       )
     }
+
     /**
      * Conversion from JsValue to MLLib's DenseVector format
      * @param json JsValue
@@ -83,38 +86,49 @@ object MLLibJsonProtocol {
     }
   }
 
-  implicit object LogisticRegressionModelFormat extends JsonFormat[LogisticRegressionModel] {
+  implicit object LogisticRegressionModelFormat extends JsonFormat[LogisticRegressionModelWithFrequency] {
     /**
      * The write methods converts from LogisticRegressionModel to JsValue
      * @param obj LogisticRegressionModel. Where LogisticRegressionModel's format is
-     *            LogisticRegressionModel(val weights: Vector,val intercept: Double)
+     *            LogisticRegressionModel(val weights: Vector,val intercept: Double, numFeatures:Int, numClasses: Int)
      *            and the weights Vector could be either a SparseVector or DenseVector
      * @return JsValue
      */
-    override def write(obj: LogisticRegressionModel): JsValue = {
+    override def write(obj: LogisticRegressionModelWithFrequency): JsValue = {
       val weights = VectorFormat.write(obj.weights)
       JsObject(
         "weights" -> weights,
-        "intercept" -> JsNumber(obj.intercept)
+        "intercept" -> JsNumber(obj.intercept),
+        "numFeatures" -> JsNumber(obj.numFeatures),
+        "numClasses" -> JsNumber(obj.numClasses)
       )
     }
 
     /**
      * The read method reads a JsValue to LogisticRegressionModel
      * @param json JsValue
-     * @return LogisticRegressionModel with format LogisticRegressionModel(val weights: Vector,val intercept: Double)
+     * @return LogisticRegressionModel with format LogisticRegressionModel(val weights: Vector,val intercept: Double, numfeatures:Int, numClasses:Int)
      *         and the weights Vector could be either a SparseVector or DenseVector
      */
-    override def read(json: JsValue): LogisticRegressionModel = {
+    override def read(json: JsValue): LogisticRegressionModelWithFrequency = {
       val fields = json.asJsObject.fields
-      val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
+
+      val intercept = fields.get("intercept")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
+        .asInstanceOf[JsNumber].value.doubleValue()
+      val numFeatures = fields.get("numFeatures")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numFeatures"))
+        .asInstanceOf[JsNumber].value.intValue()
+      val numClasses = fields.get("numClasses")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numClasses"))
+        .asInstanceOf[JsNumber].value.intValue()
 
       val weights = fields.get("weights").map(v => {
         VectorFormat.read(v)
       }
       ).get
 
-      new LogisticRegressionModel(weights, intercept)
+      new LogisticRegressionModelWithFrequency(weights, intercept, numFeatures, numClasses)
     }
 
   }
@@ -143,7 +157,9 @@ object MLLibJsonProtocol {
      */
     override def read(json: JsValue): LinearRegressionModel = {
       val fields = json.asJsObject.fields
-      val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
+      val intercept = fields.get("intercept")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
+        .asInstanceOf[JsNumber].value.doubleValue()
 
       val weights = fields.get("weights").map(v => {
         VectorFormat.read(v)
@@ -224,12 +240,14 @@ object MLLibJsonProtocol {
     /**
      * The read method reads a JsValue to SVMModel
      * @param json JsValue
-     * @return LogisticRegressionModel with format SVMModel(val weights: Vector,val intercept: Double)
+     * @return SVMModel with format SVMModel(val weights: Vector,val intercept: Double)
      *         and the weights Vector could be either a SparseVector or DenseVector
      */
     override def read(json: JsValue): SVMModel = {
       val fields = json.asJsObject.fields
-      val intercept = fields.get("intercept").getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept.")).asInstanceOf[JsNumber].value.doubleValue()
+      val intercept = fields.get("intercept")
+        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
+        .asInstanceOf[JsNumber].value.doubleValue()
 
       val weights = fields.get("weights").map(v => {
         VectorFormat.read(v)
@@ -261,6 +279,36 @@ object MLLibJsonProtocol {
 
   }
 
+  /* implicit object LogRegTrainResultsFormat extends JsonFormat[LogisticRegressionTrainResults] {
+    override def write(obj: LogisticRegressionTrainResults): JsValue = {
+      obj.covarianceMatrix match {
+        case Some(matrix) => JsObject(
+          "numFeatures" -> JsNumber(obj.numFeatures),
+          "numClasses" -> JsNumber(obj.numClasses),
+          "coefficients" -> obj.coefficients.toJson,
+          "covarianceMatrix" -> matrix.toJson)
+        case _ => {
+          JsObject(
+            "numFeatures" -> JsNumber(obj.numFeatures),
+            "numClasses" -> JsNumber(obj.numClasses),
+            "coefficients" -> obj.coefficients.toJson)
+        }
+      }
+    }
+
+    override def read(json: JsValue): LogisticRegressionTrainResults = {
+      val fields = json.asJsObject.fields
+      val numFeatures = getOrInvalid(fields, "numFeatures").convertTo[Int]
+      val numClasses = getOrInvalid(fields, "numClasses").convertTo[Int]
+      val coefficients = getOrInvalid(fields, "coefficients").convertTo[Map[String, Double]]
+      val covarianceMatrix = fields.get("covarianceMatrix") match {
+        case Some(matrixFrame) => Some(matrixFrame.convertTo[FrameEntity])
+        case _ => None
+      }
+      LogisticRegressionTrainResults(numFeatures, numClasses, coefficients, covarianceMatrix)
+    }
+  }*/
+
   def getOrInvalid[T](map: Map[String, T], key: String): T = {
     // throw exception if a programmer made a mistake
     map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
@@ -279,6 +327,8 @@ object MLLibJsonProtocol {
   implicit val naiveBayesDataFormat = jsonFormat2(NaiveBayesData)
   implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
+  implicit val logRegTrainFormat = jsonFormat18(LogisticRegressionTrainArgs)
+  implicit val logRegTrainResultsFormat = jsonFormat4(LogisticRegressionTrainResults)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)

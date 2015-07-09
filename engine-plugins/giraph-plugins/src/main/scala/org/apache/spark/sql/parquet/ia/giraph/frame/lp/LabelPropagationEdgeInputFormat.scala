@@ -16,12 +16,11 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame.lp
 
-import com.intel.ia.giraph.lp.LabelPropagationConfiguration
-import com.intel.intelanalytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.giraph.lp.LabelPropagationConfiguration
+import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.io.{ DoubleWritable, LongWritable }
 import org.apache.hadoop.mapreduce.{ InputSplit, JobContext, TaskAttemptContext }
 import org.apache.spark.sql.catalyst.expressions.Row
@@ -60,20 +59,7 @@ class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LongWritable, Doub
    * @return a list of input splits
    */
   override def getSplits(context: JobContext, minSplitCountHint: Int): java.util.List[InputSplit] = {
-    //TODO refactor into a utility method and use it for all readers
-    val conf = context.getConfiguration
-    val path: String = new LabelPropagationConfiguration(conf).getConfig.inputFormatConfig.parquetFileLocation
-    val fs: FileSystem = FileSystem.get(conf)
-
-    val statuses = if (fs.isDirectory(new Path(path))) {
-      fs.globStatus(new Path(path + "/*.parquet"))
-    }
-    else {
-      fs.globStatus(new Path(path))
-    }
-    val footers = parquetInputFormat.getFooters(context.getConfiguration, statuses.toList.asJava)
-
-    parquetInputFormat.getSplits(conf, footers).asInstanceOf[java.util.List[InputSplit]]
+    parquetInputFormat.getSplits(context)
   }
 }
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.event;
+package com.intel.taproot.event;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -147,7 +147,7 @@ public class Event {
     /**
      * The correlation ID the event is associated with.
      * @return the correlation ID
-     * @see com.intel.event.EventContext#getCorrelationId()
+     * @see com.intel.taproot.event.EventContext#getCorrelationId()
      */
     public String getCorrelationId() {
         return context == null ? getId() : context.getCorrelationId();

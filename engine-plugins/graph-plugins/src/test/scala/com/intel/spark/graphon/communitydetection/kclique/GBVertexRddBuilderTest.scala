@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique
+package com.intel.taproot.spark.graphon.communitydetection.kclique
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.testutils.TestingSparkContextFlatSpec
+import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{ Property, GBVertex }
-import com.intel.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.spark.graphon.communitydetection.ScalaToJavaCollectionConverter
 
 class GBVertexRddBuilderTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

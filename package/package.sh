@@ -1,7 +1,7 @@
 #!/bin/bash
 #This script will package a tar into a deb and rpm package.
 #The tar has to be built with the entire directory structrue of the linux file system
-#if the file needs to be installed in /usr/lib/intelanalytics/myfiles
+#if the file needs to be installed in /usr/lib/taprootanalytics/myfiles
 #the tar should be created with that  directory structure
 #The tar will be extracted to both deb and rpm dir wich have all the boiler plate files
 #necessary for packing.
@@ -18,7 +18,8 @@ if [ $? != 0 ]; then echo "Terminating .." >&2 ; exit 1; fi
 eval set -- "$TEMP"
 echo "$@"
 config="config"
-packages="deb rpm pypi csd parcel"
+packages="deb rpm pypi "
+##csd parcel"
 build="1"
 buildDir=${SCRIPTPATH}/tarballs
 
@@ -69,7 +70,7 @@ export TIMESTAMP=$(date)
 export VERSION=$version
 export PACKAGE_NAME=$packageName
 export LICENSE=Apache
-export GROUP="Intel Analytics"
+export GROUP="TapRoot Analytics"
 export BUILD_DIR=$buildDir/$PACKAGE_NAME
 #do a verbose extract of the tar file to get a list of all the files in the tar file
 

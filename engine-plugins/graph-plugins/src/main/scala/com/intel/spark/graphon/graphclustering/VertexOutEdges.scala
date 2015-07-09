@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphclustering
+package com.intel.taproot.spark.graphon.graphclustering
 
 /**
  * List of Edges from a source Vertex

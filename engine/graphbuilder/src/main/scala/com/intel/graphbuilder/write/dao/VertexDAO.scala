@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write.dao
+package com.intel.taproot.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
 import com.tinkerpop.blueprints
 import com.tinkerpop.blueprints.Graph
 

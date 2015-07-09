@@ -36,7 +36,7 @@ Configuration Script
         Creating application.conf file from application.conf.tpl
         Reading application.conf.tpl
         Updating configuration
-        Configuration created for Intel Analytics
+        Configuration created for TapRoot Analytics
         Configuring postgres access for  "iauser"
         Initializing database:                                     [  OK  ]
         Stopping postgresql service:                               [  OK  ]
@@ -50,15 +50,15 @@ Configuration Script
         Starting postgresql service:                               [  OK  ]
         0
         initctl: Unknown instance:
-        intelanalytics-rest-server start/running, process 17484
+        taprootanalytics-rest-server start/running, process 17484
         0
-        Waiting for Intel Analytics server to restart
+        Waiting for TapRoot Analytics server to restart
          .   .   .   .
         You are now connected to database "ia_metastore".
         INSERT 0 1
         0
         postgres is configured
-        Intel Analytics is ready for use.
+        TapRoot Analytics is ready for use.
 
 .. only:: latex
 
@@ -104,7 +104,7 @@ Configuration Script
         Creating application.conf file from application.conf.tpl
         Reading application.conf.tpl
         Updating configuration
-        Configuration created for Intel Analytics
+        Configuration created for TapRoot Analytics
         Configuring postgres access for  "iauser"
         Initializing database:                                     [  OK  ]
         Stopping postgresql service:                               [  OK  ]
@@ -118,14 +118,14 @@ Configuration Script
         Starting postgresql service:                               [  OK  ]
         0
         initctl: Unknown instance:
-        intelanalytics-rest-server start/running, process 17484
+        taprootanalytics-rest-server start/running, process 17484
         0
-        Waiting for Intel Analytics server to restart
+        Waiting for TapRoot Analytics server to restart
          .   .   .   .
         You are now connected to database "ia_metastore".
         INSERT 0 1
         0
         postgres is configured
-        Intel Analytics is ready for use.
+        TapRoot Analytics is ready for use.
 
 

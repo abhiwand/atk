@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.elements
+package com.intel.taproot.graphbuilder.elements
 
-import com.intel.graphbuilder.util.StringUtils
-import com.intel.intelanalytics.domain.schema.DataTypes
+import com.intel.taproot.graphbuilder.util.StringUtils
+import com.intel.taproot.analytics.domain.schema.DataTypes
 
 import scala.util.Try
 

@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.sampling
+package com.intel.taproot.spark.graphon.sampling
 
-import com.intel.graphbuilder.elements.{ Property, GBVertex }
-import com.intel.testutils.TestingSparkContextWordSpec
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.testutils.TestingSparkContextWordSpec
 import org.scalatest.Matchers
-import com.intel.testutils.{ TestingSparkContextWordSpec, TestingTitan }
+import com.intel.taproot.testutils.{ TestingSparkContextWordSpec, TestingTitan }
 
 class AssignSampleITest extends TestingSparkContextWordSpec with Matchers {
 

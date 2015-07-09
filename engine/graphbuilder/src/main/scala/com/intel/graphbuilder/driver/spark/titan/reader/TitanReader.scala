@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.reader
+package com.intel.taproot.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.GraphElement
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.elements.GraphElement
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
 import org.apache.spark.{ HashPartitioner, SparkContext }
 import org.apache.spark.rdd.RDD
 
@@ -49,7 +49,7 @@ object TitanReader {
  */
 case class TitanReader(sparkContext: SparkContext, titanConnector: TitanGraphConnector) extends Serializable {
 
-  import com.intel.graphbuilder.driver.spark.titan.reader.TitanReader._
+  import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReader._
 
   val titanConfig = titanConnector.config
 

@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.beliefpropagation
+package com.intel.taproot.spark.graphon.beliefpropagation
 
 import org.apache.spark.graphx._
-import com.intel.spark.graphon.iatpregel._
-import com.intel.graphbuilder.elements.GBVertex
-import com.intel.spark.graphon.VectorMath
+import com.intel.taproot.spark.graphon.iatpregel._
+import com.intel.taproot.graphbuilder.elements.GBVertex
+import com.intel.taproot.spark.graphon.VectorMath
 
 /**
  * Internal state of a vertex during the progress of the belief propagation algorithm.

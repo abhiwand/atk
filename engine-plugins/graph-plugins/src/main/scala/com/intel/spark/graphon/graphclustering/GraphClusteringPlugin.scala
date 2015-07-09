@@ -14,21 +14,19 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphclustering
+package com.intel.taproot.spark.graphon.graphclustering
 
-import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.domain.graph.{ GraphReference }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.intelanalytics.domain.DomainJsonProtocol
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
+import com.intel.taproot.analytics.UnitReturn
+import com.intel.taproot.analytics.domain.graph.{ GraphReference }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.spark.graph.GraphBuilderConfigFactory
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.domain.DomainJsonProtocol
 
 // Implicits needed for JSON conversion
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 case class GraphClusteringArgs(graph: GraphReference,
                                @ArgDoc("""Column name for the edge distance.""") edgeDistance: String)
@@ -54,7 +52,7 @@ class GraphClusteringPlugin extends SparkCommandPlugin[GraphClusteringArgs, Unit
 
   override def execute(arguments: GraphClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
 
-    if (!SparkEngineConfig.isSparkOnYarn)
+    if (!EngineConfig.isSparkOnYarn)
       sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)

@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon
+package com.intel.taproot.spark.graphon
 
-import com.intel.intelanalytics.engine.spark.EngineKryoRegistrator
-import com.intel.spark.graphon.beliefpropagation.VertexState
-import com.intel.spark.graphon.iatpregel._
+import com.intel.taproot.analytics.engine.spark.EngineKryoRegistrator
+import com.intel.taproot.spark.graphon.beliefpropagation.VertexState
+import com.intel.taproot.spark.graphon.iatpregel._
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.graphx.GraphKryoRegistrator
 
@@ -29,7 +29,7 @@ import org.apache.spark.graphx.GraphKryoRegistrator
  * \ * <p>
  * Usage:
  * conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
- * conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
+ * conf.set("spark.kryo.registrator", "com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
  * </p>
  */
 class GraphonKryoRegistrator extends EngineKryoRegistrator {

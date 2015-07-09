@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.sampling
+package com.intel.taproot.spark.graphon.sampling
 
-import com.intel.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.spark.graphon.graphstatistics.UnweightedDegrees
+import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.taproot.graphbuilder.parser.InputSchema
+import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.spark.graphon.graphstatistics.UnweightedDegrees
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._

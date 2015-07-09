@@ -14,20 +14,18 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.connectedcomponents
+package com.intel.taproot.spark.graphon.connectedcomponents
 
-import com.intel.graphbuilder.elements.{ Property }
-import com.intel.intelanalytics.domain.frame.{ FrameMeta, FrameEntity }
-import com.intel.intelanalytics.domain.graph.{ GraphReference }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.frame.{ SparkFrameData }
-import com.intel.intelanalytics.engine.spark.plugin.{ SparkCommandPlugin }
-import com.intel.intelanalytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
+import com.intel.taproot.graphbuilder.elements.{ Property }
+import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.taproot.analytics.domain.graph.{ GraphReference }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import org.apache.spark.frame.FrameRdd
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
+import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 import spray.json._
 import DomainJsonProtocol._
 

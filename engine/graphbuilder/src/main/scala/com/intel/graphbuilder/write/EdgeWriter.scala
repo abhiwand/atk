@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write
+package com.intel.taproot.graphbuilder.write
 
-import com.intel.graphbuilder.elements.GBEdge
-import com.intel.graphbuilder.write.dao.EdgeDAO
+import com.intel.taproot.graphbuilder.elements.GBEdge
+import com.intel.taproot.graphbuilder.write.dao.EdgeDAO
 import com.tinkerpop.blueprints
 
 /**

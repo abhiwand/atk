@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write.titan
+package com.intel.taproot.graphbuilder.write.titan
 
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ Matchers, WordSpec }
-import com.intel.graphbuilder.elements.{ Property, GBVertex }
-import com.intel.graphbuilder.write.VertexWriter
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.graphbuilder.write.VertexWriter
 import com.thinkaurelius.titan.core.TitanVertex
 
 class TitanVertexWriterTest extends WordSpec with Matchers with MockitoSugar {

@@ -14,19 +14,17 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.sampling
+package com.intel.taproot.spark.graphon.sampling
 
-import com.intel.graphbuilder.elements.{ GBEdge, Property, GBVertex }
-import com.intel.intelanalytics.UnitReturn
-import com.intel.intelanalytics.domain.graph.{ AssignSampleTitanArgs, GraphEntity }
-import com.intel.intelanalytics.engine.plugin.Invocation
-import com.intel.intelanalytics.engine.spark.SparkEngineConfig
-import com.intel.intelanalytics.engine.spark.context.SparkContextFactory
-import com.intel.intelanalytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
-import com.intel.intelanalytics.engine.spark.graph.SparkGraphHBaseBackend
-import com.intel.intelanalytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.analytics.UnitReturn
+import com.intel.taproot.analytics.domain.graph.{ AssignSampleTitanArgs, GraphEntity }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
+import com.intel.taproot.analytics.engine.spark.graph.SparkGraphHBaseBackend
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
-import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
 /**
  * Parameters
  * ----------
@@ -48,7 +46,7 @@ import com.intel.intelanalytics.engine.plugin.{ PluginDoc, ArgDoc }
  */
 // Implicits needed for JSON conversion
 import spray.json._
-import com.intel.intelanalytics.domain.DomainJsonProtocol._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Assign classes to rows.

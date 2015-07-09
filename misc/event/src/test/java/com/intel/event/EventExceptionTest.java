@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.event;
+package com.intel.taproot.event;
 
 /* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.

@@ -127,14 +127,14 @@ To add the dependency repository, do this:
 
     .. code::
 
-        $ wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.repo
+        $ wget https://taproot-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.repo
         $ sudo cp ia-deps.repo /etc/yum.repos.d/
 
 .. only:: latex
 
     .. code::
 
-        $ wget https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/
+        $ wget https://taproot-analytics-dependencies.s3-us-west-2.amazonaws.com/
             ia-deps.repo
         $ sudo cp ia-deps.repo /etc/yum.repos.d/
 
@@ -143,9 +143,9 @@ directly:
 
 .. code::
 
-    $ echo "[intel-analytics-deps]
-    > name=intel-analytics-deps
-    > baseurl=https://intel-analytics-dependencies.s3-us-west-2.amazonaws.com/yum
+    $ echo "[taproot-analytics-deps]
+    > name=taproot-analytics-deps
+    > baseurl=https://taproot-analytics-dependencies.s3-us-west-2.amazonaws.com/yum
     > gpgcheck=0
     > priority=1 enabled=1"  | sudo tee -a /etc/yum.repos.d/ia-deps.repo
 
@@ -167,7 +167,7 @@ Results should be similar to this::
     Version     : 0.2.4
     Release     : 1
     Size        : 9.0 k
-    Repo        : intel-analytics-deps
+    Repo        : taproot-analytics-deps
     Summary     : Amazon S3 plugin for yum.
     URL         : git@github.com:NumberFour/yum-s3-plugin.git
     License     : Apache License 2.0
@@ -194,9 +194,9 @@ Create '/etc/yum.repos.d/ia.repo':
 
     .. code::
 
-        $ echo "[intel-analytics]
+        $ echo "[taproot-analytics]
         > name=intel analytics
-        > baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/release/latest/yum/dists/rhel/6
+        > baseurl=https://taproot-analytics-repo.s3-us-west-2.amazonaws.com/release/latest/yum/dists/rhel/6
         > gpgcheck=0
         > priority=1
         > s3_enabled=1
@@ -210,9 +210,9 @@ Create '/etc/yum.repos.d/ia.repo':
 
     .. code::
 
-        $ echo "[intel-analytics]
+        $ echo "[taproot-analytics]
         > name=intel analytics
-        > baseurl=https://intel-analytics-repo.s3-us-west-2.amazonaws.com/
+        > baseurl=https://taproot-analytics-repo.s3-us-west-2.amazonaws.com/
             release/latest/yum/dists/rhel/6
         > gpgcheck=0
         > priority=1
@@ -231,19 +231,19 @@ To verify the installation of the |IAT| repository, do this:
 
 .. code::
 
-    $ sudo yum info intelanalytics-rest-server
+    $ sudo yum info taprootanalytics-rest-server
 
 Example results::
 
     Available Packages
-    Name        : intelanalytics-rest-server
+    Name        : taprootanalytics-rest-server
     Arch        : x86_64
     Version     : #.#.#
     Release     : ####
     Size        : 419 M
-    Repo        : intel-analytics
-    Summary     : intelanalytics-rest-server-0.9
-    URL         : intel.com
+    Repo        : taproot-analytics
+    Summary     : taprootanalytics-rest-server-0.9
+    URL         : intel.taproot.com
     License     : Confidential
 
 Troubleshooting Private Repository
@@ -289,7 +289,7 @@ with the HDFS name node.
 
 .. code::
 
-    $ sudo yum -y install intelanalytics-rest-server
+    $ sudo yum -y install taprootanalytics-rest-server
 
 Installing On A Worker Node
 ---------------------------
@@ -301,14 +301,14 @@ running the spark worker role.
 
     .. code::
 
-        $ sudo yum -y install intelanalytics-spark-deps intelanalytics-python-rest-client
+        $ sudo yum -y install taprootanalytics-spark-deps taprootanalytics-python-rest-client
 
 .. only:: latex
 
     .. code::
 
-        $ sudo yum -y install intelanalytics-spark-deps
-        $ sudo yum -y install intelanalytics-python-rest-client
+        $ sudo yum -y install taprootanalytics-spark-deps
+        $ sudo yum -y install taprootanalytics-python-rest-client
 
 .. _rest_server_configuration:
 
@@ -323,7 +323,7 @@ Configuration Script
 ====================
 
 The server configuration is semi-automated via the use of a Python script
-'/etc/intelanalytics/rest-server/config.py'.
+'/etc/taprootanalytics/rest-server/config.py'.
 It will query Cloudera Manager for the necessary configuration values and
 create a new 'application.conf' file based on the 'application.conf.tpl' file.
 The script will also fully configure the local PostgreSQL installation to
@@ -333,7 +333,7 @@ To configure the |IAT| installation, do this:
 
 .. code::
 
-    $ cd /etc/intelanalytics/rest-server/
+    $ cd /etc/taprootanalytics/rest-server/
     $ sudo ./config
 
 Answer the prompts to configure the cluster.
@@ -359,7 +359,7 @@ Manual Configuration
 **This section is optional, but informative if additional changes to the
 configuration file are needed.** (:ref:`Skip section <skip_manual_section>`).
 
-/etc/intelanalytics/rest-server/application.conf
+/etc/taprootanalytics/rest-server/application.conf
 ------------------------------------------------
 
 The REST server package provides a configuration template file which must be
@@ -369,7 +369,7 @@ Copy the configuration template file 'application.conf.tpl' to
 
 .. code::
 
-    $ cd /etc/intelanalytics/rest-server
+    $ cd /etc/taprootanalytics/rest-server
     $ sudo cp application.conf.tpl application.conf
 
 Open the file with a text editor:
@@ -514,7 +514,7 @@ If it isn't already set, add:
 
 .. code::
 
-    SPARK_CLASSPATH="/usr/lib/intelanalytics/graphbuilder/lib/ispark-deps.jar"
+    SPARK_CLASSPATH="/usr/lib/taprootanalytics/graphbuilder/lib/ispark-deps.jar"
 
 .. _fig_12_02:
 
@@ -590,8 +590,8 @@ The following lines need to be commented:
         metastore.connection-postgresql.database = "ia-metastore"
         metastore.connection-postgresql.username = "iauser"
         metastore.connection-postgresql.password = "myPassword"
-        metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
-        metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+        metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.database}
+        metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
 
     After:
 
@@ -602,8 +602,8 @@ The following lines need to be commented:
         //metastore.connection-postgresql.database = "ia-metastore"
         //metastore.connection-postgresql.username = "iauser"
         //metastore.connection-postgresql.password = "myPassword"
-        //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
-        //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+        //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.database}
+        //metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
 
 .. only:: latex
 
@@ -616,11 +616,11 @@ The following lines need to be commented:
         metastore.connection-postgresql.database = "ia-metastore"
         metastore.connection-postgresql.username = "iauser"
         metastore.connection-postgresql.password = "myPassword"
-        metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.
-            metastore.connection-postgresql.host}":"${intel.analytics.metastore.
-            connection-postgresql.port}"/"${intel.analytics.metastore.connection-
+        metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.
+            metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.
+            connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-
             postgresql.database}
-        metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+        metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
 
     After:
 
@@ -631,11 +631,11 @@ The following lines need to be commented:
         //metastore.connection-postgresql.database = "ia-metastore"
         //metastore.connection-postgresql.username = "iauser"
         //metastore.connection-postgresql.password = "myPassword"
-        //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.
-            metastore.connection-postgresql.host}":"${intel.analytics.metastore.
-            connection-postgresql.port}"/"${intel.analytics.metastore.connection-
+        //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.
+            metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.
+            connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-
             postgresql.database}
-        //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+        //metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
 
 Next, uncomment the following line:
 
@@ -643,13 +643,13 @@ Before:
 
 .. code::
 
-    //metastore.connection = ${intel.analytics.metastore.connection-h2}
+    //metastore.connection = ${intel.taproot.analytics.metastore.connection-h2}
 
 After:
 
 .. code::
 
-    metastore.connection = ${intel.analytics.metastore.connection-h2}
+    metastore.connection = ${intel.taproot.analytics.metastore.connection-h2}
 
 .. _ad_inst_ia1_postgresql:
 
@@ -720,8 +720,8 @@ Now that the database is created, uncomment all the postgres lines in
         //metastore.connection-postgresql.database = "ia-metastore"
         //metastore.connection-postgresql.username = "iauser"
         //metastore.connection-postgresql.password = "myPassword"
-        //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
-        //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+        //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.database}
+        //metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
 
     After:
 
@@ -732,8 +732,8 @@ Now that the database is created, uncomment all the postgres lines in
         metastore.connection-postgresql.database = "YOURDATABASE"
         metastore.connection-postgresql.username = "YOURUSER"
         metastore.connection-postgresql.password = "YOUR_PASSWORD"
-        metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.analytics.metastore.connection-postgresql.host}":"${intel.analytics.metastore.connection-postgresql.port}"/"${intel.analytics.metastore.connection-postgresql.database}
-        metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+        metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.database}
+        metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
 
 .. only:: latex
 
@@ -747,10 +747,10 @@ Now that the database is created, uncomment all the postgres lines in
         //metastore.connection-postgresql.username = "iauser"
         //metastore.connection-postgresql.password = "myPassword"
         //metastore.connection-postgresql.url = "jdbc:postgresql://"
-            ${intel.analytics.metastore.connection-postgresql.host}":"
-            ${intel.analytics.metastore.connection-postgresql.port}"/"
-            ${intel.analytics.metastore.connection-postgresql.database}
-        //metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+            ${intel.taproot.analytics.metastore.connection-postgresql.host}":"
+            ${intel.taproot.analytics.metastore.connection-postgresql.port}"/"
+            ${intel.taproot.analytics.metastore.connection-postgresql.database}
+        //metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
 
     After:
 
@@ -762,18 +762,18 @@ Now that the database is created, uncomment all the postgres lines in
         metastore.connection-postgresql.username = "YOURUSER"
         metastore.connection-postgresql.password = "YOUR_PASSWORD"
         metastore.connection-postgresql.url = "jdbc:postgresql://"
-            ${intel.analytics.metastore.connection-postgresql.host}":"
-            ${intel.analytics.metastore.connection-postgresql.port}"/"
-            ${intel.analytics.metastore.connection-postgresql.database}
-        metastore.connection = ${intel.analytics.metastore.connection-postgresql}
+            ${intel.taproot.analytics.metastore.connection-postgresql.host}":"
+            ${intel.taproot.analytics.metastore.connection-postgresql.port}"/"
+            ${intel.taproot.analytics.metastore.connection-postgresql.database}
+        metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
         #comment any h2 configuration lines with a # or //::
-         //metastore.connection = ${intel.analytics.metastore.connection-h2}
+         //metastore.connection = ${intel.taproot.analytics.metastore.connection-h2}
 
 Restart the |IAT| service:
 
 .. code::
 
-    $ sudo service intelanalytics restart
+    $ sudo service taprootanalytics restart
 
 After restarting the service, the |IAT| will create all the database tables.
 Now insert a meta user to enable Python client requests.
@@ -851,7 +851,7 @@ It can be started like any other Linux service.
 
 .. code::
 
-    $ sudo service intelanalytics start
+    $ sudo service taprootanalytics start
 
 After starting the REST server, browse to the host on port 9099
 (<master node ip address>:9099) to see if the server started successfully.
@@ -859,20 +859,20 @@ After starting the REST server, browse to the host on port 9099
 Troubleshooting |IAT| REST Server
 =================================
 
-A log gets written to '/var/log/intelanalytics/rest-server/output.log or
-'/var/log/intelanalytics/rest-server/application.log'.
+A log gets written to '/var/log/taprootanalytics/rest-server/output.log or
+'/var/log/taprootanalytics/rest-server/application.log'.
 To resolve issues starting or running jobs, tail either log to see what
 error is getting reported while running the task:
 
 .. code::
 
-    $ sudo tail -f /var/log/intelanalytics/rest-server/output.log
+    $ sudo tail -f /var/log/taprootanalytics/rest-server/output.log
 
 or:
 
 .. code::
 
-    $ sudo tail -f /var/log/intelanalytics/rest-server/application.log
+    $ sudo tail -f /var/log/taprootanalytics/rest-server/application.log
 
 
 More details can be found in the :doc:`section on log files </ad_log>`.

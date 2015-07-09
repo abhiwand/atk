@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.rdd
+package com.intel.taproot.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, GBVertex }
-import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.write.VertexWriter
-import com.intel.graphbuilder.write.dao.VertexDAO
-import com.intel.graphbuilder.write.titan.TitanVertexWriter
+import com.intel.taproot.graphbuilder.elements.{ GbIdToPhysicalId, GBVertex }
+import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.graphbuilder.write.VertexWriter
+import com.intel.taproot.graphbuilder.write.dao.VertexDAO
+import com.intel.taproot.graphbuilder.write.titan.TitanVertexWriter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ Partition, TaskContext }
 
@@ -48,7 +48,7 @@ class TitanVertexWriterRdd(prev: RDD[GBVertex],
    */
   override def compute(split: Partition, context: TaskContext): Iterator[GbIdToPhysicalId] = {
 
-    val graph = titanConnector.connect() //TitanGraphConnector.getGraphFromCache(titanConnector)
+    val graph = TitanGraphConnector.getGraphFromCache(titanConnector)
     val writer = new TitanVertexWriter(new VertexWriter(new VertexDAO(graph), append))
 
     var count = 0L
@@ -67,7 +67,7 @@ class TitanVertexWriterRdd(prev: RDD[GBVertex],
       println("vertices written: " + count + " for split: " + split.index)
       //Do not shut down graph when using cache since graph instances are automatically shutdown when
       //no more references are held
-      graph.shutdown()
+      //graph.shutdown()
     })
 
     gbIdsToPhyiscalIds

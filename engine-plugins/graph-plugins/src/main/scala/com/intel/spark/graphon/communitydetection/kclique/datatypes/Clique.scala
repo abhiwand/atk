@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.communitydetection.kclique.datatypes
+package com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes
 
-import com.intel.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
+import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Datatypes.VertexSet
 
 /**
  * A set of vertices, all pairs of which are connected in the graph.

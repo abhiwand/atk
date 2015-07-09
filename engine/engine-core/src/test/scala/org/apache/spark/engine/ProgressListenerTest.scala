@@ -16,7 +16,7 @@
 
 package org.apache.spark.engine.spark
 
-import com.intel.intelanalytics.domain.command.Command
+import com.intel.taproot.analytics.domain.command.Command
 import org.joda.time.DateTime
 import org.scalatest.{ Matchers, WordSpec }
 
@@ -26,9 +26,9 @@ import org.apache.spark.scheduler.SparkListenerStageSubmitted
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.TaskContext
-import com.intel.intelanalytics.engine.spark.CommandProgressUpdater
+import com.intel.taproot.analytics.engine.spark.CommandProgressUpdater
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.intelanalytics.engine.{ ProgressInfo, TaskProgressInfo }
+import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
 import org.scalatest.mock.MockitoSugar
 
 import scala.collection.immutable.HashMap
@@ -74,7 +74,7 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
 
     when(job.finalStage).thenReturn(finalStage1)
 
-    val jobStart = SparkListenerJobStart(job.jobId, stageIds)
+    val jobStart = SparkListenerJobStart(job.jobId, 1, stageIds)
 
     listener onJobStart jobStart
     listener
@@ -96,13 +96,13 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     val job1 = mock[ActiveJob]
     when(job1.jobId).thenReturn(1)
 
-    val jobStart1 = SparkListenerJobStart(job1.jobId, stageIds)
+    val jobStart1 = SparkListenerJobStart(job1.jobId, 1, stageIds)
     listener onJobStart jobStart1
 
     val job2 = mock[ActiveJob]
     when(job2.jobId).thenReturn(2)
 
-    val jobStart2 = SparkListenerJobStart(job2.jobId, Array(stagefour, stagefive, stagesix, stageseven))
+    val jobStart2 = SparkListenerJobStart(job2.jobId, 2, Array(stagefour, stagefive, stagesix, stageseven))
     listener onJobStart jobStart2
 
     listener
@@ -138,7 +138,7 @@ class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
     val job = mock[ActiveJob]
     when(job.jobId).thenReturn(1)
 
-    val jobStart = SparkListenerJobStart(job.jobId, Seq(stageOne, stageTwo, stageThree, stageFour, stageFive), null)
+    val jobStart = SparkListenerJobStart(job.jobId, 1, Seq(stageOne, stageTwo, stageThree, stageFour, stageFive), null)
     listener onJobStart jobStart
 
     listener.jobIdToStagesIds(1).toList.sorted shouldEqual List(1, 2, 3, 4, 5)

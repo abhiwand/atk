@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.connectedcomponents
+package com.intel.taproot.spark.graphon.connectedcomponents
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._

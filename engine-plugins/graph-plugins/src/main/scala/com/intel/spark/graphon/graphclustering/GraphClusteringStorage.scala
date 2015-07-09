@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.graphclustering
+package com.intel.taproot.spark.graphon.graphclustering
 
 import java.io.Serializable
 
-import com.intel.graphbuilder.schema.{ PropertyType, PropertyDef, EdgeLabelDef, GraphSchema }
-import com.intel.graphbuilder.write.titan.TitanSchemaWriter
-import com.intel.intelanalytics.domain.schema.GraphSchema
+import com.intel.taproot.graphbuilder.schema.{ PropertyType, PropertyDef, EdgeLabelDef, GraphSchema }
+import com.intel.taproot.graphbuilder.write.titan.TitanSchemaWriter
+import com.intel.taproot.analytics.domain.schema.GraphSchema
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.{ Edge, Vertex }
 

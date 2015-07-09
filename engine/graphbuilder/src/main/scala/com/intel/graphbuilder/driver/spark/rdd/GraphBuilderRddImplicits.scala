@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.rdd
+package com.intel.taproot.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements._
+import com.intel.taproot.graphbuilder.elements._
 import org.apache.spark.rdd.RDD
 
 /**

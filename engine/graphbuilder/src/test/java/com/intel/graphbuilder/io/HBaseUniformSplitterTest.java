@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.io;
+package com.intel.taproot.graphbuilder.io;
 
-import com.intel.graphbuilder.titan.io.HBaseUniformSplitter;
+import com.intel.taproot.graphbuilder.titan.io.HBaseUniformSplitter;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.mapreduce.TableSplit;

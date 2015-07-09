@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon.clusteringcoefficient
+package com.intel.taproot.spark.graphon.clusteringcoefficient
 
-import com.intel.graphbuilder.elements.{ Property, GBVertex, GBEdge }
-import com.intel.intelanalytics.domain.schema.DataTypes
-import com.intel.intelanalytics.engine.spark.frame.RowWrapper
-import com.intel.spark.graphon.graphconversions.GraphConversions
+import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.spark.graphon.graphconversions.GraphConversions
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.graphx.lib.ia.plugins.ClusteringCoefficient
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }

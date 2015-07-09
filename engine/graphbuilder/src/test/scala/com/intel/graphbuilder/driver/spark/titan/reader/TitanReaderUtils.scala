@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.driver.spark.titan.reader
+package com.intel.taproot.graphbuilder.driver.spark.titan.reader
 
-import com.intel.graphbuilder.elements.{ GBEdge, GraphElement, Property, GBVertex }
+import com.intel.taproot.graphbuilder.elements.{ GBEdge, GraphElement, Property, GBVertex }
 import com.thinkaurelius.titan.core.{ TitanProperty, TitanVertex }
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import com.tinkerpop.blueprints.Direction

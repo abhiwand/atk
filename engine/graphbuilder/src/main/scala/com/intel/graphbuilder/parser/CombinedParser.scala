@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser
+package com.intel.taproot.graphbuilder.parser
 
-import com.intel.graphbuilder.elements._
+import com.intel.taproot.graphbuilder.elements._
 
 /**
  * Parse rows of input into Edges and Vertices.

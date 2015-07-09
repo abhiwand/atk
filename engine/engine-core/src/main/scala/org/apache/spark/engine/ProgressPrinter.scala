@@ -16,9 +16,9 @@
 
 package org.apache.spark.engine
 
-import com.intel.event.EventLogging
-import com.intel.intelanalytics.EventLoggingImplicits
-import com.intel.intelanalytics.engine.plugin.Invocation
+import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.EventLoggingImplicits
+import com.intel.taproot.analytics.engine.plugin.Invocation
 import org.apache.spark.Success
 import org.apache.spark.scheduler._
 

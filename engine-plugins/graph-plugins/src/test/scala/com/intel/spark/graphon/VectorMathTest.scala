@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.spark.graphon
+package com.intel.taproot.spark.graphon
 
 import org.scalatest.{ Matchers, FlatSpec }
 

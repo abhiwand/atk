@@ -3,9 +3,9 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.intel.ia</groupId>
+    <groupId>com.intel.taproot.ia</groupId>
     <artifactId>titan-shaded</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.5.4-SNAPSHOT</version>
 
     <description>
         Both Titan and Spark depend on Kryo. This causes a ClassLoader conflict when Titan tries
@@ -19,7 +19,7 @@
     </description>
 
     <properties>
-        <dep.aurelius.version>0.5.0</dep.aurelius.version>
+        <dep.aurelius.version>0.5.4</dep.aurelius.version>
     </properties>
 
     <dependencies>
@@ -79,7 +79,7 @@
                                     <!-- original package -->
                                     <pattern>com.esotericsoftware</pattern>
                                     <!-- new package -->
-                                    <shadedPattern>com.intel.shaded.com.esotericsoftware</shadedPattern>
+                                    <shadedPattern>com.intel.taproot.shaded.com.esotericsoftware</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

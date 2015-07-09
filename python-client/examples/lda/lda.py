@@ -32,7 +32,7 @@
 
 
 
-import intelanalytics as ia
+import taprootanalytics as ia
 
 ia.connect()
 

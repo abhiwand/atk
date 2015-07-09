@@ -17,4 +17,4 @@
 /**
  * Event logging and notification library
  */
-package com.intel.event.adapter;
+package com.intel.taproot.event.adapter;

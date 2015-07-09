@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write.dao
+package com.intel.taproot.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements._
-import com.intel.graphbuilder.write.titan.TitanIdUtils
-import com.intel.testutils.TestingTitan
+import com.intel.taproot.graphbuilder.elements._
+import com.intel.taproot.graphbuilder.write.titan.TitanIdUtils
+import com.intel.taproot.testutils.TestingTitan
 import org.scalatest.{ BeforeAndAfter, Matchers, WordSpec }
 
 class VertexDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAndAfter {
@@ -27,6 +27,11 @@ class VertexDAOTest extends WordSpec with Matchers with TestingTitan with Before
 
   before {
     setupTitan()
+    // Create schema before setting properties -- Needed in Titan 0.5.4+
+    val graphManager = titanGraph.getManagementSystem()
+    graphManager.makePropertyKey("gbId").dataType(classOf[Integer]).make()
+    graphManager.makePropertyKey("name").dataType(classOf[String]).make()
+    graphManager.commit()
     vertexDAO = new VertexDAO(titanGraph)
   }
 

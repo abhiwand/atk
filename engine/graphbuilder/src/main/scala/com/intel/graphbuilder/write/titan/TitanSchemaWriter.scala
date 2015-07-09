@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.write.titan
+package com.intel.taproot.graphbuilder.write.titan
 
-import com.intel.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
-import com.intel.graphbuilder.util.PrimitiveConverter
-import com.intel.graphbuilder.write.SchemaWriter
+import com.intel.taproot.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
+import com.intel.taproot.graphbuilder.util.PrimitiveConverter
+import com.intel.taproot.graphbuilder.write.SchemaWriter
 import com.thinkaurelius.titan.core.{ Multiplicity, TitanGraph }
 import com.tinkerpop.blueprints._
 

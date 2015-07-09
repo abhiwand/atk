@@ -59,7 +59,7 @@ Setup
     #)  Choose the plus sign *+*.
     #)  Choose *Java* and browse to the |IAT| Python REST Client libraries.
         On RedHat and Centos these are found under
-        '/usr/lib/intelanalytics/rest-client/python'.
+        '/usr/lib/taprootanalytics/rest-client/python'.
     #)  Choose *classes*.
     #)  Choose *myproject* and click *OK* button.
     #)  Name the library "ia-python-client".
@@ -68,14 +68,14 @@ Setup
 #)  Choose :menuselection:`File --> New --> Python File`.
 #)  Name the file 'test' and type in the following code::
 
-        import intelanalytics as ia
+        import taprootanalytics as ia
         ia.server.host = "correct host name or IP address"
         ia.connect()
         ia.server.ping()
 
 #)  Choose :menuselection:`Run --> Run`, you should see the output::
 
-        Successful ping to Intel Analytics at http://localhost:9099/info
+        Successful ping to TapRoot Analytics at http://localhost:9099/info
 
 #)  Next take a look at the included examples.
 

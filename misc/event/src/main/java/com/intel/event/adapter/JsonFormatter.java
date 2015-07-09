@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.event.adapter;
-import com.intel.event.Event;
-import com.intel.event.EventContext;
+package com.intel.taproot.event.adapter;
+import com.intel.taproot.event.Event;
+import com.intel.taproot.event.EventContext;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

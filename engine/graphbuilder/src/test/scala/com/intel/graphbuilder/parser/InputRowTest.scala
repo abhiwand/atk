@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.graphbuilder.parser
+package com.intel.taproot.graphbuilder.parser
 
 import java.util.Date
 import org.scalatest.{ Matchers, WordSpec }
