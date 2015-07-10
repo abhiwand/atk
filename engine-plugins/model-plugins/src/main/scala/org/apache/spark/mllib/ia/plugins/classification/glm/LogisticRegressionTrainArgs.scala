@@ -64,6 +64,6 @@ case class LogisticRegressionTrainArgs(model: ModelReference,
   //TODO: Verify what this should be default
   def getNumCorrections: Int = { numCorrections.getOrElse(2) }
   def getThreshold: Double = { threshold.getOrElse(0.5) }
-  def getComputeHessian: Boolean = { computeHessian.getOrElse(false) }
+  def getComputeHessian: Boolean = { computeHessian.getOrElse(true) }
 }
 

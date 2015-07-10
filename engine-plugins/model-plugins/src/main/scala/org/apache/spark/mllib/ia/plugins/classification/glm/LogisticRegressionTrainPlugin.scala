@@ -137,8 +137,9 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
       val logRegModel = model.getModel.run(labeledTrainRdd)
 
       //Compute optional covariance matrix
+      val frameColumns = arguments.observationColumns :+ "intercept"
       val covarianceFrame = ApproximateCovarianceMatrix(model)
-        .toFrameRdd(labeledTrainRdd.sparkContext, "covariance") match {
+        .toFrameRdd(labeledTrainRdd.sparkContext, frameColumns) match {
           case Some(frameRdd) => {
             val frame = tryNew(CreateEntityArgs(
               description = Some("covariance matrix created by LogisticRegression train operation"))) {

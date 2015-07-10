@@ -15,12 +15,12 @@
 */
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import breeze.linalg.{ DenseMatrix => BDM, inv }
-import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
+import breeze.linalg.{DenseMatrix => BDM, DenseVector, inv}
+import com.intel.taproot.analytics.domain.schema.{Column, DataTypes, FrameSchema}
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.{ SparkContext, sql }
-
+import org.apache.spark.{SparkContext, sql}
+import collection.JavaConverters._
 import scala.util.Try
 
 /**
@@ -40,18 +40,18 @@ case class ApproximateCovarianceMatrix(model: IaLogisticRegressionModel) {
    * Convert covariance matrix to Frame RDD with a single column of type vector
    *
    * @param sparkContext Spark context
-   * @param columnName Column name
+   * @param columnNames Column names
    * @return Optional frame RDD with a single column of type vector
    */
-  def toFrameRdd(sparkContext: SparkContext, columnName: String): Option[FrameRdd] = {
+  def toFrameRdd(sparkContext: SparkContext, columnNames: List[String]): Option[FrameRdd] = {
     covarianceMatrix match {
       case Some(matrix) => {
-        val schema = FrameSchema(List(Column(columnName, DataTypes.vector(matrix.cols))))
-        val numCols = matrix.cols
+        val schema = FrameSchema(columnNames.map(name => Column(name, DataTypes.float64)))
+
         val rows: IndexedSeq[sql.Row] = for {
           i <- 0 until matrix.rows
-          rowArray = matrix(i, ::).t.toArray
-        } yield new GenericRow(Array[Any](DataTypes.toVector(numCols)(rowArray)))
+          row = matrix(i, ::).t.map(x => x: Any)
+        } yield new GenericRow(row.toArray)
 
         val rdd = sparkContext.parallelize(rows)
         Some(new FrameRdd(schema, rdd))
