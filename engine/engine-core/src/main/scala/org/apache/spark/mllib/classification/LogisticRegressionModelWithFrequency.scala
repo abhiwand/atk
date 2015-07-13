@@ -181,7 +181,7 @@ object LogisticRegressionModelWithFrequency extends Loader[LogisticRegressionMod
   override def load(sc: SparkContext, path: String): LogisticRegressionModelWithFrequency = {
     val (loadedClassName, version, metadata) = Loader.loadMetadata(sc, path)
     // Hard-code class name string in case it changes in the future
-    val classNameV1_0 = "org.apache.spark.mllib.classification.LogisticRegressionModel"
+    val classNameV1_0 = "org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency"
     (loadedClassName, version) match {
       case (className, "1.0") if className == classNameV1_0 =>
         val (numFeatures, numClasses) = ClassificationModel.getNumFeaturesClasses(metadata)
