@@ -18,6 +18,7 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
+import com.intel.taproot.analytics.engine.plugin.ArgDoc
 
 /**
  * Input arguments for logistic regression train plugin
@@ -25,7 +26,7 @@ import com.intel.taproot.analytics.domain.model.ModelReference
 case class LogisticRegressionTrainArgs(model: ModelReference,
                                        frame: FrameReference,
                                        optimizer: String,
-                                       labelColumn: String,
+                                       @ArgDoc("The name of the column containing the labels")labelColumn: String,
                                        observationColumns: List[String],
                                        frequencyColumn: Option[String] = None,
                                        intercept: Option[Boolean] = None,

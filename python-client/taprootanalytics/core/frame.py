@@ -803,7 +803,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     @returns('Frame', 'A new frame with the results of the join')
     def __join(self, right, left_on, right_on=None, how='inner', name=None):
         """
-        New frame from current frame and another frame.
+        Join operation on one or two frames, creating a new frame.
 
         Create a new frame from a SQL JOIN operation with another frame.
         The frame on the 'left' is the currently active frame.
