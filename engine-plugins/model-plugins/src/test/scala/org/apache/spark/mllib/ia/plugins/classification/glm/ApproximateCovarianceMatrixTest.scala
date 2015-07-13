@@ -21,6 +21,7 @@ import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.mockito.Mockito._
 import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
+import com.intel.taproot.testutils.MatcherUtils._
 
 class ApproximateCovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers with MockitoSugar {
 
@@ -29,10 +30,28 @@ class ApproximateCovarianceMatrixTest extends TestingSparkContextFlatSpec with M
     val model = mock[IaLogisticRegressionModel]
     when(model.getHessianMatrix).thenReturn(Some(hessianMatrix))
 
-    val covarianceMatrix = ApproximateCovarianceMatrix(model)
+    val covarianceMatrix = ApproximateCovarianceMatrix(model).covarianceMatrix
     val expectedCovariance = DenseMatrix((0.005617978, -0.1348315), (-0.013483146, 0.03735955))
-    println(covarianceMatrix)
 
+    covarianceMatrix should not be ('empty)
+    covarianceMatrix.get should equalWithToleranceMatrix(expectedCovariance, 1d)
   }
 
+  "ApproximateCovarianceMatrix" should "throw an IllegalArgument exception if Hessian matrix is not invertable" in {
+    intercept[IllegalArgumentException] {
+      val hessianMatrix = DenseMatrix((1d, 0d, 0d), (-2d, 0d, 0d), (4d, 6d, 1d))
+      val model = mock[IaLogisticRegressionModel]
+      when(model.getHessianMatrix).thenReturn(Some(hessianMatrix))
+
+      ApproximateCovarianceMatrix(model).covarianceMatrix
+    }
+  }
+
+  "ApproximateCovarianceMatrix" should "return None if Hessian matrix is empty" in {
+    val model = mock[IaLogisticRegressionModel]
+    when(model.getHessianMatrix).thenReturn(None)
+
+    val covarianceMatrix = ApproximateCovarianceMatrix(model).covarianceMatrix
+    covarianceMatrix should be ('empty)
+  }
 }

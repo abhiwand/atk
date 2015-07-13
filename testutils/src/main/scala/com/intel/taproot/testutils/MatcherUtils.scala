@@ -16,12 +16,12 @@
 
 package com.intel.taproot.testutils
 
+import breeze.linalg.DenseMatrix
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONTokens
 import com.tinkerpop.blueprints.{ Direction, Edge, Vertex }
 import org.scalatest.Matchers
 import org.scalatest.matchers.{ MatchResult, Matcher }
 import spray.json._
-
 import scala.collection.JavaConverters._
 
 object MatcherUtils extends Matchers {
@@ -33,12 +33,35 @@ object MatcherUtils extends Matchers {
    * Array(0.12, 0.25) should  equalWithTolerance(Array(0.122, 0.254), 0.01)
    * </pre>
    */
-  def equalWithTolerance(right: Array[Double], tolerance: Double) =
+  def equalWithTolerance(right: Array[Double], tolerance: Double = 1E-6) =
     Matcher { (left: Array[Double]) =>
       MatchResult(
         (left zip right) forall { case (a, b) => a === (b +- tolerance) },
         left.deep.mkString(" ") + " did not equal " + right.deep.mkString(" ") + " with tolerance " + tolerance,
         left.deep.mkString(" ") + " equaled " + right.deep.mkString(" ") + " with tolerance " + tolerance
+      )
+    }
+
+  /**
+   * Tests if two Scala Breeze dense matrices are equal +- tolerance.
+   *
+   * <pre class="stHighlight">
+   * DenseMatrix((1330d, 480d)) should  equalWithTolerance(DenseMatrix((1330.02, 480d.09)), 0.1)
+   * </pre>
+   */
+  def equalWithToleranceMatrix(right: DenseMatrix[Double], tolerance: Double = 1E-6) =
+    Matcher { (left: DenseMatrix[Double]) =>
+      MatchResult(
+        if (left.size === right.size) {
+          val results = for {
+            i <- 0 until right.rows
+            j <- 0 until right.cols
+            r = left(i, j) === ( right(i, j) +- tolerance)
+          } yield r
+          results forall(x => x)
+        } else false,
+        left.toString() + " did not equal " + right.toString() + " with tolerance " + tolerance,
+        left.toString() + " equaled " + right.toString() + " with tolerance " + tolerance
       )
     }
 
