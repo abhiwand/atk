@@ -17,16 +17,16 @@
 
 package org.apache.spark.mllib.optimization
 
-import org.apache.spark.mllib.evaluation.{HessianMatrix, ApproximateHessianMatrix}
+import org.apache.spark.mllib.evaluation.{ HessianMatrix, ApproximateHessianMatrix }
 
 import scala.collection.mutable.ArrayBuffer
 
-import breeze.linalg.{DenseMatrix => BDM, DenseVector => BDV}
+import breeze.linalg.{ DenseMatrix => BDM, DenseVector => BDV }
 
-import org.apache.spark.annotation.{Experimental, DeveloperApi}
+import org.apache.spark.annotation.{ Experimental, DeveloperApi }
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.linalg.{Vectors, Vector}
+import org.apache.spark.mllib.linalg.{ Vectors, Vector }
 
 /**
  * Class used to solve an optimization problem using Gradient Descent.
@@ -41,8 +41,8 @@ import org.apache.spark.mllib.linalg.{Vectors, Vector}
  * @param updater Updater to be used to update weights after every iteration.
  */
 
-class GradientDescentWithFrequency private[mllib](private var gradient: GradientWithFrequency, private var updater: Updater)
-  extends OptimizerWithFrequency with Logging with HessianMatrix {
+class GradientDescentWithFrequency private[mllib] (private var gradient: GradientWithFrequency, private var updater: Updater)
+    extends OptimizerWithFrequency with Logging with HessianMatrix {
 
   private var stepSize: Double = 1.0
   private var numIterations: Int = 100
@@ -108,7 +108,8 @@ class GradientDescentWithFrequency private[mllib](private var gradient: Gradient
 
   /**
    * Set the flag for computing the Hessian matrix.
-   * If true, a Hessian matrix is computed for the model.
+   *
+   * If true, a Hessian matrix for the weights is computed once the optimization completes.
    */
   def setComputeHessian(computeHessian: Boolean): this.type = {
     this.computeHessian = computeHessian
@@ -177,15 +178,15 @@ object GradientDescentWithFrequency extends Logging {
    *         stochastic loss computed for every iteration.
    */
   def runMiniBatchSGD(
-                       data: RDD[(Double, Vector, Double)],
-                       gradient: GradientWithFrequency,
-                       updater: Updater,
-                       stepSize: Double,
-                       numIterations: Int,
-                       regParam: Double,
-                       miniBatchFraction: Double,
-                       initialWeights: Vector,
-                       computeHessian: Boolean): (Vector, Array[Double], Option[BDM[Double]]) = {
+    data: RDD[(Double, Vector, Double)],
+    gradient: GradientWithFrequency,
+    updater: Updater,
+    stepSize: Double,
+    numIterations: Int,
+    regParam: Double,
+    miniBatchFraction: Double,
+    initialWeights: Vector,
+    computeHessian: Boolean): (Vector, Array[Double], Option[BDM[Double]]) = {
 
     val stochasticLossHistory = new ArrayBuffer[Double](numIterations)
 

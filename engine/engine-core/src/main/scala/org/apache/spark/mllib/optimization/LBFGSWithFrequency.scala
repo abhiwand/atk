@@ -17,12 +17,12 @@
 
 package org.apache.spark.mllib.optimization
 
-import breeze.linalg.{DenseMatrix => BDM, DenseVector => BDV}
-import breeze.optimize.{CachedDiffFunction, LBFGS => BreezeLBFGS}
+import breeze.linalg.{ DenseMatrix => BDM, DenseVector => BDV }
+import breeze.optimize.{ CachedDiffFunction, LBFGS => BreezeLBFGS }
 import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.mllib.evaluation.{HessianMatrix, ApproximateHessianMatrix}
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.evaluation.{ HessianMatrix, ApproximateHessianMatrix }
+import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
@@ -39,7 +39,7 @@ import scala.collection.mutable
  */
 @DeveloperApi
 class LBFGSWithFrequency(private var gradient: GradientWithFrequency, private var updater: Updater)
-  extends OptimizerWithFrequency with Logging with HessianMatrix {
+    extends OptimizerWithFrequency with Logging with HessianMatrix {
 
   private var numCorrections = 10
   private var convergenceTol = 1E-4
@@ -117,8 +117,9 @@ class LBFGSWithFrequency(private var gradient: GradientWithFrequency, private va
   }
 
   /**
-   * Set the flag for computing the Hessian matrix.
-   * If true, a Hessian matrix is computed for the model.
+   * Set flag for computing the Hessian matrix.
+   *
+   * If true, a Hessian matrix for the weights is computed once the optimization completes.
    */
   def setComputeHessian(computeHessian: Boolean): this.type = {
     this.computeHessian = computeHessian
@@ -178,15 +179,15 @@ object LBFGSWithFrequency extends Logging {
    *         computed for every iteration, and the third element is the approximate Hessian matrix.
    */
   def runLBFGS(
-                data: RDD[(Double, Vector, Double)],
-                gradient: GradientWithFrequency,
-                updater: Updater,
-                numCorrections: Int,
-                convergenceTol: Double,
-                maxNumIterations: Int,
-                regParam: Double,
-                initialWeights: Vector,
-                computeHessian: Boolean): (Vector, Array[Double], Option[BDM[Double]]) = {
+    data: RDD[(Double, Vector, Double)],
+    gradient: GradientWithFrequency,
+    updater: Updater,
+    numCorrections: Int,
+    convergenceTol: Double,
+    maxNumIterations: Int,
+    regParam: Double,
+    initialWeights: Vector,
+    computeHessian: Boolean): (Vector, Array[Double], Option[BDM[Double]]) = {
 
     val lossHistory = mutable.ArrayBuilder.make[Double]
 

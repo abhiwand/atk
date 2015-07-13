@@ -16,8 +16,8 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, LogisticRegressionWithFrequencySGD}
-import org.apache.spark.mllib.optimization.{L1Updater, SquaredL2Updater}
+import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, LogisticRegressionWithFrequencySGD }
+import org.apache.spark.mllib.optimization.{ L1Updater, SquaredL2Updater }
 import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
 
 /**
@@ -33,13 +33,13 @@ class IaLogisticRegressionModelWithSGD extends IaLogisticRegressionModel {
    */
   def this(arguments: LogisticRegressionTrainArgs) = {
     this()
+    model.setFeatureScaling(arguments.getFeatureScaling)
+    model.setIntercept(arguments.getIntercept)
     model.optimizer.setNumIterations(arguments.numIterations)
     model.optimizer.setStepSize(arguments.stepSize)
     model.optimizer.setRegParam(arguments.regParam)
     model.optimizer.setMiniBatchFraction(arguments.miniBatchFraction)
-    model.setFeatureScaling(arguments.featureScaling)
-    model.setIntercept(arguments.intercept)
-    model.setComputeHessian(arguments.computeCovariance)
+    model.optimizer.setComputeHessian(arguments.getComputeCovariance)
 
     model.optimizer.setUpdater(arguments.regType match {
       case "L1" => new L1Updater()

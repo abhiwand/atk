@@ -17,7 +17,7 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import breeze.linalg.DenseMatrix
 import org.apache.spark.mllib.classification.LogisticRegressionWithFrequencyLBFGS
-import org.apache.spark.mllib.optimization.{L1Updater, SquaredL2Updater}
+import org.apache.spark.mllib.optimization.{ L1Updater, SquaredL2Updater }
 
 /**
  * Logistic regression model with Limited-memory BFGS
@@ -33,14 +33,14 @@ class IaLogisticRegressionModelWithLBFGS() extends IaLogisticRegressionModel {
    */
   def this(arguments: LogisticRegressionTrainArgs) = {
     this()
+    model.setNumClasses(arguments.numClasses)
+    model.setFeatureScaling(arguments.getFeatureScaling)
+    model.setIntercept(arguments.getIntercept)
     model.optimizer.setNumIterations(arguments.numIterations)
     model.optimizer.setConvergenceTol(arguments.convergenceTolerance)
     model.optimizer.setNumCorrections(arguments.numCorrections)
     model.optimizer.setRegParam(arguments.regParam)
-    model.setNumClasses(arguments.numClasses)
-    model.setFeatureScaling(arguments.featureScaling)
-    model.setIntercept(arguments.intercept)
-    model.setComputeHessian(arguments.computeCovariance)
+    model.optimizer.setComputeHessian(arguments.getComputeCovariance)
 
     model.optimizer.setUpdater(arguments.regType match {
       case "L1" => new L1Updater()

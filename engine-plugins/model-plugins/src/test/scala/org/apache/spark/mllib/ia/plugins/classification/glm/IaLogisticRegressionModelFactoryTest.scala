@@ -19,14 +19,14 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class IaLogisticRegressionModelFactoryTest extends FlatSpec with Matchers with MockitoSugar {
 
   "createModel" should "create L-BFGS logistic regression model" in {
     val modelRef = mock[ModelReference]
     val frameRef = mock[FrameReference]
-    val trainArgs = LogisticRegressionTrainArgs(modelRef, frameRef, "label", List("obs1", "obs2"), optimizer="LBFGS")
+    val trainArgs = LogisticRegressionTrainArgs(modelRef, frameRef, "label", List("obs1", "obs2"), optimizer = "LBFGS")
 
     val model = IaLogisticRegressionModelFactory.createModel(trainArgs)
 
@@ -36,7 +36,7 @@ class IaLogisticRegressionModelFactoryTest extends FlatSpec with Matchers with M
   "createModel" should "create SGD logistic regression model" in {
     val modelRef = mock[ModelReference]
     val frameRef = mock[FrameReference]
-    val trainArgs = LogisticRegressionTrainArgs(modelRef, frameRef, "label", List("obs1", "obs2"), optimizer="SGD")
+    val trainArgs = LogisticRegressionTrainArgs(modelRef, frameRef, "label", List("obs1", "obs2"), optimizer = "SGD")
 
     val model = IaLogisticRegressionModelFactory.createModel(trainArgs)
 
@@ -47,7 +47,7 @@ class IaLogisticRegressionModelFactoryTest extends FlatSpec with Matchers with M
     intercept[IllegalArgumentException] {
       val modelRef = mock[ModelReference]
       val frameRef = mock[FrameReference]
-      val trainArgs = LogisticRegressionTrainArgs(modelRef, frameRef, "label", List("obs1", "obs2"), optimizer="INVALID")
+      val trainArgs = LogisticRegressionTrainArgs(modelRef, frameRef, "label", List("obs1", "obs2"), optimizer = "INVALID")
 
       IaLogisticRegressionModelFactory.createModel(trainArgs)
     }

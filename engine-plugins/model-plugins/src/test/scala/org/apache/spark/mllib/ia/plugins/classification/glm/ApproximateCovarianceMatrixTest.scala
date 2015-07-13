@@ -22,7 +22,6 @@ import org.mockito.Mockito._
 import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
 
-
 class ApproximateCovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers with MockitoSugar {
 
   "ApproximateCovarianceMatrix" should "compute covariance matrix using model's Hessian matrix" in {

@@ -23,78 +23,60 @@ import com.intel.taproot.analytics.engine.plugin.ArgDoc
 /**
  * Input arguments for logistic regression train plugin
  */
-case class LogisticRegressionTrainArgs(@ArgDoc( """Handle to the model to be used.""")
-                                       model: ModelReference,
+case class LogisticRegressionTrainArgs(@ArgDoc("""Handle to the model to be used.""") model: ModelReference,
 
-                                       @ArgDoc( """A frame to train the model on.""")
-                                       frame: FrameReference,
+                                       @ArgDoc("""A frame to train the model on.""") frame: FrameReference,
 
-                                       @ArgDoc( """Column name containing the label for each observation.""")
-                                       labelColumn: String,
+                                       @ArgDoc("""Column name containing the label for each observation.""") labelColumn: String,
 
-                                       @ArgDoc( """Column(s) containing the observations.""")
-                                       observationColumns: List[String],
+                                       @ArgDoc("""Column(s) containing the observations.""") observationColumns: List[String],
 
-                                       @ArgDoc( """Optional column containing the frequency of observations.""")
-                                       frequencyColumn: Option[String] = None,
+                                       @ArgDoc("""Optional column containing the frequency of observations.""") frequencyColumn: Option[String] = None,
 
-                                       @ArgDoc( """Number of classes""")
-                                       numClasses: Int = 2,
+                                       @ArgDoc("""Number of classes""") numClasses: Int = 2,
 
                                        @ArgDoc(
                                          """Set type of optimizer.
-                                           |LBFGS - Limited-memory BFGS
-                                           |SGD - Stochastic Gradient Descent
-                                         """.stripMargin)
-                                       optimizer: String = "LBFGS",
+                                           LBFGS - Limited-memory BFGS
+                                           SGD - Stochastic Gradient Descent
+                                         """) optimizer: String = "LBFGS",
 
-                                       @ArgDoc( """Compute covariance matrix for the model""")
-                                       computeCovariance: Boolean = false,
+                                       @ArgDoc("""Compute covariance matrix for the model""") computeCovariance: Option[Boolean] = Some(false),
 
-                                       @ArgDoc( """If true, compute covariance matrix for trained model.""")
-                                       intercept: Boolean = true,
+                                       @ArgDoc("""If true, compute covariance matrix for trained model.""") intercept: Option[Boolean] = Some(true),
 
-                                       @ArgDoc( """Perform feature scaling before training model.""")
-                                       featureScaling: Boolean = false,
+                                       @ArgDoc("""Perform feature scaling before training model.""") featureScaling: Option[Boolean] = Some(false),
 
                                        //TODO: Check if threshold needs to be set in both train() and predict
-                                       @ArgDoc( """Threshold for separating positive predictions from negative predictions.""")
-                                       threshold: Double = 0.5,
+                                       @ArgDoc("""Threshold for separating positive predictions from negative predictions.""") threshold: Double = 0.5,
 
                                        @ArgDoc(
                                          """Set type of regularization
-                                           |L1 - L1 regularization with sum of absolute values of coefficients
-                                           |L2 - L2 regularization with sum of squares of coefficients
-                                         """.stripMargin)
-                                       regType: String = "L2",
+                                           L1 - L1 regularization with sum of absolute values of coefficients
+                                           L2 - L2 regularization with sum of squares of coefficients
+                                         """) regType: String = "L2",
 
-                                       @ArgDoc( """Regularization parameter""")
-                                       regParam: Double = 0,
+                                       @ArgDoc("""Regularization parameter""") regParam: Double = 0,
                                        //TODO: What input type should this be?
                                        //gradient : Option[Double] = None,
 
-                                       @ArgDoc( """Maximum number of iterations""")
-                                       numIterations: Int = 100,
+                                       @ArgDoc("""Maximum number of iterations""") numIterations: Int = 100,
 
                                        @ArgDoc(
                                          """Convergence tolerance of iterations for L-BFGS.
-                                           |Smaller value will lead to higher accuracy with the cost of more iterations.
-                                         """.stripMargin)
-                                       convergenceTolerance: Double = 0.0001,
+                                            Smaller value will lead to higher accuracy with the cost of more iterations.
+                                         """) convergenceTolerance: Double = 0.0001,
 
                                        @ArgDoc(
                                          """Number of corrections used in LBFGS update. Default 10.
-                                           |Values of numCorrections less than 3 are not recommended; large values
-                                           |of numCorrections will result in excessive computing time.
-                                         """.stripMargin)
-                                       numCorrections: Int = 10,
+                                           Values of numCorrections less than 3 are not recommended; large values
+                                           of numCorrections will result in excessive computing time.
+                                         """) numCorrections: Int = 10,
 
-                                       @ArgDoc( """Fraction of data to be used for each SGD iteration""")
-                                       miniBatchFraction: Double = 1.0,
+                                       @ArgDoc("""Fraction of data to be used for each SGD iteration""") miniBatchFraction: Double = 1.0,
 
-                                       @ArgDoc( """Initial step size for SGD. In subsequent steps,
-                                                  |the step size decreases by stepSize/sqrt(t)""".stripMargin)
-                                       stepSize: Int = 1) {
+                                       @ArgDoc("""Initial step size for SGD. In subsequent steps,
+                                                  the step size decreases by stepSize/sqrt(t)""") stepSize: Int = 1) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
   require(optimizer == "LBFGS" || optimizer == "SGD", "optimizer name must be 'LBFGS' or 'SGD'")
@@ -106,5 +88,17 @@ case class LogisticRegressionTrainArgs(@ArgDoc( """Handle to the model to be use
   require(numCorrections > 0, "number of corrections for LBFGS must be a positive value")
   require(miniBatchFraction > 0, "mini-batch fraction for SGD must be a positive value")
   require(stepSize > 0, "step size for SGD must be a positive value")
+
+  def getIntercept: Boolean = {
+    intercept.getOrElse(true)
+  }
+
+  def getComputeCovariance: Boolean = {
+    computeCovariance.getOrElse(false)
+  }
+
+  def getFeatureScaling: Boolean = {
+    featureScaling.getOrElse(false)
+  }
 }
 

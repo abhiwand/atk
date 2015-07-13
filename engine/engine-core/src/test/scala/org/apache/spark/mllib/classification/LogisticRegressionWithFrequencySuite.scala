@@ -17,7 +17,7 @@
 package org.apache.spark.mllib.classification
 
 import com.intel.taproot.testutils.TestingSparkContextFunSuite
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.mllib.regression.LabeledPointWithFrequency
 import org.apache.spark.mllib.util.TestingUtils._
 import org.apache.spark.util.Utils
@@ -32,11 +32,12 @@ import scala.util.control.Breaks._
  */
 class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite with Matchers {
   def validatePrediction(
-                          predictions: Seq[Double],
-                          input: Seq[LabeledPointWithFrequency],
-                          expectedAcc: Double = 0.83) {
-    val numOffPredictions = predictions.zip(input).count { case (prediction, expected) =>
-      prediction != expected.label
+    predictions: Seq[Double],
+    input: Seq[LabeledPointWithFrequency],
+    expectedAcc: Double = 0.83) {
+    val numOffPredictions = predictions.zip(input).count {
+      case (prediction, expected) =>
+        prediction != expected.label
     }
     // At least 83% of the predictions should be on.
     ((input.length - numOffPredictions).toDouble / input.length) should be > expectedAcc
@@ -362,7 +363,8 @@ class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite w
       model.save(sparkContext, path)
       val sameModel = LogisticRegressionModelWithFrequency.load(sparkContext, path)
       LogisticRegressionWithFrequencySuite.checkModelsEqual(model, sameModel)
-    } finally {
+    }
+    finally {
       Utils.deleteRecursively(tempDir)
     }
 
@@ -372,7 +374,8 @@ class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite w
       model.save(sparkContext, path)
       val sameModel = LogisticRegressionModelWithFrequency.load(sparkContext, path)
       LogisticRegressionWithFrequencySuite.checkModelsEqual(model, sameModel)
-    } finally {
+    }
+    finally {
       Utils.deleteRecursively(tempDir)
     }
   }
@@ -389,28 +392,28 @@ class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite w
       model.save(sparkContext, path)
       val sameModel = LogisticRegressionModelWithFrequency.load(sparkContext, path)
       LogisticRegressionWithFrequencySuite.checkModelsEqual(model, sameModel)
-    } finally {
+    }
+    finally {
       Utils.deleteRecursively(tempDir)
     }
   }
 }
 
-
 object LogisticRegressionWithFrequencySuite {
   def generateLogisticInputAsList(
-                                   offset: Double,
-                                   scale: Double,
-                                   nPoints: Int,
-                                   seed: Int): java.util.List[LabeledPointWithFrequency] = {
+    offset: Double,
+    scale: Double,
+    nPoints: Int,
+    seed: Int): java.util.List[LabeledPointWithFrequency] = {
     seqAsJavaList(generateLogisticInput(offset, scale, nPoints, seed))
   }
 
   // Generate input of the form Y = logistic(offset + scale*X)
   def generateLogisticInput(
-                             offset: Double,
-                             scale: Double,
-                             nPoints: Int,
-                             seed: Int): Seq[LabeledPointWithFrequency] = {
+    offset: Double,
+    scale: Double,
+    nPoints: Int,
+    seed: Int): Seq[LabeledPointWithFrequency] = {
     val rnd = new Random(seed)
     val x1 = Array.fill[Double](nPoints)(rnd.nextGaussian())
 
@@ -447,12 +450,12 @@ object LogisticRegressionWithFrequencySuite {
    * @param seed the seed for random generator. For consistent testing result, it will be fixed.
    */
   def generateMultinomialLogisticInput(
-                                        weights: Array[Double],
-                                        xMean: Array[Double],
-                                        xVariance: Array[Double],
-                                        addIntercept: Boolean,
-                                        nPoints: Int,
-                                        seed: Int): Seq[LabeledPointWithFrequency] = {
+    weights: Array[Double],
+    xMean: Array[Double],
+    xVariance: Array[Double],
+    addIntercept: Boolean,
+    nPoints: Int,
+    seed: Int): Seq[LabeledPointWithFrequency] = {
     val rnd = new Random(seed)
 
     val xDim = xMean.size

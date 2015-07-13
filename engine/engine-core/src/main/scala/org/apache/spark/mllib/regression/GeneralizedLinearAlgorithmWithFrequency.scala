@@ -133,12 +133,6 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
   private var useFeatureScaling = false
 
   /**
-   * Whether to compute the approximate Hessian matrix for the weights after the
-   * optimization completes.
-   */
-  private var computeHessian = false
-
-  /**
    * The dimension of training features.
    */
   def getNumFeatures: Int = this.numFeatures
@@ -153,14 +147,6 @@ abstract class GeneralizedLinearAlgorithmWithFrequency[M <: GeneralizedLinearMod
    */
   def setFeatureScaling(useFeatureScaling: Boolean): this.type = {
     this.useFeatureScaling = useFeatureScaling
-    this
-  }
-
-  /**
-   * Set if the algorithm should compute the approximate Hessian matrix at the solution found.
-   */
-  def setComputeHessian(computeHessian: Boolean): this.type = {
-    this.computeHessian = computeHessian
     this
   }
 
