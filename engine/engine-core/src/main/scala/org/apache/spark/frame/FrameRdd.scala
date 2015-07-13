@@ -99,13 +99,15 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
     this.mapRows(row =>
       {
         val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
-        if (frequencyColumnName.isDefined) {
-          new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
-            new DenseVector(features.toArray), DataTypes.toDouble(row.value(frequencyColumnName.get)))
-        }
-        else {
-          new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
-            new DenseVector(features.toArray), DataTypes.toDouble(1.0))
+        frequencyColumnName match {
+          case Some(freqColumn) => {
+            new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
+              new DenseVector(features.toArray), DataTypes.toDouble(row.value(freqColumn)))
+          }
+          case _ => {
+            new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
+              new DenseVector(features.toArray), DataTypes.toDouble(1.0))
+          }
         }
       })
   }

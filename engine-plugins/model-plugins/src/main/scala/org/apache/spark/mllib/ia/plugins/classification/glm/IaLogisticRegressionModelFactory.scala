@@ -27,11 +27,10 @@ object IaLogisticRegressionModelFactory {
    */
   def createModel(arguments: LogisticRegressionTrainArgs): IaLogisticRegressionModel = {
     val regressionModel = arguments.optimizer.toUpperCase() match {
-      case "LBFGS" => new IaLogisticRegressionModelWithLBFGS()
-      case "SGD" => new IaLogisticRegressionModelWithSGD()
+      case "LBFGS" => new IaLogisticRegressionModelWithLBFGS(arguments)
+      case "SGD" => new IaLogisticRegressionModelWithSGD(arguments)
       case _ => throw new IllegalArgumentException("Only LBFGS or SGD optimizers permitted")
     }
-    regressionModel.initialize(arguments)
     regressionModel
   }
 

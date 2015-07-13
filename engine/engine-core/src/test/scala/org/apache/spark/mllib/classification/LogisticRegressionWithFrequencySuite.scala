@@ -1,11 +1,11 @@
 package org.apache.spark.mllib.classification
 
 import com.intel.taproot.testutils.TestingSparkContextFunSuite
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.util.Utils
 import org.scalatest.exceptions.TestFailedException
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.{ Matchers, FunSuite }
 import scala.collection.JavaConversions._
 import scala.util.Random
 import scala.util.control.Breaks._
@@ -25,10 +25,12 @@ object TestingUtils {
     val diff = math.abs(x - y)
     if (x == y) {
       true
-    } else if (absX < Double.MinPositiveValue || absY < Double.MinPositiveValue) {
+    }
+    else if (absX < Double.MinPositiveValue || absY < Double.MinPositiveValue) {
       throw new TestFailedException(
         s"$x or $y is extremely close to zero, so the relative tolerance is meaningless.", 0)
-    } else {
+    }
+    else {
       diff < eps * math.min(absX, absY)
     }
   }
@@ -41,14 +43,12 @@ object TestingUtils {
   }
 
   case class CompareDoubleRightSide(
-                                     fun: (Double, Double, Double) => Boolean, y: Double, eps: Double, method: String)
+    fun: (Double, Double, Double) => Boolean, y: Double, eps: Double, method: String)
 
   /**
    * Implicit class for comparing two double values using relative tolerance or absolute tolerance.
    */
   implicit class DoubleWithAlmostEquals(val x: Double) {
-
-
 
     /**
      * When the difference of two values are within eps, returns true; otherwise, returns false.
@@ -97,7 +97,7 @@ object TestingUtils {
   }
 
   case class CompareVectorRightSide(
-                                     fun: (Vector, Vector, Double) => Boolean, y: Vector, eps: Double, method: String)
+    fun: (Vector, Vector, Double) => Boolean, y: Vector, eps: Double, method: String)
 
   /**
    * Implicit class for comparing two vectors using relative tolerance or absolute tolerance.
@@ -161,19 +161,19 @@ object TestingUtils {
 }
 object LogisticRegressionWithFrequencySuite {
   def generateLogisticInputAsList(
-                                   offset: Double,
-                                   scale: Double,
-                                   nPoints: Int,
-                                   seed: Int): java.util.List[LabeledPoint] = {
+    offset: Double,
+    scale: Double,
+    nPoints: Int,
+    seed: Int): java.util.List[LabeledPoint] = {
     seqAsJavaList(generateLogisticInput(offset, scale, nPoints, seed))
   }
 
   // Generate input of the form Y = logistic(offset + scale*X)
   def generateLogisticInput(
-                             offset: Double,
-                             scale: Double,
-                             nPoints: Int,
-                             seed: Int): Seq[LabeledPoint] = {
+    offset: Double,
+    scale: Double,
+    nPoints: Int,
+    seed: Int): Seq[LabeledPoint] = {
     val rnd = new Random(seed)
     val x1 = Array.fill[Double](nPoints)(rnd.nextGaussian())
 
@@ -210,12 +210,12 @@ object LogisticRegressionWithFrequencySuite {
    * @param seed the seed for random generator. For consistent testing result, it will be fixed.
    */
   def generateMultinomialLogisticInput(
-                                        weights: Array[Double],
-                                        xMean: Array[Double],
-                                        xVariance: Array[Double],
-                                        addIntercept: Boolean,
-                                        nPoints: Int,
-                                        seed: Int): Seq[LabeledPoint] = {
+    weights: Array[Double],
+    xMean: Array[Double],
+    xVariance: Array[Double],
+    addIntercept: Boolean,
+    nPoints: Int,
+    seed: Int): Seq[LabeledPoint] = {
     val rnd = new Random(seed)
 
     val xDim = xMean.size
@@ -245,7 +245,7 @@ object LogisticRegressionWithFrequencySuite {
       }
       // Preventing the overflow when we compute the probability
       val maxMargin = margins.max
-      if (maxMargin > 0) for (i <-0 until nClasses) margins(i) -= maxMargin
+      if (maxMargin > 0) for (i <- 0 until nClasses) margins(i) -= maxMargin
 
       // Computing the probabilities for each class from the margins.
       val norm = {
@@ -256,7 +256,7 @@ object LogisticRegressionWithFrequencySuite {
         }
         temp
       }
-      for (i <-0 until nClasses) probs(i) /= norm
+      for (i <- 0 until nClasses) probs(i) /= norm
 
       // Compute the cumulative probability so we can generate a random number and assign a label.
       for (i <- 1 until nClasses) probs(i) += probs(i - 1)
@@ -298,11 +298,12 @@ import TestingUtils._
 
 class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite with Matchers {
   def validatePrediction(
-                          predictions: Seq[Double],
-                          input: Seq[LabeledPoint],
-                          expectedAcc: Double = 0.83) {
-    val numOffPredictions = predictions.zip(input).count { case (prediction, expected) =>
-      prediction != expected.label
+    predictions: Seq[Double],
+    input: Seq[LabeledPoint],
+    expectedAcc: Double = 0.83) {
+    val numOffPredictions = predictions.zip(input).count {
+      case (prediction, expected) =>
+        prediction != expected.label
     }
     // At least 83% of the predictions should be on.
     ((input.length - numOffPredictions).toDouble / input.length) should be > expectedAcc
@@ -628,7 +629,8 @@ class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite w
       model.save(sparkContext, path)
       val sameModel = LogisticRegressionModel.load(sparkContext, path)
       LogisticRegressionWithFrequencySuite.checkModelsEqual(model, sameModel)
-    } finally {
+    }
+    finally {
       Utils.deleteRecursively(tempDir)
     }
 
@@ -638,7 +640,8 @@ class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite w
       model.save(sparkContext, path)
       val sameModel = LogisticRegressionModel.load(sparkContext, path)
       LogisticRegressionWithFrequencySuite.checkModelsEqual(model, sameModel)
-    } finally {
+    }
+    finally {
       Utils.deleteRecursively(tempDir)
     }
   }
@@ -655,7 +658,8 @@ class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite w
       model.save(sparkContext, path)
       val sameModel = LogisticRegressionModel.load(sparkContext, path)
       LogisticRegressionWithFrequencySuite.checkModelsEqual(model, sameModel)
-    } finally {
+    }
+    finally {
       Utils.deleteRecursively(tempDir)
     }
   }

@@ -32,7 +32,7 @@ import org.apache.spark.{ Logging, SparkException }
  * GeneralizedLinearAlgorithm. GLMs consist of a weight vector and
  * an intercept.
  *
- * Copy of MlLib's generalized linear model that supports a frequency column.
+ * Extension of MlLib's generalized linear model that supports a frequency column.
  * The frequency column contains the frequency of occurrence of each observation.
  * @see org.apache.spark.mllib.regression.GeneralizedLinearModel
  *

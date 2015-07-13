@@ -16,13 +16,36 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, LogisticRegressionWithFrequencySGD }
-import org.apache.spark.mllib.optimization.{ L1Updater, SquaredL2Updater }
+import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, LogisticRegressionWithFrequencySGD}
+import org.apache.spark.mllib.optimization.{L1Updater, SquaredL2Updater}
 import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
 
+/**
+ * Logistic regression model with Stochastic Gradient Descent
+ */
 class IaLogisticRegressionModelWithSGD extends IaLogisticRegressionModel {
 
   val model = new LogisticRegressionWithFrequencySGD()
+
+  /**
+   * Create Logistic regression model with Stochastic Gradient Descent
+   * @param arguments model arguments
+   */
+  def this(arguments: LogisticRegressionTrainArgs) = {
+    this()
+    model.optimizer.setNumIterations(arguments.numIterations)
+    model.optimizer.setStepSize(arguments.stepSize)
+    model.optimizer.setRegParam(arguments.regParam)
+    model.optimizer.setMiniBatchFraction(arguments.miniBatchFraction)
+    model.setFeatureScaling(arguments.featureScaling)
+    model.setIntercept(arguments.intercept)
+    model.setComputeHessian(arguments.computeCovariance)
+
+    model.optimizer.setUpdater(arguments.regType match {
+      case "L1" => new L1Updater()
+      case other => new SquaredL2Updater()
+    })
+  }
 
   /**
    * Get logistic regression model
@@ -30,32 +53,10 @@ class IaLogisticRegressionModelWithSGD extends IaLogisticRegressionModel {
   override def getModel: GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency] = model
 
   /**
-   * Get the approximate Hessian matrix at the solution (i.e., final iteration)
+   * Get the approximate Hessian matrix for the model
    */
   override def getHessianMatrix: Option[DenseMatrix[Double]] = {
     model.optimizer.getHessianMatrix
   }
 
-  /**
-   * Create logistic regression model
-   *
-   * @param arguments model arguments
-   * @return Logistic regression model
-   */
-  override def initialize(arguments: LogisticRegressionTrainArgs): Unit = {
-    model.optimizer.setNumIterations(arguments.getNumIterations)
-    model.optimizer.setStepSize(arguments.getStepSize)
-    model.optimizer.setRegParam(arguments.getRegParam)
-    model.optimizer.setMiniBatchFraction(arguments.getMiniBatchFraction)
-    model.setFeatureScaling(arguments.getFeatureScaling)
-
-    if (arguments.regType.isDefined) {
-      model.optimizer.setUpdater(arguments.regType.get match {
-        case "L1" => new L1Updater()
-        case other => new SquaredL2Updater()
-      })
-    }
-
-    model.setIntercept(arguments.getIntercept)
-  }
 }

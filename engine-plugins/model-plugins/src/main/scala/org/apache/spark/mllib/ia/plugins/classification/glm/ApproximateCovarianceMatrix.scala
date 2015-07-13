@@ -15,11 +15,11 @@
 */
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import breeze.linalg.{DenseMatrix => BDM, DenseVector, inv}
-import com.intel.taproot.analytics.domain.schema.{Column, DataTypes, FrameSchema}
+import breeze.linalg.{ DenseMatrix => BDM, DenseVector, inv }
+import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.{SparkContext, sql}
+import org.apache.spark.{ SparkContext, sql }
 import collection.JavaConverters._
 import scala.util.Try
 

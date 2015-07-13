@@ -39,7 +39,7 @@ import org.apache.spark.{ SparkContext, sql }
  * This class can be deleted once this pull request is merged to Breeze, and available in Spark.
  * @see https://github.com/scalanlp/breeze/pull/413
  *
- * @param df differentiable function
+ * @param df a Breeze function for computing the gradient
  * @param x the point we compute the hessian for
  * @param epsilon a small value
  *
@@ -72,6 +72,7 @@ case class ApproximateHessianMatrix(df: DiffFunction[DenseVector[Double]],
       val df2 = df.gradientAt(x_copy)
 
       val gradient = (df1 - df2) / (2 * epsilon)
+      // :: is Scala Breeze notation for selecting all columns in the row
       hessian(i, ::) := gradient.t
 
       x_copy(i) = x(i)
@@ -102,28 +103,20 @@ object ApproximateHessianMatrix {
    * @param updater Updater function to actually perform a gradient step in a given direction
    * @param regParam Regularization parameter
    * @param numExamples Number of training examples in RDD
-   * @param computeHessian If true, compute Hessian matrix at the solution (i.e., final iteration)
-   * @return Hessian matrix, if computeHessian is true, otherwise None
+   * @return Hessian matrix
    */
   def computeHessianMatrix(data: RDD[(Double, Vector, Double)],
                            weights: Vector,
                            gradient: GradientWithFrequency,
                            updater: Updater,
                            regParam: Double,
-                           numExamples: Long,
-                           computeHessian: Boolean = true): Option[DenseMatrix[Double]] = {
-    if (computeHessian) {
-      val costFun =
-        new CostFunctionWithFrequency(data, gradient, updater, regParam, numExamples)
-      val hessianMatrix = ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate()
+                           numExamples: Long): DenseMatrix[Double] = {
 
-      // Multiply hessian matrix by number of examples so that Hessian is comparable to R's glm()
-      hessianMatrix :*= numExamples.toDouble
-      Some(hessianMatrix)
-    }
-    else {
-      None
-    }
+    val costFun = new CostFunctionWithFrequency(data, gradient, updater, regParam, numExamples)
+    val hessianMatrix = ApproximateHessianMatrix(costFun, weights.toBreeze.toDenseVector).calculate()
+
+    // Multiply hessian matrix by number of examples so that Hessian is comparable to R's glm()
+    hessianMatrix :*= numExamples.toDouble
+    hessianMatrix
   }
-
 }

@@ -25,6 +25,8 @@ import org.apache.spark.mllib.linalg.Vector
 /**
  * :: DeveloperApi ::
  * Trait for optimization problem solvers.
+ *
+ * Extension of MlLib's optimization trait that supports a frequency column.
  */
 @DeveloperApi
 trait OptimizerWithFrequency extends Serializable {

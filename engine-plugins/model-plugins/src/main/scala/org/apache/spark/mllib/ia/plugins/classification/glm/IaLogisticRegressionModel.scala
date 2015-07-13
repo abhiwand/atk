@@ -22,13 +22,6 @@ import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
 trait IaLogisticRegressionModel extends HessianMatrix {
 
   /**
-   * Initialize logistic regression model
-   *
-   * @param arguments model arguments
-   */
-  def initialize(arguments: LogisticRegressionTrainArgs): Unit
-
-  /**
    * Get logistic regression model
    */
   def getModel: GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency]

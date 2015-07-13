@@ -17,12 +17,12 @@
 
 package org.apache.spark.mllib.optimization
 
-import breeze.linalg.{ DenseMatrix => BDM, DenseVector => BDV }
-import breeze.optimize.{ CachedDiffFunction, LBFGS => BreezeLBFGS }
+import breeze.linalg.{DenseMatrix => BDM, DenseVector => BDV}
+import breeze.optimize.{CachedDiffFunction, LBFGS => BreezeLBFGS}
 import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.mllib.evaluation.{ HessianMatrix, ApproximateHessianMatrix }
-import org.apache.spark.mllib.linalg.{ Vector, Vectors }
+import org.apache.spark.mllib.evaluation.{HessianMatrix, ApproximateHessianMatrix}
+import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
@@ -31,17 +31,21 @@ import scala.collection.mutable
  * :: DeveloperApi ::
  * Class used to solve an optimization problem using Limited-memory BFGS.
  * Reference: [[http://en.wikipedia.org/wiki/Limited-memory_BFGS]]
+ *
+ * Extension of MlLib's L-BFGS that supports a frequency column.
+ *
  * @param gradient Gradient function to be used.
  * @param updater Updater to be used to update weights after every iteration.
  */
 @DeveloperApi
 class LBFGSWithFrequency(private var gradient: GradientWithFrequency, private var updater: Updater)
-    extends OptimizerWithFrequency with Logging with HessianMatrix {
+  extends OptimizerWithFrequency with Logging with HessianMatrix {
 
   private var numCorrections = 10
   private var convergenceTol = 1E-4
   private var maxNumIterations = 100
   private var regParam = 0.0
+  private var computeHessian = false
   private var hessianMatrix: Option[BDM[Double]] = None
 
   /**
@@ -113,6 +117,15 @@ class LBFGSWithFrequency(private var gradient: GradientWithFrequency, private va
   }
 
   /**
+   * Set the flag for computing the Hessian matrix.
+   * If true, a Hessian matrix is computed for the model.
+   */
+  def setComputeHessian(computeHessian: Boolean): this.type = {
+    this.computeHessian = computeHessian
+    this
+  }
+
+  /**
    * Get the approximate Hessian matrix
    */
   override def getHessianMatrix: Option[BDM[Double]] = hessianMatrix
@@ -126,7 +139,9 @@ class LBFGSWithFrequency(private var gradient: GradientWithFrequency, private va
       convergenceTol,
       maxNumIterations,
       regParam,
-      initialWeights)
+      initialWeights,
+      computeHessian
+    )
 
     this.hessianMatrix = hessian
     weights
@@ -156,22 +171,22 @@ object LBFGSWithFrequency extends Logging {
    *                       cause more iterations to be run.
    * @param maxNumIterations - Maximal number of iterations that L-BFGS can be run.
    * @param regParam - Regularization parameter
-   * @param computeHessian If true, compute
+   * @param computeHessian If true, compute Hessian matrix for the model
    *
    * @return A tuple containing three elements. The first element is a column matrix containing
    *         weights for every feature, the second element is an array containing the loss
    *         computed for every iteration, and the third element is the approximate Hessian matrix.
    */
   def runLBFGS(
-    data: RDD[(Double, Vector, Double)],
-    gradient: GradientWithFrequency,
-    updater: Updater,
-    numCorrections: Int,
-    convergenceTol: Double,
-    maxNumIterations: Int,
-    regParam: Double,
-    initialWeights: Vector,
-    computeHessian: Boolean = true): (Vector, Array[Double], Option[BDM[Double]]) = {
+                data: RDD[(Double, Vector, Double)],
+                gradient: GradientWithFrequency,
+                updater: Updater,
+                numCorrections: Int,
+                convergenceTol: Double,
+                maxNumIterations: Int,
+                regParam: Double,
+                initialWeights: Vector,
+                computeHessian: Boolean): (Vector, Array[Double], Option[BDM[Double]]) = {
 
     val lossHistory = mutable.ArrayBuilder.make[Double]
 
@@ -200,8 +215,11 @@ object LBFGSWithFrequency extends Logging {
     val lossHistoryArray = lossHistory.result()
 
     // Compute the approximate Hessian matrix using weights for the final iteration
-    val hessianMatrix = ApproximateHessianMatrix.computeHessianMatrix(data, weights, gradient,
-      updater, regParam, numExamples, computeHessian)
+    val hessianMatrix = if (computeHessian) {
+      Some(ApproximateHessianMatrix.computeHessianMatrix(data, weights, gradient,
+        updater, regParam, numExamples))
+    }
+    else None
 
     logInfo("LBFGS.runLBFGS finished. Last 10 losses %s".format(
       lossHistoryArray.takeRight(10).mkString(", ")))

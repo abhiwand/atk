@@ -20,6 +20,11 @@ import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequenc
 
 /**
  * Results for logistic regression train plugin
+ *
+ * @param numFeatures Number of features
+ * @param numClasses Number of classes
+ * @param coefficients Model coefficients
+ * @param covarianceMatrix Optional covariance matrix
  */
 case class LogisticRegressionTrainResults(numFeatures: Int,
                                           numClasses: Int,
@@ -31,13 +36,19 @@ case class LogisticRegressionTrainResults(numFeatures: Int,
            covarianceMatrix: Option[FrameEntity]) = {
     this(logRegModel.numFeatures,
       logRegModel.numClasses,
-      logisticRegressionTrainResults.getCoefficients(logRegModel, observationColumns),
+      LogisticRegressionTrainResults.getCoefficients(logRegModel, observationColumns),
       covarianceMatrix)
   }
 
 }
 
-object logisticRegressionTrainResults {
+object LogisticRegressionTrainResults {
+  /**
+   * Get map of model coefficients
+   * @param logRegModel Logistic regression model
+   * @param observationColumns Observation columns
+   * @return Map with names and values of model coefficients
+   */
   def getCoefficients(logRegModel: LogisticRegressionModelWithFrequency,
                       observationColumns: List[String]): Map[String, Double] = {
     val coefficients = logRegModel.intercept +: logRegModel.weights.toArray

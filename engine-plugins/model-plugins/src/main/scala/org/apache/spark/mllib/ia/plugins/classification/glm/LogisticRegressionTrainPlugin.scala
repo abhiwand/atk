@@ -92,8 +92,8 @@ numClasses : Int
     Number of classes in the training data
 coefficients: dict
     Value for each of the coefficients trained
-covarianceMatrix: Frame
-    Covariance matrix of the trained data.""""")
+covarianceMatrix: Frame (optional)
+    Covariance matrix of the trained model.""""")
 class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressionTrainArgs, LogisticRegressionTrainResults] {
   /**
    * The name of the command.

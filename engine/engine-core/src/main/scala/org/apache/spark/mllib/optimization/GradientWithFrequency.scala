@@ -25,6 +25,8 @@ import org.apache.spark.mllib.util.MLUtils
 /**
  * :: DeveloperApi ::
  * Class used to compute the gradient for a loss function, given a single data point.
+ *
+ * Extension of MlLib's gradient that supports a frequency column.
  */
 @DeveloperApi
 abstract class GradientWithFrequency extends Serializable {

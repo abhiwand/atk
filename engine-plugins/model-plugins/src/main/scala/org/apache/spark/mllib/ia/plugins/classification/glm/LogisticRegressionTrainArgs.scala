@@ -18,52 +18,93 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
+import com.intel.taproot.analytics.engine.plugin.ArgDoc
 
 /**
  * Input arguments for logistic regression train plugin
  */
-case class LogisticRegressionTrainArgs(model: ModelReference,
+case class LogisticRegressionTrainArgs(@ArgDoc( """Handle to the model to be used.""")
+                                       model: ModelReference,
+
+                                       @ArgDoc( """A frame to train the model on.""")
                                        frame: FrameReference,
-                                       optimizer: String,
+
+                                       @ArgDoc( """Column name containing the label for each observation.""")
                                        labelColumn: String,
+
+                                       @ArgDoc( """Column(s) containing the observations.""")
                                        observationColumns: List[String],
+
+                                       @ArgDoc( """Optional column containing the frequency of observations.""")
                                        frequencyColumn: Option[String] = None,
-                                       intercept: Option[Boolean] = None,
-                                       featureScaling: Option[Boolean] = None,
-                                       numIterations: Option[Int] = None,
-                                       stepSize: Option[Int] = None,
-                                       regType: Option[String] = None,
-                                       regParam: Option[Double] = None,
-                                       miniBatchFraction: Option[Double] = None,
-                                       threshold: Option[Double] = None,
+
+                                       @ArgDoc( """Number of classes""")
+                                       numClasses: Int = 2,
+
+                                       @ArgDoc(
+                                         """Set type of optimizer.
+                                           |LBFGS - Limited-memory BFGS
+                                           |SGD - Stochastic Gradient Descent
+                                         """.stripMargin)
+                                       optimizer: String = "LBFGS",
+
+                                       @ArgDoc( """Compute covariance matrix for the model""")
+                                       computeCovariance: Boolean = false,
+
+                                       @ArgDoc( """If true, compute covariance matrix for trained model.""")
+                                       intercept: Boolean = true,
+
+                                       @ArgDoc( """Perform feature scaling before training model.""")
+                                       featureScaling: Boolean = false,
+
+                                       //TODO: Check if threshold needs to be set in both train() and predict
+                                       @ArgDoc( """Threshold for separating positive predictions from negative predictions.""")
+                                       threshold: Double = 0.5,
+
+                                       @ArgDoc(
+                                         """Set type of regularization
+                                           |L1 - L1 regularization with sum of absolute values of coefficients
+                                           |L2 - L2 regularization with sum of squares of coefficients
+                                         """.stripMargin)
+                                       regType: String = "L2",
+
+                                       @ArgDoc( """Regularization parameter""")
+                                       regParam: Double = 0,
                                        //TODO: What input type should this be?
                                        //gradient : Option[Double] = None,
-                                       numClasses: Option[Int] = None,
-                                       convergenceTolerance: Option[Double] = None,
-                                       numCorrections: Option[Int] = None,
-                                       computeHessian: Option[Boolean] = None) {
+
+                                       @ArgDoc( """Maximum number of iterations""")
+                                       numIterations: Int = 100,
+
+                                       @ArgDoc(
+                                         """Convergence tolerance of iterations for L-BFGS.
+                                           |Smaller value will lead to higher accuracy with the cost of more iterations.
+                                         """.stripMargin)
+                                       convergenceTolerance: Double = 0.0001,
+
+                                       @ArgDoc(
+                                         """Number of corrections used in LBFGS update. Default 10.
+                                           |Values of numCorrections less than 3 are not recommended; large values
+                                           |of numCorrections will result in excessive computing time.
+                                         """.stripMargin)
+                                       numCorrections: Int = 10,
+
+                                       @ArgDoc( """Fraction of data to be used for each SGD iteration""")
+                                       miniBatchFraction: Double = 1.0,
+
+                                       @ArgDoc( """Initial step size for SGD. In subsequent steps,
+                                                  |the step size decreases by stepSize/sqrt(t)""".stripMargin)
+                                       stepSize: Int = 1) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
-  require(optimizer == "LBFGS" || optimizer == "SGD", "valid optimizer name needed")
-  require(observationColumns != null && !observationColumns.isEmpty, "observationColumn must not be null nor empty")
-  require(labelColumn != null && !labelColumn.isEmpty, "labelColumn must not be null nor empty")
-
-  def getNumIterations: Int = {
-    if (numIterations.isDefined) { require(numIterations.get > 0, "numIterations must be a positive value") }
-    numIterations.getOrElse(100)
-  }
-
-  def getIntercept: Boolean = { intercept.getOrElse(true) }
-  def getStepSize: Int = { stepSize.getOrElse(1) }
-  def getRegParam: Double = { regParam.getOrElse(0.01) }
-  def getMiniBatchFraction: Double = { miniBatchFraction.getOrElse(1.0) }
-  def getFeatureScaling: Boolean = { featureScaling.getOrElse(false) }
-  def getNumClasses: Int = { numClasses.getOrElse(2) }
-  //TODO: Verify what this should be default
-  def getConvergenceTolerance: Double = { convergenceTolerance.getOrElse(0.01) }
-  //TODO: Verify what this should be default
-  def getNumCorrections: Int = { numCorrections.getOrElse(2) }
-  def getThreshold: Double = { threshold.getOrElse(0.5) }
-  def getComputeHessian: Boolean = { computeHessian.getOrElse(true) }
+  require(optimizer == "LBFGS" || optimizer == "SGD", "optimizer name must be 'LBFGS' or 'SGD'")
+  require(observationColumns != null && !observationColumns.isEmpty, "observation columns must not be null nor empty")
+  require(labelColumn != null && !labelColumn.isEmpty, "label column must not be null nor empty")
+  require(numIterations > 0, "number of iterations must be a positive value")
+  require(regType == "L1" || regType == "L2", "regularization type must be 'L1' or 'L2'")
+  require(convergenceTolerance > 0, "convergence tolerance for LBFGS must be a positive value")
+  require(numCorrections > 0, "number of corrections for LBFGS must be a positive value")
+  require(miniBatchFraction > 0, "mini-batch fraction for SGD must be a positive value")
+  require(stepSize > 0, "step size for SGD must be a positive value")
 }
 

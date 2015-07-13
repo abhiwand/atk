@@ -16,15 +16,13 @@
 
 package com.intel.taproot.graphbuilder.graph.titan
 
-import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.commons.configuration.BaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
-import org.apache.hadoop.hbase.{ ClusterStatus, HBaseConfiguration, HRegionInfo, TableName }
-import org.apache.spark.{ SparkConf, SparkContext }
+import org.apache.hadoop.hbase.{ClusterStatus, HBaseConfiguration, HRegionInfo, TableName}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.{FlatSpec, Matchers}
 
 class TitanAutoPartitionerITest extends FlatSpec with Matchers with MockitoSugar {
 

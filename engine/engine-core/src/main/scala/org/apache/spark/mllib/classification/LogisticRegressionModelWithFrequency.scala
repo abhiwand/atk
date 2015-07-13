@@ -35,7 +35,7 @@ import org.apache.spark.rdd.RDD
 /**
  * Classification model trained using Multinomial/Binary Logistic Regression.
  *
- * Copy of MlLib's logistic regression model that supports a frequency column.
+ * Extension of MlLib's logistic regression model that supports a frequency column.
  * The frequency column contains the frequency of occurrence of each observation.
  * @see org.apache.spark.mllib.classification.LogisticRegressionModel
  *
@@ -208,7 +208,8 @@ object LogisticRegressionModelWithFrequency extends Loader[LogisticRegressionMod
  * which can be changed via [[LogisticRegressionWithFrequencySGD.optimizer]].
  * NOTE: Labels used in Logistic Regression should be {0, 1, ..., k - 1}
  * for k classes multi-label classification problem.
- * Using [[LogisticRegressionWithFrequencyLBFGS]] is recommended over this.
+ * Using [[LogisticRegressionWithFrequencyLBFGS]] is recommended over this
+ * because LBFGS is more space and time-efficient.
  */
 class LogisticRegressionWithFrequencySGD private[mllib] (
   private var stepSize: Double,
