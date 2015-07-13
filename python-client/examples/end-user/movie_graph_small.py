@@ -14,64 +14,50 @@
 # limitations under the License.
 #
 
-#
-# Copyright (c) 2015 Intel Corporation 
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 
+def run(path=r"datasets/movie_data_random.csv"):
+    """
+    The default home directory is hdfs://user/taproot all the sample data sets are saved to
+    hdfs://user/taproot/datasets when installing through the rpm
+    you will need to copy the data sets to hdfs manually otherwise and adjust the data set location path accordingly
+    :param path: data set hdfs path can be full and relative path
+    """
+    import taprootanalytics as ta
 
+    ta.connect()
 
-#!/usr/bin/python2.7
-import taprootanalytics as ia
+    #csv schema definition
+    schema = [("user_id", ta.int32),
+              ("movie_id", ta.int32),
+              ("rating", ta.int32),
+              ("splits", str)]
 
-ia.connect();
+    csv_file = ta.CsvFile(path, schema, skip_header_lines=1)
 
-#the default home directory is  hdfs://user/iauser all the sample data sets are saved to hdfs://user/iauser/datasets
-dataset = r"datasets/movie_data_random.csv"
+    print "Building data frame"
 
-#csv schema definition
-schema = [("user_id", ia.int32),
-          ("movie_id", ia.int32),
-          ("rating", ia.int32),
-          ("splits", str)]
+    frame = ta.Frame(csv_file)
 
-csv_file = ia.CsvFile(dataset, schema, skip_header_lines=1)
+    print "Done building frame"
 
-print "Building data frame"
+    print "Inspecting frame"
 
-frame = ia.Frame(csv_file)
+    print frame.inspect()
 
-print "Done building frame"
+    print "Filter frame by rating"
 
-print "Inspecting frame"
+    frame.filter(lambda row: row.rating >= 5)
 
-print frame.inspect()
+    print frame.inspect()
 
-print "Filter frame by rating"
+    # Create some rules
 
-frame.filter(lambda row: row.rating >= 5)
+    user = ta.VertexRule("user_id", frame["user_id"], {"vertex_type": "L"})
 
-print frame.inspect()
+    movie = ta.VertexRule("movie_id", frame.movie_id)
 
-# Create some rules
+    rates = ta.EdgeRule("rating", user, movie, {"splits": frame.splits}, bidirectional=False)
 
-user = ia.VertexRule("user_id", frame["user_id"], {"vertex_type": "L"})
-
-movie = ia.VertexRule("movie_id", frame.movie_id)
-
-rates = ia.EdgeRule("rating", user, movie, {"splits": frame.splits}, bidirectional=False)
-
-# Create a graph
-print "creating graph"
-graph = ia.TitanGraph([user, movie, rates])
+    # Create a graph
+    print "creating graph"
+    graph = ta.TitanGraph([user, movie, rates])
