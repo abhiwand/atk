@@ -63,15 +63,18 @@ schema = [('a', int), ('b', unicode), ('c', unicode)]
 rows = [[1, "sixteen_16_abced", "long"],
         [2, "tiny", "really really really really long"]]
 
+def identity(value):
+    return value
+
 class TestConnect(unittest.TestCase):
 
     def test_get_col_sizes1(self):
-        result = _get_col_sizes(rows, 0, schema, wrap=4)
-        expected = [7, 16,  32]
+        result = _get_col_sizes(rows, 0, schema, wrap=4, formatters=[identity for i in xrange(len(schema))])
+        expected = [1, 16,  32]
         self.assertEquals(expected, result)
 
     def go_get_num_cols(self, width, expected):
-        result = _get_col_sizes(rows, 0, schema, wrap=2)
+        result = _get_col_sizes(rows, 0, schema, wrap=2, formatters=[identity for i in xrange(len(schema))])
         def get_splits(width):
             num_cols_0 = _get_num_cols(schema, width, 0, result)
             num_cols_1 = _get_num_cols(schema, width, num_cols_0, result)

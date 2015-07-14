@@ -10,10 +10,16 @@ def print_frame():
 
 
 import taprootanalytics as ta
-from taprootanalytics.core.iatypes import is_type_float, is_type_unicode
 from taprootanalytics.rest.frame import FrameSchema
 
 spaces_between_cols = 2  # const
+
+def is_type_float(t):
+    tpe = ta.valid_data_types.get_from_type(t)
+    return tpe is ta.float32 or tpe is ta.float64 or isinstance(t, ta.vector)
+
+def is_type_unicode(t):
+    return ta.valid_data_types.get_from_type(t) is unicode
 
 def get_validated_none_or_int_gt_zero(name, value):
     if value is not None:
@@ -23,7 +29,8 @@ def get_validated_none_or_int_gt_zero(name, value):
             raise ValueError('%s argument must be an integer > 0, got %s' % (name, value))
     return value
 
-def _get_col_sizes(rows, row_index, schema, wrap):
+
+def _get_col_sizes(rows, row_index, schema, wrap, formatters):
     #headers =["%s:%s" % (name, data_type) for name, data_type in FrameSchema.from_types_to_strings(schema)]
     headers =["%s" % name for name, data_type in schema]
     sizes = [len(h) for h in headers]
@@ -32,23 +39,22 @@ def _get_col_sizes(rows, row_index, schema, wrap):
         if r+row_index < len(rows):
             row = rows[r+row_index]
             for c in xrange(len(sizes)):
-                entry = unicode(row[c])
+                entry = unicode(formatters[c](row[c]))
                 lines = entry.splitlines()
                 max = 0
                 for line in lines:
                     length = len(line)
                     if length > max:
                         max = length
-                #s = len(unicode(row[c]))
                 if max > sizes[c]:
                     sizes[c] = max
     return sizes
 
 
-def _get_num_cols(schema, width, start_col_index, col_sizes):
+def _get_num_cols(schema, width, start_col_index, col_sizes, margin):
     # column_clump
     num_cols = 0
-    line_length = -spaces_between_cols
+    line_length = margin - 1
     while line_length < width and start_col_index + num_cols < len(schema):
         candidate = col_sizes[start_col_index + num_cols] + spaces_between_cols
         if (line_length + candidate) > width:
@@ -56,6 +62,7 @@ def _get_num_cols(schema, width, start_col_index, col_sizes):
                 num_cols = 1
             break
         num_cols += 1
+        line_length += candidate
 
     return num_cols
 
@@ -87,29 +94,6 @@ class FrameInspection(object):
         if self.wrap is None or self.wrap == 'stripes':
             return self._stripes()
         return self._wrap()
-
-
-    # def _column_clump(self, row_count, column_index, col_sizes, start_row_index):
-    #     lines_list = []
-    #     print "column_index=%s" % column_index
-    #     num_cols = _get_num_cols(self.schema, self.width, column_index, col_sizes)
-    #     if num_cols == 0:
-    #         raise RuntimeError("Internal booboo, num_cols == 0")
-    #     #slice_a, slice_b = column_index, column_index + num_cols
-    #     #print "slice=[%s:%s]" % (slice_a, slice_b)
-    #     header_line = '  '.join([self.format_schema_entry(name, data_type, col_sizes[column_index+i]) for i, (name, data_type) in enumerate(self.schema[column_index:column_index+num_cols])])
-    #     thick_line = "=" * len(header_line)
-    #     lines_list.extend(["", header_line, thick_line])
-    #     # print rows
-    #     for r in xrange(start_row_index, start_row_index + self.wrap):
-    #         if r < row_count:
-    #             lines_list.append('  '.join([self.format_value_entry(data, col_sizes[column_index+i]) for i, data in enumerate(self.rows[r][column_index:column_index+num_cols])]))
-    #         else:
-    #             break
-    #     #print "num_cols = %s" % num_cols
-    #     column_index += num_cols
-    #     return num_cols, lines_list, num_cols
-    #     #print "----------------------------------------------------------"
 
     @staticmethod
     def _get_row_index_str(index):
@@ -159,17 +143,17 @@ class FrameInspection(object):
             stop_row_index = start_row_index + self.wrap
             if stop_row_index > row_count:
                 stop_row_index = row_count
-            col_sizes = _get_col_sizes(self.rows, start_row_index, self.schema, self.wrap)
+            col_sizes = _get_col_sizes(self.rows, start_row_index, self.schema, self.wrap, self.value_formatters)
             column_index = 0
             while column_index < len(self.schema):
-                num_cols = _get_num_cols(self.schema, self.width, column_index, col_sizes)
+                num_cols = _get_num_cols(self.schema, self.width, column_index, col_sizes, len(self._get_row_index_str(stop_row_index)))
                 if num_cols == 0:
                     raise RuntimeError("Internal error, num_cols == 0")  # sanity check on algo
                 header_line = self._get_row_index_str('#' * len(str(stop_row_index))) + '  '.join([self.format_schema_entry(name, data_type, col_sizes[column_index+i]) for i, (name, data_type) in enumerate(self.schema[column_index:column_index+num_cols])])
                 thick_line = "=" * len(header_line)
                 lines_list.extend(["", header_line, thick_line])
                 for r in xrange(start_row_index, stop_row_index):
-                    lines_list.append(self._get_row_index_str(r) + '  '.join([self.format_value_entry(data, col_sizes[column_index+i], i, bonus) for i, data in enumerate(self.rows[r][column_index:column_index+num_cols])]))
+                    lines_list.append(self._get_row_index_str(r) + '  '.join([self.format_value_entry(data, col_sizes[column_index+i], self.value_formatters[column_index+i], i, bonus) for i, data in enumerate(self.rows[r][column_index:column_index+num_cols])]))
                     if bonus:
                         lines_list.extend(self._get_bonus_lines(bonus, col_sizes[column_index:column_index+num_cols], pad_str=' ' *len(self._get_row_index_str(stop_row_index))))
                 column_index += num_cols
@@ -193,7 +177,7 @@ class FrameInspection(object):
         schema_line = "[%s]" % ', '.join(["%s:%s" % (name, data_type) for name, data_type in FrameSchema.from_types_to_strings(self.schema)])
         lines_list = [schema_line, thick_line]
         for row in self.rows:
-            lines_list.extend([self.format_entry(i, name, value) for i, (name, value) in enumerate(zip(map(lambda x: x[0], self.schema), row))])
+            lines_list.extend([self.stripes_format_entry(i, name, value) for i, (name, value) in enumerate(zip(map(lambda x: x[0], self.schema), row))])
             lines_list.append(thin_line)
 
         return "\n".join(lines_list)
@@ -205,7 +189,7 @@ class FrameInspection(object):
             return self.truncate_string
         return self.identity
 
-    def format_entry(self, i, name, value):
+    def stripes_format_entry(self, i, name, value):
         return "%s=%s" % (self.format_name(name), self.value_formatters[i](value))
 
     @staticmethod
@@ -222,28 +206,39 @@ class FrameInspection(object):
             size = self.width
         return ' ' * (size - len(entry)) + entry
 
-    def format_value_entry(self, data, size, i, bonus):
-        entry = "%s" % data
+    @staticmethod
+    def format_value_entry(data, size, formatter, relative_column_index, bonus):
+        entry = unicode(formatter(data))
         if isinstance(data, basestring):
             lines = entry.splitlines()
             if len(lines) > 1:
                 entry = lines[0]
-                bonus.append((i, lines[1:]))
+                bonus.append((relative_column_index, lines[1:]))
             return entry + ' ' * (size - len(entry))
         else:
             return ' ' * (size - len(entry)) + entry
 
     def truncate_string(self, s):
-        return s[:self.truncate] + "..."
+        truncated = s[:self.truncate]
+        if truncated != s:
+            truncated += "..."
+        return truncated
 
     def get_rounder(self, float_type):
+        format = "%%.%df" % self.round
+        if isinstance(float_type, ta.vector):
+            def vector_rounder(value):
+                return "[%s]" % ", ".join([format % ta.float64.round(ta.float64(v), self.round) for v in value])
+            return vector_rounder
+
         def rounder(value):
-            return float_type.round(float_type(value), self.round)
+            return format % float_type.round(float_type(value), self.round)
         return rounder
 
 
 f_schema = [('i32', ta.int32),
             ('floaties', ta.float64),
+            ('v2', ta.vector(2)),
             ('long_column_name_ugh', str),
             ('long_value', str),
             ('s', str)]
@@ -251,6 +246,7 @@ f_schema = [('i32', ta.int32),
 f_rows = [
     [1,
      3.14159265358,
+     [1.23456789, 10.0],
      'a',
      '''The sun was shining on the sea,
 Shining with all his might:
@@ -268,11 +264,15 @@ After the day was done--
     'one'],
     [2,
      8.014512183,
-     'b',
+     [3.14, 6.28],
+     '''beyond
+ and
+before''',
      '''I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.  I've got my head out the window and my big feet on the ground.''',
-    'two'],
+     'two'],
     [32,
      1.0,
+     [451.2183, 867.5309],
      'c',
      'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
      'thirty-two']]
@@ -285,4 +285,4 @@ def inspect(wrap=None, truncate=None, round=None, width=80, margin=None):
 
 #inspect(wrap=1)
 #inspect(wrap=2)
-inspect(wrap=1)
+inspect(wrap=3, round=2, truncate=10, width=87)

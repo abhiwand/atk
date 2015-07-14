@@ -346,9 +346,3 @@ def numpy_to_bson_friendly(obj):
     # Let the base class default method raise the TypeError
     return obj
 
-def is_type_float(t):
-    tpe = _DataTypes.get_from_type(t)
-    return tpe is float32 or tpe is float64
-
-def is_type_unicode(t):
-    return _DataTypes.get_from_type(t) is unicode
