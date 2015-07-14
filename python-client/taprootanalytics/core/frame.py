@@ -765,7 +765,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     @arg('n', int, 'The number of rows to print.')
     @arg('offset', int, 'The number of rows to skip before printing.')
     @arg('columns', int, 'Filter columns to be included.  By default, all columns are included')
-    def __inspect(self, n=10, offset=0, columns=None):
+    @arg('wrap', int, 'If set to "stripes" then inspect prints rows in stripes of column clumps')
+    def __inspect(self, n=10, offset=0, columns=None, wrap=None):
         """
         Prints the frame data in readable format.
 
@@ -789,7 +790,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         # For other examples, see :ref:`example_frame.inspect`.
         """
-        return self._backend.inspect(self, n, offset, columns)
+        return self._backend.inspect(self, n, offset, columns, wrap=wrap)
 
     @api
     @beta
