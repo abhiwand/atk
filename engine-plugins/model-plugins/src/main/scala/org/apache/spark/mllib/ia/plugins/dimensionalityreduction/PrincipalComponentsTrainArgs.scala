@@ -23,9 +23,9 @@ import com.intel.taproot.analytics.domain.model.ModelReference
  */
 case class PrincipalComponentsTrainArgs(model: ModelReference,
                                         frame: FrameReference,
-                                        dataColumnNames: List[String],
+                                        observationColumns: List[String],
                                         k: Option[Int] = None) {
   require(frame != null, "frame is required")
-  require(dataColumnNames.forall(_ != null), "data columns names cannot be null")
-  require(dataColumnNames.forall(!_.equals("")), "data columns names cannot be empty")
+  require(observationColumns.forall(_ != null), "data columns names cannot be null")
+  require(observationColumns.forall(!_.equals("")), "data columns names cannot be empty")
 }

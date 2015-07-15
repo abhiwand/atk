@@ -62,33 +62,34 @@ class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalCompone
     val models = engine.models
     val modelMeta = models.expectModel(arguments.model)
 
-    val frame: SparkFrameData = resolve(arguments.frame)
+    val frames = engine.frames
+    val inputFrame = frames.expectFrame(arguments.frame)
 
     // load frame as RDD
-    val frameRdd = frame.data
+    val frameRdd = frames.loadFrameData(sc, inputFrame)
     val frameSchema = frameRdd.frameSchema
     validatePrincipalComponentsArgs(frameSchema, arguments)
 
     // compute covariance
-    val outputColumnDataType = frameSchema.columnDataType(arguments.dataColumnNames(0))
+    val outputColumnDataType = frameSchema.columnDataType(arguments.observationColumns(0))
     val outputVectorLength: Option[Long] = outputColumnDataType match {
       case vector(length) => Some(length)
       case _ => None
     }
 
-    val k = arguments.k.getOrElse(arguments.dataColumnNames.length)
-    val rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(arguments.dataColumnNames))
+    val k = arguments.k.getOrElse(arguments.observationColumns.length)
+    val rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(arguments.observationColumns))
 
     val svd = rowMatrix.computeSVD(k, computeU = true)
 
-    val jsonModel = new PrincipalComponentsData(k, arguments.dataColumnNames, svd.s, svd.V)
+    val jsonModel = new PrincipalComponentsData(k, arguments.observationColumns, svd.s, svd.V)
     models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
 
     new PrincipalComponentsTrainReturn(jsonModel)
   }
   // Validate input arguments
   private def validatePrincipalComponentsArgs(frameSchema: Schema, arguments: PrincipalComponentsTrainArgs): Unit = {
-    val dataColumnNames = arguments.dataColumnNames
+    val dataColumnNames = arguments.observationColumns
     if (dataColumnNames.size == 1) {
       frameSchema.requireColumnIsType(dataColumnNames.toList(0), DataTypes.isVectorDataType)
     }

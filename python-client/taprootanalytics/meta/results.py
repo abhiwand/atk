@@ -152,7 +152,7 @@ def return_belief_propagation(selfish, json_result):
 @postprocessor('model:principal_components/predict')
 def return_principal_components_predict(selfish, json_result):
     from taprootanalytics import get_frame
-    train_output = {'output_frame': get_frame(json_result['output_frame']) }
-    if json_result['t_squared_index'] is not None:
+    train_output = {'output_frame': get_frame(json_result['output_frame']['id']) }
+    if json_result.get('t_squared_index', None) is not None:
         train_output['t_squared_index'] = json_result['t_squared_index']
     return train_output

@@ -333,10 +333,8 @@ object MLLibJsonProtocol {
       val k = getOrInvalid(fields, "k").convertTo[Int]
       val observationColumns = getOrInvalid(fields, "observationColumns").convertTo[List[String]]
 
-      val singularValues = fields.get("singularValues").map(v => {
-        VectorFormat.read(v)
-      }
-      ).get
+      val singularValues = VectorFormat.read(getOrInvalid(fields, "singularValues"))
+
       val vFactor = MatrixFormat.read(getOrInvalid(fields, "vFactor"))
 
       new PrincipalComponentsData(k, observationColumns, singularValues, vFactor)
