@@ -23,7 +23,7 @@ import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
 import org.apache.spark.mllib.ia.plugins.classification.glm.{ LogisticRegressionTrainResults, LogisticRegressionData, LogisticRegressionTrainArgs }
 import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn }
-import org.apache.spark.mllib.ia.plugins.dimensionalityreduction.{ PrincipalComponentsPredictReturn, PrincipalComponentsPredictArgs, PrincipalComponentsData, PrincipalComponentsTrainArgs }
+import org.apache.spark.mllib.ia.plugins.dimensionalityreduction._
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector, Matrix, DenseMatrix }
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import spray.json._
@@ -393,10 +393,10 @@ object MLLibJsonProtocol {
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
   implicit val logRegTrainFormat = jsonFormat18(LogisticRegressionTrainArgs)
   implicit val logRegTrainResultsFormat = jsonFormat4(LogisticRegressionTrainResults)
-  implicit val pcaPredictFormat = jsonFormat3(PrincipalComponentsPredictArgs)
+  implicit val pcaPredictFormat = jsonFormat6(PrincipalComponentsPredictArgs)
   implicit val pcaTrainFormat = jsonFormat4(PrincipalComponentsTrainArgs)
-  implicit val pcaPredictReturnFormat = jsonFormat1(PrincipalComponentsPredictReturn)
-  //implicit val pcaDataFormat = jsonFormat4(PrincipalComponentsData)
+  implicit val pcaPredictReturnFormat = jsonFormat2(PrincipalComponentsPredictReturn)
+  implicit val pcaTrainReturnFormat = jsonFormat4(PrincipalComponentsTrainReturn)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)

@@ -1,22 +1,42 @@
+/*
+// Copyright (c) 2015 Intel Corporation 
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
 package org.apache.spark.mllib.ia.plugins.dimensionalityreduction
 
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.model.ModelReference
-import com.intel.taproot.analytics.engine.plugin.{ Invocation, ApiMaturityTag }
+import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes }
+import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
+import com.intel.taproot.analytics.engine.PluginDocAnnotation
+import com.intel.taproot.analytics.engine.plugin.{ PluginDoc, Invocation, ApiMaturityTag }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
-import org.apache.spark.mllib.linalg.distributed.RowMatrix
+import org.apache.spark.frame.FrameRdd
+import org.apache.spark.mllib.linalg.distributed.{ IndexedRow, IndexedRowMatrix, RowMatrix }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.linalg.Vector
 
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import org.apache.spark.sql
+import org.apache.spark.sql.Row
 
-case class PrincipalComponentsPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: Option[List[String]]) {
-  require(model != null, "model is required")
-  require(frame != null, "frame is required")
-}
+import scala.collection.mutable.ListBuffer
 
-case class PrincipalComponentsPredictReturn(tSquaredIndex: Double)
-
+@PluginDoc(oneLine = "Predict using principal components model.",
+  extended = "Predicting on a dataframe's columns using a PrincipalComponents Model.")
 class PrincipalComponentsPredictPlugin extends SparkCommandPlugin[PrincipalComponentsPredictArgs, PrincipalComponentsPredictReturn] {
 
   /**
@@ -59,21 +79,51 @@ class PrincipalComponentsPredictPlugin extends SparkCommandPlugin[PrincipalCompo
     if (arguments.observationColumns.isDefined) {
       require(principalComponentData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
     }
+
+    if (arguments.c.isDefined) {
+      require(principalComponentData.k >= arguments.c.get, "Number of components must be at most the number of components trained on")
+    }
+
+    val c = arguments.c.getOrElse(principalComponentData.k)
     val predictColumns = arguments.observationColumns.getOrElse(principalComponentData.observationColumns)
 
     //create RDD from the frame
-    val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
+    val indexedFrameRdd = frames.loadFrameData(sc, inputFrame).zipWithIndex().map { case (row, index) => (index, row) }
 
-    val rowMatrix: RowMatrix = new RowMatrix(inputFrameRdd.toVectorDenseRDD(predictColumns))
+    val indexedRowMatrix: IndexedRowMatrix = new IndexedRowMatrix(FrameRdd.toIndexedRowRdd(indexedFrameRdd, inputFrame.schema, predictColumns))
+
     val eigenVectors = principalComponentData.vFactor
-    val y = rowMatrix.multiply(eigenVectors)
+    val y = indexedRowMatrix.multiply(eigenVectors)
 
-    val t = computeTSquareIndex(y.rows, principalComponentData.singularValues, principalComponentData.k)
-    PrincipalComponentsPredictReturn(t)
+    val resultFrameRdd = y.rows.map(row => (row.index, row.vector)).join(indexedFrameRdd)
+      .map { case (index, (vector, row)) => Row.fromSeq(row.toSeq ++ vector.toArray.toSeq) }
+
+    val t = arguments.tSquareIndex.getOrElse(false) match {
+      case true => Some(computeTSquareIndex(y.rows, principalComponentData.singularValues, principalComponentData.k))
+      case _ => None
+    }
+
+    var columnNames = new ListBuffer[String]()
+    var columnTypes = new ListBuffer[DataTypes.DataType]()
+    for (i <- 1 to c) {
+      val colName = "p_" + i.toString
+      columnNames += colName
+      columnTypes += DataTypes.float64
+    }
+
+    val newColumns = columnNames.toList.zip(columnTypes.toList.map(x => x: DataType))
+    val updatedSchema = inputFrame.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
+    val resultFrame = new FrameRdd(updatedSchema, resultFrameRdd)
+
+    val resultFrameEntity = frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created from join operation"))) {
+      newFrame => frames.saveFrameData(newFrame.toReference, resultFrame)
+    }
+    PrincipalComponentsPredictReturn(resultFrameEntity, t)
   }
 
-  def computeTSquareIndex(y: RDD[Vector], E: Vector, k: Int): Double = {
-    val squaredY = y.map(_.toArray).map(elem => elem.map(x => x * x))
+  def computeTSquareIndex(y: RDD[IndexedRow], E: Vector, k: Int): Double = {
+
+    val squaredY = y.map(_.vector.toArray).map(elem => elem.map(x => x * x))
     val vectorOfAccumulators = for (i <- 0 to k - 1) yield y.sparkContext.accumulator(0.0)
     val acc = vectorOfAccumulators.toList
     val t = y.sparkContext.accumulator(0.0)
@@ -87,4 +137,5 @@ class PrincipalComponentsPredictPlugin extends SparkCommandPlugin[PrincipalCompo
     }
     t.value
   }
+
 }

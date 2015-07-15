@@ -35,16 +35,9 @@ import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-case class PrincipalComponentsTrainArgs(model: ModelReference,
-                                        frame: FrameReference,
-                                        dataColumnNames: List[String],
-                                        k: Int) {
-  require(frame != null, "frame is required")
-  require(dataColumnNames.forall(_ != null), "data columns names cannot be null")
-  require(dataColumnNames.forall(!_.equals("")), "data columns names cannot be empty")
-}
-
-class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalComponentsTrainArgs, UnitReturn] {
+@PluginDoc(oneLine = "Build principal components model.",
+  extended = "Creating a PrincipalComponents Model using the data columns.")
+class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalComponentsTrainArgs, PrincipalComponentsTrainReturn] {
 
   /**
    * The name of the command
@@ -65,7 +58,7 @@ class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalCompone
    * @param arguments input specification for covariance matrix
    * @return value of type declared as the Return type
    */
-  override def execute(arguments: PrincipalComponentsTrainArgs)(implicit invocation: Invocation): UnitReturn = {
+  override def execute(arguments: PrincipalComponentsTrainArgs)(implicit invocation: Invocation): PrincipalComponentsTrainReturn = {
     val models = engine.models
     val modelMeta = models.expectModel(arguments.model)
 
@@ -83,14 +76,15 @@ class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalCompone
       case _ => None
     }
 
+    val k = arguments.k.getOrElse(arguments.dataColumnNames.length)
     val rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(arguments.dataColumnNames))
 
-    val svd = rowMatrix.computeSVD(arguments.k, computeU = true)
+    val svd = rowMatrix.computeSVD(k, computeU = true)
 
-    val jsonModel = new PrincipalComponentsData(arguments.k, arguments.dataColumnNames, svd.s, svd.V)
+    val jsonModel = new PrincipalComponentsData(k, arguments.dataColumnNames, svd.s, svd.V)
     models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
 
-    new UnitReturn
+    new PrincipalComponentsTrainReturn(jsonModel)
   }
   // Validate input arguments
   private def validatePrincipalComponentsArgs(frameSchema: Schema, arguments: PrincipalComponentsTrainArgs): Unit = {
@@ -102,7 +96,7 @@ class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalCompone
       require(dataColumnNames.size >= 2, "single vector column, or two or more numeric columns required")
       frameSchema.requireColumnsOfNumericPrimitives(dataColumnNames)
     }
-    require(arguments.k >= 1, "k should be greater than equal to 1")
+    require(arguments.k.get >= 1, "k should be greater than equal to 1")
   }
 
 }
