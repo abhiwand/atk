@@ -23,7 +23,48 @@ import taprootanalytics.core.ui as ui
 
 
 
-class TestUiUtils(unittest.TestCase):
+
+abc_schema = [('a', int), ('b', unicode), ('c', unicode)]
+two_abc_rows = [[1, "sixteen_16_abced", "long"],
+                [2, "tiny", "really really really really long"]]
+
+schema1 = [('i32', ta.int32),
+            ('floaties', ta.float64),
+            ('long_column_name_ugh_and_ugh', str),
+            ('long_value', str),
+            ('s', str)]
+
+rows1 = [
+    [1,
+     3.14159265358,
+     'a',
+     '''The sun was shining on the sea,
+Shining with all his might:
+He did his very best to make
+The billows smooth and bright--
+And this was odd, because it was
+The middle of the night.
+
+The moon was shining sulkily,
+Because she thought the sun
+Had got no business to be there
+After the day was done--
+"It's very rude of him," she said,
+"To come and spoil the fun!"''',
+    'one'],
+    [2,
+     8.014512183,
+     'b',
+     '''I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.''',
+    'two'],
+    [32,
+     1.0,
+     'c',
+     'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+     'thirty-two']]
+
+
+class TestUi(unittest.TestCase):
 
     def test_round(self):
         self.assertEqual("3.14", ui.round_float(3.1415, ta.float32, 2))
@@ -47,49 +88,6 @@ class TestUiUtils(unittest.TestCase):
             pass
         else:
             self.fail("Expected value error for target_len too small")
-
-
-abc_schema = [('a', int), ('b', unicode), ('c', unicode)]
-two_abc_rows = [[1, "sixteen_16_abced", "long"],
-                [2, "tiny", "really really really really long"]]
-
-schema1 = [('i32', ta.int32),
-            ('floaties', ta.float64),
-            ('s', str),
-            ('long_column_name_ugh_and_ugh', str),
-            ('long_value', str)]
-
-rows1 = [
-    [1,
-     3.14159265358,
-     'one',
-     'a',
-     '''The sun was shining on the sea,
-Shining with all his might:
-He did his very best to make
-The billows smooth and bright--
-And this was odd, because it was
-The middle of the night.
-
-The moon was shining sulkily,
-Because she thought the sun
-Had got no business to be there
-After the day was done--
-"It's very rude of him," she said,
-"To come and spoil the fun!"'''],
-    [2,
-     8.014512183,
-     'two',
-     'b',
-     '''I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.'''],
-    [32,
-     1.0,
-     'thirty-two',
-     'c',
-     'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA']]
-
-
-class TestUi(unittest.TestCase):
 
     def test_get_col_sizes1(self):
         result = ui._get_col_sizes(two_abc_rows, 0, row_count=2, header_sizes=ui._get_schema_name_sizes(abc_schema), formatters=[ui.identity for i in xrange(len(abc_schema))])
@@ -128,13 +126,13 @@ class TestUi(unittest.TestCase):
     def test_simple_stripes(self):
         result = repr(ui.RowsInspection(two_abc_rows, abc_schema, offset=0, wrap='stripes', margin=10))
         expected = '''[0]
-a =1
-b =sixteen_16_abced
-c =long
+a=1
+b=sixteen_16_abced
+c=long
 [1]
-a =2
-b =tiny
-c =really really really really long'''
+a=2
+b=tiny
+c=really really really really long'''
         self.assertEqual(expected, result)
 
     def test_wrap_long_str_1(self):
@@ -159,7 +157,6 @@ c =really really really really long'''
         r = [[x, 'b%s' % x, None] for x in xrange(10)]
         s = abc_schema
         result = repr(ui.RowsInspection(r, s, offset=92, wrap=5, width=80))
-        print result
         expected = '''
 [##]  a   b     c
 =================
@@ -181,39 +178,28 @@ c =really really really really long'''
         self.assertEqual(expected, result)
 
     def test_inspection(self):
-        result = repr(ui.RowsInspection(rows1, schema1, offset=0, wrap=2, width=80))
+        result = repr(ui.RowsInspection(rows1, schema1, offset=0, wrap=2, truncate=40, width=80))
         result = '\n'.join([line.rstrip() for line in result.splitlines()])
         expected = '''
-[#]  i32       floaties    s  long_column_name_ugh_and_ugh
-==========================================================
-[0]    1  3.14159265358  one  a
-[1]    2    8.014512183  two  b
+[#]  i32       floaties  long_column_name_ugh_and_ugh
+=====================================================
+[0]    1  3.14159265358  a
+[1]    2    8.014512183  b
 
-[#]                                                                   long_value
-================================================================================
-[0]  The sun was shining on the sea,
-     Shining with all his might:
-     He did his very best to make
-     The billows smooth and bright--
-     And this was odd, because it was
-     The middle of the night.
-
-     The moon was shining sulkily,
-     Because she thought the sun
-     Had got no business to be there
-     After the day was done--
-     "It's very rude of him," she said,
-     "To come and spoil the fun!"
-[1]  I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.
+[#]                                long_value    s
+==================================================
+[0]  The sun was shining on the sea,           one
+     Shini...
+[1]  I'm going down.  Down, down, down, do...  two
 
 
-[#]  i32  floaties           s  long_column_name_ugh_and_ugh
-============================================================
-[2]   32       1.0  thirty-two  c
+[#]  i32  floaties  long_column_name_ugh_and_ugh
+================================================
+[2]   32       1.0  c
 
-[#]                                long_value
-=============================================
-[2]  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'''
+[#]                                long_value           s
+=========================================================
+[2]  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  thirty-two'''
         self.assertEqual(expected, result)
 
 

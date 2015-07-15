@@ -16,23 +16,22 @@ class RowsInspection(object):
             else:
                 raise ValueError("argument wrap must be an integer or the string 'stripes'.  Received '%s'" % wrap)
         elif isinstance(wrap, int) and wrap >= 0:
-            if rows:
-                self.wrap = (int(wrap) % len(rows)) or len(rows)
+            self.wrap = min(wrap, len(rows)) or len(rows)
             self._repr = self._wrap
         else:
             raise TypeError("argument wrap must be an integer or the string 'stripes'.  Received '%s'" % wrap)
 
         if not rows:
             self._repr = self._empty
-        else:
-            self.rows = rows
-            self.schema = schema
-            self.offset = offset
-            self.truncate = get_validated_positive_int("truncate", truncate)
-            self.round = get_validated_positive_int("round_floats", round)
-            self.width = get_validated_positive_int("width", width)
-            self.margin = get_validated_positive_int("margin", margin)
-            self.value_formatters = [self._get_value_formatter(data_type) for name, data_type in schema]
+
+        self.rows = rows
+        self.schema = schema
+        self.offset = offset
+        self.truncate = get_validated_positive_int("truncate", truncate)
+        self.round = get_validated_positive_int("round_floats", round)
+        self.width = get_validated_positive_int("width", width)
+        self.margin = get_validated_positive_int("margin", margin)
+        self.value_formatters = [self._get_value_formatter(data_type) for name, data_type in schema]
 
     def __repr__(self):
         return self._repr()
@@ -71,7 +70,8 @@ class RowsInspection(object):
                 thick_line = "=" * len(header_line)
                 lines_list.extend(["", header_line, thick_line])
                 for row_index in xrange(start_row_index, stop_row_index):
-                    lines_list.append(pad_right(_get_row_index_str(self.offset+row_index), margin) + column_spacer.join([self._get_wrap_entry(data, col_sizes[col_index+i], self.value_formatters[col_index+i], i, extra_tuples) for i, data in enumerate(self.rows[row_index][col_index:col_index+num_cols])]))
+                    new_line = pad_right(_get_row_index_str(self.offset+row_index), margin) + column_spacer.join([self._get_wrap_entry(data, col_sizes[col_index+i], self.value_formatters[col_index+i], i, extra_tuples) for i, data in enumerate(self.rows[row_index][col_index:col_index+num_cols])])
+                    lines_list.append(new_line.rstrip())
                     if extra_tuples:
                         lines_list.extend(_get_lines_from_extra_tuples(extra_tuples, col_sizes[col_index:col_index+num_cols], margin))
                 col_index += num_cols
@@ -89,7 +89,6 @@ class RowsInspection(object):
                 max_margin = length
         if not self.margin or max_margin < self.margin:
             self.margin = max_margin
-        self.margin += 1  # count 0, such that margin is number of characters to the left of the =
         lines_list = []
         for row_index in xrange(len(self.rows)):
             lines_list.append(self._get_stripe_header(self.offset+row_index))
@@ -268,6 +267,6 @@ def _get_lines_from_extra_tuples(tuples, col_sizes, margin):
             else:
                 new_line_columns.append(' ' * (col_sizes[size_index] + spaces_between_cols))
 
-        new_lines.append(''.join(new_line_columns))
+        new_lines.append(''.join(new_line_columns).rstrip())
 
     return new_lines
