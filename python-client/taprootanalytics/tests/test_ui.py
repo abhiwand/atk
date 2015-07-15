@@ -19,15 +19,15 @@ iatest.init()
 
 import unittest
 import taprootanalytics as ta
-from taprootanalytics.core.ui import _get_col_sizes, _get_num_cols, _get_row_clump_count
+import taprootanalytics.core.ui as ui
 
-f_schema = [('i32', ta.int32),
+schema1 = [('i32', ta.int32),
             ('floaties', ta.float64),
             ('s', str),
             ('long_column_name_ugh_and_ugh', str),
             ('long_value', str)]
 
-f_rows = [
+rows1 = [
     [1,
      3.14159265358,
      'one',
@@ -56,29 +56,52 @@ After the day was done--
      'c',
      'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA']]
 
-#wrap
-#expected = [3, 13, 10, 28, 31]
 
-schema = [('a', int), ('b', unicode), ('c', unicode)]
-rows = [[1, "sixteen_16_abced", "long"],
-        [2, "tiny", "really really really really long"]]
+class TestUiUtils(unittest.TestCase):
 
-def identity(value):
-    return value
+    def test_round(self):
+        self.assertEqual("3.14", ui.round_float(3.1415, ta.float32, 2))
+        self.assertEqual("6.28", ui.round_float(6.2830, ta.float64, 2))
+        self.assertEqual("867.5309000000", ui.round_float(867.5309, ta.float64, 10))
+        self.assertEqual("867.5310000000", ui.round_float(867.5309, ta.float32, 10))  # notice quirk with float32
+        self.assertEqual("[1.23, 5.68]", ui.round_vector([1.234, 5.6789], 2))
+        self.assertEqual("[1.0, 2.0, 3.0]", ui.round_vector([1.234, 2.36789, 3], 0))
+        self.assertEqual("[1.2, 2.4, 3.0]", ui.round_vector([1.234, 2.36789, 3], 1))
 
-class TestConnect(unittest.TestCase):
+    def test_truncate(self):
+        self.assertEqual("encyclopedia", ui.truncate("encyclopedia", 13))
+        self.assertEqual("encyclopedia", ui.truncate("encyclopedia", 12))
+        self.assertEqual("encyclop...", ui.truncate("encyclopedia", 11))
+        self.assertEqual("en...", ui.truncate("encyclopedia", 5))
+        self.assertEqual("e...", ui.truncate("encyclopedia", 4))
+        self.assertEqual("...", ui.truncate("encyclopedia", 3))
+        try:
+            ui.truncate("encyclopedia", 2)
+        except ValueError as e:
+            pass
+        else:
+            self.fail("Expected value error for target_len too small")
+
+
+abc_schema = [('a', int), ('b', unicode), ('c', unicode)]
+two_abc_rows = [[1, "sixteen_16_abced", "long"],
+                [2, "tiny", "really really really really long"]]
+
+
+class TestUi(unittest.TestCase):
 
     def test_get_col_sizes1(self):
-        result = _get_col_sizes(rows, 0, schema, wrap=4, formatters=[identity for i in xrange(len(schema))])
+        result = ui._get_col_sizes(two_abc_rows, 0, row_count=2, header_sizes=ui._get_schema_name_sizes(abc_schema), formatters=[ui.identity for i in xrange(len(abc_schema))])
         expected = [1, 16,  32]
         self.assertEquals(expected, result)
 
     def go_get_num_cols(self, width, expected):
-        result = _get_col_sizes(rows, 0, schema, wrap=2, formatters=[identity for i in xrange(len(schema))])
+        result = ui._get_col_sizes(two_abc_rows, 0, row_count=2, header_sizes=ui._get_schema_name_sizes(abc_schema), formatters=[ui.identity for i in xrange(len(abc_schema))])
+
         def get_splits(width):
-            num_cols_0 = _get_num_cols(schema, width, 0, result)
-            num_cols_1 = _get_num_cols(schema, width, num_cols_0, result)
-            num_cols_2 = _get_num_cols(schema, width, num_cols_0 + num_cols_1, result)
+            num_cols_0 = ui._get_num_cols(abc_schema, width, 0, result, 0)
+            num_cols_1 = ui._get_num_cols(abc_schema, width, num_cols_0, result, 0)
+            num_cols_2 = ui._get_num_cols(abc_schema, width, num_cols_0 + num_cols_1, result, 0)
             return num_cols_0, num_cols_1, num_cols_2
 
         self.assertEquals(expected, get_splits(width))
@@ -93,13 +116,36 @@ class TestConnect(unittest.TestCase):
         self.go_get_num_cols(80, (3, 0, 0))
 
     def test_get_row_clump_count(self):
-        row_count=12
+        row_count = 12
         wraps = [(12, 1), (11, 2), (10, 2), (6, 2), (5, 3), (4, 3), (3, 4), (2, 6), (1, 12), (13, 1), (100, 1)]
         for w in wraps:
             wrap = w[0]
             expected = w[1]
-            result = _get_row_clump_count(row_count, wrap)
+            result = ui._get_row_clump_count(row_count, wrap)
             self.assertEqual(expected, result, "%s != %s for wrap %s" % (result, expected, wrap))
+
+    def test_simple_stripes(self):
+        result = repr(ui.RowsInspection(two_abc_rows, abc_schema, wrap='stripes', margin=10))
+        expected = '''[0]
+a =1
+b =sixteen_16_abced
+c =long
+[1]
+a =2
+b =tiny
+c =really really really really long'''
+        self.assertEqual(expected, result)
+
+    def test_wrap_long_str_1(self):
+        r = [['12345678901234567890123456789012345678901234567890123456789012345678901234567890']]
+        s = [('s', str)]
+        result = repr(ui.RowsInspection(r, s, wrap=5, width=80))
+        expected = '''
+[#]                                                                            s
+================================================================================
+[0]  12345678901234567890123456789012345678901234567890123456789012345678901234567890
+'''
+        self.assertEqual(expected, result)
 
 
 if __name__ == '__main__':

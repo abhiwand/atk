@@ -1,43 +1,199 @@
-
-import sys
-import os
-pycli = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-print pycli
-sys.path.insert(0, pycli)
-
-def print_frame():
-    pass
-
-
 import taprootanalytics as ta
-from taprootanalytics.rest.frame import FrameSchema
 
-spaces_between_cols = 2  # const
+spaces_between_cols = 2  # consts
+ellipses = '...'
+
+
+class RowsInspection(object):
+    """
+    class used specifically for inspect, where the __repr__ is the main use case
+    """
+
+    def __init__(self, rows, schema, wrap=None, truncate=None, round=None, width=80, margin=None):
+        if isinstance(wrap, basestring):
+            if wrap != 'stripes':
+                raise ValueError("argument wrap must be an integer or the string 'stripes'.  Received '%s'" % wrap)
+            else:
+                self._repr = self._stripes
+        else:
+            self._repr = self._wrap
+
+        self.rows = rows
+        self.schema = schema
+        self.wrap = wrap or len(rows)
+        self.truncate = get_validated_positive_int("truncate", truncate)
+        self.round = get_validated_positive_int("round_floats", round)
+        self.width = get_validated_positive_int("width", width)
+        self.margin = get_validated_positive_int("margin", margin)
+        self.value_formatters = [self._get_value_formatter(data_type) for name, data_type in schema]
+
+    def __repr__(self):
+        return self._repr()
+
+    def _wrap(self):
+        """print rows in a 'clumps' style"""
+        row_index_str_format = '[%s]' + ' ' * spaces_between_cols
+
+        def _get_row_index_str(index):
+            return row_index_str_format % index
+
+        row_count = len(self.rows)
+        row_clump_count = _get_row_clump_count(row_count, self.wrap)
+        header_sizes = _get_schema_name_sizes(self.schema)
+        column_spacer = ' ' * spaces_between_cols
+        lines_list = []
+        extra_tuples = []
+
+        for row_clump_index in xrange(row_clump_count):
+            start_row_index = row_clump_index * self.wrap
+            stop_row_index = start_row_index + self.wrap
+            if stop_row_index > row_count:
+                stop_row_index = row_count
+            row_index_header = _get_row_index_str('#' * len(str(stop_row_index)))
+            margin = len(row_index_header)
+            col_sizes = _get_col_sizes(self.rows, start_row_index, self.wrap, header_sizes, self.value_formatters)
+            col_index = 0
+            while col_index < len(self.schema):
+                num_cols = _get_num_cols(self.schema, self.width, col_index, col_sizes, margin)
+                if num_cols == 0:
+                    raise RuntimeError("Internal error, num_cols == 0")  # sanity check on algo
+                header_line = row_index_header + column_spacer.join([pad_left(name, min(self.width - margin, col_sizes[col_index+i])) for i, (name, data_type) in enumerate(self.schema[col_index:col_index+num_cols])])
+                thick_line = "=" * len(header_line)
+                lines_list.extend(["", header_line, thick_line])
+                for row_index in xrange(start_row_index, stop_row_index):
+                    lines_list.append(_get_row_index_str(row_index) + column_spacer.join([self._get_wrap_entry(data, col_sizes[col_index+i], self.value_formatters[col_index+i], i, extra_tuples) for i, data in enumerate(self.rows[row_index][col_index:col_index+num_cols])]))
+                    if extra_tuples:
+                        lines_list.extend(_get_lines_from_extra_tuples(extra_tuples, col_sizes[col_index:col_index+num_cols], margin))
+                col_index += num_cols
+
+            lines_list.append('')  # extra line for new clump
+
+        return "\n".join(lines_list)
+
+    def _stripes(self):
+        """print rows as stripes style"""
+        max_margin = 0
+        for name, data_type in self.schema:
+            length = len(name) + 1 # to account for the '='
+            if length > max_margin:
+                max_margin = length
+        if not self.margin or max_margin < self.margin:
+            self.margin = max_margin
+        self.margin += 1  # count 0, such that margin is number of characters to the left of the =
+        lines_list = []
+        for row_index in xrange(len(self.rows)):
+            lines_list.append(self._get_stripe_header(row_index))
+            lines_list.extend([self._get_stripe_entry(i, name, value)
+                               for i, (name, value) in enumerate(zip(map(lambda x: x[0], self.schema),
+                                                                     self.rows[row_index]))])
+        return "\n".join(lines_list)
+
+    def _get_stripe_header(self, index):
+        row_number = "[%s]" % index
+        return row_number + "-" * (self.margin - len(row_number))
+
+    def _get_stripe_entry(self, i, name, value):
+        return "%s=%s" % (pad_right(name, self.margin - 1), self.value_formatters[i](value))
+
+    def _get_value_formatter(self, data_type):
+        if self.round and is_type_float(data_type):
+            return self.get_rounder(data_type)
+        if self.truncate and is_type_unicode(data_type):
+            return self.get_truncater()
+        return identity
+
+    @staticmethod
+    def _get_wrap_entry(data, size, formatter, relative_column_index, extra_tuples):
+        entry = unicode(formatter(data))
+        if isinstance(data, basestring):
+            lines = entry.splitlines()
+            if len(lines) > 1:
+                entry = lines[0]  # take the first line now, and save the rest in an 'extra' tuple
+                extra_tuples.append((relative_column_index, lines[1:]))
+            return pad_right(entry, size)
+        else:
+            return pad_left(entry, size)
+
+    def get_truncater(self):
+        target_len = self.truncate
+
+        def truncate_string(s):
+            return truncate(s, target_len)
+        return truncate_string
+
+    def get_rounder(self, float_type):
+        num_digits = self.round
+        if isinstance(float_type, ta.vector):
+            def vector_rounder(value):
+                return round_vector(value, num_digits)
+            return vector_rounder
+
+        def rounder(value):
+            return round_float(value, float_type, num_digits)
+        return rounder
+
 
 def is_type_float(t):
     tpe = ta.valid_data_types.get_from_type(t)
     return tpe is ta.float32 or tpe is ta.float64 or isinstance(t, ta.vector)
 
+
 def is_type_unicode(t):
     return ta.valid_data_types.get_from_type(t) is unicode
 
-def get_validated_none_or_int_gt_zero(name, value):
-    if value is not None:
-        if not isinstance(value, int):
-            raise TypeError('%s argument must be an integer, got %s' % (name, type(value)))
-        if value <= 0:
-            raise ValueError('%s argument must be an integer > 0, got %s' % (name, value))
+
+def get_validated_positive_int(arg_name, arg_value):
+    if arg_value is not None:
+        if not isinstance(arg_value, int):
+            raise TypeError('%s argument must be an integer, got %s' % (arg_name, type(arg_value)))
+        if arg_value <= 0:
+            raise ValueError('%s argument must be an integer > 0, got %s' % (arg_name, arg_value))
+    return arg_value
+
+
+def pad_left(s, target_len):
+    """pads string s on the left such that is has at least length target_len"""
+    return ' ' * (target_len - len(s)) + s
+
+
+def pad_right(s, target_len):
+    """pads string s on the right such that is has at least length target_len"""
+    return s + ' ' * (target_len - len(s))
+
+
+def truncate(s, target_len):
+    """truncates string to the target_len"""
+    if target_len < len(ellipses):
+        raise ValueError("Bad truncate length %s.  "
+                         "Must be set to at least %s to allow for a '%s'." % (target_len, len(ellipses), ellipses))
+    if len(s) <= target_len:
+        return s
+    return s[:target_len - len(ellipses)] + ellipses
+
+
+def round_float(f, float_type, num_digits):
+    """provides a rounded, formatted string for the given number of decimal places"""
+    value = float_type(f)
+    max_len = len(str(value).split('.')[1])
+    padding = '0' * (num_digits - max_len)
+    template = "%%.%df%s" % (min(num_digits, max_len) or 1, padding)
+    return template % float_type.round(float_type(f), num_digits)
+
+
+def round_vector(v, num_digits):
+    """provides a rounded, formatted string to represent the vector"""
+    return "[%s]" % ", ".join([round_float(f, ta.float64, num_digits) for f in v])
+
+
+def identity(value):
     return value
 
 
-def _get_col_sizes(rows, row_index, schema, wrap, formatters):
-    #headers =["%s:%s" % (name, data_type) for name, data_type in FrameSchema.from_types_to_strings(schema)]
-    headers =["%s" % name for name, data_type in schema]
-    sizes = [len(h) for h in headers]
-    #sizes = [len("%s:%s" % (name, data_type)) for name, data_type in FrameSchema.from_types_to_strings(schema)]
-    for r in xrange(wrap):
-        if r+row_index < len(rows):
-            row = rows[r+row_index]
+def _get_col_sizes(rows, row_index, row_count, header_sizes, formatters):
+    sizes = list(header_sizes)
+    for r in xrange(row_index, row_index+row_count):
+        if r < len(rows):
+            row = rows[r]
             for c in xrange(len(sizes)):
                 entry = unicode(formatters[c](row[c]))
                 lines = entry.splitlines()
@@ -52,9 +208,10 @@ def _get_col_sizes(rows, row_index, schema, wrap, formatters):
 
 
 def _get_num_cols(schema, width, start_col_index, col_sizes, margin):
-    # column_clump
+    """goes through the col_sizes starting at the given index and finds
+       how many columns can be included on a line"""
     num_cols = 0
-    line_length = margin - 1
+    line_length = margin - spaces_between_cols
     while line_length < width and start_col_index + num_cols < len(schema):
         candidate = col_sizes[start_col_index + num_cols] + spaces_between_cols
         if (line_length + candidate) > width:
@@ -67,222 +224,43 @@ def _get_num_cols(schema, width, start_col_index, col_sizes, margin):
     return num_cols
 
 
+def _get_schema_name_sizes(schema):
+    return [len("%s" % name) for name, data_type in schema]
+
+
 def _get_row_clump_count(row_count, wrap):
     return row_count / wrap + (1 if row_count % wrap else 0)
 
 
-def _get_padded_string_value(value, size):
-    return value + ' ' * (size - len(value))
+def _get_lines_from_extra_tuples(tuples, col_sizes, margin):
+    # (for wrap formatting)
+    # tuples is a list of tuples of the form (relative column index, [lines])
+    # col_sizes is an array of the col_sizes for the 'current' clump (hence
+    #   the 'relative column index' in the tuples list --these indices match
+    #
+    lines = []  # list of new, full-fledged extra lines that come from the tuples
 
+    def there_are_tuples_in(x):
+        return bool(len(x))
 
-class FrameInspection(object):
-    """
-    class used specifically for inspect, where the __repr__ is king
-    """
-
-    def __init__(self, schema, rows, wrap=None, truncate=None, round=None, width=80, margin=None):
-        self.schema = schema
-        self.rows = rows
-        self.wrap=wrap
-        self.truncate = get_validated_none_or_int_gt_zero("truncate", truncate)
-        self.round = get_validated_none_or_int_gt_zero("round_floats", round)
-        self.width = get_validated_none_or_int_gt_zero("width", width)
-        self.margin = get_validated_none_or_int_gt_zero("margin", margin)
-        self.value_formatters = [self.get_value_formatter(data_type) for name, data_type in schema]
-
-    def __repr__(self):
-        if self.wrap is None or self.wrap == 'stripes':
-            return self._stripes()
-        return self._wrap()
-
-    @staticmethod
-    def _get_row_index_str(index):
-        return "[%s]  " % index
-
-    @staticmethod
-    def _get_bonus_lines(bonus, col_sizes, pad_str):
-        # bonus is a list of tuples of the form (relative column index, [lines])
-        # col_sizes is an array of the col_sizes for the 'current' clump (hence
-        #   the 'relative column index' in the bonus list --these indices match
-        #
-        bonus_lines = []  # list of new, full-fledged extra lines that come from the bonus
-
-        def there_are_tuples_in(x):
-            return bool(len(x))
-
-        while there_are_tuples_in(bonus):
-            bonus_index = 0
-            new_line_columns = [pad_str]
-            for size_index in xrange(len(col_sizes)):
-                if bonus_index < len(bonus) and size_index == bonus[bonus_index][0]:
-                    index, lines = bonus[bonus_index]  # the 'tuple'
-                    entry = lines.pop(0)
-                    new_line_columns.append(_get_padded_string_value(entry, col_sizes[size_index]))
-                    if not len(lines):
-                        del bonus[bonus_index]  # remove empty tuple, which also naturally moves index to the next tuple
-                    else:
-                        bonus_index += 1  # move on to the next tuple
+    while there_are_tuples_in(tuples):
+        tuple_index = 0
+        new_line_columns = [' ' * margin]
+        for size_index in xrange(len(col_sizes)):
+            if tuple_index < len(tuples) and size_index == tuples[tuple_index][0]:
+                index, lines = tuples[tuple_index]  # the 'tuple'
+                entry = lines.pop(0)
+                new_line_columns.append(pad_right(entry, col_sizes[size_index]))
+                if not len(lines):
+                    del tuples[tuple_index]  # remove empty tuple, which also naturally moves index to the next tuple
                 else:
-                    new_line_columns.append(" " * (col_sizes[size_index] + spaces_between_cols))
+                    tuple_index += 1  # move on to the next tuple
+            else:
+                new_line_columns.append(' ' * (col_sizes[size_index] + spaces_between_cols))
 
-            if len(bonus) != bonus_index:  # sanity check for the while loop
-                raise RuntimeError("Infinite loop in _get_bonus_lines")
+        if len(tuples) != tuple_index:  # sanity check for the while loop
+            raise RuntimeError("Infinite loop detected")
 
-            bonus_lines.append(''.join(new_line_columns))
+        lines.append(''.join(new_line_columns))
 
-        return bonus_lines
-
-    def _wrap(self):
-        """print rows in clumps style"""
-        row_count = len(self.rows)
-        row_clump_count = _get_row_clump_count(row_count, self.wrap)
-        lines_list = []
-        bonus = []
-        for row_clump_index in xrange(row_clump_count):
-            start_row_index = row_clump_index * self.wrap
-            stop_row_index = start_row_index + self.wrap
-            if stop_row_index > row_count:
-                stop_row_index = row_count
-            col_sizes = _get_col_sizes(self.rows, start_row_index, self.schema, self.wrap, self.value_formatters)
-            column_index = 0
-            while column_index < len(self.schema):
-                num_cols = _get_num_cols(self.schema, self.width, column_index, col_sizes, len(self._get_row_index_str(stop_row_index)))
-                if num_cols == 0:
-                    raise RuntimeError("Internal error, num_cols == 0")  # sanity check on algo
-                header_line = self._get_row_index_str('#' * len(str(stop_row_index))) + '  '.join([self.format_schema_entry(name, data_type, col_sizes[column_index+i]) for i, (name, data_type) in enumerate(self.schema[column_index:column_index+num_cols])])
-                thick_line = "=" * len(header_line)
-                lines_list.extend(["", header_line, thick_line])
-                for r in xrange(start_row_index, stop_row_index):
-                    lines_list.append(self._get_row_index_str(r) + '  '.join([self.format_value_entry(data, col_sizes[column_index+i], self.value_formatters[column_index+i], i, bonus) for i, data in enumerate(self.rows[r][column_index:column_index+num_cols])]))
-                    if bonus:
-                        lines_list.extend(self._get_bonus_lines(bonus, col_sizes[column_index:column_index+num_cols], pad_str=' ' *len(self._get_row_index_str(stop_row_index))))
-                column_index += num_cols
-
-            lines_list.append('')  # extra line for new clump
-
-        return "\n".join(lines_list)
-
-    def _stripes(self):
-        """print rows as stripes style"""
-        max_margin = 0
-        for item in self.schema:
-            length = len(item[0]) + 1 # to account for the '='
-            if length > max_margin:
-                max_margin = length
-        if not self.margin or max_margin < self.margin:
-            self.margin = max_margin
-        self.margin += 1  # count 0, such that margin is number of characters to the left of the =
-        thick_line = "=" * self.margin
-        thin_line = "-" * self.margin
-        schema_line = "[%s]" % ', '.join(["%s:%s" % (name, data_type) for name, data_type in FrameSchema.from_types_to_strings(self.schema)])
-        lines_list = [schema_line, thick_line]
-        for row in self.rows:
-            lines_list.extend([self.stripes_format_entry(i, name, value) for i, (name, value) in enumerate(zip(map(lambda x: x[0], self.schema), row))])
-            lines_list.append(thin_line)
-
-        return "\n".join(lines_list)
-
-    def get_value_formatter(self, data_type):
-        if self.round and is_type_float(data_type):
-            return self.get_rounder(data_type)
-        if self.truncate and is_type_unicode(data_type):
-            return self.truncate_string
-        return self.identity
-
-    def stripes_format_entry(self, i, name, value):
-        return "%s=%s" % (self.format_name(name), self.value_formatters[i](value))
-
-    @staticmethod
-    def identity(value):
-        return value
-
-    def format_name(self, n):
-        return n + ' ' * (self.margin - len(n) - 1)
-
-    def format_schema_entry(self, name, data_type, size):
-        # from taprootanalytics.rest.iatypes import get_rest_str_from_data_type
-        entry = "%s" % name  # :%s" % (name, get_rest_str_from_data_type(data_type))
-        if size > self.width:
-            size = self.width
-        return ' ' * (size - len(entry)) + entry
-
-    @staticmethod
-    def format_value_entry(data, size, formatter, relative_column_index, bonus):
-        entry = unicode(formatter(data))
-        if isinstance(data, basestring):
-            lines = entry.splitlines()
-            if len(lines) > 1:
-                entry = lines[0]
-                bonus.append((relative_column_index, lines[1:]))
-            return entry + ' ' * (size - len(entry))
-        else:
-            return ' ' * (size - len(entry)) + entry
-
-    def truncate_string(self, s):
-        truncated = s[:self.truncate]
-        if truncated != s:
-            truncated += "..."
-        return truncated
-
-    def get_rounder(self, float_type):
-        format = "%%.%df" % self.round
-        if isinstance(float_type, ta.vector):
-            def vector_rounder(value):
-                return "[%s]" % ", ".join([format % ta.float64.round(ta.float64(v), self.round) for v in value])
-            return vector_rounder
-
-        def rounder(value):
-            return format % float_type.round(float_type(value), self.round)
-        return rounder
-
-
-f_schema = [('i32', ta.int32),
-            ('floaties', ta.float64),
-            ('v2', ta.vector(2)),
-            ('long_column_name_ugh', str),
-            ('long_value', str),
-            ('s', str)]
-
-f_rows = [
-    [1,
-     3.14159265358,
-     [1.23456789, 10.0],
-     'a',
-     '''The sun was shining on the sea,
-Shining with all his might:
-He did his very best to make
-The billows smooth and bright--
-And this was odd, because it was
-The middle of the night.
-
-The moon was shining sulkily,
-Because she thought the sun
-Had got no business to be there
-After the day was done--
-"It's very rude of him," she said,
-"To come and spoil the fun!"''',
-    'one'],
-    [2,
-     8.014512183,
-     [3.14, 6.28],
-     '''beyond
- and
-before''',
-     '''I'm going down.  Down, down, down, down, down.  I'm going down.  Down, down, down, down, down.  I've got my head out the window and my big feet on the ground.''',
-     'two'],
-    [32,
-     1.0,
-     [451.2183, 867.5309],
-     'c',
-     'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-     'thirty-two']]
-
-#print FrameInspection(f_schema, f_rows, truncate=30, round=None, margin=12)
-#print create_frame_string(schema, rows)
-
-def inspect(wrap=None, truncate=None, round=None, width=80, margin=None):
-    print FrameInspection(f_schema, f_rows, wrap, truncate=truncate, round=round, width=width, margin=margin)
-
-#inspect(wrap=1)
-#inspect(wrap=2)
-inspect(wrap=3, round=2, truncate=10, width=87)
+    return lines
