@@ -410,7 +410,7 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
         schema = result.schema
         if wrap:
             from taprootanalytics.core.ui import RowsInspection
-            return RowsInspection(data, schema, wrap=wrap)
+            return RowsInspection(data, schema, offset=offset, wrap=wrap, truncate=truncate, round=round, width=width, margin=margin)
         return FrameBackendRest.InspectionTable(schema, data)
 
     def join(self, left, right, left_on, right_on, how, name=None):

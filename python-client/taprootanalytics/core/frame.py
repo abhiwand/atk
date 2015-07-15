@@ -760,7 +760,6 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.group_by(self, group_by_columns, aggregation_arguments)
 
-
     @api
     @arg('n', int, 'The number of rows to print.')
     @arg('offset', int, 'The number of rows to skip before printing.')

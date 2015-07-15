@@ -9,26 +9,36 @@ class RowsInspection(object):
     class used specifically for inspect, where the __repr__ is the main use case
     """
 
-    def __init__(self, rows, schema, wrap=None, truncate=None, round=None, width=80, margin=None):
+    def __init__(self, rows, schema, offset, wrap=None, truncate=None, round=None, width=80, margin=None):
         if isinstance(wrap, basestring):
-            if wrap != 'stripes':
-                raise ValueError("argument wrap must be an integer or the string 'stripes'.  Received '%s'" % wrap)
-            else:
+            if wrap == 'stripes':
                 self._repr = self._stripes
-        else:
+            else:
+                raise ValueError("argument wrap must be an integer or the string 'stripes'.  Received '%s'" % wrap)
+        elif isinstance(wrap, int) and wrap >= 0:
+            if rows:
+                self.wrap = (int(wrap) % len(rows)) or len(rows)
             self._repr = self._wrap
+        else:
+            raise TypeError("argument wrap must be an integer or the string 'stripes'.  Received '%s'" % wrap)
 
-        self.rows = rows
-        self.schema = schema
-        self.wrap = wrap or len(rows)
-        self.truncate = get_validated_positive_int("truncate", truncate)
-        self.round = get_validated_positive_int("round_floats", round)
-        self.width = get_validated_positive_int("width", width)
-        self.margin = get_validated_positive_int("margin", margin)
-        self.value_formatters = [self._get_value_formatter(data_type) for name, data_type in schema]
+        if not rows:
+            self._repr = self._empty
+        else:
+            self.rows = rows
+            self.schema = schema
+            self.offset = offset
+            self.truncate = get_validated_positive_int("truncate", truncate)
+            self.round = get_validated_positive_int("round_floats", round)
+            self.width = get_validated_positive_int("width", width)
+            self.margin = get_validated_positive_int("margin", margin)
+            self.value_formatters = [self._get_value_formatter(data_type) for name, data_type in schema]
 
     def __repr__(self):
         return self._repr()
+
+    def _empty(self):
+        return "(empty)"
 
     def _wrap(self):
         """print rows in a 'clumps' style"""
@@ -49,7 +59,7 @@ class RowsInspection(object):
             stop_row_index = start_row_index + self.wrap
             if stop_row_index > row_count:
                 stop_row_index = row_count
-            row_index_header = _get_row_index_str('#' * len(str(stop_row_index)))
+            row_index_header = _get_row_index_str('#' * len(str(self.offset+stop_row_index-1)))
             margin = len(row_index_header)
             col_sizes = _get_col_sizes(self.rows, start_row_index, self.wrap, header_sizes, self.value_formatters)
             col_index = 0
@@ -61,7 +71,7 @@ class RowsInspection(object):
                 thick_line = "=" * len(header_line)
                 lines_list.extend(["", header_line, thick_line])
                 for row_index in xrange(start_row_index, stop_row_index):
-                    lines_list.append(_get_row_index_str(row_index) + column_spacer.join([self._get_wrap_entry(data, col_sizes[col_index+i], self.value_formatters[col_index+i], i, extra_tuples) for i, data in enumerate(self.rows[row_index][col_index:col_index+num_cols])]))
+                    lines_list.append(pad_right(_get_row_index_str(self.offset+row_index), margin) + column_spacer.join([self._get_wrap_entry(data, col_sizes[col_index+i], self.value_formatters[col_index+i], i, extra_tuples) for i, data in enumerate(self.rows[row_index][col_index:col_index+num_cols])]))
                     if extra_tuples:
                         lines_list.extend(_get_lines_from_extra_tuples(extra_tuples, col_sizes[col_index:col_index+num_cols], margin))
                 col_index += num_cols
@@ -82,7 +92,7 @@ class RowsInspection(object):
         self.margin += 1  # count 0, such that margin is number of characters to the left of the =
         lines_list = []
         for row_index in xrange(len(self.rows)):
-            lines_list.append(self._get_stripe_header(row_index))
+            lines_list.append(self._get_stripe_header(self.offset+row_index))
             lines_list.extend([self._get_stripe_entry(i, name, value)
                                for i, (name, value) in enumerate(zip(map(lambda x: x[0], self.schema),
                                                                      self.rows[row_index]))])
@@ -238,7 +248,7 @@ def _get_lines_from_extra_tuples(tuples, col_sizes, margin):
     # col_sizes is an array of the col_sizes for the 'current' clump (hence
     #   the 'relative column index' in the tuples list --these indices match
     #
-    lines = []  # list of new, full-fledged extra lines that come from the tuples
+    new_lines = []  # list of new, full-fledged extra lines that come from the tuples
 
     def there_are_tuples_in(x):
         return bool(len(x))
@@ -258,9 +268,6 @@ def _get_lines_from_extra_tuples(tuples, col_sizes, margin):
             else:
                 new_line_columns.append(' ' * (col_sizes[size_index] + spaces_between_cols))
 
-        if len(tuples) != tuple_index:  # sanity check for the while loop
-            raise RuntimeError("Infinite loop detected")
+        new_lines.append(''.join(new_line_columns))
 
-        lines.append(''.join(new_line_columns))
-
-    return lines
+    return new_lines
