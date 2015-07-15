@@ -223,6 +223,7 @@ private[analytics] object JsonSchemaExtractor {
     val schema = typeSignature match {
       case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"), description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[String].tpe => StringSchema(description = description, defaultValue = defaultValue)
+      case t if t =:= typeTag[Boolean].tpe => JsonSchema.verbose_bool(description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[Int].tpe => JsonSchema.verbose_int(description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[Long].tpe => JsonSchema.verbose_long(description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[Float].tpe => JsonSchema.verbose_float(description = description, defaultValue = defaultValue)
