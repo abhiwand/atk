@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.descri
 
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{SparkFrame, SparkFrameData}
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 
