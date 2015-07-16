@@ -19,15 +19,11 @@ package com.intel.taproot.analytics.engine.spark.model
 import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.{ DuplicateNameException, EventLoggingImplicits, NotFoundException }
 import com.intel.taproot.analytics.domain.model._
-import com.intel.taproot.analytics.domain.{ Status, CreateEntityArgs, EntityManager }
-import com.intel.taproot.analytics.engine.{ EntityTypeRegistry, ModelStorage }
+import com.intel.taproot.analytics.domain.{ Status, CreateEntityArgs }
+import com.intel.taproot.analytics.engine.ModelStorage
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark.plugin.SparkInvocation
-import com.intel.taproot.analytics.repository.{ SlickMetaStoreComponent, MetaStore }
-import com.intel.taproot.analytics.security.UserPrincipal
+import com.intel.taproot.analytics.repository.MetaStore
 import spray.json.{ JsValue, JsObject }
-import scala.Some
-import org.apache.spark.SparkContext
 import com.intel.taproot.analytics.component.ClassLoaderAware
 import scala.slick.model
 
@@ -47,24 +43,6 @@ class SparkModelStorage(metaStore: MetaStore)
         metaStore.modelRepo.updateLastReadDate(model)
     }
   }
-
-  object SparkModelManagement extends EntityManager[ModelEntityType.type] {
-
-    override implicit val referenceTag = ModelEntityType.referenceTag
-
-    override type Reference = ModelReference
-
-    override type MetaData = ModelMeta
-
-    override type Data = SparkModel
-
-    override def getReference(id: Long)(implicit invocation: Invocation): Reference = ModelReference(id)
-
-    implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = model.toReference
-
-  }
-
-  EntityTypeRegistry.register(ModelEntityType, SparkModelManagement)
 
   /** Lookup a Model, Throw an Exception if not found */
   override def expectModel(modelRef: ModelReference): ModelEntity = {

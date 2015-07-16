@@ -16,27 +16,14 @@
 
 package com.intel.taproot.analytics.domain.frame
 
-import com.intel.taproot.analytics.domain._
-import com.intel.taproot.analytics.engine.EntityTypeRegistry
-import com.intel.taproot.analytics.engine.plugin.Invocation
-import scala.reflect.runtime.{ universe => ru }
-import ru._
-
-trait FrameRef extends UriReference {
-
-  override def entityType: EntityType = FrameEntityType
-
-}
+import com.intel.taproot.analytics.domain.UriReference
 
 case class FrameReference(frameId: Long) extends UriReference {
-
-
-
   /** The entity id */
   override def id: Long = frameId
 
-  /** The entity type */
-  override def entityType: EntityType = ???
+  /** The entity name e.g. "frame", "graph", ... */
+  override def name: String = "frame"
 }
 
 object FrameReference {

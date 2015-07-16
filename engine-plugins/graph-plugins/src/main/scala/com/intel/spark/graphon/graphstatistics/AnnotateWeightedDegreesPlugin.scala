@@ -17,7 +17,7 @@
 package com.intel.taproot.spark.graphon.graphstatistics
 
 import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property }
-import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }

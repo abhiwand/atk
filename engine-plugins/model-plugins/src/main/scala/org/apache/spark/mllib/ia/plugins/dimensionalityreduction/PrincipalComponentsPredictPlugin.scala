@@ -16,7 +16,7 @@
 package org.apache.spark.mllib.ia.plugins.dimensionalityreduction
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.model.ModelReference
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType

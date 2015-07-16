@@ -72,7 +72,6 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
       //TODO: Hide context factory behind a property on SparkEngine?
       null,
       commandInvocation.commandStorage,
-      invocation.resolver,
       invocation.eventContext)
     sparkInvocation.copy(sparkContext = createSparkContextForCommand(arguments, sparkEngine.sparkContextFactory)(sparkInvocation))
   }

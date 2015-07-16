@@ -16,8 +16,7 @@
 
 package com.intel.taproot.analytics.engine.spark.frame
 
-import com.intel.taproot.analytics.domain.HasData
-import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import org.apache.spark.frame.FrameRdd
 
 /**
@@ -26,15 +25,7 @@ import org.apache.spark.frame.FrameRdd
  * Note that in case the frame's schema is different from the rdd's, the rdd's wins.
  */
 @deprecated("instead use FrameReference, FrameEntity, FrameRdd, SparkFrame")
-class SparkFrameData(frame: FrameEntity, rdd: FrameRdd)
-    extends FrameMeta(frame.withSchema(rdd.frameSchema))
-    with HasData {
-
-  /**
-   * Returns a copy with the given data instead of the current data
-   */
-  @deprecated("instead use FrameReference, FrameEntity, FrameRdd, SparkFrame")
-  def withData(newData: FrameRdd): SparkFrameData = new SparkFrameData(this.meta, newData)
+class SparkFrameData(frame: FrameEntity, rdd: FrameRdd) {
 
   type Data = FrameRdd
 

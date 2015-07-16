@@ -52,7 +52,6 @@ case class CommandContext(
     executionContext: ExecutionContext,
     user: UserPrincipal,
     plugins: CommandPluginRegistry,
-    resolver: ReferenceResolver,
     eventContext: EventContext) {
 
 }
@@ -95,8 +94,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
    * @return an Execution object that can be used to track the command's execution
    */
   def execute[A <: Product, R <: Product](commandTemplate: CommandTemplate,
-                                          commandPluginRegistry: CommandPluginRegistry,
-                                          referenceResolver: ReferenceResolver = ReferenceResolver)(implicit invocation: Invocation): Execution =
+                                          commandPluginRegistry: CommandPluginRegistry)(implicit invocation: Invocation): Execution =
     withContext("ce.execute(ct)") {
       val cmd = commands.create(commandTemplate.copy(createdBy = if (invocation.user != null) Some(invocation.user.user.id) else None))
       val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
@@ -104,22 +102,19 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
         EngineExecutionContext.global,
         user,
         commandPluginRegistry,
-        referenceResolver,
         eventContext)
 
       Execution(cmd, executeCommandContextInFuture(context))
     }
 
   def executeCommand[A <: Product, R <: Product](cmd: Command,
-                                                 commandPluginRegistry: CommandPluginRegistry,
-                                                 referenceResolver: ReferenceResolver = ReferenceResolver)(implicit invocation: Invocation): Unit =
+                                                 commandPluginRegistry: CommandPluginRegistry)(implicit invocation: Invocation): Unit =
     withContext(s"ce.executeCommand.${cmd.name}") {
       val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
       val context = CommandContext(cmd,
         EngineExecutionContext.global,
         user,
         commandPluginRegistry,
-        referenceResolver,
         eventContext)
 
       /* Stores the (intermediate) results, don't mark the command complete yet as it will be marked complete by rest server */
@@ -306,7 +301,6 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
       arguments = commandContext.command.arguments,
       user = commandContext.user,
       executionContext = commandContext.executionContext,
-      resolver = commandContext.resolver,
       eventContext = commandContext.eventContext
     )
   }

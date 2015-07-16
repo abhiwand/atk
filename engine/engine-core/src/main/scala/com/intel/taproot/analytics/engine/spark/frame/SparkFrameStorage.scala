@@ -60,21 +60,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
   override type Context = SparkContext
   override type Data = FrameRdd
 
-  object SparkFrameManagement extends EntityManager[FrameEntityType.type] {
-
-    override implicit val referenceTag = FrameEntityType.referenceTag
-
-    override type Reference = FrameReference
-
-    override type MetaData = FrameMeta
-
-    override type Data = SparkFrameData
-
-    override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectFrame(FrameReference(id)).toReference
-  }
-
-  EntityTypeRegistry.register(FrameEntityType, SparkFrameManagement)
-
   def exchangeNames(frame1: FrameEntity, frame2: FrameEntity): (FrameEntity, FrameEntity) = {
     metaStore.withTransaction("SFS.exchangeNames") { implicit txn =>
       val f1Name = frame1.name

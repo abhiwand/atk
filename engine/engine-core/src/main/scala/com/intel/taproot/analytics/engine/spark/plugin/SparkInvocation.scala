@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.plugin
 import com.intel.taproot.event.EventContext
 import com.intel.taproot.analytics.engine.plugin.CommandInvocation
 import com.intel.taproot.analytics.engine.spark.{ CommandProgressUpdater, EngineImpl }
-import com.intel.taproot.analytics.engine.{ CommandStorageProgressUpdater, CommandStorage, ReferenceResolver }
+import com.intel.taproot.analytics.engine.{ CommandStorageProgressUpdater, CommandStorage }
 import com.intel.taproot.analytics.security.UserPrincipal
 import spray.json.JsObject
 import org.apache.spark.SparkContext
@@ -43,7 +43,6 @@ case class SparkInvocation(engine: EngineImpl,
                            arguments: Option[JsObject],
                            sparkContext: SparkContext,
                            commandStorage: CommandStorage,
-                           resolver: ReferenceResolver,
                            eventContext: EventContext) extends CommandInvocation {
   override val progressUpdater: CommandProgressUpdater = new CommandStorageProgressUpdater(commandStorage)
 }
