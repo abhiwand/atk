@@ -192,12 +192,6 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    */
   def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
 
-  //  /**
-  //   * Resolves a reference down to the requested type
-  //   */
-  //  def resolve[T <: UriReference: TypeTag](reference: UriReference)(implicit invocation: Invocation): T =
-  //    invocation.resolver.resolve(reference).get
-
   /**
    * Creates an object of the requested type.
    */
@@ -233,21 +227,6 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
         throw e
     }
   }
-
-  /**
-   * Implicit conversion that lets plugin authors simply add type annotations to UriReferences
-   * to convert them to [[com.intel.taproot.analytics.domain.HasMetaData]] or
-   * [[com.intel.taproot.analytics.domain.HasData]] instances
-   */
-  @deprecated("don't use any more")
-  implicit def resolve[In <: UriReference, Out <: UriReference](ref: In)(implicit invocation: Invocation,
-                                                                         ev: Out <:< In,
-                                                                         tagIn: TypeTag[In],
-                                                                         tagOut: TypeTag[Out]): Out =
-    withPluginContext("resolve") {
-      invocation.resolver.resolve[Out](ref).get
-    }
-
 }
 
 /**
