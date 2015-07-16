@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package org.apache.spark.sql.parquet.ia.giraph.frame
+package org.apache.spark.sql.parquet.ia.giraph.frame.lda
 
 import java.util
 
-import com.intel.taproot.giraph.io.{ LdaVertexId, LdaEdgeData }
-import com.intel.taproot.giraph.lda.v2.LdaConfiguration
 import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.giraph.io.{ LdaEdgeData, LdaVertexId }
+import com.intel.taproot.giraph.lda.v2.LdaConfiguration
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
@@ -28,8 +28,6 @@ import org.apache.hadoop.mapreduce.{ InputSplit, JobContext, TaskAttemptContext 
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.parquet.RowReadSupport
 import parquet.hadoop.{ ParquetInputFormat, ParquetRecordReader }
-
-import scala.collection.JavaConverters._
 
 /**
  * InputFormat for LDA reads edges from Parquet Frame
