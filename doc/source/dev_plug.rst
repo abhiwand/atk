@@ -16,8 +16,8 @@ Plugin Authoring Guide
 Introduction
 ------------
 
-The |IAT| provides an extensibility framework that allows new commands
-and algorithms to be added to the system at runtime, without requiring |IAT|
+The |TA| provides an extensibility framework that allows new commands
+and algorithms to be added to the system at runtime, without requiring |TA|
 source code, nor recompiling the application.
 
 Plug-ins should be easy to write, and should not require the author to have a
@@ -30,7 +30,7 @@ data to and from JSON.
 Plug-ins should also be isolated from the application as a whole, as well as
 from other plug-ins.
 Each plug-in should be allowed to use whatever libraries it needs, without
-concern for conflicts with the libraries that the |IAT| uses for its own needs.
+concern for conflicts with the libraries that the |TA| uses for its own needs.
 
 ----------------
 Types of Plugins
@@ -52,7 +52,7 @@ it is important to use the correct interface so the system can preserve the
 expected performance and semantics.
 
 The outputs of commands and queries, and the processing of them, are monitored
-by the |IAT| processing engine.
+by the |TA| processing engine.
 
 ----------------------
 When to Write a Plugin
@@ -90,13 +90,13 @@ Pagination
 
 Query plugins (plugins that are subclasses of QueryPlugin) that need to return
 large amounts of data to the user will be automatically
-paged in the same way that other |IAT| components handle pagination.
+paged in the same way that other |TA| components handle pagination.
 
 Logging and Error Handling
 ==========================
 
 Errors that occur while running a plug-in will be trapped and reported in the
-same way that internal errors within the |IAT| are normally trapped and
+same way that internal errors within the |TA| are normally trapped and
 reported.
 
 Defaulting Arguments
@@ -124,7 +124,7 @@ environment variables and so on.
 Execution Flow
 ==============
 
-.. image:: ad_plug_1.*
+.. image:: dev_plug_1.*
     :width: 80 %
     :align: center
 
@@ -135,7 +135,7 @@ For the time being, plugin authors may implement specific interfaces that
 declare their need for a particular service, for example,
 SparkSupport for direct access to a SparkContext.
 
-See also :doc:`/ad_bkm`.
+See also :doc:`/dev_bkm`.
 
 ------------------------
 Creating a CommandPlugin

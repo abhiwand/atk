@@ -16,11 +16,11 @@ Prerequisites
 These instructions assume you have already installed:
 
 -   :ref:`Python 2.7 <windows_python_setup>`.
--   |IAT| :ref:`Python REST Client <installing_IA_packages>` and required
+-   |TA| :ref:`Python REST Client <installing_ta_packages>` and required
     dependencies.
 -   Eclipse Standard.
 
-The |IAT| should work with any version of Eclipse, but these instructions were
+The |TA| should work with any version of Eclipse, but these instructions were
 tested with Eclipse Standard Version 4.4 Luna.
 
 If you are on a corporate network, you may need to configure proxy settings in
@@ -78,7 +78,7 @@ Setup
     #)  Choose *PyDev - PYTHONPATH* in the left hand pane.
     #)  Choose the *External Libraries* tab.
     #)  Choose *Add source folder* button.
-    #)  Browse for the |IAT| Python REST Client libraries.
+    #)  Browse for the |TA| Python REST Client libraries.
         On RedHat and Centos these are found under
         '/usr/lib/taprootanalytics/rest-client/python'.
     #)  Choose the *OK* button.
@@ -95,17 +95,17 @@ Setup
     #)  Close the *Help keeping PyDev alive* dialog, if it appears.
     #)  Type the following code into test.py::
 
-            import taprootanalytics as ia
-            ia.server.host = "correct host name or IP address"
-            ia.connect()
-            ia.server.ping()
+            import taprootanalytics as ta
+            ta.server.host = "correct host name or IP address"
+            ta.connect()
+            ta.server.ping()
 
 #)  Choose :menuselection:`Run --> Run`.
 
     #)  Choose *Python Run* and choose the *OK* button, you should see the
         output::
 
-            Successful ping to TapRoot Analytics at http://localhost:9099/info
+            Successful ping to TAProot Analytics at http://localhost:9099/info
 
 #)  Next take a look at the included examples.
 

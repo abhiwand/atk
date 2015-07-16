@@ -207,7 +207,7 @@ Glossary
 
     Conjugate Gradient Descent
 
-        The |IAT| implements this algorithm.
+        The |TA| implements this algorithm.
         Specifically, it uses CGD with bias for collaborative filtering.
 
         For more information: `Factorization Meets the Neighborhood (pdf)`_

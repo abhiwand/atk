@@ -1,12 +1,13 @@
-=======================
-TapRoot Analytics Toolkit
-=======================
+============
+|TA| Toolkit
+============
 
 .. toctree::
     :maxdepth: 2
 
-    ia_over
+    ta_over
     ds_over
+    dev_over
     ad_over
     python_api/index
     rest_api/v1/index
@@ -19,18 +20,18 @@ References
    :maxdepth: 1
 
 * :doc:`glossary`
-* :doc:`ia_legal`
+* :doc:`ta_legal`
 * :doc:`Index <genindex>`
 * :doc:`appendices`
 * :doc:`errata`
-* :download:`PDF <_downloads/TapRootAnalytics.pdf>`
+* :download:`PDF <_downloads/TAProotAnalytics.pdf>`
 
 .. toctree::
     :hidden:
     :maxdepth: 1
 
     glossary
-    ia_legal
+    ta_legal
     appendices
     errata
 

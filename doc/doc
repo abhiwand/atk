@@ -324,13 +324,13 @@ function main() {
             RunCommand="which pdflatex"
             do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
             if [ "$?" != "0" ]; then return 1; fi
-            pdf_build latex TapRootAnalytics $AskThem $DisplayStatus $TempFile $LogFile
+            pdf_build latex TAProotAnalytics $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" != "0" ]; then return 1; fi
-            if [[ -f build/latex/TapRootAnalytics.pdf && -d build/html/_downloads ]]; then
+            if [[ -f build/latex/TAProotAnalytics.pdf && -d build/html/_downloads ]]; then
                 let Count=6
                 while [ $Count -gt 0 ]
                 do
-                    if [ -s build/latex/TapRootAnalytics.pdf ]; then
+                    if [ -s build/latex/TAProotAnalytics.pdf ]; then
                         let Count=-1
                     else
                         sleep 10s
@@ -343,7 +343,7 @@ function main() {
                         return 1
                     fi
                 else
-                    RunCommand="cp build/latex/TapRootAnalytics.pdf build/html/_downloads/"
+                    RunCommand="cp build/latex/TAProotAnalytics.pdf build/html/_downloads/"
                     do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
                     if [ "$?" != "0" ]; then return 1; fi
                 fi
@@ -366,10 +366,10 @@ function main() {
         RunCommand="which zip"
         do_this "$RunCommand" $AskThem "No" $TempFile $LogFile
         if [ "$?" == "0" ]; then
-            if [[ -e intel_analytics_docs.zip ]]; then
-                rm intel_analytics_docs.zip
+            if [[ -e taproot_docs.zip ]]; then
+                rm taproot_docs.zip
             fi
-            RunCommand="zip -q -9 -r intel_analytics_docs build"
+            RunCommand="zip -q -9 -r taproot_docs build/html"
             do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
         fi
     fi

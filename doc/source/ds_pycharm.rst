@@ -18,10 +18,10 @@ Prerequisites
 These instructions assume you have already installed:
 
 -   Python 2.7.
--   |IAT| Python REST Client and required dependencies.
+-   |TA| Python REST Client and required dependencies.
 -   `PyCharm <http://www.jetbrains.com/pycharm/>`_.
 
-The |IAT| should work with any version of PyCharm but these instructions were
+The |TA| should work with any version of PyCharm but these instructions were
 tested with PyCharm Community Edition 3.4.1.
 
 -----
@@ -46,7 +46,7 @@ Setup
 #)  Choose :menuselection:`File --> Settings`.
 
     a)  Choose *Project Structure*.
-    #)  Choose *Add Content Root* and browse to the |IAT| Python REST Client
+    #)  Choose *Add Content Root* and browse to the |TA| Python REST Client
         libraries.
         On RedHat or Centos these are found under
         '/usr/lib/taprootanalytics/rest-client/python'.
@@ -58,23 +58,23 @@ Setup
 
     a)  Name the file "test" and type in the following code::
 
-            import taprootanalytics as ia
-            ia.server.host = "correct host name or IP address"
-            ia.connect()
-            ia.server.ping()
+            import taprootanalytics as ta
+            ta.server.host = "correct host name or IP address"
+            ta.connect()
+            ta.server.ping()
 
     #)  If you see a yellow bar across the top of the file warning about
         "Package requirements" not being satisfied then your system is not
         setup correctly.
 
         i)  You may not have installed all of the Python dependencies for the
-            |IAT| REST Client correctly.
+            |TA| REST Client correctly.
         #)  You may have chosen the wrong Python interpreter.
 
 
 #)  Choose :menuselection:`Run --> Run`, you should see the output::
 
-        Successful ping to TapRoot Analytics at http://localhost:9099/info
+        Successful ping to TAProot Analytics at http://localhost:9099/info
 
 #)  Next take a look at the included examples.
 
