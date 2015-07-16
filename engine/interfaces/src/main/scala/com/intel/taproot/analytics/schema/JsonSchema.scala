@@ -38,6 +38,11 @@ object JsonSchema {
     def description = None
     def `type` = None
   }
+  def verbose_bool(description: Option[String], defaultValue: Option[Any]) = BooleanSchema(id = Some(new URI("ia:bool")),
+    description = description,
+    defaultValue = defaultValue)
+
+  val bool = verbose_bool(None, None)
 
   def verbose_int(description: Option[String], defaultValue: Option[Any]) = NumberSchema(id = Some(new URI("ia:int")),
     description = description,
@@ -155,4 +160,11 @@ case class NumberSchema(id: Option[URI] = None,
                         exclusiveMaximum: Option[Double] = None,
                         multipleOf: Option[Double] = None,
                         `type`: Option[String] = Some("number")) extends Primitive {
+}
+
+case class BooleanSchema(id: Option[URI] = None,
+                         title: Option[String] = None,
+                         description: Option[String] = None,
+                         defaultValue: Option[Any] = None,
+                         `type`: Option[String] = Some("boolean")) extends Primitive {
 }

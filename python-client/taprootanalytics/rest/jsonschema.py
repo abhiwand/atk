@@ -38,6 +38,7 @@ json_type_id_to_data_type  = {
     "ia:long": int64,
     "ia:float": float32,
     "ia:double": float64,
+    "ia:bool": bool,
 }
 
 _unspecified = object()
@@ -76,6 +77,8 @@ def get_data_type(json_schema):
             t = json_schema['type']
             if t == 'null':
                 return None  # exit
+            if t == 'boolean':
+                return bool
             if t == 'string':
                 if 'format' in json_schema:
                     data_type = json_str_formats_to_data_type.get(json_schema['format'], unicode)
