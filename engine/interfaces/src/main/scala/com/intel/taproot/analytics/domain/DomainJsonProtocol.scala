@@ -278,6 +278,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
         case n: Float => new JsNumber(n)
         case n: Double => new JsNumber(n)
         case s: String => new JsString(s)
+        case s: Boolean => JsBoolean(s)
         case v: ArrayBuffer[_] => new JsArray(v.map { case d: Double => JsNumber(d) }.toList) // for vector DataType
         case n: java.lang.Long => new JsNumber(n.longValue())
         case unk => serializationError("Cannot serialize " + unk.getClass.getName)
@@ -290,6 +291,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
         case JsNumber(n) if n.isValidLong => n.longValue()
         case JsNumber(n) if n.isValidFloat => n.floatValue()
         case JsNumber(n) => n.doubleValue()
+        case JsBoolean(b) => b
         case JsString(s) => s
         case unk => deserializationError("Cannot deserialize " + unk.getClass.getName)
       }
@@ -457,6 +459,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
           case JsString("string") => stringSchemaFormat.read(json)
           case JsString("array") => arraySchemaFormat.read(json)
           case JsString("number") => numberSchemaFormat.read(json)
+          case JsString("boolean") => booleanSchemaFormat.read(json)
           case _ => objectSchemaFormat.read(json)
         }
       case x => deserializationError(s"Expected a Json schema object, but got $x")
@@ -467,11 +470,13 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
       case s: StringSchema => stringSchemaFormat.write(s)
       case a: ArraySchema => arraySchemaFormat.write(a)
       case n: NumberSchema => numberSchemaFormat.write(n)
+      case b: BooleanSchema => booleanSchemaFormat.write(b)
       case JsonSchema.empty => JsObject().toJson
       case x => serializationError(s"Expected a valid json schema object, but received: $x")
     }
   }
 
+  lazy implicit val booleanSchemaFormat = jsonFormat5(BooleanSchema)
   lazy implicit val numberSchemaFormat = jsonFormat10(NumberSchema)
   lazy implicit val stringSchemaFormat = jsonFormat10(StringSchema)
   lazy implicit val objectSchemaFormat = jsonFormat13(ObjectSchema)
