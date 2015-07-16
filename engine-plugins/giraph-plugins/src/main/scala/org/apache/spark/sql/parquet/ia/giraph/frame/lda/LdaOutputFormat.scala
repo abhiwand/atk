@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package org.apache.spark.sql.parquet.ia.giraph.frame
+package org.apache.spark.sql.parquet.ia.giraph.frame.lda
 
-import com.intel.taproot.giraph.io.{ LdaVertexId, LdaVertexData }
+import com.intel.taproot.giraph.io.{ LdaVertexData, LdaVertexId }
 import com.intel.taproot.giraph.lda.v2.LdaConfiguration
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce._
 import org.apache.spark.sql.catalyst.expressions.{ GenericRow, Row }
 import org.apache.spark.sql.parquet.RowWriteSupport
+import org.apache.spark.sql.parquet.ia.giraph.frame.MultiOutputCommitter
 import org.apache.spark.sql.types._
 import parquet.hadoop.ParquetOutputFormat
 
