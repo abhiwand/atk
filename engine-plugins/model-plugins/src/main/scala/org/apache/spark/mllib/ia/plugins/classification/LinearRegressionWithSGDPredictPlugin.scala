@@ -114,10 +114,10 @@ class LinearRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifica
       val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_value", DataTypes.float64)
       val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-      tryNew(CreateEntityArgs(description = Some("created by LinearRegressionWithSGDs predict operation"))) {
-        newPredictedFrame: FrameMeta =>
-          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
-      }.meta
+      engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by LinearRegressionWithSGDs predict operation"))) {
+        newPredictedFrame: FrameEntity =>
+          newPredictedFrame.save(predictFrameRdd)
+      }
     }
 
 }

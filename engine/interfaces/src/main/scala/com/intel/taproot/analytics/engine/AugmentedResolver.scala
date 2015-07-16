@@ -46,22 +46,6 @@ case class AugmentedResolver(base: ReferenceResolver, data: Seq[UriReference wit
    */
   override def isReferenceUriFormat(s: String): Boolean = base.isReferenceUriFormat(s)
 
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  override def create[T <: UriReference: ru.TypeTag](args: CreateEntityArgs)(implicit invocation: Invocation, ev: NotNothing[T]): T =
-    base.create(args)
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  override def delete[T <: UriReference: ru.TypeTag](reference: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit =
-    base.delete(reference)
-
   def ++(moreData: Seq[UriReference with HasData]) = this.copy(data = this.data ++ moreData)
 
-  /**
-   * Save data of the given type, possibly creating a new object.
-   */
-  override def saveData[T <: UriReference with HasData: ru.TypeTag](data: T)(implicit invocation: Invocation): T = base.saveData(data)
 }

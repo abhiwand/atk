@@ -73,11 +73,11 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, 
     val correlationRDD = Correlation.correlationMatrix(frame.rdd, arguments.dataColumnNames)
 
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
-    tryNew(CreateEntityArgs(description = Some("created by correlation matrix command"))) { newFrame: FrameMeta =>
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by correlation matrix command"))) { newFrame: FrameEntity =>
       if (arguments.matrixName.isDefined) {
-        engine.frames.renameFrame(newFrame.meta, FrameName.validate(arguments.matrixName.get))
+        engine.frames.renameFrame(newFrame, FrameName.validate(arguments.matrixName.get))
       }
-      save(new SparkFrameData(newFrame.meta, new FrameRdd(schema, correlationRDD)))
-    }.meta
+      newFrame.save(new FrameRdd(schema, correlationRDD))
+    }
   }
 }

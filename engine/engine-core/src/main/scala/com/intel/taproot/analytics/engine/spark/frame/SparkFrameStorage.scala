@@ -70,35 +70,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
 
     override type Data = SparkFrameData
 
-    override def getData(reference: Reference)(implicit invocation: Invocation): Data = {
-      val meta = getMetaData(reference)
-      val sc = invocation.asInstanceOf[SparkInvocation].sparkContext
-      new SparkFrameData(meta.meta, storage.loadFrameData(sc, meta.meta))
-    }
-
-    override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new FrameMeta(expectFrame(reference))
-
-    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.create(args).toReference
-
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = expectFrame(FrameReference(id)).toReference
-
-    /**
-     * Save data of the given type, possibly creating a new object.
-     */
-    override def saveData(data: Data)(implicit invocation: Invocation): Data = {
-      val frameEntity = data.meta
-      val frameRdd = data.data
-      val meta = saveFrameData(frameEntity.toReference, frameRdd)
-      new SparkFrameData(meta, frameRdd)
-    }
-
-    /**
-     * Creates an (empty) instance of the given type, reserving a URI
-     */
-    override def delete(reference: SparkFrameStorage.this.SparkFrameManagement.Reference)(implicit invocation: Invocation): Unit = {
-      val meta = getMetaData(reference)
-      drop(meta.meta)
-    }
   }
 
   EntityTypeRegistry.register(FrameEntityType, SparkFrameManagement)

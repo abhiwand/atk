@@ -77,10 +77,10 @@ class NaiveBayesPredictPlugin extends SparkCommandPlugin[NaiveBayesPredictArgs, 
     val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_class", DataTypes.float64)
     val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-    tryNew(CreateEntityArgs(description = Some("created by NaiveBayes predict operation"))) {
-      newPredictedFrame: FrameMeta =>
-        save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
-    }.meta
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by NaiveBayes predict operation"))) {
+      newPredictedFrame: FrameEntity =>
+        newPredictedFrame.save(predictFrameRdd)
+    }
   }
 
 }

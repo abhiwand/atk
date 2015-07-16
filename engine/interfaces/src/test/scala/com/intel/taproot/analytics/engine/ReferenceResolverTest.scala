@@ -62,17 +62,4 @@ class ReferenceResolverTest extends FlatSpec with Matchers {
       val gm: MockGraphManager#M = resolver.resolve[MockGraphManager#M]("ia://graphs/6").get
     }
   }
-
-  "create" should "create a FrameReference when requested" in {
-    val ref = resolver.create[FrameReference]()
-
-    ref should not be (null)
-    ref should be(a[FrameReference])
-  }
-  it should "create a meta when requested" in {
-    val ref = resolver.create[MockFrameManager#M]()
-
-    ref should not be (null)
-    ref should be(a[MockFrameManager#M])
-  }
 }

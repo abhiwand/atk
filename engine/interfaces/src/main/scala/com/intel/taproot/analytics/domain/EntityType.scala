@@ -106,22 +106,6 @@ trait EntityManager[E <: EntityType] { self =>
 
   type Data <: MetaData with HasData
 
-  def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  def delete(reference: Reference)(implicit invocation: Invocation): Unit
-
   def getReference(id: Long)(implicit invocation: Invocation): Reference
-
-  def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData
-
-  def getData(reference: Reference)(implicit invocation: Invocation): Data
-
-  /**
-   * Save data of the given type, possibly creating a new object.
-   */
-  def saveData(data: Data)(implicit invocation: Invocation): Data
 
 }

@@ -94,33 +94,7 @@ class RegistryReferenceResolver(registry: EntityTypeRegistry) extends ReferenceR
       throw new IllegalArgumentException(s"No entity manager found for entity type '$entity' (or '$typeTag[T]')"))
 
     val reference = ReferenceResolver.coerceReference[manager.Reference](uriReference)(manager.referenceTag)
-    val detailed = typeTag[T] match {
-      case x if x.tpe <:< typeTag[HasData].tpe =>
-        manager.getData(reference)
-      case x if x.tpe <:< typeTag[HasMetaData].tpe =>
-        manager.getMetaData(reference)
-      case _ =>
-        reference
-    }
-
-    ReferenceResolver.coerceReference(detailed)
+    ReferenceResolver.coerceReference(reference)
   }
 
-  def create[T <: UriReference: TypeTag](args: CreateEntityArgs)(implicit invocation: Invocation, ev: NotNothing[T]) = {
-    registry.create[T](args)
-  }
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  override def delete[T <: UriReference: ru.TypeTag](reference: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit = {
-    registry.delete(reference)
-  }
-
-  /**
-   * Save data of the given type, possibly creating a new object.
-   */
-  def saveData[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = {
-    registry.saveData(data)
-  }
 }

@@ -82,12 +82,12 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
     val covarianceRdd = CovarianceFunctions.covarianceMatrix(frame.rdd, arguments.dataColumnNames, outputVectorLength)
 
     val outputSchema = getOutputSchema(arguments.dataColumnNames, outputVectorLength)
-    tryNew(CreateEntityArgs(description = Some("created by covariance matrix command"))) { newFrame: FrameMeta =>
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by covariance matrix command"))) { newFrame: FrameEntity =>
       if (arguments.matrixName.isDefined) {
-        engine.frames.renameFrame(newFrame.meta, FrameName.validate(arguments.matrixName.get))
+        engine.frames.renameFrame(newFrame, FrameName.validate(arguments.matrixName.get))
       }
-      save(new SparkFrameData(newFrame.meta, new FrameRdd(outputSchema, covarianceRdd)))
-    }.meta
+      newFrame.save(new FrameRdd(outputSchema, covarianceRdd))
+    }
   }
 
   // Get output schema for covariance matrix

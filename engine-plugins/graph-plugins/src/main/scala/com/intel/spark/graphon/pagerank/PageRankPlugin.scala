@@ -96,20 +96,20 @@ class PageRankPlugin extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val edgeFrameRddMap = FrameRdd.toFrameRddMap(outEdges, outVertices)
 
     val edgeMap = edgeFrameRddMap.keys.map(edgeLabel => {
-      val edgeFrame = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val edgeFrame = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = edgeFrameRddMap(edgeLabel)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (edgeLabel, edgeFrame)
     }).toMap
 
     val vertexFrameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
     val vertexMap = vertexFrameRddMap.keys.map(vertexLabel => {
-      val vertexFrame = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val vertexFrame = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = vertexFrameRddMap(vertexLabel)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (vertexLabel, vertexFrame)
     }).toMap
 

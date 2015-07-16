@@ -58,33 +58,10 @@ class SparkModelStorage(metaStore: MetaStore)
 
     override type Data = SparkModel
 
-    override def getData(reference: Reference)(implicit invocation: Invocation): Data = {
-      val meta = getMetaData(reference)
-      new SparkModel(meta.meta)
-    }
-
-    override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new ModelMeta(expectModel(reference))
-
-    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.createModel(args)
-
     override def getReference(id: Long)(implicit invocation: Invocation): Reference = ModelReference(id)
 
     implicit def modelToRef(model: ModelEntity)(implicit invocation: Invocation): Reference = model.toReference
 
-    /**
-     * Save data of the given type, possibly creating a new object.
-     */
-    override def saveData(data: Data)(implicit invocation: Invocation): Data = {
-      data // no data to save, this is a nop
-    }
-
-    /**
-     * Creates an (empty) instance of the given type, reserving a URI
-     */
-    override def delete(reference: SparkModelStorage.this.SparkModelManagement.Reference)(implicit invocation: Invocation): Unit = {
-      val meta = getMetaData(reference)
-      drop(meta.meta.toReference)
-    }
   }
 
   EntityTypeRegistry.register(ModelEntityType, SparkModelManagement)

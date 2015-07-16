@@ -87,15 +87,13 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
     val ecdfSchema = FrameSchema(List(sampleColumn.copy(), Column(sampleColumn.name + "_ECDF", DataTypes.float64)))
 
     // run the operation
-    val newFrameEntity = tryNew(CreateEntityArgs(description = Some("created by ECDF operation"))) { ecdfFrame: FrameMeta =>
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by ECDF operation"))) { ecdfFrame: FrameEntity =>
       if (arguments.resultFrameName.isDefined) {
-        engine.frames.renameFrame(ecdfFrame.meta, FrameName.validate(arguments.resultFrameName.get))
+        engine.frames.renameFrame(ecdfFrame, FrameName.validate(arguments.resultFrameName.get))
       }
       val rdd = frame.rdd.toLegacyFrameRdd
       val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
-      save(new SparkFrameData(ecdfFrame.meta.withSchema(ecdfSchema),
-        new LegacyFrameRdd(ecdfSchema, ecdfRdd).toFrameRdd()))
-    }.meta
-    newFrameEntity
+      ecdfFrame.save(new LegacyFrameRdd(ecdfSchema, ecdfRdd).toFrameRdd())
+    }
   }
 }

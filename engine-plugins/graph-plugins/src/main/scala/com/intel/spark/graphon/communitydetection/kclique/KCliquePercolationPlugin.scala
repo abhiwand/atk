@@ -119,10 +119,10 @@ class KCliquePercolationPlugin extends SparkCommandPlugin[KCliqueArgs, KCliqueRe
     val frameRddMap = FrameRdd.toFrameRddMap(mergedVertexRdd)
 
     val frameMap = frameRddMap.keys.map(label => {
-      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val result = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = frameRddMap(label)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (label, result)
     }).toMap
     KCliqueResult(frameMap, time)

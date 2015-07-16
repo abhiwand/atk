@@ -192,41 +192,6 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    */
   def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
 
-  /**
-   * Creates an object of the requested type.
-   */
-  def create[T <: UriReference: TypeTag](args: CreateEntityArgs)(implicit invocation: Invocation, ev: NotNothing[T]): T = withPluginContext("create") {
-    invocation.resolver.create[T](args)
-  }
-
-  /**
-   * Deletes an object of the requested type.
-   */
-  def delete[T <: UriReference: TypeTag](entity: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit = withPluginContext("create") {
-    invocation.resolver.delete[T](entity)
-  }
-  /**
-   * Save data, possibly creating a new object
-   */
-  def save[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = withPluginContext("save") {
-    invocation.resolver.saveData(data)
-  }
-
-  /**
-   * Create a new object of the requested type, pass it to the block. If block throws an exception,
-   * delete the newly created object and rethrow the exception.
-   */
-  def tryNew[T <: UriReference with HasMetaData: TypeTag](args: CreateEntityArgs = CreateEntityArgs())(block: T => T)(implicit invocation: Invocation) = {
-    val thing = create[T](args)
-    try {
-      block(thing)
-    }
-    catch {
-      case NonFatal(e) =>
-        delete(thing)
-        throw e
-    }
-  }
 }
 
 /**

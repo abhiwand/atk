@@ -50,23 +50,6 @@ object ReferenceResolver extends ReferenceResolver {
    */
   override def isReferenceUriFormat(s: String): Boolean = EntityTypeRegistry.resolver.isReferenceUriFormat(s)
 
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  override def create[T <: UriReference: ru.TypeTag](args: CreateEntityArgs)(implicit invocation: Invocation, ev: NotNothing[T]): T =
-    EntityTypeRegistry.resolver.create(args)
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  def delete[T <: UriReference: TypeTag](reference: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit =
-    EntityTypeRegistry.resolver.delete(reference)
-
-  /**
-   * Save data of the given type, possibly creating a new object.
-   */
-  def saveData[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = EntityTypeRegistry.resolver.saveData(data)
-
 }
 
 trait ReferenceResolver {
@@ -91,20 +74,5 @@ trait ReferenceResolver {
   def resolve[T <: UriReference: TypeTag](reference: UriReference)(implicit invocation: Invocation, ev: NotNothing[T]): Try[T] = {
     resolve[T](reference.uri)
   }
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  def create[T <: UriReference: TypeTag](args: CreateEntityArgs = CreateEntityArgs())(implicit invocation: Invocation, ev: NotNothing[T]): T
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  def delete[T <: UriReference: TypeTag](reference: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit
-
-  /**
-   * Save data of the given type, possibly creating a new object.
-   */
-  def saveData[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T
 
 }

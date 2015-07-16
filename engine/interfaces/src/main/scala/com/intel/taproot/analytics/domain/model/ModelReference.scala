@@ -90,23 +90,8 @@ object ModelReferenceManagement extends EntityManager[ModelEntityType.type] { se
 
   override type MetaData = ModelReference with NoMetaData
 
-  override def getData(reference: Reference)(implicit invocation: Invocation): Data = ???
-
-  override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
-
-  override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = ???
-
   override def getReference(id: Long)(implicit invocation: Invocation): Reference = new ModelReference(id)
 
   override type Data = ModelReference with NoData
 
-  /**
-   * Save data of the given type, possibly creating a new object.
-   */
-  override def saveData(data: Data)(implicit invocation: Invocation): Data = ???
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  override def delete(reference: ModelReferenceManagement.Reference)(implicit invocation: Invocation): Unit = ???
 }

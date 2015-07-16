@@ -104,10 +104,10 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
     val updatedSchema = frame.schema.addColumn("predicted_label", DataTypes.int32)
     val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-    tryNew(CreateEntityArgs(description = Some("created by SVMWithSGDs predict operation"))) {
-      newPredictedFrame: FrameMeta =>
-        save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
-    }.meta
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by SVMWithSGDs predict operation"))) {
+      newPredictedFrame: FrameEntity =>
+        newPredictedFrame.save(predictFrameRdd)
+    }
   }
 
 }

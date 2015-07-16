@@ -39,23 +39,8 @@ class MockGraphManager extends EntityManager[GraphEntityType.type] {
   }
   override type MetaData = M
 
-  override def getData(reference: Reference)(implicit invocation: Invocation): Data = new D(reference.id)
-
-  override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new M(reference.id)
-
-  override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = ???
-
   override def getReference(id: Long)(implicit invocation: Invocation): Reference = new GraphReference(id)
 
   override type Data = D
 
-  /**
-   * Save data of the given type, possibly creating a new object.
-   */
-  override def saveData(data: Data)(implicit invocation: Invocation): Data = ???
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  override def delete(reference: Reference)(implicit invocation: Invocation): Unit = ???
 }

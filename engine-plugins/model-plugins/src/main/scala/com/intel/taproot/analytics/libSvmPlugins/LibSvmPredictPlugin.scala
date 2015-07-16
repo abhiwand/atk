@@ -102,9 +102,9 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
     val updatedSchema = frame.schema.addColumn("predicted_label", DataTypes.float64)
     val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRdd)
 
-    tryNew(CreateEntityArgs(description = Some("created by LibSvm's predict operation"))) {
-      newPredictedFrame: FrameMeta =>
-        save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
-    }.meta
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by LibSvm's predict operation"))) {
+      newPredictedFrame: FrameEntity =>
+        newPredictedFrame.save(predictFrameRdd)
+    }
   }
 }

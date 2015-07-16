@@ -83,10 +83,10 @@ class TriangleCountPlugin extends SparkCommandPlugin[TriangleCountArgs, Triangle
     val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
     new TriangleCountResult(frameRddMap.keys.map(label => {
-      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val result = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = frameRddMap(label)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (label, result)
     }).toMap)
 

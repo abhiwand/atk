@@ -67,16 +67,6 @@ class SparkGraphStorage(metaStore: MetaStore,
 
     override type Data = SparkGraphData
 
-    override def getData(reference: Reference)(implicit invocation: Invocation): Data = {
-      val meta = getMetaData(reference)
-      new SparkGraphData(meta.meta, None)
-    }
-
-    override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new GraphMeta(expectGraph(reference))
-
-    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.createGraph(
-      GraphTemplate(args.name))
-
     def getReference(reference: Reference)(implicit invocation: Invocation): Reference = expectGraph(reference)
 
     //
@@ -88,19 +78,6 @@ class SparkGraphStorage(metaStore: MetaStore,
 
     implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
 
-    //TODO: implement!
-    /**
-     * Save data of the given type, possibly creating a new object.
-     */
-    override def saveData(data: SparkGraphStorage.this.SparkGraphManagement.Data)(implicit invocation: Invocation): SparkGraphStorage.this.SparkGraphManagement.Data = ???
-
-    /**
-     * Creates an (empty) instance of the given type, reserving a URI
-     */
-    override def delete(reference: SparkGraphStorage.this.SparkGraphManagement.Reference)(implicit invocation: Invocation): Unit = {
-      val meta = getMetaData(reference)
-      drop(meta.meta)
-    }
   }
 
   //TODO: enable

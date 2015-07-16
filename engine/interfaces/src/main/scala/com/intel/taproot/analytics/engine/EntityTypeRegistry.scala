@@ -99,31 +99,4 @@ class EntityTypeRegistry {
     _resolver
   }
 
-  /**
-   * Create an empty / uninitialized instance of the requested type if possible.
-   *
-   * @tparam R the requested reference type
-   */
-  def create[R <: UriReference: TypeTag](createEntityArgs: CreateEntityArgs = CreateEntityArgs())(implicit invocation: Invocation): R = {
-    val manager: EntityManager[_] = entityManager[R]().get
-    val reference = manager.create(createEntityArgs)
-    resolver.resolve[R](reference).get
-  }
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  def delete[R <: UriReference: TypeTag](reference: R)(implicit invocation: Invocation, ev: NotNothing[R]): Unit = {
-    val manager: EntityManager[_] = entityManager[R]().get
-    manager.delete(reference.asInstanceOf[manager.type#Reference])
-  }
-
-  /**
-   * Save data of the given type, possibly creating a new object.
-   */
-  def saveData[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = {
-    val manager = entityManager[T].get
-    manager.saveData(data.asInstanceOf[manager.type#Data]).asInstanceOf[T]
-  }
-
 }

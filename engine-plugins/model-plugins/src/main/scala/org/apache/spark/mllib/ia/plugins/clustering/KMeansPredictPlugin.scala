@@ -148,10 +148,9 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     val updatedSchema = inputFrameRdd.frameSchema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
     val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-    tryNew(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameMeta =>
-      save(new SparkFrameData(
-        newPredictedFrame.meta, predictFrameRdd))
-    }.meta
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameEntity =>
+      newPredictedFrame.save(predictFrameRdd)
+    }
   }
 
 }
