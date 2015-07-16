@@ -18,6 +18,11 @@ package com.intel.taproot.analytics.engine.spark.plugin
 
 import java.nio.file.{ Paths, Files }
 import java.nio.charset.StandardCharsets
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.schema.Schema
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
+import org.apache.spark.frame.FrameRdd
+
 import scala.collection.JavaConversions._
 
 import com.intel.taproot.analytics.component.Archive
@@ -46,6 +51,33 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
   def kryoRegistrator: Option[String] = Some("com.intel.taproot.analytics.engine.spark.EngineKryoRegistrator")
 
   def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
+
+  implicit def frameRefToSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkFrame = new SparkFrame {
+
+    override def entity: FrameEntity = engine.frames.expectFrame(frame)
+
+    override def rowCount: Option[Long] = entity.rowCount
+
+    override def rdd: FrameRdd = engine.frames.loadFrameData(sc, entity)
+
+    override def description: Option[String] = entity.description
+
+    override def name: Option[String] = entity.name
+
+    override def save(rdd: FrameRdd): SparkFrame = {
+      engine.frames.saveFrameData(frame, rdd)
+      this
+    }
+
+    override def status: Long = entity.status
+
+    override def schema: Schema = entity.schema
+
+  }
+
+  implicit def sparkFrameToFrameEntity(sparkFrame: SparkFrame): FrameEntity = sparkFrame.entity
+
+  implicit def sparkFrameToFrameReference(sparkFrame: SparkFrame): FrameReference = sparkFrame.entity.toReference
 
   /**
    * Can be overridden by subclasses to provide a more specialized Invocation. Called before
