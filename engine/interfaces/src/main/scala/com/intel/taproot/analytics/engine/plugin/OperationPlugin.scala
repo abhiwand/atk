@@ -239,6 +239,7 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * to convert them to [[com.intel.taproot.analytics.domain.HasMetaData]] or
    * [[com.intel.taproot.analytics.domain.HasData]] instances
    */
+  @deprecated("don't use any more")
   implicit def resolve[In <: UriReference, Out <: UriReference](ref: In)(implicit invocation: Invocation,
                                                                          ev: Out <:< In,
                                                                          tagIn: TypeTag[In],

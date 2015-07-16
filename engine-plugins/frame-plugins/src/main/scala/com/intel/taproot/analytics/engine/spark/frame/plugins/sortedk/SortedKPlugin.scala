@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
@@ -103,21 +103,19 @@ class SortedKPlugin extends SparkCommandPlugin[SortedKArgs, FrameEntity] {
    */
   override def execute(arguments: SortedKArgs)(implicit invocation: Invocation): FrameEntity = {
     // load frame
-    val frame: SparkFrameData = resolve(arguments.frame)
-    val frameRdd = frame.data
+    val frame: SparkFrame = arguments.frame
 
     // return new frame with top-k sorted records
     val sortedKFrame = SortedKFunctions.takeOrdered(
-      frameRdd,
+      frame.rdd,
       arguments.k,
       arguments.columnNamesAndAscending,
       arguments.reduceTreeDepth
     )
 
     // save the new frame
-    val frames = engine.frames
-    frames.tryNewFrame(CreateEntityArgs(description = Some("created by sorted_k command"))) {
-      newFrame => frames.saveFrameData(newFrame.toReference, sortedKFrame)
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by sorted_k command"))) {
+      newFrame => newFrame.save(sortedKFrame)
     }
   }
 }

@@ -19,7 +19,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.SVMWithSGD
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
@@ -81,28 +81,23 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ClassificationWithSGDTrainArgs)(implicit invocation: Invocation): UnitReturn =
-    {
-      val models = engine.models
-      val modelRef = arguments.model
-      val modelMeta = models.expectModel(modelRef)
+  override def execute(arguments: ClassificationWithSGDTrainArgs)(implicit invocation: Invocation): UnitReturn = {
+    val models = engine.models
+    val modelMeta = models.expectModel(arguments.model)
 
-      val frame: SparkFrameData = resolve(arguments.frame)
-      // load frame as RDD
-      val trainFrameRdd = frame.data
+    val frame: SparkFrame = arguments.frame
+    val labeledTrainRDD: RDD[LabeledPoint] = frame.rdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
-      val labeledTrainRDD: RDD[LabeledPoint] = trainFrameRdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
+    //Running MLLib
+    val svm = initializeSVMModel(arguments)
+    val svmModel = svm.run(labeledTrainRDD)
 
-      //Running MLLib
-      val svm = initializeSVMModel(arguments)
-      val svmModel = svm.run(labeledTrainRDD)
+    val jsonModel = new SVMData(svmModel, arguments.observationColumns)
 
-      val jsonModel = new SVMData(svmModel, arguments.observationColumns)
-
-      //TODO: Call save instead once implemented for models
-      models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
-      new UnitReturn
-    }
+    //TODO: Call save instead once implemented for models
+    models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
+    new UnitReturn
+  }
 
   private def initializeSVMModel(arguments: ClassificationWithSGDTrainArgs): SVMWithSGD = {
     val svm = new SVMWithSGD()

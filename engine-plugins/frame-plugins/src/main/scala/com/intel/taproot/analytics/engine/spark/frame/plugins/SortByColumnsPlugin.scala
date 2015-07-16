@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ SortByColumnsArgs, FrameEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
@@ -59,10 +59,7 @@ class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumnsArgs, FrameEnt
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: SortByColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
-    // validate arguments
-    val frame: SparkFrameData = resolve(arguments.frame)
-
-    // run the operation
-    engine.frames.saveFrameData(frame.meta.toReference, frame.data.sortByColumns(arguments.columnNamesAndAscending))
+    val frame: SparkFrame = arguments.frame
+    frame.save(frame.rdd.sortByColumns(arguments.columnNamesAndAscending))
   }
 }

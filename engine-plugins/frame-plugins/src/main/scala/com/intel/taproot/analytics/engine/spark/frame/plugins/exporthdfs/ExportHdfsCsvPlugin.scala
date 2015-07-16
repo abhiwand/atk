@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.ExportHdfsCsvArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.spark.{ EngineConfig, HdfsFileStorage }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.hadoop.fs.Path
 
@@ -74,10 +74,9 @@ class ExportHdfsCsvPlugin extends SparkCommandPlugin[ExportHdfsCsvArgs, UnitRetu
 
     val fileStorage = new HdfsFileStorage(EngineConfig.fsRoot)
     require(!fileStorage.exists(new Path(arguments.folderName)), "File or Directory already exists")
-    val frame: SparkFrameData = resolve(arguments.frame)
+    val frame: SparkFrame = arguments.frame
     // load frame as RDD
-    val rdd = frame.data
-    FrameExportHdfs.exportToHdfsCsv(rdd, arguments.folderName, arguments.separator.getOrElse(','), arguments.count, arguments.offset)
+    FrameExportHdfs.exportToHdfsCsv(frame.rdd, arguments.folderName, arguments.separator.getOrElse(','), arguments.count, arguments.offset)
     new UnitReturn
   }
 }

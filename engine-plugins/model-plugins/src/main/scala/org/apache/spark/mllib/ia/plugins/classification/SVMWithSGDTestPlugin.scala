@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
 import com.intel.taproot.analytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.classification.{ SVMModel, SVMWithSGD }
@@ -81,35 +81,31 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation): ClassificationMetricValue =
-    {
-      val models = engine.models
-      val modelMeta = models.expectModel(arguments.model)
+  override def execute(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation): ClassificationMetricValue = {
+    val models = engine.models
+    val modelMeta = models.expectModel(arguments.model)
+    val frame: SparkFrame = arguments.frame
 
-      val frame: SparkFrameData = resolve(arguments.frame)
-      // load frame as RDD
-      val testFrameRdd = frame.data
-
-      //Extracting the model and data to run on
-      val svmJsObject = modelMeta.data.get
-      val svmData = svmJsObject.convertTo[SVMData]
-      val svmModel = svmData.svmModel
-      if (arguments.observationColumns.isDefined) {
-        require(svmData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
-      }
-      val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
-
-      val labeledTestRDD: RDD[LabeledPoint] = testFrameRdd.toLabeledPointRDD(arguments.labelColumn, svmColumns)
-
-      //predicting and testing
-      val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>
-        val prediction = svmModel.predict(point.features)
-        Array[Any](point.label, prediction)
-      }
-
-      //Run Binary classification metrics
-      val posLabel: String = "1.0"
-      ClassificationMetrics.binaryClassificationMetrics(scoreAndLabelRDD, 0, 1, posLabel, 1)
-
+    //Extracting the model and data to run on
+    val svmJsObject = modelMeta.data.get
+    val svmData = svmJsObject.convertTo[SVMData]
+    val svmModel = svmData.svmModel
+    if (arguments.observationColumns.isDefined) {
+      require(svmData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
     }
+    val svmColumns = arguments.observationColumns.getOrElse(svmData.observationColumns)
+
+    val labeledTestRDD: RDD[LabeledPoint] = frame.rdd.toLabeledPointRDD(arguments.labelColumn, svmColumns)
+
+    //predicting and testing
+    val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>
+      val prediction = svmModel.predict(point.features)
+      Array[Any](point.label, prediction)
+    }
+
+    //Run Binary classification metrics
+    val posLabel: String = "1.0"
+    ClassificationMetrics.binaryClassificationMetrics(scoreAndLabelRDD, 0, 1, posLabel, 1)
+
+  }
 }

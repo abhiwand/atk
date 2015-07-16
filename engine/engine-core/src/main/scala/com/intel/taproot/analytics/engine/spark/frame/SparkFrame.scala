@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.spark.frame
 
-import com.intel.taproot.analytics.domain.frame.{FrameReference, FrameEntity}
+import com.intel.taproot.analytics.domain.frame.{ FrameReference, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import org.apache.spark.SparkContext
@@ -44,6 +44,9 @@ trait SparkFrame {
 
   def save(rdd: FrameRdd): SparkFrame
 
+  @deprecated("use FrameRdd instead")
+  def save(rdd: LegacyFrameRdd): SparkFrame
+
   def sizeInBytes: Option[Long]
 }
 
@@ -68,6 +71,10 @@ class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage:
 
   override def save(rdd: FrameRdd): SparkFrame = {
     sparkFrameStorage.saveFrameData(frame, rdd)
+    this
+  }
+  override def save(rdd: LegacyFrameRdd): SparkFrame = {
+    sparkFrameStorage.saveLegacyFrame(frame, rdd)
     this
   }
 

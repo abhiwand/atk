@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ LegacyFrameRdd, MiscFrameFunctions }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, LegacyFrameRdd, MiscFrameFunctions }
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
 
@@ -66,19 +66,15 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameE
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
     // validate arguments
-    val frame: FrameEntity = frames.expectFrame(arguments.frame)
-    val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame)
+    val frame: SparkFrame = arguments.frame
+    val rdd = frame.rdd.toLegacyFrameRdd
     val columnNames = arguments.unique_columns match {
       case Some(columns) => frame.schema.validateColumnsExist(columns.value).toList
       case None => frame.schema.columnNames
     }
+    // run operation
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, frame.schema, columnNames)
-
-    // save results
-    frames.saveLegacyFrame(frame.toReference, new LegacyFrameRdd(frame.schema, duplicatesRemoved))
+    frame.save(new LegacyFrameRdd(frame.schema, duplicatesRemoved))
   }
 }

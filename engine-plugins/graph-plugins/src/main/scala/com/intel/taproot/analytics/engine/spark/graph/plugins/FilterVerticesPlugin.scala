@@ -59,17 +59,17 @@ class FilterVerticesPlugin extends SparkCommandPlugin[FilterVerticesArgs, FrameE
     val frames = engine.frames.asInstanceOf[SparkFrameStorage]
     val graphStorage = engine.graphs
 
-    val vertexFrame: SparkFrameData = resolve(arguments.frame)
-    require(vertexFrame.meta.isVertexFrame, "vertex frame is required")
+    val vertexFrame: SparkFrame = arguments.frame
+    require(vertexFrame.entity.isVertexFrame, "vertex frame is required")
 
-    val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.meta.graphId.get)
-    val filteredRdd = PythonRddStorage.mapWith(vertexFrame.data, arguments.udf, sc = sc)
+    val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.entity.graphId.get)
+    val filteredRdd = PythonRddStorage.mapWith(vertexFrame.rdd, arguments.udf, sc = sc)
     filteredRdd.cache()
 
-    val vertexSchema: VertexSchema = vertexFrame.meta.schema.asInstanceOf[VertexSchema]
+    val vertexSchema: VertexSchema = vertexFrame.schema.asInstanceOf[VertexSchema]
     FilterVerticesFunctions.removeDanglingEdges(vertexSchema.label, frames, seamlessGraph, sc, filteredRdd)
 
-    val modifiedFrame = frames.saveFrameData(vertexFrame.meta.toReference, filteredRdd)
+    val modifiedFrame = vertexFrame.save(filteredRdd)
 
     filteredRdd.unpersist(blocking = false)
 

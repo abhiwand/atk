@@ -32,8 +32,10 @@ case class EntityName(singular: String, plural: String)
 /**
  * Indicates that this reference has attached metadata
  */
+@deprecated("this was a partially developed concept that we want to get rid of")
 trait HasMetaData {
   type Meta
+  @deprecated("this was a partially developed concept that we want to get rid of")
   def meta: Meta
 }
 

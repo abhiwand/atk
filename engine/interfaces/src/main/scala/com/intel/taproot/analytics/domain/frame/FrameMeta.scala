@@ -27,10 +27,12 @@ import com.intel.taproot.analytics.domain.HasMetaData
 /**
  * A FrameReference with metadata
  */
+@deprecated("this was a partially developed concept that we want to get rid of")
 class FrameMeta(frame: FrameEntity) extends FrameReference(frame.id) with HasMetaData {
 
   type Meta = FrameEntity
 
+  @deprecated("this was a partially developed concept that we want to get rid of")
   val meta = frame
 
 }

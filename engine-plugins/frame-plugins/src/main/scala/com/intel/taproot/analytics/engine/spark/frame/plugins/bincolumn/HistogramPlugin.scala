@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchem
 import com.intel.taproot.analytics.engine.Rows
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.spark.frame.plugins.groupby.GroupByAggregationFunctions
-import com.intel.taproot.analytics.engine.spark.frame.{ LegacyFrameRdd, SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, LegacyFrameRdd, SparkFrameData }
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
@@ -88,8 +88,8 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
    * @return Histogram object containing three Seqs one each for, cutoff points of the bins, size of bins, and percentages of total results per bin
    */
   override def execute(arguments: HistogramArgs)(implicit invocation: Invocation): Histogram = {
-    val frame: SparkFrameData = resolve(arguments.frame)
-    val schema: Schema = frame.meta.schema
+    val frame: SparkFrame = arguments.frame
+    val schema = frame.schema
 
     val columnIndex: Int = schema.columnIndex(arguments.columnName)
     val columnType = schema.columnDataType(arguments.columnName)
@@ -106,7 +106,7 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
 
     val numBins: Int = HistogramPlugin.getNumBins(arguments.numBins, frame)
 
-    computeHistogram(frame.data, columnIndex, weightColumnIndex, numBins, arguments.binType.getOrElse("equalwidth") == "equalwidth")
+    computeHistogram(frame.rdd, columnIndex, weightColumnIndex, numBins, arguments.binType.getOrElse("equalwidth") == "equalwidth")
   }
 
   /**
@@ -165,13 +165,13 @@ object HistogramPlugin {
   val MAX_COMPUTED_NUMBER_OF_BINS: Int = 1000
   val UNWEIGHTED_OBSERVATION_SIZE: Double = 1.0
 
-  def getNumBins(numBins: Option[Int], frame: SparkFrameData): Int = {
+  def getNumBins(numBins: Option[Int], frame: SparkFrame): Int = {
     numBins match {
       case Some(n) => n
       case None => {
-        math.min(math.floor(math.sqrt(frame.meta.rowCount match {
+        math.min(math.floor(math.sqrt(frame.rowCount match {
           case Some(r) => r
-          case None => frame.data.count()
+          case None => frame.rdd.count()
         })), HistogramPlugin.MAX_COMPUTED_NUMBER_OF_BINS).toInt
       }
     }

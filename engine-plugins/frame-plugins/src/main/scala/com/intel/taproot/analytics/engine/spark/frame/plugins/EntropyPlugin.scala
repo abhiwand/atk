@@ -21,6 +21,7 @@ import com.intel.taproot.analytics.domain.frame.EntropyArgs
 import com.intel.taproot.analytics.domain.schema.Column
 import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.NumericValidationUtils
@@ -76,18 +77,13 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: EntropyArgs)(implicit invocation: Invocation): DoubleValue = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
     // validate arguments
-    val frameRef = arguments.frame
-    val frame = frames.expectFrame(frameRef)
+    val frame: SparkFrame = arguments.frame
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
 
     // run the operation and return results
-    val frameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
     val weightsColumnOption = frame.schema.column(arguments.weightsColumn)
-    val entropy = EntropyRddFunctions.shannonEntropy(frameRdd, columnIndex, weightsColumnOption)
+    val entropy = EntropyRddFunctions.shannonEntropy(frame.rdd.toLegacyFrameRdd, columnIndex, weightsColumnOption)
     DoubleValue(entropy)
   }
 }
