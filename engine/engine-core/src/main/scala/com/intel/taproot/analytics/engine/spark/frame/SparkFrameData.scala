@@ -25,6 +25,7 @@ import org.apache.spark.frame.FrameRdd
  *
  * Note that in case the frame's schema is different from the rdd's, the rdd's wins.
  */
+@deprecated("instead use FrameReference, FrameEntity, FrameRdd, SparkFrame")
 class SparkFrameData(frame: FrameEntity, rdd: FrameRdd)
     extends FrameMeta(frame.withSchema(rdd.frameSchema))
     with HasData {
@@ -32,10 +33,12 @@ class SparkFrameData(frame: FrameEntity, rdd: FrameRdd)
   /**
    * Returns a copy with the given data instead of the current data
    */
+  @deprecated("instead use FrameReference, FrameEntity, FrameRdd, SparkFrame")
   def withData(newData: FrameRdd): SparkFrameData = new SparkFrameData(this.meta, newData)
 
   type Data = FrameRdd
 
+  @deprecated("instead use FrameReference, FrameEntity, FrameRdd, SparkFrame")
   val data = rdd
 
 }
