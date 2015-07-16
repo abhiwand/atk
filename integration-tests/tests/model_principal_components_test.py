@@ -46,7 +46,6 @@ class ModelPrincipalComponentsTest(unittest.TestCase):
         output_frame = output['output_frame']
 
         self.assertEqual(output_frame.column_names,['1','2','3','4','5','6','7','8','9','10','11','p_1','p_2','p_3','p_4','p_5'])
-        self.assertEqual(output['t_squared_index'],20.461271109991436)
 
 
 if __name__ == "__main__":
