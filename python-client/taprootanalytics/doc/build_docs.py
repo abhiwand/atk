@@ -46,7 +46,7 @@ dst_rest_api_commands_dir = os.path.join(dst_rest_api_dir, "v1/commands")
 dst_docstubs_dir = os.path.join(source_code_dir, r'python-client/taprootanalytics/core')
 
 # override the python path so that 'this' taprootanalytics package is used
-sys.path.insert(0, os.path.join(source_code_dir, "python"))
+sys.path.insert(0, os.path.join(source_code_dir, "python-client"))
 
 
 spa_module1_file_name = os.path.join(dst_docstubs_dir, 'docstubs1.py')
