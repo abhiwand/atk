@@ -23,7 +23,8 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.classification.glm.LogisticRegressionData
 import org.apache.spark.mllib.ia.plugins.classification.{ LinearRegressionData, SVMData }
 import org.apache.spark.mllib.ia.plugins.clustering.KMeansData
-import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector }
+import org.apache.spark.mllib.ia.plugins.dimensionalityreduction.PrincipalComponentsData
+import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, DenseMatrix }
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import org.scalatest.WordSpec
 
@@ -168,6 +169,60 @@ class MLLibJsonProtocolTest extends WordSpec {
       assert(l.linRegModel.weights.size == 2)
       assert(l.linRegModel.intercept == 3.5)
       assert(l.observationColumns.length == 2)
+    }
+  }
+
+  "DenseMatrixFormat" should {
+
+    "be able to serialize" in {
+      val dm = new DenseMatrix(2, 2, Array(1.0, 2.0, 3.0, 4.0), false)
+      assert(dm.toJson.compactPrint == "{\"numRows\":2,\"numCols\":2,\"values\":[1.0,2.0,3.0,4.0],\"isTransposed\":false}")
+    }
+
+    "parse json" in {
+      val string =
+        """
+        |{
+        | "numRows": 2,
+        | "numCols": 2,
+        | "values": [1.0,2.0,3.0,4.0],
+        | "isTransposed": false
+        |}
+      """.stripMargin
+      val json = JsonParser(string).asJsObject
+      val dm = json.convertTo[DenseMatrix]
+      assert(dm.values.length == 4)
+    }
+  }
+
+  "PrincipalComponentsModelFormat" should {
+
+    "be able to serialize" in {
+      val singularValuesVector = new DenseVector(Array(1.1, 2.2))
+      val vFactorMatrix = new DenseMatrix(2, 2, Array(1.0, 2.0, 3.0, 4.0), false)
+      val p = new PrincipalComponentsData(2, List("column1", "column2"), singularValuesVector, vFactorMatrix)
+      assert(p.toJson.compactPrint == "{\"k\":2,\"observationColumns\":[\"column1\",\"column2\"]," +
+        "\"singularValues\":{\"values\":[1.1,2.2]}," +
+        "\"vFactor\":{\"numRows\":2,\"numCols\":2,\"values\":[1.0,2.0,3.0,4.0],\"isTransposed\":false}}")
+    }
+
+    "parse json" in {
+      val string =
+        """
+          |{
+          |"k":2,
+          |"observationColumns": ["column1", "column2"],
+          |"singularValues": {"values": [1.1,2.2]},
+          |"vFactor": {"numRows":2, "numCols": 2, "values": [1.0,2.0,3.0,4.0], "isTransposed": false}
+          |}
+        """.stripMargin
+      val json = JsonParser(string).asJsObject
+      val p = json.convertTo[PrincipalComponentsData]
+
+      assert(p.k == 2)
+      assert(p.observationColumns.length == 2)
+      assert(p.singularValues.size == 2)
+      assert(p.vFactor.numRows == 2)
     }
   }
 

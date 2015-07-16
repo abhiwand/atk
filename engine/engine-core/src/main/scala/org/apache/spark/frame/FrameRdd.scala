@@ -24,6 +24,7 @@ import com.intel.taproot.analytics.engine.spark.graph.plugins.exportfromtitan.{ 
 import org.apache.spark.frame.ordering.MultiColumnOrdering
 import com.intel.taproot.analytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
+import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.regression.LabeledPointWithFrequency
@@ -450,6 +451,16 @@ object FrameRdd {
       mutableRow
     })
     rowRDD
+  }
+
+  def toIndexedRowRdd(indexedRows: RDD[(Long, org.apache.spark.sql.Row)], frameSchema: Schema, featureColumnNames: List[String]): RDD[IndexedRow] = {
+    val rowWrapper = new RowWrapper(frameSchema)
+    indexedRows.map {
+      case (index, row) =>
+        val array = rowWrapper(row).valuesAsArray(featureColumnNames, flattenInputs = true)
+        val b = array.map(i => DataTypes.toDouble(i))
+        IndexedRow(index, Vectors.dense(b))
+    }
   }
 
   /**

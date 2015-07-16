@@ -26,7 +26,7 @@ import com.intel.taproot.analytics.engine.plugin.ArgDoc
 case class LogisticRegressionTrainArgs(model: ModelReference,
                                        frame: FrameReference,
                                        optimizer: String,
-                                       @ArgDoc("The name of the column containing the labels")labelColumn: String,
+                                       @ArgDoc("The name of the column containing the labels") labelColumn: String,
                                        observationColumns: List[String],
                                        frequencyColumn: Option[String] = None,
                                        intercept: Option[Boolean] = None,
