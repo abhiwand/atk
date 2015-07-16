@@ -22,7 +22,6 @@ import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.PluginDocAnnotation
 import com.intel.taproot.analytics.engine.plugin.{ PluginDoc, Invocation, ApiMaturityTag }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.distributed.{ IndexedRow, IndexedRowMatrix, RowMatrix }

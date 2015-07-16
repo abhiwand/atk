@@ -5,7 +5,6 @@ import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.model.ModelReference
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.Vectors

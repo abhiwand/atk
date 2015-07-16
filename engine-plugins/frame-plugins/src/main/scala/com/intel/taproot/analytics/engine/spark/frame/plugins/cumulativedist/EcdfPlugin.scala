@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData, LegacyFrameRdd }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, LegacyFrameRdd }
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes, Column }
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 

@@ -24,7 +24,6 @@ import com.intel.taproot.analytics.domain.schema.Column
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel

@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.bincolumn
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD

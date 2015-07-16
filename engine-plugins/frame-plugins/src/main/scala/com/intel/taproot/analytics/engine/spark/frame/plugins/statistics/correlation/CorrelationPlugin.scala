@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.correl
 import com.intel.taproot.analytics.domain.DoubleValue
 import com.intel.taproot.analytics.domain.frame.{ CorrelationArgs }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion

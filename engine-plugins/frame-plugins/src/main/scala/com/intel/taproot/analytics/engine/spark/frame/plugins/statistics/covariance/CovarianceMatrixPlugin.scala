@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.covari
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.taproot.analytics.domain.schema.FrameSchema

@@ -22,7 +22,6 @@ import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, Do
 import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD

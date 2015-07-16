@@ -26,7 +26,7 @@ import com.intel.taproot.analytics.engine.PluginDocAnnotation
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.spark.HdfsFileStorage
 import com.intel.taproot.analytics.engine.spark.EngineConfig
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.frame.plugins.cumulativedist.EcdfJsonFormat
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.engine.spark.{ EngineConfig, HdfsFileStorage }

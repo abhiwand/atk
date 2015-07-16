@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Column }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, PythonRddStorage, SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, PythonRddStorage }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.sql

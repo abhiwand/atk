@@ -20,7 +20,6 @@ import java.util.Date
 import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.taproot.analytics.component.Boot

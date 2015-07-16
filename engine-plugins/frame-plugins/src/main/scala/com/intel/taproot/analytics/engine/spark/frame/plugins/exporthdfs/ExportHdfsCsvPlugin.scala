@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.ExportHdfsCsvArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.spark.{ EngineConfig, HdfsFileStorage }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.hadoop.fs.Path
 
