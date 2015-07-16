@@ -17,14 +17,16 @@ package org.apache.spark.mllib.ia.plugins.dimensionalityreduction
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
+import com.intel.taproot.analytics.engine.ArgDocAnnotation
+import com.intel.taproot.analytics.engine.plugin.ArgDoc
 
 /**
  * Input arguments for principal components train plugin
  */
-case class PrincipalComponentsTrainArgs(model: ModelReference,
-                                        frame: FrameReference,
-                                        observationColumns: List[String],
-                                        k: Option[Int] = None) {
+case class PrincipalComponentsTrainArgs(@ArgDoc("""Handle to the model to be used.""") model: ModelReference,
+                                        @ArgDoc("""A frame to train the model on.""") frame: FrameReference,
+                                        @ArgDoc("""List of column(s) containing the observations.""") observationColumns: List[String],
+                                        @ArgDoc("""Principal component count. Default is the number of observation columns""") k: Option[Int] = None) {
   require(frame != null, "frame is required")
   require(observationColumns.forall(_ != null), "data columns names cannot be null")
   require(observationColumns.forall(!_.equals("")), "data columns names cannot be empty")

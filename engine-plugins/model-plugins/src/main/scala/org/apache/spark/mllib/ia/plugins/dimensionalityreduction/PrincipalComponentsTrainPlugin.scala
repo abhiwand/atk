@@ -36,7 +36,13 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
 @PluginDoc(oneLine = "Build principal components model.",
-  extended = "Creating a PrincipalComponents Model using the data columns.")
+  extended = """Creating a PrincipalComponents Model using the observation columns.""",
+  returns =
+    """Values of the  principal components model object storing:
+    | principal components count used to train the model,
+    |  the list of observation columns on which the model was trained,
+    | the singular values vector and the vFactor matrix stored as an array of double values.
+  """.stripMargin)
 class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalComponentsTrainArgs, PrincipalComponentsTrainReturn] {
 
   /**

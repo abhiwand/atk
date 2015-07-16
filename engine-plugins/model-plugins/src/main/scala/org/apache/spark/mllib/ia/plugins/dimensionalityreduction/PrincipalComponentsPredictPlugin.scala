@@ -36,7 +36,8 @@ import org.apache.spark.sql.Row
 import scala.collection.mutable.ListBuffer
 
 @PluginDoc(oneLine = "Predict using principal components model.",
-  extended = "Predicting on a dataframe's columns using a PrincipalComponents Model.")
+  extended = """Predicting on a dataframe's columns using a PrincipalComponents Model.""",
+  returns = """A dictionary containing a frame with existing columns and 'c' additional columns containing the projections of V on the the frame and the t-square-index value if requested""")
 class PrincipalComponentsPredictPlugin extends SparkCommandPlugin[PrincipalComponentsPredictArgs, PrincipalComponentsPredictReturn] {
 
   /**
