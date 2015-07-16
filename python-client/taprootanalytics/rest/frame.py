@@ -402,13 +402,15 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
-    def inspect(self, frame, n, offset, selected_columns):
+    def inspect(self, frame, n, offset, selected_columns, wrap=None, truncate=None, round=None, width=80, margin=None):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
         result = self.take(frame, n, offset, selected_columns)
         data = result.data
         schema = result.schema
-
+        if wrap:
+            from taprootanalytics.core.ui import RowsInspection
+            return RowsInspection(data, schema, offset=offset, wrap=wrap, truncate=truncate, round=round, width=width, margin=margin)
         return FrameBackendRest.InspectionTable(schema, data)
 
     def join(self, left, right, left_on, right_on, how, name=None):
