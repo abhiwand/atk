@@ -70,12 +70,12 @@ class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage:
   override def name: Option[String] = entity.name
 
   override def save(rdd: FrameRdd): SparkFrame = {
-    sparkFrameStorage.saveFrameData(frame, rdd)
-    this
+    val result = sparkFrameStorage.saveFrameData(frame, rdd)
+    new SparkFrameImpl(result, sc, sparkFrameStorage)
   }
   override def save(rdd: LegacyFrameRdd): SparkFrame = {
-    sparkFrameStorage.saveLegacyFrame(frame, rdd)
-    this
+    val result = sparkFrameStorage.saveLegacyFrame(frame, rdd)
+    new SparkFrameImpl(result, sc, sparkFrameStorage)
   }
 
   override def status: Long = entity.status
