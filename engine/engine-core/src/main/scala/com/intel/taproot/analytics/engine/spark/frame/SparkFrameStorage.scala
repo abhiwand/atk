@@ -400,18 +400,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     }
   }
 
-  //  def getPagedRowsRDD(frame: FrameEntity, offset: Long, count: Long, sc: SparkContext)(implicit invocation: Invocation): RDD[Row] =
-  //    withContext("frame.getPagedRowsRDD") {
-  //      require(frame != null, "frame is required")
-  //      require(offset >= 0, "offset must be zero or greater")
-  //      require(count > 0, "count must be zero or greater")
-  //      withMyClassLoader {
-  //        val rdd: RDD[Row] = loadLegacyFrameRdd(ctx, frame.toReference)
-  //        val rows = MiscFrameFunctions.getPagedRdd[Row](rdd, offset, count, -1)
-  //        rows
-  //      }
-  //    }
-
   /**
    * Retrieve records from the given dataframe
    * @param frame Frame to retrieve records from
