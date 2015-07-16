@@ -70,9 +70,9 @@ abstract class ComputedBinColumnPlugin extends SparkCommandPlugin[ComputedBinCol
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
     val binnedResults = executeBinColumn(columnIndex, numBins, frame.rdd)
     val updatedSchema = frame.schema.addColumn(binColumnName, DataTypes.int32)
-    frame.save(new FrameRdd(updatedSchema, binnedResults.rdd))
+    val result = frame.save(new FrameRdd(updatedSchema, binnedResults.rdd))
 
-    new BinColumnResults(frame.entity, binnedResults.cutoffs)
+    new BinColumnResults(result.entity, binnedResults.cutoffs)
   }
 
   /**
