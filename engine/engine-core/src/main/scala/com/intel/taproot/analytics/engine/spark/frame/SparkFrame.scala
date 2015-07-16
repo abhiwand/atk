@@ -16,8 +16,10 @@
 
 package com.intel.taproot.analytics.engine.spark.frame
 
-import com.intel.taproot.analytics.domain.frame.FrameEntity
+import com.intel.taproot.analytics.domain.frame.{FrameReference, FrameEntity}
 import com.intel.taproot.analytics.domain.schema.Schema
+import com.intel.taproot.analytics.engine.plugin.Invocation
+import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 
 /**
@@ -41,4 +43,38 @@ trait SparkFrame {
   def rdd: FrameRdd
 
   def save(rdd: FrameRdd): SparkFrame
+
+  def sizeInBytes: Option[Long]
+}
+
+object SparkFrame {
+
+  implicit def sparkFrameToFrameEntity(sparkFrame: SparkFrame): FrameEntity = sparkFrame.entity
+
+  implicit def sparkFrameToFrameReference(sparkFrame: SparkFrame): FrameReference = sparkFrame.entity.toReference
+}
+
+class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage)(implicit invocation: Invocation) extends SparkFrame {
+
+  override def entity: FrameEntity = sparkFrameStorage.expectFrame(frame)
+
+  override def rowCount: Option[Long] = entity.rowCount
+
+  override def rdd: FrameRdd = sparkFrameStorage.loadFrameData(sc, entity)
+
+  override def description: Option[String] = entity.description
+
+  override def name: Option[String] = entity.name
+
+  override def save(rdd: FrameRdd): SparkFrame = {
+    sparkFrameStorage.saveFrameData(frame, rdd)
+    this
+  }
+
+  override def status: Long = entity.status
+
+  override def schema: Schema = entity.schema
+
+  override def sizeInBytes: Option[Long] = sparkFrameStorage.getSizeInBytes(entity)
+
 }

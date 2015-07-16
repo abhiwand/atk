@@ -540,7 +540,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   lazy implicit val commandDefinitionFormat = jsonFormat5(CommandDefinition)
 
   implicit object dataFrameFormat extends JsonFormat[FrameEntity] {
-    implicit val dataFrameFormatOriginal = jsonFormat19(FrameEntity)
+    implicit val dataFrameFormatOriginal = jsonFormat19(FrameEntity.apply)
 
     override def read(value: JsValue): FrameEntity = {
       dataFrameFormatOriginal.read(value)

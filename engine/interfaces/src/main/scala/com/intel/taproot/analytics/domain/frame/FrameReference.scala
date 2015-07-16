@@ -37,6 +37,10 @@ case class FrameReference(frameId: Long) extends UriReference {
   override def id: Long = frameId
 }
 
+object FrameReference {
+  implicit def frameEntityToFrameReference(frameEntity: FrameEntity): FrameReference = frameEntity.toReference
+}
+
 /**
  * Place to store type tag for frame reference.
  *

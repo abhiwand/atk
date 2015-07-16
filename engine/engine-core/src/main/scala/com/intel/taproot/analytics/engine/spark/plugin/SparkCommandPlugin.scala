@@ -20,7 +20,7 @@ import java.nio.file.{ Paths, Files }
 import java.nio.charset.StandardCharsets
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.schema.Schema
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
+import com.intel.taproot.analytics.engine.spark.frame.{SparkFrameImpl, SparkFrame}
 import org.apache.spark.frame.FrameRdd
 
 import scala.collection.JavaConversions._
@@ -52,32 +52,10 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
 
   def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
-  implicit def frameRefToSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkFrame = new SparkFrame {
+  implicit def frameRefToSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkFrame = new SparkFrameImpl(frame, sc, engine.frames)
 
-    override def entity: FrameEntity = engine.frames.expectFrame(frame)
+  implicit def frameEntityToSparkFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): SparkFrame = frameRefToSparkFrame(frameEntity.toReference)
 
-    override def rowCount: Option[Long] = entity.rowCount
-
-    override def rdd: FrameRdd = engine.frames.loadFrameData(sc, entity)
-
-    override def description: Option[String] = entity.description
-
-    override def name: Option[String] = entity.name
-
-    override def save(rdd: FrameRdd): SparkFrame = {
-      engine.frames.saveFrameData(frame, rdd)
-      this
-    }
-
-    override def status: Long = entity.status
-
-    override def schema: Schema = entity.schema
-
-  }
-
-  implicit def sparkFrameToFrameEntity(sparkFrame: SparkFrame): FrameEntity = sparkFrame.entity
-
-  implicit def sparkFrameToFrameReference(sparkFrame: SparkFrame): FrameReference = sparkFrame.entity.toReference
 
   /**
    * Can be overridden by subclasses to provide a more specialized Invocation. Called before
