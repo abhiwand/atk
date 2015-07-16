@@ -24,7 +24,6 @@ git
 *.iml
 *.jar
 largegit.sh
-logback.xml
 make.sh
 .metadata*
 *.orig
