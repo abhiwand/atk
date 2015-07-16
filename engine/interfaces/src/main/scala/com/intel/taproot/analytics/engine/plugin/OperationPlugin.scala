@@ -17,7 +17,6 @@
 package com.intel.taproot.analytics.engine.plugin
 
 import com.intel.taproot.event.{ EventContext, EventLogging }
-import com.intel.taproot.analytics.NotNothing
 import com.intel.taproot.analytics.component._
 import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.domain.command.{ CommandDocLoader }
