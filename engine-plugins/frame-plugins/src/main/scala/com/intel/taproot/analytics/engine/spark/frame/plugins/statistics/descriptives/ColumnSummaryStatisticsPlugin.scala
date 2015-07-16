@@ -114,7 +114,7 @@ variance : [ double | None ]
 standard_deviation : [ double | None ]
     The square root of the variance. None when  sample variance
     is being used and the sum of weights is <= 1.
-valid_data_count : long
+total_weight : long
     The count of all data elements that are finite numbers.
     (In other words, after excluding NaNs and infinite values.)
 minimum : [ double | None ]

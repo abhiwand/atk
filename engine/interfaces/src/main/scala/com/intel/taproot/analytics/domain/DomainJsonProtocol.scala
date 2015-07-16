@@ -343,6 +343,12 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val columnFullStatisticsFormat = jsonFormat3(ColumnFullStatisticsArgs)
   implicit val columnFullStatisticsReturnFormat = jsonFormat15(ColumnFullStatisticsReturn)
 
+  implicit val categoricalColumnInput = jsonFormat3(CategoricalColumnInput)
+  implicit val levelData = jsonFormat3(LevelData)
+  implicit val categoricalColumnOutput = jsonFormat2(CategoricalSummaryOutput)
+  implicit val categoricalSummaryArgsFormat = jsonFormat2(CategoricalSummaryArgs)
+  implicit val categoricalSummaryReturnFormat = jsonFormat1(CategoricalSummaryReturn)
+
   implicit val columnModeFormat = jsonFormat4(ColumnModeArgs)
   implicit val columnModeReturnFormat = jsonFormat4(ColumnModeReturn)
 
