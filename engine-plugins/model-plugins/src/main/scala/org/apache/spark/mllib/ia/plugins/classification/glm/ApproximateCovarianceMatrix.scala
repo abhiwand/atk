@@ -15,11 +15,11 @@
 */
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import breeze.linalg.{DenseMatrix => BDM, DenseVector => BDV, inv}
-import com.intel.taproot.analytics.domain.schema.{Column, DataTypes, FrameSchema}
+import breeze.linalg.{ DenseMatrix, inv }
+import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.{SparkContext, sql}
+import org.apache.spark.{ SparkContext, sql }
 
 import scala.util.Try
 
@@ -30,12 +30,12 @@ import scala.util.Try
  * the second-order partial derivatives of the model's log-likelihood function.
  *
  * @param hessianMatrix Hessian matrix
- * @param reorderMatrix If true, reorder cova
+ * @param reorderMatrix If true, reorder the matrix so that the intercept is stored in
+ *                      the first row and column instead of the last row and column
  */
-case class ApproximateCovarianceMatrix(hessianMatrix: BDM[Double],
+case class ApproximateCovarianceMatrix(hessianMatrix: DenseMatrix[Double],
                                        reorderMatrix: Boolean = false) {
   require(hessianMatrix != null, "Hessian matrix must not be null")
-  /** Optional covariance matrix generated if flag for computing Hessian matrix was true */
   val covarianceMatrix = computeCovarianceMatrix(hessianMatrix)
 
   /**
@@ -58,19 +58,18 @@ case class ApproximateCovarianceMatrix(hessianMatrix: BDM[Double],
   }
 
   /** Compute covariance matrix from model's hessian matrix */
-  private def computeCovarianceMatrix(hessianMatrix: BDM[Double]): BDM[Double] = {
-    val reorderedHessian = reorderMatrix(hessianMatrix)
-    val covarianceMatrix = Try(inv(reorderedHessian)).getOrElse({
+  private def computeCovarianceMatrix(hessianMatrix: DenseMatrix[Double]): DenseMatrix[Double] = {
+    val covarianceMatrix: DenseMatrix[Double] = Try(inv(hessianMatrix)).getOrElse({
       throw new scala.IllegalArgumentException("Could not compute covariance matrix: Hessian matrix is not invertable")
     })
-    covarianceMatrix
+    if (reorderMatrix) reorderMatrix(covarianceMatrix) else covarianceMatrix
   }
 
   /**
    * Reorder the matrix so that the intercept is stored in the first row and first column (standard convention)
    * MLlib models store the intercept in the last row and last column of the matrix
    */
-  def reorderMatrix(matrix: BDM[Double]): BDM[Double] = {
+  private def reorderMatrix(matrix: DenseMatrix[Double]): DenseMatrix[Double] = {
     val rows = matrix.rows
     val cols = matrix.cols
     if (rows > 1 && cols > 1) {

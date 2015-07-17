@@ -41,11 +41,11 @@ case class LogisticRegressionTrainArgs(@ArgDoc("""Handle to the model to be used
                                            SGD - Stochastic Gradient Descent
                                          """) optimizer: String = "LBFGS",
 
-                                       @ArgDoc("""Compute covariance matrix for the model""") computeCovariance: Option[Boolean] = Some(false),
+                                       @ArgDoc("""If true, compute covariance matrix for the model""") computeCovariance: Boolean = false,
 
-                                       @ArgDoc("""If true, compute covariance matrix for trained model.""") intercept: Option[Boolean] = Some(true),
+                                       @ArgDoc("""If true, add intercept column to training data.""") intercept: Boolean = true,
 
-                                       @ArgDoc("""Perform feature scaling before training model.""") featureScaling: Option[Boolean] = Some(false),
+                                       @ArgDoc("""If true, perform feature scaling before training model.""") featureScaling: Boolean = false,
 
                                        //TODO: Check if threshold needs to be set in both train() and predict
                                        @ArgDoc("""Threshold for separating positive predictions from negative predictions.""") threshold: Double = 0.5,
@@ -89,16 +89,5 @@ case class LogisticRegressionTrainArgs(@ArgDoc("""Handle to the model to be used
   require(miniBatchFraction > 0, "mini-batch fraction for SGD must be a positive value")
   require(stepSize > 0, "step size for SGD must be a positive value")
 
-  def getIntercept: Boolean = {
-    intercept.getOrElse(true)
-  }
-
-  def getComputeCovariance: Boolean = {
-    computeCovariance.getOrElse(false)
-  }
-
-  def getFeatureScaling: Boolean = {
-    featureScaling.getOrElse(false)
-  }
 }
 

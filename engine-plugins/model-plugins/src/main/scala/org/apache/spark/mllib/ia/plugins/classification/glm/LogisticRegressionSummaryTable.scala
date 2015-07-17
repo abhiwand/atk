@@ -15,63 +15,99 @@
 */
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import breeze.linalg.{DenseMatrix, DenseVector, diag}
+import breeze.linalg.{ DenseMatrix, DenseVector, diag }
 import breeze.numerics.sqrt
 import breeze.stats.distributions.ChiSquared
-import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{FrameMeta, FrameEntity}
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
 
 /**
- * Results for logistic regression train plugin
+ * Summary table with results of logistic regression train plugin
  *
  * @param numFeatures Number of features
  * @param numClasses Number of classes
  * @param coefficients Model coefficients
+ *                     The dimension of the coefficients' vector is
+ *                     (numClasses - 1) * (numFeatures + 1) if `addIntercept == true`, and
+ *                     (numClasses - 1) * numFeatures if `addIntercept != true`
+ * @param degreesFreedom Degrees of freedom for model coefficients
  * @param covarianceMatrix Optional covariance matrix
+ * @param standardErrors Optional standard errors for model coefficients
+ *                       The standard error for each variable is the square root of
+ *                       the diagonal of the covariance matrix
+ * @param waldStatistic Optional Wald Chi-Squared statistic
+ *                      The Wald Chi-Squared statistic is the coefficients
+ *                      divided by the standard errors
+ * @param pValue Optional p-values for the model coefficients
  */
 case class LogisticRegressionSummaryTable(numFeatures: Int,
                                           numClasses: Int,
                                           coefficients: Map[String, Double],
+                                          degreesFreedom: Map[String, Double],
                                           covarianceMatrix: Option[FrameEntity] = None,
                                           standardErrors: Option[Map[String, Double]] = None,
                                           waldStatistic: Option[Map[String, Double]] = None,
-                                          pValue: Option[Map[String, Double]] = None,
-                                          degreesFreedom: Option[Map[String, Double]] = None) {
+                                          pValue: Option[Map[String, Double]] = None)
 
-  def this(logRegModel: LogisticRegressionModelWithFrequency,
-           observationColumns: List[String],
-           covarianceMatrix: Option[FrameEntity]) {
-    this(logRegModel.numFeatures,
-      logRegModel.numClasses,
-      LogisticRegressionSummaryTable1.getCoefficients(logRegModel, observationColumns),
-      covarianceMatrix)
-  }
-
-}
-
+/**
+ * Summary table builder
+ *
+ * @param logRegModel Logistic regression model
+ * @param observationColumns Names of observation columns
+ * @param isAddIntercept If true, intercept column was added to training data
+ * @param hessianMatrix Optional Hessian matrix for trained model
+ */
 class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency,
                           observationColumns: List[String],
-                          isAddIntercept: Boolean) {
+                          isAddIntercept: Boolean,
+                          hessianMatrix: Option[DenseMatrix[Double]]) {
 
-  val interceptName = "_intercept"
+  val interceptName = "intercept"
   val coefficients = computeCoefficients
   val coefficientNames = computeCoefficientNames
+  val approxCovarianceMatrix = computeApproxCovarianceMatrix
+  val degreesFreedom = computeDegreesFreedom
 
-  def build(): LogisticRegressionSummaryTable = {
-    val covarianceMatrix = ApproximateCovarianceMatrix(model)
+  /**
+   * Build summary table for trained model
+   */
+  def build(covarianceFrame: Option[FrameEntity]): LogisticRegressionSummaryTable = {
+    approxCovarianceMatrix match {
+      case Some(approxMatrix) => {
+        val stdErrors = computeStandardErrors(coefficients, approxMatrix.covarianceMatrix)
+        val waldStatistic = computeWaldStatistic(coefficients, stdErrors)
+        val pValues = computePValue(waldStatistic)
 
-    val frame = tryNew(CreateEntityArgs(
-      description = Some("covariance matrix created by LogisticRegression train operation"))) {
-      newTrainFrame: FrameMeta =>
-        save(new SparkFrameData(newTrainFrame.meta, frameRdd))
-    }.meta
-    val stdErrors = computeStandardErrors(coefficients, covMatrix)
-    val waldStatistic = computeWaldStatistic(coefficients, stdErrors)
-    val pValues = computePValue(waldStatistic)
+        LogisticRegressionSummaryTable(
+          logRegModel.numFeatures,
+          logRegModel.numClasses,
+          (coefficientNames zip coefficients.toArray).toMap,
+          (coefficientNames zip degreesFreedom.toArray).toMap,
+          covarianceFrame,
+          Some((coefficientNames zip stdErrors.toArray).toMap),
+          Some((coefficientNames zip waldStatistic.toArray).toMap),
+          Some((coefficientNames zip pValues.toArray).toMap)
+        )
+      }
+      case _ => LogisticRegressionSummaryTable(
+        logRegModel.numFeatures,
+        logRegModel.numClasses,
+        (coefficientNames zip coefficients.toArray).toMap,
+        (coefficientNames zip degreesFreedom.toArray).toMap
+      )
+    }
   }
 
+  /**
+   *
+   * @return
+   */
+  def computeApproxCovarianceMatrix: Option[ApproximateCovarianceMatrix] = {
+    hessianMatrix match {
+      case Some(hessian) => Some(ApproximateCovarianceMatrix(hessian, isAddIntercept))
+      case _ => None
+    }
+  }
 
   /**
    * The dimension of coefficients vector is (numClasses - 1) * (numFeatures + 1) if `addIntercept == true`,
@@ -94,47 +130,59 @@ class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency,
    *
    * @return
    */
-  def computeCoefficientNames: Seq[String] = {
+  def computeCoefficientNames: List[String] = {
     val names = if (logRegModel.numClasses > 2) {
-      for (i <- 0 until logRegModel.numFeatures) yield s"${observationColumns(i)}_${i+1}"
+      for (i <- 0 until logRegModel.numFeatures) yield s"${observationColumns(i)}_${i + 1}"
     }
     else {
       observationColumns
     }
 
-    if (isAddIntercept) interceptName +: names  else names
+    if (isAddIntercept) {
+      (interceptName +: names).toList
+    }
+    else {
+      names.toList
+    }
   }
 
+  /**
+   *
+   * @return
+   */
+  def computeDegreesFreedom: DenseVector[Double] = {
+    DenseVector.fill(coefficients.length) {
+      1
+    }
+  }
+
+  /**
+   *
+   * @param coefficients
+   * @param covarianceMatrix
+   * @return
+   */
   def computeStandardErrors(coefficients: DenseVector[Double], covarianceMatrix: DenseMatrix[Double]): DenseVector[Double] = {
     sqrt(diag(covarianceMatrix))
   }
 
+  /**
+   *
+   * @param coefficients
+   * @param stdErrors
+   * @return
+   */
   def computeWaldStatistic(coefficients: DenseVector[Double], stdErrors: DenseVector[Double]): DenseVector[Double] = {
     coefficients :/ stdErrors //element-wise division
   }
 
+  /**
+   *
+   * @param waldStatistic
+   * @return
+   */
   def computePValue(waldStatistic: DenseVector[Double]): DenseVector[Double] = {
     val chi = ChiSquared(1)
     waldStatistic.map(w => 1 - chi.cdf(w))
-  }
-
-  def computeDegreesFreedom(coefficients: DenseVector[Double]):  DenseVector[Double] =  {
-    DenseVector.fill(coefficients.length){logRegModel.numClasses - 1}
-  }
-}
-
-
-object LogisticRegressionSummaryTable1 {
-  /**
-   * Get map of model coefficients
-   * @param logRegModel Logistic regression model
-   * @param observationColumns Observation columns
-   * @return Map with names and values of model coefficients
-   */
-  def getCoefficients(logRegModel: LogisticRegressionModelWithFrequency,
-                      observationColumns: List[String]): Map[String, Double] = {
-    val coefficients = logRegModel.intercept +: logRegModel.weights.toArray
-    val coefficientNames = List("intercept") ++ observationColumns
-    (coefficientNames zip coefficients).toMap
   }
 }

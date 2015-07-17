@@ -17,7 +17,7 @@
 package org.apache.spark.mllib.ia.plugins
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
-import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel}
+import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
 import org.apache.spark.mllib.ia.plugins.classification.glm.{ LogisticRegressionSummaryTable, LogisticRegressionData, LogisticRegressionTrainArgs }
@@ -339,7 +339,7 @@ object MLLibJsonProtocol {
       new PrincipalComponentsData(k, observationColumns, singularValues, vFactor)
     }
   }
-  
+
   def getOrInvalid[T](map: Map[String, T], key: String): T = {
     // throw exception if a programmer made a mistake
     map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))

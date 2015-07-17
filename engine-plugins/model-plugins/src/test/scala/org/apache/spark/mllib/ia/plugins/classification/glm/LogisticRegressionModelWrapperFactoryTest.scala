@@ -28,7 +28,7 @@ class LogisticRegressionModelWrapperFactoryTest extends FlatSpec with Matchers w
     val frameRef = mock[FrameReference]
     val trainArgs = LogisticRegressionTrainArgs(modelRef, frameRef, "label", List("obs1", "obs2"), optimizer = "LBFGS")
 
-    val model = IaLogisticRegressionModelFactory.createModel(trainArgs)
+    val model = LogisticRegressionModelWrapperFactory.createModel(trainArgs)
 
     model shouldBe a[LogisticRegressionModelWrapperWithLBFGS]
   }
@@ -38,7 +38,7 @@ class LogisticRegressionModelWrapperFactoryTest extends FlatSpec with Matchers w
     val frameRef = mock[FrameReference]
     val trainArgs = LogisticRegressionTrainArgs(modelRef, frameRef, "label", List("obs1", "obs2"), optimizer = "SGD")
 
-    val model = IaLogisticRegressionModelFactory.createModel(trainArgs)
+    val model = LogisticRegressionModelWrapperFactory.createModel(trainArgs)
 
     model shouldBe a[LogisticRegressionModelWrapperWithSGD]
   }
@@ -49,7 +49,7 @@ class LogisticRegressionModelWrapperFactoryTest extends FlatSpec with Matchers w
       val frameRef = mock[FrameReference]
       val trainArgs = LogisticRegressionTrainArgs(modelRef, frameRef, "label", List("obs1", "obs2"), optimizer = "INVALID")
 
-      IaLogisticRegressionModelFactory.createModel(trainArgs)
+      LogisticRegressionModelWrapperFactory.createModel(trainArgs)
     }
   }
 

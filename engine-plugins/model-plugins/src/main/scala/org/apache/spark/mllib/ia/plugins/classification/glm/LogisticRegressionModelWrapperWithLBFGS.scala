@@ -34,13 +34,13 @@ class LogisticRegressionModelWrapperWithLBFGS() extends LogisticRegressionModelW
   def this(arguments: LogisticRegressionTrainArgs) = {
     this()
     model.setNumClasses(arguments.numClasses)
-    model.setFeatureScaling(arguments.getFeatureScaling)
-    model.setIntercept(arguments.getIntercept)
+    model.setFeatureScaling(arguments.featureScaling)
+    model.setIntercept(arguments.intercept)
     model.optimizer.setNumIterations(arguments.numIterations)
     model.optimizer.setConvergenceTol(arguments.convergenceTolerance)
     model.optimizer.setNumCorrections(arguments.numCorrections)
     model.optimizer.setRegParam(arguments.regParam)
-    model.optimizer.setComputeHessian(arguments.getComputeCovariance)
+    model.optimizer.setComputeHessian(arguments.computeCovariance)
 
     model.optimizer.setUpdater(arguments.regType match {
       case "L1" => new L1Updater()
@@ -59,5 +59,4 @@ class LogisticRegressionModelWrapperWithLBFGS() extends LogisticRegressionModelW
   override def getHessianMatrix: Option[DenseMatrix[Double]] = {
     model.optimizer.getHessianMatrix
   }
-
 }

@@ -56,10 +56,11 @@ object MatcherUtils extends Matchers {
           val results = for {
             i <- 0 until right.rows
             j <- 0 until right.cols
-            r = left(i, j) === ( right(i, j) +- tolerance)
+            r = left(i, j) === (right(i, j) +- tolerance)
           } yield r
-          results forall(x => x)
-        } else false,
+          results forall (x => x)
+        }
+        else false,
         left.toString() + " did not equal " + right.toString() + " with tolerance " + tolerance,
         left.toString() + " equaled " + right.toString() + " with tolerance " + tolerance
       )

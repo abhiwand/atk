@@ -33,13 +33,13 @@ class LogisticRegressionModelWrapperWithSGD extends LogisticRegressionModelWrapp
    */
   def this(arguments: LogisticRegressionTrainArgs) = {
     this()
-    model.setFeatureScaling(arguments.getFeatureScaling)
-    model.setIntercept(arguments.getIntercept)
+    model.setFeatureScaling(arguments.featureScaling)
+    model.setIntercept(arguments.intercept)
     model.optimizer.setNumIterations(arguments.numIterations)
     model.optimizer.setStepSize(arguments.stepSize)
     model.optimizer.setRegParam(arguments.regParam)
     model.optimizer.setMiniBatchFraction(arguments.miniBatchFraction)
-    model.optimizer.setComputeHessian(arguments.getComputeCovariance)
+    model.optimizer.setComputeHessian(arguments.computeCovariance)
 
     model.optimizer.setUpdater(arguments.regType match {
       case "L1" => new L1Updater()
@@ -58,5 +58,4 @@ class LogisticRegressionModelWrapperWithSGD extends LogisticRegressionModelWrapp
   override def getHessianMatrix: Option[DenseMatrix[Double]] = {
     model.optimizer.getHessianMatrix
   }
-
 }

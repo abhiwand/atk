@@ -15,7 +15,7 @@
 */
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-object IaLogisticRegressionModelFactory {
+object LogisticRegressionModelWrapperFactory {
 
   /**
    * Create logistic regression model based on optimizer.
