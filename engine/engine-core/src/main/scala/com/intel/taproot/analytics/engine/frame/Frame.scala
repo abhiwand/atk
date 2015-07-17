@@ -133,7 +133,7 @@ class FrameImpl(frame: FrameReference, frameStorage: FrameStorage)(implicit invo
  * Actual implementation for SparkFrame interface
  */
 class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage)(implicit invocation: Invocation)
-  extends FrameImpl(frame, sparkFrameStorage) with SparkFrame {
+    extends FrameImpl(frame, sparkFrameStorage) with SparkFrame {
 
   /** Load the frame's data as an RDD */
   override def rdd: FrameRdd = sparkFrameStorage.loadFrameData(sc, entity)
