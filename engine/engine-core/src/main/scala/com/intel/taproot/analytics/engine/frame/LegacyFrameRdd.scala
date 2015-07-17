@@ -42,27 +42,4 @@ class LegacyFrameRdd(val schema: Schema, val rows: RDD[Row]) extends RDD[Row](ro
 
   override def getPartitions: Array[Partition] = rows.partitions
 
-  /**
-   * Union two LegacyFrame's merging schemas if needed
-   *
-   * @param other the other LegacyFrame
-   */
-  def union(other: LegacyFrameRdd): LegacyFrameRdd = {
-    if (schema == other.schema)
-      new LegacyFrameRdd(schema, rows.union(other.rows))
-    else {
-      val mergedSchema: Schema = SchemaUtil.mergeSchema(schema, other.schema)
-      val leftData = rows.map(SchemaUtil.convertSchema(schema, mergedSchema, _))
-      val rightData = other.rows.map(SchemaUtil.convertSchema(other.schema, mergedSchema, _))
-      new LegacyFrameRdd(mergedSchema, leftData.union(rightData))
-    }
-  }
-
-  /**
-   * Converts the rows object from an RDD[Array[Any]] to a Frame RDD
-   * @return A FrameRdd made of this schema and the rows RDD converted to a SchemaRDD
-   */
-  def toFrameRdd(): FrameRdd = {
-    FrameRdd.toFrameRdd(this.schema, this.rows)
-  }
 }
