@@ -71,7 +71,7 @@ object SparkFrame {
   implicit def sparkFrameToFrameReference(sparkFrame: SparkFrame): FrameReference = sparkFrame.entity.toReference
 }
 
-class FrameImpl(frame:FrameReference, frameStorage: FrameStorage)(implicit invocation: Invocation) extends Frame {
+class FrameImpl(frame: FrameReference, frameStorage: FrameStorage)(implicit invocation: Invocation) extends Frame {
 
   override def entity: FrameEntity = frameStorage.expectFrame(frame)
 
@@ -90,7 +90,7 @@ class FrameImpl(frame:FrameReference, frameStorage: FrameStorage)(implicit invoc
   override def sizeInBytes: Option[Long] = frameStorage.getSizeInBytes(entity)
 }
 
-class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage)(implicit invocation: Invocation) extends FrameImpl(frame,sparkFrameStorage) with SparkFrame {
+class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage)(implicit invocation: Invocation) extends FrameImpl(frame, sparkFrameStorage) with SparkFrame {
 
   override def rdd: FrameRdd = sparkFrameStorage.loadFrameData(sc, entity)
 
