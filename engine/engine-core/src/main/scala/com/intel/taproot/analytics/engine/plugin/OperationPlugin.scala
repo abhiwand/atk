@@ -195,10 +195,3 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
 
 }
-
-/**
- * Base trait for query plugins
- */
-abstract class QueryPlugin[Arguments <: Product: JsonFormat: ClassManifest]
-  extends OperationPlugin[Arguments, Any] {}
-
