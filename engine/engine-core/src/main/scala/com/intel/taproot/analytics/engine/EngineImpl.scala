@@ -16,15 +16,12 @@
 
 package com.intel.taproot.analytics.engine
 
-import java.util.{ ArrayList => JArrayList, List => JList }
-
 import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.domain.{ UserPrincipal, CreateEntityArgs }
 import com.intel.taproot.analytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
-import com.intel.taproot.analytics.domain.query._
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.taproot.analytics.engine.frame._
