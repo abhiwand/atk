@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.exporthdfs
+package com.intel.taproot.analytics.engine.frame.plugins.exporthdfs
 
 import java.nio.file.FileSystem
 
@@ -24,13 +24,13 @@ import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.ExportHdfsHiveArgs
 import com.intel.taproot.analytics.engine.PluginDocAnnotation
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.HdfsFileStorage
-import com.intel.taproot.analytics.engine.spark.EngineConfig
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
-import com.intel.taproot.analytics.engine.spark.frame.plugins.cumulativedist.EcdfJsonFormat
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.taproot.analytics.engine.spark.{ EngineConfig, HdfsFileStorage }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.HdfsFileStorage
+import com.intel.taproot.analytics.engine.EngineConfig
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.frame.plugins.cumulativedist.EcdfJsonFormat
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.{ EngineConfig, HdfsFileStorage }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.hadoop.fs.Path
 
 // Implicits needed for JSON conversion

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.model
+package com.intel.taproot.analytics.engine.model
 
 import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.{ DuplicateNameException, EventLoggingImplicits, NotFoundException }

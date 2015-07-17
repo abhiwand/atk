@@ -26,7 +26,7 @@ import org.apache.spark.scheduler.SparkListenerStageSubmitted
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
-import com.intel.taproot.analytics.engine.spark.CommandProgressUpdater
+import com.intel.taproot.analytics.engine.CommandProgressUpdater
 import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 /**

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.query
+package com.intel.taproot.analytics.engine.graph.query
 
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.blueprints.{ Element, Graph }
@@ -25,7 +25,7 @@ import scala.util.Try
 
 object GremlinUtils {
   import com.intel.taproot.analytics.domain.DomainJsonProtocol._ // Needed for serializing Java collections to JSON
-  import com.intel.taproot.analytics.engine.spark.graph.query.GremlinJsonProtocol._
+  import com.intel.taproot.analytics.engine.graph.query.GremlinJsonProtocol._
 
   /**
    * Serializes results of Gremlin query to JSON.

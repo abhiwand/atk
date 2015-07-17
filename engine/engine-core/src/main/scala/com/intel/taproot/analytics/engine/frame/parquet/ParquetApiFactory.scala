@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.parquet
+package com.intel.taproot.analytics.engine.frame.parquet
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileStatus, Path }

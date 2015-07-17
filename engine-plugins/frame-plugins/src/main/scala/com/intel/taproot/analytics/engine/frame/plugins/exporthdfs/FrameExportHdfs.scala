@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.exporthdfs
+package com.intel.taproot.analytics.engine.frame.plugins.exporthdfs
 
-import com.intel.taproot.analytics.engine.spark.frame.MiscFrameFunctions
+import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 import org.apache.commons.csv.{ CSVPrinter, CSVFormat }

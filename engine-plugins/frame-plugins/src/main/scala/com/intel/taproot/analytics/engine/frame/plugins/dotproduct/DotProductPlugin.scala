@@ -14,15 +14,15 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.dotproduct
+package com.intel.taproot.analytics.engine.frame.plugins.dotproduct
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 /** Json conversion for arguments and return value case classes */
 object DotProductJsonFormat {

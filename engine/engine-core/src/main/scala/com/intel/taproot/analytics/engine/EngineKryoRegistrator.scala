@@ -19,8 +19,8 @@ package com.intel.taproot.analytics.engine
 import com.esotericsoftware.kryo.Kryo
 import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.Rows.Row
-import com.intel.taproot.analytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
-import com.intel.taproot.analytics.engine.spark.frame.{LegacyFrameRdd, MiscFrameFunctions}
+import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
+import com.intel.taproot.analytics.engine.frame.{LegacyFrameRdd, MiscFrameFunctions}
 import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.serializer.KryoRegistrator
@@ -36,7 +36,7 @@ import org.apache.spark.serializer.KryoRegistrator
  * <p>
  * Usage:
  * conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
- * conf.set("spark.kryo.registrator", "com.intel.taproot.analytics.engine.spark.EngineKryoRegistrator")
+ * conf.set("spark.kryo.registrator", "com.intel.taproot.analytics.engine.EngineKryoRegistrator")
  * </p>
  */
 class EngineKryoRegistrator extends KryoRegistrator {

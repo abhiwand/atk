@@ -20,9 +20,9 @@ import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import spray.json._

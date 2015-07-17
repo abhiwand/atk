@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.plugins
+package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta
 import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, GraphSchema }
 import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark.frame.{ LegacyFrameRdd, SparkFrameStorage }
+import com.intel.taproot.analytics.engine.frame.{ LegacyFrameRdd, SparkFrameStorage }
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD

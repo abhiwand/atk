@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.util
+package com.intel.taproot.analytics.engine.util
 
 import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.EventLoggingImplicits
-import com.intel.taproot.analytics.engine.spark.EngineConfig
+import com.intel.taproot.analytics.engine.EngineConfig
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.spark.deploy.SparkHadoopUtil

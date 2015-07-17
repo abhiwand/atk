@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.partitioning
+package com.intel.taproot.analytics.engine.frame.plugins.partitioning
 
 import com.intel.taproot.analytics.domain.IntValue
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.FrameNoArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
 import spray.json._

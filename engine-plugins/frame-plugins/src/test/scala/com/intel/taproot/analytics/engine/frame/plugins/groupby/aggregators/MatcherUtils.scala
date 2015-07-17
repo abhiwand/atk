@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.groupby.aggregators
+package com.intel.taproot.analytics.engine.frame.plugins.groupby.aggregators
 
 import org.scalatest.Matchers
 import org.scalatest.matchers.{ MatchResult, Matcher }

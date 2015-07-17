@@ -14,25 +14,22 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark
+package com.intel.taproot.analytics.engine
 
-import com.intel.taproot.analytics.engine.{ ProgressInfo, CommandStorage }
-import org.joda.time.DateTime
-import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.taproot.analytics.engine.spark.command._
-import org.mockito.Mockito._
-import org.mockito.Matchers._
-import com.intel.taproot.analytics.domain.command.{ Command, CommandTemplate }
+import com.intel.taproot.analytics.domain.command.{Command, CommandTemplate}
+import com.intel.taproot.analytics.engine.command._
+import com.intel.taproot.analytics.engine.plugin.{CommandPlugin, Invocation}
 import org.apache.spark.SparkContext
-import spray.json._
-import com.intel.taproot.analytics.domain.DomainJsonProtocol
-import DomainJsonProtocol._
-import com.intel.taproot.analytics.engine.plugin.{ Invocation, CommandPlugin }
-import scala.collection.immutable.HashMap
+import org.joda.time.DateTime
+import org.mockito.Matchers._
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.{FlatSpec, Matchers}
+import spray.json._
 
-import scala.util.Try
 import scala.collection._
+import scala.collection.immutable.HashMap
+import scala.util.Try
 
 class FakeCommandStorage extends CommandStorage {
   var commands: Map[Long, Command] = Map.empty

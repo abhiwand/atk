@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.command
+package com.intel.taproot.analytics.engine.command
 
 import com.intel.taproot.event.EventContext
 import com.intel.taproot.analytics.engine.plugin.CommandInvocation
@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
-import com.intel.taproot.analytics.engine.spark.CommandProgressUpdater
+import com.intel.taproot.analytics.engine.CommandProgressUpdater
 
 /**
  * Basic invocation for commands that don't need Spark

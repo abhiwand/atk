@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.user
+package com.intel.taproot.analytics.engine.user
 
 import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.repository.SlickMetaStoreComponent

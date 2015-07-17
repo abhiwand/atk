@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.bincolumn
+package com.intel.taproot.analytics.engine.frame.plugins.bincolumn
 
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame._
@@ -22,9 +22,9 @@ import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema, Schema }
 import com.intel.taproot.analytics.engine.Rows
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.plugins.groupby.GroupByAggregationFunctions
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, LegacyFrameRdd }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.frame.plugins.groupby.GroupByAggregationFunctions
+import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkContext, sql }
 import org.apache.spark.sql.Row

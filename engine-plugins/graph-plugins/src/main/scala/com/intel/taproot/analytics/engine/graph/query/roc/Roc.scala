@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.query.roc
+package com.intel.taproot.analytics.engine.graph.query.roc
 
 import scala.collection.mutable.ArrayBuffer
 

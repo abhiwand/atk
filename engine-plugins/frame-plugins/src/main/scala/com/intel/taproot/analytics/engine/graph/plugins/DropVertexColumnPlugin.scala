@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.plugins
+package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema }
-import com.intel.taproot.analytics.engine.spark.frame.plugins.DropColumnsPlugin
+import com.intel.taproot.analytics.engine.frame.plugins.DropColumnsPlugin
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, DropColumnsArgs }
 
 /**

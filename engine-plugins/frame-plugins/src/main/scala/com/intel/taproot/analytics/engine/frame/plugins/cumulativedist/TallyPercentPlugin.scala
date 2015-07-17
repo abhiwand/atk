@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.cumulativedist
+package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 
 import com.intel.taproot.analytics.domain.frame.{ TallyPercentArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.{ DataTypes }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.LegacyFrameRdd
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
+import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
 import spray.json._

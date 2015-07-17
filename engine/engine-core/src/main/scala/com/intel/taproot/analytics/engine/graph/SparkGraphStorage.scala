@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph
+package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.event.EventLogging
 import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReader
@@ -28,8 +28,8 @@ import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, VertexSchema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameStorage
-import com.intel.taproot.analytics.engine.spark.plugin.SparkInvocation
+import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
+import com.intel.taproot.analytics.engine.plugin.SparkInvocation
 import com.intel.taproot.analytics.engine.{ GraphBackendStorage, GraphStorage }
 import com.intel.taproot.analytics.repository.MetaStore
 import com.intel.taproot.analytics.security.UserPrincipal

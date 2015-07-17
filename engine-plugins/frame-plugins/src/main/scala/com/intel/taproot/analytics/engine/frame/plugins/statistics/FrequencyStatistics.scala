@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics
+package com.intel.taproot.analytics.engine.frame.plugins.statistics
 
 import org.apache.spark.AccumulatorParam
 import org.apache.spark.rdd._

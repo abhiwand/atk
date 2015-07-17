@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins
+package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.PythonRddStorage
+import com.intel.taproot.analytics.engine.frame.PythonRddStorage
 import com.intel.taproot.analytics.domain.frame.CountWhereArgs
 import org.bson.BSON
 import org.bson.types.BasicBSONList
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
 import com.intel.taproot.analytics.domain.LongValue
 
 // Implicits needed for JSON conversion

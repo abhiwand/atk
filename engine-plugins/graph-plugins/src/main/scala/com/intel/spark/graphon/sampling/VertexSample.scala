@@ -20,10 +20,10 @@ import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.taproot.analytics.component.Boot
 import com.intel.taproot.analytics.domain.frame.FrameName
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.graph.GraphBackendName
-import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
-import com.intel.taproot.analytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.graph.GraphBackendName
+import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
+import com.intel.taproot.analytics.engine.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.domain.{ StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphReference }

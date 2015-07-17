@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.load
+package com.intel.taproot.analytics.engine.frame.plugins.load
 
 import com.intel.taproot.analytics.domain.frame.load.{ LineParser, LineParserArguments }
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.engine.spark.EngineConfig
-import com.intel.taproot.analytics.engine.spark.frame._
+import com.intel.taproot.analytics.engine.EngineConfig
+import com.intel.taproot.analytics.engine.frame._
 import org.apache.hadoop.io.LongWritable
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.{ sql, SparkContext }

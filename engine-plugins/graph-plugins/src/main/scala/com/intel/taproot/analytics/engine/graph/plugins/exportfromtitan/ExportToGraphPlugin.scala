@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.plugins.exportfromtitan
+package com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan
 
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.taproot.analytics.domain.graph._
@@ -23,9 +23,9 @@ import com.intel.taproot.analytics.domain.schema.{ Column, VertexSchema, _ }
 import com.intel.taproot.analytics.engine.{ FrameStorage, GraphStorage }
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ LegacyFrameRdd, SparkFrameStorage }
-import com.intel.taproot.analytics.engine.spark.graph.SparkGraphStorage
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.frame.{ LegacyFrameRdd, SparkFrameStorage }
+import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.Vertex
 import org.apache.spark.SparkContext

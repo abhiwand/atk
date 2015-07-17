@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import com.intel.taproot.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.taproot.analytics.engine.spark.partitioners.{ FileSizeToPartitionSize, SparkAutoPartitionStrategy }
+import com.intel.taproot.analytics.engine.partitioners.{ FileSizeToPartitionSize, SparkAutoPartitionStrategy }
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin

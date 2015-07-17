@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.covariance
+package com.intel.taproot.analytics.engine.frame.plugins.statistics.covariance
 
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.taproot.analytics.domain.schema.FrameSchema
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.frame.CovarianceMatrixArgs

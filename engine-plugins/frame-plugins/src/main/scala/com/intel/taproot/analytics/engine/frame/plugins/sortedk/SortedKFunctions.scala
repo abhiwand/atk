@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.sortedk
+package com.intel.taproot.analytics.engine.frame.plugins.sortedk
 
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.frame.ordering.{ FrameOrderingUtils, MultiColumnKeyOrdering }

@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.command
+package com.intel.taproot.analytics.engine.command
 
 import com.intel.taproot.analytics.component.Archive
 import com.intel.taproot.analytics.domain.command.{ CommandDocLoader, CommandDefinition, CommandDoc }
 import com.intel.taproot.analytics.engine.PluginDocAnnotation
 import com.intel.taproot.analytics.engine.plugin.{ PluginDoc, CommandPlugin, Invocation }
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.taproot.analytics.schema.ObjectSchema
 import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.shared.JsonSchemaExtractor

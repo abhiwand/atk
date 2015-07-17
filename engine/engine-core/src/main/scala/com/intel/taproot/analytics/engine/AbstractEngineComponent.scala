@@ -20,13 +20,13 @@ import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.EventLoggingImplicits
 import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.engine.plugin.Call
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameStorage, FrameFileStorage }
-import com.intel.taproot.analytics.engine.spark.graph.{ SparkGraphStorage, HBaseAdminFactory, SparkGraphHBaseBackend }
-import com.intel.taproot.analytics.engine.spark.model.SparkModelStorage
-import com.intel.taproot.analytics.engine.spark.partitioners.SparkAutoPartitioner
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext
-import com.intel.taproot.analytics.engine.spark.user.UserStorage
-import com.intel.taproot.analytics.engine.spark.command._
+import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, FrameFileStorage }
+import com.intel.taproot.analytics.engine.graph.{ SparkGraphStorage, HBaseAdminFactory, SparkGraphHBaseBackend }
+import com.intel.taproot.analytics.engine.model.SparkModelStorage
+import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
+import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
+import com.intel.taproot.analytics.engine.user.UserStorage
+import com.intel.taproot.analytics.engine.command._
 import com.intel.taproot.analytics.repository.{ Profile, SlickMetaStoreComponent, DbProfileComponent }
 
 /**

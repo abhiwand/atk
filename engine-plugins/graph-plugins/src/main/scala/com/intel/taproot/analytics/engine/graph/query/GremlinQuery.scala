@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.query
+package com.intel.taproot.analytics.engine.graph.query
 
 import javax.script.Bindings
 
 import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandInvocation, CommandPlugin, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBackendName, GraphBuilderConfigFactory }
+import com.intel.taproot.analytics.engine.graph.{ SparkGraphHBaseBackend, GraphBackendName, GraphBuilderConfigFactory }
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine

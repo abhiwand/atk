@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.bincolumn
+package com.intel.taproot.analytics.engine.frame.plugins.bincolumn
 
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import org.apache.spark.rdd.RDD

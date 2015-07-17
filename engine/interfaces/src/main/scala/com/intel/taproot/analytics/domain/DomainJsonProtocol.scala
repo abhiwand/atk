@@ -33,8 +33,8 @@ import com.intel.taproot.analytics.domain.schema._
 import com.intel.taproot.analytics.domain.query.{ RowQuery }
 import DataTypes.DataType
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Call, Invocation, QueryPluginResults }
-import com.intel.taproot.analytics.engine.spark.gc.GarbageCollectionArgs
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext
+import com.intel.taproot.analytics.engine.gc.GarbageCollectionArgs
+import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
 import com.intel.taproot.analytics.schema._
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag

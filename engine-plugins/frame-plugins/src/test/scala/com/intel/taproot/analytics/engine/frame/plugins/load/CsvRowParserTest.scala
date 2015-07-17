@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.load
+package com.intel.taproot.analytics.engine.frame.plugins.load
 
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import org.scalatest.{ Matchers, WordSpec }

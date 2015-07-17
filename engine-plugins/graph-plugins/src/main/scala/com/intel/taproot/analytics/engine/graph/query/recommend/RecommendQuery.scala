@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.query.recommend
+package com.intel.taproot.analytics.engine.graph.query.recommend
 
 import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.taproot.analytics.security.UserPrincipal
 import org.apache.spark.storage.StorageLevel
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.partitioners
+package com.intel.taproot.analytics.engine.partitioners
 
 /**
  * Partitioning Strategies for Spark RDDs.

@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins
+package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, LegacyFrameRdd, MiscFrameFunctions }
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd, MiscFrameFunctions }
+import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
 
 // Implicits needed for JSON conversion

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.parquet
+package com.intel.taproot.analytics.engine.frame.parquet
 
 import parquet.io.api.{ GroupConverter, PrimitiveConverter }
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.plugins
+package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.domain.schema.GraphSchema
 import org.scalatest.{ FlatSpec, Matchers }

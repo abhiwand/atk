@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.load
+package com.intel.taproot.analytics.engine.frame.plugins.load
 
 /**
  * Parsing results into two types of rows: successes and failures.

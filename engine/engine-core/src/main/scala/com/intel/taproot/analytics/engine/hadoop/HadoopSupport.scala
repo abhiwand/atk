@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.hadoop
+package com.intel.taproot.analytics.engine.hadoop
 
 import com.typesafe.config.{ Config, ConfigFactory, ConfigObject, ConfigValue }
 import org.apache.hadoop.conf.Configuration

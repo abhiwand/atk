@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.numericalstatistics
+package com.intel.taproot.analytics.engine.frame.plugins.statistics.numericalstatistics
 
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.NumericValidationUtils
+import com.intel.taproot.analytics.engine.frame.plugins.statistics.NumericValidationUtils
 import org.apache.spark.AccumulatorParam
 
 /**

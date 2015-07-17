@@ -14,18 +14,29 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark
+package com.intel.taproot.analytics.engine
 
-import org.scalatest.WordSpec
+import com.esotericsoftware.kryo.Kryo
+import com.intel.taproot.analytics.engine.Rows.Row
+import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
+import org.mockito.Mockito._
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{Matchers, WordSpec}
 
-class CommandDumperConfigTest extends WordSpec {
+class EngineKryoRegistratorTest extends WordSpec with Matchers with MockitoSugar {
 
-  "CommandDumperConfig" should {
-    "not have null metastore connection information" in {
-      assert(CommandDumperConfig.metaStoreConnectionDriver != null)
-      assert(CommandDumperConfig.metaStoreConnectionPassword != null)
-      assert(CommandDumperConfig.metaStoreConnectionUrl != null)
-      assert(CommandDumperConfig.metaStoreConnectionUsername != null)
+  "EngineKryoRegistrator" should {
+
+    "register expected classes" in {
+
+      val kryo = mock[Kryo]
+
+      // invoke method under test
+      new EngineKryoRegistrator().registerClasses(kryo)
+
+      verify(kryo).register(classOf[Row])
+      verify(kryo).register(classOf[LegacyFrameRdd])
     }
+
   }
 }

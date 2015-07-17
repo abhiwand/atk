@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.parquet
+package com.intel.taproot.analytics.engine.frame.parquet
 
 import java.nio.charset.Charset
 
-import com.intel.taproot.analytics.engine.spark.HdfsFileStorage
+import com.intel.taproot.analytics.engine.HdfsFileStorage
 import org.apache.hadoop.fs.{ Path, FileSystem }
 import parquet.column.{ ColumnReadStore, ColumnReader, ColumnDescriptor }
 import parquet.column.page.PageReadStore

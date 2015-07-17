@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.groupby.aggregators
+package com.intel.taproot.analytics.engine.frame.plugins.groupby.aggregators
 
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
-import com.intel.taproot.analytics.engine.spark.frame.plugins.bincolumn.DiscretizationFunctions
+import com.intel.taproot.analytics.engine.frame.plugins.bincolumn.DiscretizationFunctions
 
 /**
  * Aggregator for computing histograms using a list of cutoffs.

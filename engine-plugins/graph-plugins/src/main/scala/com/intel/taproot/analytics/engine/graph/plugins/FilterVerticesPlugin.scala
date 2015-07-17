@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.plugins
+package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.taproot.analytics.engine.spark.frame._
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.frame._
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameStorage, PythonRddStorage }
+import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, PythonRddStorage }
 import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.FilterVerticesArgs

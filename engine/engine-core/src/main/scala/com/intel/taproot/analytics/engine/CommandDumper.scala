@@ -20,8 +20,8 @@ import com.intel.taproot.event.{ EventContext, EventLogging }
 import com.intel.taproot.analytics.component.{ Archive, ArchiveDefinition, DefaultArchive, FileUtil }
 import FileUtil.writeFile
 import com.intel.taproot.analytics.engine.plugin.Call
-import com.intel.taproot.analytics.engine.spark.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, CommandStorageImpl }
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext
+import com.intel.taproot.analytics.engine.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, CommandStorageImpl }
+import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
 import com.intel.taproot.analytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import com.intel.taproot.analytics.security.UserPrincipal
 import com.typesafe.config.Config

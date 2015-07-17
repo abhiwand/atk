@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.dotproduct
+package com.intel.taproot.analytics.engine.frame.plugins.dotproduct
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 

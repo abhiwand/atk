@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph
+package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.analytics.engine.plugin.Call
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext
+import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
 import org.scalatest.{ Matchers, WordSpec }
 import org.mockito.Mockito._
 

@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.plugins
+package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.engine.spark.frame.LegacyFrameRdd
+import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.Matchers

@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins
+package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ UnflattenColumnArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes, Column }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, RowWrapper }
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.frame.{ SparkFrame, RowWrapper }
+import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.groupby.aggregators
+package com.intel.taproot.analytics.engine.frame.plugins.groupby.aggregators
 
 import com.intel.taproot.analytics.domain.frame.GroupByAggregationArgs
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes }

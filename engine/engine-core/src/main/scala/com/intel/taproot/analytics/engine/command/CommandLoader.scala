@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.command
+package com.intel.taproot.analytics.engine.command
 
 import com.intel.taproot.analytics.engine.plugin.CommandPlugin
-import com.intel.taproot.analytics.engine.spark.EngineConfig
+import com.intel.taproot.analytics.engine.EngineConfig
 import com.intel.taproot.analytics.component.{ Archive, Boot }
 
 /**

@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.dotproduct
+package com.intel.taproot.analytics.engine.frame.plugins.dotproduct
 
 import java.io.Serializable
 
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.analytics.engine.frame.RowWrapper
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql

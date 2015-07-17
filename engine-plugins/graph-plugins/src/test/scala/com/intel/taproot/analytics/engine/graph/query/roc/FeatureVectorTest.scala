@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.query.roc
+package com.intel.taproot.analytics.engine.graph.query.roc
 
 import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
 import org.scalatest.matchers.{ MatchResult, Matcher }

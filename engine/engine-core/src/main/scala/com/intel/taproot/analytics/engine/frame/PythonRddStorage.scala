@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame
+package com.intel.taproot.analytics.engine.frame
 
 import java.io.{ File }
 import java.util
@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.domain.frame.{ FrameReference }
 import com.intel.taproot.analytics.domain.frame.{ Udf }
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark.EngineConfig
+import com.intel.taproot.analytics.engine.EngineConfig
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.commons.codec.binary.Base64.decodeBase64

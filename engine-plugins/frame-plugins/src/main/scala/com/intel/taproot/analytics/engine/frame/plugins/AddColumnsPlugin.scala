@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins
+package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.UriReference
 import com.intel.taproot.analytics.domain.command.CommandDoc
@@ -22,9 +22,9 @@ import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Column }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, PythonRddStorage }
+import com.intel.taproot.analytics.engine.frame.{ SparkFrame, PythonRddStorage }
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.sql
 
 // Implicits needed for JSON conversion

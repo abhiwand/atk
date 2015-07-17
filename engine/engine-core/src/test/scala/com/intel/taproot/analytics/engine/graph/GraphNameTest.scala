@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph
+package com.intel.taproot.analytics.engine.graph
 
 import org.scalatest.{ Matchers, WordSpec }
 

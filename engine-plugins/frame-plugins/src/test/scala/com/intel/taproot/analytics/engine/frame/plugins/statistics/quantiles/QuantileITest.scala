@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.quantiles
+package com.intel.taproot.analytics.engine.frame.plugins.statistics.quantiles
 
 import com.intel.taproot.analytics.algorithm.Quantile
 import com.intel.taproot.analytics.domain.schema.DataTypes

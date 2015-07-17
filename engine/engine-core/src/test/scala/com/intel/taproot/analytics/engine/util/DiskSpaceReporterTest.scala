@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.util
+package com.intel.taproot.analytics.engine.util
 
 import com.intel.taproot.analytics.engine.plugin.Call
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext
+import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
 import org.scalatest.WordSpec
 
 class DiskSpaceReporterTest extends WordSpec {

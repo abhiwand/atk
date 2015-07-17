@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins
+package com.intel.taproot.analytics.engine.frame.plugins
 
-import com.intel.taproot.analytics.engine.spark.frame.MiscFrameFunctions
+import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import org.scalatest.{ FlatSpec, Matchers }
 
 class DropDuplicatesArgsTest extends FlatSpec with Matchers {

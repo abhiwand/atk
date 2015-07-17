@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.quantiles
+package com.intel.taproot.analytics.engine.frame.plugins.statistics.quantiles
 
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Column, DataTypes }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import org.apache.spark.frame.FrameRdd
 

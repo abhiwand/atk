@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame
+package com.intel.taproot.analytics.engine.frame
 
 import com.intel.taproot.analytics.EventLoggingImplicits
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark.HdfsFileStorage
+import com.intel.taproot.analytics.engine.HdfsFileStorage
 import org.apache.hadoop.fs.Path
 import com.intel.taproot.event.{ EventContext, EventLogging }
 

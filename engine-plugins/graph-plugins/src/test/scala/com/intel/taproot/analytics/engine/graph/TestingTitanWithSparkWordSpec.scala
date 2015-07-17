@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph
+package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.taproot.testutils.{ LogUtils, TestingSparkContextWordSpec, TestingTitan }

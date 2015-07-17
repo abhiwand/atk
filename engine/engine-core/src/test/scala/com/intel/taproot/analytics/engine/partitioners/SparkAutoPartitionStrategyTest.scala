@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.partitioners
+package com.intel.taproot.analytics.engine.partitioners
 
-import com.intel.taproot.analytics.engine.spark.partitioners.SparkAutoPartitionStrategy._
+import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitionStrategy._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ FlatSpec, Matchers }
 

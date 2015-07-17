@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.parquet
+package com.intel.taproot.analytics.engine.frame.parquet
 
 import java.io.File
 
-import com.intel.taproot.analytics.engine.spark.HdfsFileStorage
+import com.intel.taproot.analytics.engine.HdfsFileStorage
 import com.intel.taproot.testutils.{ TestingSparkContext, TestingSparkContextWordSpec }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }

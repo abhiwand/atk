@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.plugin
+package com.intel.taproot.analytics.engine.plugin
 
 import com.intel.taproot.event.EventContext
 import com.intel.taproot.analytics.engine.plugin.CommandInvocation
-import com.intel.taproot.analytics.engine.spark.{ CommandProgressUpdater, EngineImpl }
+import com.intel.taproot.analytics.engine.{ CommandProgressUpdater, EngineImpl }
 import com.intel.taproot.analytics.engine.{ CommandStorageProgressUpdater, CommandStorage }
 import com.intel.taproot.analytics.security.UserPrincipal
 import spray.json.JsObject

@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.descriptives
+package com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives
 
 import com.intel.taproot.analytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnMedianReturn, ColumnModeReturn, ColumnSummaryStatisticsReturn }
 import com.intel.taproot.analytics.domain.schema.Column
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.Rows._
-import com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.numericalstatistics._
-import com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.{ FrequencyStatistics, OrderStatistics }
+import com.intel.taproot.analytics.engine.frame.plugins.statistics.numericalstatistics._
+import com.intel.taproot.analytics.engine.frame.plugins.statistics.{ FrequencyStatistics, OrderStatistics }
 import org.apache.spark.rdd.RDD
 import spray.json.DefaultJsonProtocol._
 import spray.json._

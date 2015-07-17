@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.threading
+package com.intel.taproot.analytics.engine.threading
 
 import com.typesafe.config.ConfigFactory
 

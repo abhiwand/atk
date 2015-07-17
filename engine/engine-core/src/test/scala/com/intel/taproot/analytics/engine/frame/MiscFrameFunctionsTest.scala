@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame
+package com.intel.taproot.analytics.engine.frame
 
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph
+package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.taproot.graphbuilder.parser.rule.{ ConstantValue, ParsedValue, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule, Value => GBValue, VertexRule => GBVertexRule }
@@ -25,7 +25,7 @@ import com.intel.taproot.analytics.domain.graph.construction.{ EdgeRule, Propert
 import com.intel.taproot.analytics.domain.graph.{ GraphName, GraphEntity, LoadGraphArgs }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.Schema
-import com.intel.taproot.analytics.engine.spark.EngineConfig
+import com.intel.taproot.analytics.engine.EngineConfig
 import com.typesafe.config.Config
 
 /**

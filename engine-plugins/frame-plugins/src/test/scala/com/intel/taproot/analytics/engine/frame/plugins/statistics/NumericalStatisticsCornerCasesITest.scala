@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics
+package com.intel.taproot.analytics.engine.frame.plugins.statistics
 
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 import org.scalatest.Assertions
-import com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.numericalstatistics.NumericalStatistics
+import com.intel.taproot.analytics.engine.frame.plugins.statistics.numericalstatistics.NumericalStatistics
 
 class NumericalStatisticsCornerCasesITest extends TestingSparkContextFlatSpec with Matchers {
 

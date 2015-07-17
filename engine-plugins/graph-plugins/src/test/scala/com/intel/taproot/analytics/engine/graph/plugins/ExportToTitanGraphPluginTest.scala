@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.plugins
+package com.intel.taproot.analytics.engine.graph.plugins
 
 import java.util
 
@@ -22,9 +22,9 @@ import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.taproot.graphbuilder.parser.InputSchema
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameStorage }
+import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage }
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
+import com.intel.taproot.analytics.engine.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
 import com.intel.taproot.testutils.{ TestingSparkContextFlatSpec, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }

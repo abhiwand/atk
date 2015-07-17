@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine
 
 import java.io.{InputStream, OutputStream}
 
-import com.intel.taproot.analytics.engine.spark.util.KerberosAuthenticator
+import com.intel.taproot.analytics.engine.util.KerberosAuthenticator
 import com.intel.taproot.event.{EventContext, EventLogging}
 import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration

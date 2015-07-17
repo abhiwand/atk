@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.query
+package com.intel.taproot.analytics.engine.graph.query
 
 import com.intel.taproot.testutils.MatcherUtils._
 import com.intel.taproot.testutils.TestingTitan

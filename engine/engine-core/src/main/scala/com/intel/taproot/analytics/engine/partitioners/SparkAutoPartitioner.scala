@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.partitioners
+package com.intel.taproot.analytics.engine.partitioners
 
 import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.EventLoggingImplicits
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark.partitioners.SparkAutoPartitionStrategy.{ ShrinkOnly, ShrinkOrGrow }
-import com.intel.taproot.analytics.engine.spark.{ HdfsFileStorage, EngineConfig }
+import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitionStrategy.{ ShrinkOnly, ShrinkOrGrow }
+import com.intel.taproot.analytics.engine.{ HdfsFileStorage, EngineConfig }
 import org.apache.spark.frame.FrameRdd
 
 /**

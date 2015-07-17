@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.command
+package com.intel.taproot.analytics.engine.command
 
 import java.io.File
 import java.nio.file.{ FileSystems, Files }
 
-import com.intel.taproot.analytics.engine.spark.hadoop.HadoopSupport
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext
+import com.intel.taproot.analytics.engine.hadoop.HadoopSupport
+import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
 
 import sys.process._
 
@@ -28,8 +28,8 @@ import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, CommandPlugin }
-import com.intel.taproot.analytics.engine.spark.util.{ JvmMemory, KerberosAuthenticator }
-import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig, EngineImpl }
+import com.intel.taproot.analytics.engine.util.{ JvmMemory, KerberosAuthenticator }
+import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig, EngineImpl }
 import com.intel.taproot.analytics.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
 
@@ -40,12 +40,12 @@ import scala.util.Try
 import com.intel.taproot.analytics.domain.command.CommandTemplate
 import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.domain.command.Execution
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.command.Command
 import scala.collection.mutable
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import scala.concurrent.duration._
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext.global
+import com.intel.taproot.analytics.engine.threading.EngineExecutionContext.global
 
 case class CommandContext(
     command: Command,
@@ -203,7 +203,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
 
           val sparkMaster = Array(s"--master", s"${EngineConfig.sparkMaster}")
           val jobName = Array(s"--name", s"${command.getJobName}")
-          val pluginExecutionDriverClass = Array("--class", "com.intel.taproot.analytics.engine.spark.command.CommandDriver")
+          val pluginExecutionDriverClass = Array("--class", "com.intel.taproot.analytics.engine.command.CommandDriver")
 
           val pluginDependencyJars = EngineConfig.sparkAppJarsLocal match {
             case true => Array[String]() /* Expect jars to installed locally and available */

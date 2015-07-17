@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.command
+package com.intel.taproot.analytics.engine.command
 
 import scala.util.{ Success, Failure, Try }
 import spray.json.JsObject

@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.quantiles
+package com.intel.taproot.analytics.engine.frame.plugins.statistics.quantiles
 
 import com.intel.taproot.analytics.algorithm.{ QuantileComposingElement, QuantileTarget }
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.spark.frame.MiscFrameFunctions
+import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql.catalyst.expressions.GenericRow

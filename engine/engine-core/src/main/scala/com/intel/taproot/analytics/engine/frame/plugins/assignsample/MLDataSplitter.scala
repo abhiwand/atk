@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.assignsample
+package com.intel.taproot.analytics.engine.frame.plugins.assignsample
 
 import org.apache.spark.rdd._
 

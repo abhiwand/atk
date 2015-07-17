@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.partitioners
+package com.intel.taproot.analytics.engine.partitioners
 
-import com.intel.taproot.analytics.engine.spark.EngineConfig
+import com.intel.taproot.analytics.engine.EngineConfig
 import org.apache.spark.rdd.RDD
 
 /**

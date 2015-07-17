@@ -14,15 +14,15 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph.plugins
+package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.taproot.analytics.domain.graph.{ LoadGraphArgs, GraphEntity }
 import com.intel.taproot.analytics.engine.Rows
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameStorage
-import com.intel.taproot.analytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
+import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
+import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
 
 import com.intel.taproot.analytics.domain.Status

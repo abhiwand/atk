@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.descriptives
+package com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives
 
 import com.intel.taproot.analytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnMedianReturn, ColumnSummaryStatisticsReturn }
 import com.intel.taproot.analytics.domain.schema.DataTypes

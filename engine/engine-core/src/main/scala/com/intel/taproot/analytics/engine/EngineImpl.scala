@@ -26,14 +26,14 @@ import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.model.{ModelEntity, ModelReference}
 import com.intel.taproot.analytics.domain.query._
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark.command.{CommandExecutor, CommandPluginRegistry}
-import com.intel.taproot.analytics.engine.spark.frame._
-import com.intel.taproot.analytics.engine.spark.gc.{GarbageCollectionPlugin, GarbageCollector}
-import com.intel.taproot.analytics.engine.spark.graph.SparkGraphStorage
-import com.intel.taproot.analytics.engine.spark.model.SparkModelStorage
-import com.intel.taproot.analytics.engine.spark.partitioners.SparkAutoPartitioner
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext.global
-import com.intel.taproot.analytics.engine.spark.user.UserStorage
+import com.intel.taproot.analytics.engine.command.{CommandExecutor, CommandPluginRegistry}
+import com.intel.taproot.analytics.engine.frame._
+import com.intel.taproot.analytics.engine.gc.{GarbageCollectionPlugin, GarbageCollector}
+import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
+import com.intel.taproot.analytics.engine.model.SparkModelStorage
+import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
+import com.intel.taproot.analytics.engine.threading.EngineExecutionContext.global
+import com.intel.taproot.analytics.engine.user.UserStorage
 import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.{EventLoggingImplicits, NotFoundException}
 import com.intel.taproot.event.EventLogging

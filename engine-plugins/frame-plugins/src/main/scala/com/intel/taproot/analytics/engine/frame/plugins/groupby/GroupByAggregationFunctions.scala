@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.groupby
+package com.intel.taproot.analytics.engine.frame.plugins.groupby
 
 import com.intel.taproot.analytics.domain.frame.GroupByAggregationArgs
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema, Schema }
-import com.intel.taproot.analytics.engine.spark.frame.plugins.groupby.aggregators._
+import com.intel.taproot.analytics.engine.frame.plugins.groupby.aggregators._
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 

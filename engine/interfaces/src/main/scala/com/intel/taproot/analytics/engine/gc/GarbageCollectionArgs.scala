@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.gc
+package com.intel.taproot.analytics.engine.gc
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
 /**

@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.partitioners
+package com.intel.taproot.analytics.engine.partitioners
 
 import com.intel.taproot.analytics.domain.schema.{ Column, FrameSchema, DataTypes, Schema }
-import com.intel.taproot.analytics.engine.spark.HdfsFileStorage
+import com.intel.taproot.analytics.engine.HdfsFileStorage
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
 import org.mockito.Mockito._

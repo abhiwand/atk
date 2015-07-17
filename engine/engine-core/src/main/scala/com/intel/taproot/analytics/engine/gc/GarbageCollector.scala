@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.gc
+package com.intel.taproot.analytics.engine.gc
 
 import java.lang.management.ManagementFactory
 import java.net.InetAddress
@@ -25,9 +25,9 @@ import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollectionTemplate, GarbageCollection }
 import com.intel.taproot.analytics.engine.GraphBackendStorage
 import com.intel.taproot.analytics.engine.plugin.BackendInvocation
-import com.intel.taproot.analytics.engine.spark.EngineConfig
-import com.intel.taproot.analytics.engine.spark.frame.{ FrameFileStorage }
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext
+import com.intel.taproot.analytics.engine.EngineConfig
+import com.intel.taproot.analytics.engine.frame.{ FrameFileStorage }
+import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
 import com.intel.taproot.analytics.repository.{ MetaStore }
 import org.joda.time.DateTime
 

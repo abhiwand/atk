@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.groupby
+package com.intel.taproot.analytics.engine.frame.plugins.groupby
 
 import com.intel.taproot.analytics.engine.Rows
-import com.intel.taproot.analytics.engine.spark.frame.plugins.groupby.aggregators._
-import com.intel.taproot.analytics.engine.spark.partitioners.SparkCoresPartitioner
+import com.intel.taproot.analytics.engine.frame.plugins.groupby.aggregators._
+import com.intel.taproot.analytics.engine.partitioners.SparkCoresPartitioner
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 

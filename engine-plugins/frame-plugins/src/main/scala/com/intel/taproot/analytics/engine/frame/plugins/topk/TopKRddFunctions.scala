@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame.plugins.topk
+package com.intel.taproot.analytics.engine.frame.plugins.topk
 
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.Rows._
-import com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.NumericValidationUtils
-import com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.descriptives.ColumnStatistics
+import com.intel.taproot.analytics.engine.frame.plugins.statistics.NumericValidationUtils
+import com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives.ColumnStatistics
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 

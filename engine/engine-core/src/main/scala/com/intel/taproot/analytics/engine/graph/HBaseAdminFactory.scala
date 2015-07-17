@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.graph
+package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.analytics.component.ClassLoaderAware
-import com.intel.taproot.analytics.engine.spark.util.KerberosAuthenticator
+import com.intel.taproot.analytics.engine.util.KerberosAuthenticator
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import org.apache.hadoop.conf.Configuration

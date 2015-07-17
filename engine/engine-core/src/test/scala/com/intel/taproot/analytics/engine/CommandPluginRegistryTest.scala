@@ -18,12 +18,12 @@ package com.intel.taproot.analytics.engine
 
 import org.scalatest.{ Matchers, FlatSpec }
 import org.mockito.Mockito._
-import com.intel.taproot.analytics.engine.spark.command.{ CommandPluginRegistryMaps, CommandPluginRegistry, CommandLoader }
+import com.intel.taproot.analytics.engine.command.{ CommandPluginRegistryMaps, CommandPluginRegistry, CommandLoader }
 import com.intel.taproot.analytics.engine.plugin.CommandPlugin
 import scala.collection.immutable.HashMap
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, CumulativeSumArgs }
 import com.intel.taproot.analytics.security.UserPrincipal
-import com.intel.taproot.analytics.engine.spark.plugin.SparkInvocation
+import com.intel.taproot.analytics.engine.plugin.SparkInvocation
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol
 import DomainJsonProtocol._

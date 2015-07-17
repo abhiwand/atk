@@ -14,13 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.plugin
+package com.intel.taproot.analytics.engine.plugin
 
 import java.nio.file.{ Paths, Files }
 import java.nio.charset.StandardCharsets
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.schema.Schema
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameImpl, SparkFrame }
+import com.intel.taproot.analytics.engine.frame.{ SparkFrameImpl, SparkFrame }
 import org.apache.spark.frame.FrameRdd
 
 import scala.collection.JavaConversions._
@@ -31,7 +31,7 @@ import com.typesafe.config.{ ConfigList, ConfigValue }
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 import com.intel.taproot.event.EventLogging
-import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig, EngineImpl }
+import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig, EngineImpl }
 
 /**
  * Base trait for command plugins that need direct access to a SparkContext
@@ -48,7 +48,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
    * Name of the custom kryoclass this plugin needs.
    * kryoRegistrator = None means use JavaSerializer
    */
-  def kryoRegistrator: Option[String] = Some("com.intel.taproot.analytics.engine.spark.EngineKryoRegistrator")
+  def kryoRegistrator: Option[String] = Some("com.intel.taproot.analytics.engine.EngineKryoRegistrator")
 
   def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.util
+package com.intel.taproot.analytics.engine.util
 
 import java.text.NumberFormat
 import java.util.Locale

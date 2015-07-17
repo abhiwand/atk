@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame
+package com.intel.taproot.analytics.engine.frame
 
 import java.util.UUID
 import com.intel.taproot.analytics.domain.graph.GraphEntity
@@ -26,13 +26,13 @@ import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.domain.frame.{ FrameReference, DataFrameTemplate, FrameEntity }
 import com.intel.taproot.analytics.engine.FrameStorage
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark._
-import com.intel.taproot.analytics.engine.spark.command
-import com.intel.taproot.analytics.engine.spark.frame
-import com.intel.taproot.analytics.engine.spark.frame.parquet.ParquetReader
-import com.intel.taproot.analytics.engine.spark.graph
-import com.intel.taproot.analytics.engine.spark.partitioners.SparkAutoPartitioner
-import com.intel.taproot.analytics.engine.spark.plugin.SparkInvocation
+import com.intel.taproot.analytics.engine._
+import com.intel.taproot.analytics.engine.command
+import com.intel.taproot.analytics.engine.frame
+import com.intel.taproot.analytics.engine.frame.parquet.ParquetReader
+import com.intel.taproot.analytics.engine.graph
+import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
+import com.intel.taproot.analytics.engine.plugin.SparkInvocation
 import com.intel.taproot.analytics.repository.SlickMetaStoreComponent
 import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.{ EventLoggingImplicits, DuplicateNameException, NotFoundException }
