@@ -20,7 +20,6 @@ import java.io.File
 import java.nio.file.{ FileSystems, Files }
 
 import com.intel.taproot.analytics.engine.hadoop.HadoopSupport
-import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
 
 import sys.process._
 
@@ -29,7 +28,6 @@ import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, CommandPlugin }
 import com.intel.taproot.analytics.engine.util.{ JvmMemory, KerberosAuthenticator }
-import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig, EngineImpl }
 import com.intel.taproot.analytics.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
 
@@ -38,14 +36,14 @@ import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.util.Try
 import com.intel.taproot.analytics.domain.command.CommandTemplate
-import com.intel.taproot.analytics.security.UserPrincipal
+import UserPrincipal
 import com.intel.taproot.analytics.domain.command.Execution
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.command.Command
 import scala.collection.mutable
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import scala.concurrent.duration._
-import com.intel.taproot.analytics.engine.threading.EngineExecutionContext.global
+import EngineExecutionContext.global
 
 case class CommandContext(
     command: Command,

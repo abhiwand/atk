@@ -22,8 +22,7 @@ import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.security.UserPrincipal
-import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.{UserPrincipal, CreateEntityArgs}
 
 trait FrameStorage {
 

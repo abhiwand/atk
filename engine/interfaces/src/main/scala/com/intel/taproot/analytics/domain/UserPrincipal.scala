@@ -14,14 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine
-
-import com.intel.taproot.analytics.engine.ProgressInfo
+package com.intel.taproot.analytics.domain
 
 /**
- * Execute when receiving progress update for command
+ * Principal representing an authenticated API user
+ * @param user user DB entity representing the API user
+ * @param roles roles of the authenticated user
  */
-trait CommandProgressUpdater {
-  def updateProgress(commandId: Long, progressInfo: List[ProgressInfo]): Unit
-  def updateProgress(commandId: Long, progress: Float): Unit
-}
+case class UserPrincipal(user: User, roles: List[String])

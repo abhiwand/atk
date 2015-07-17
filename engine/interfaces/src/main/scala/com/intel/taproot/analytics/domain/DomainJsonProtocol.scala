@@ -34,7 +34,6 @@ import com.intel.taproot.analytics.domain.query.{ RowQuery }
 import DataTypes.DataType
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Call, Invocation, QueryPluginResults }
 import com.intel.taproot.analytics.engine.gc.GarbageCollectionArgs
-import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
 import com.intel.taproot.analytics.schema._
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag
@@ -49,9 +48,8 @@ import com.intel.taproot.analytics.domain.query.RowQuery
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.{ Duration, DateTime }
-import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
+import com.intel.taproot.analytics.engine._
 import org.joda.time.DateTime
-import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 import scala.reflect.ClassTag
 import scala.util.matching.Regex

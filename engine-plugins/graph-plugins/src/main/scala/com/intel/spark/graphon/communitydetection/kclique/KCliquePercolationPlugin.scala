@@ -20,7 +20,7 @@ import java.util.Date
 import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
-import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.{UserPrincipal, CreateEntityArgs}
 import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.taproot.analytics.component.Boot
 import com.intel.taproot.analytics.domain.command.CommandDoc
@@ -28,7 +28,6 @@ import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
 import com.intel.taproot.analytics.engine.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.taproot.analytics.security.UserPrincipal
 import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent._

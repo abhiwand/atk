@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.plugin
 
-import com.intel.taproot.analytics.security.UserPrincipal
+import com.intel.taproot.analytics.domain.UserPrincipal
 import spray.json._
 
 import com.intel.taproot.analytics.domain.command.CommandDoc

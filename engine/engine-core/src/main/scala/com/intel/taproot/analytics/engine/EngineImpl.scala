@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine
 import java.util.{ArrayList => JArrayList, List => JList}
 
 import com.intel.taproot.analytics.component.ClassLoaderAware
-import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.{UserPrincipal, CreateEntityArgs}
 import com.intel.taproot.analytics.domain.command.{Command, CommandDefinition, CommandTemplate, Execution}
 import com.intel.taproot.analytics.domain.frame.{FrameEntity, FrameReference}
 import com.intel.taproot.analytics.domain.graph._
@@ -32,9 +32,8 @@ import com.intel.taproot.analytics.engine.gc.{GarbageCollectionPlugin, GarbageCo
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
 import com.intel.taproot.analytics.engine.model.SparkModelStorage
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
-import com.intel.taproot.analytics.engine.threading.EngineExecutionContext.global
+import EngineExecutionContext.global
 import com.intel.taproot.analytics.engine.user.UserStorage
-import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.{EventLoggingImplicits, NotFoundException}
 import com.intel.taproot.event.EventLogging
 import org.apache.spark.SparkContext

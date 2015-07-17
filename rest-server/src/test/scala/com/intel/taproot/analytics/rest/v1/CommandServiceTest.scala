@@ -16,10 +16,10 @@
 
 package com.intel.taproot.analytics.rest.v1
 
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, Call }
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
 import org.mockito.Mockito._
-import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.rest.{ ServiceTest, CommonDirectives }
 import com.intel.taproot.analytics.engine.Engine
 import scala.concurrent.Future

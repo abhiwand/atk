@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphTemplate }
 import com.intel.taproot.analytics.domain.model.ModelEntity
 import com.intel.taproot.analytics.domain.query.{ QueryResult, RowQuery }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.security.UserPrincipal
+import UserPrincipal
 
 import scala.concurrent.Future
 

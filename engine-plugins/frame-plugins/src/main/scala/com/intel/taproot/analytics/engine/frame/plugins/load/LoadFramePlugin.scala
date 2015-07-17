@@ -16,12 +16,12 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.load
 
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.analytics.domain.frame.{ FrameReference, FrameEntity }
 import com.intel.taproot.analytics.domain.frame.load.LoadFrameArgs
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.engine.plugin.PluginDoc
-import com.intel.taproot.analytics.security.UserPrincipal
 import org.apache.spark.frame.FrameRdd
 
 import spray.json._

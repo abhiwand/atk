@@ -17,6 +17,7 @@
 package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.UnitReturn
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
@@ -28,7 +29,6 @@ import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
 import com.intel.taproot.analytics.engine.frame.{ RowWrapper }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.taproot.analytics.security.UserPrincipal
 import org.apache.spark.SparkContext._
 
 // Implicits needed for JSON conversion

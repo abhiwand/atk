@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, FrameFileSt
 import com.intel.taproot.analytics.engine.graph.{ SparkGraphStorage, HBaseAdminFactory, SparkGraphHBaseBackend }
 import com.intel.taproot.analytics.engine.model.SparkModelStorage
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
-import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
+import EngineExecutionContext
 import com.intel.taproot.analytics.engine.user.UserStorage
 import com.intel.taproot.analytics.engine.command._
 import com.intel.taproot.analytics.repository.{ Profile, SlickMetaStoreComponent, DbProfileComponent }

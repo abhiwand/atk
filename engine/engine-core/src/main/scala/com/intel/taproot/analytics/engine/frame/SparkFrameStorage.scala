@@ -34,7 +34,7 @@ import com.intel.taproot.analytics.engine.graph
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
 import com.intel.taproot.analytics.engine.plugin.SparkInvocation
 import com.intel.taproot.analytics.repository.SlickMetaStoreComponent
-import com.intel.taproot.analytics.security.UserPrincipal
+import UserPrincipal
 import com.intel.taproot.analytics.{ EventLoggingImplicits, DuplicateNameException, NotFoundException }
 import org.apache.hadoop.fs.Path
 import org.apache.spark.frame.FrameRdd

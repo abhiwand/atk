@@ -16,10 +16,10 @@
 
 package com.intel.taproot.analytics.engine.command
 
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.event.EventContext
 import com.intel.taproot.analytics.engine.plugin.CommandInvocation
 import com.intel.taproot.analytics.engine.{ CommandStorageProgressUpdater, CommandStorage, Engine }
-import com.intel.taproot.analytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext

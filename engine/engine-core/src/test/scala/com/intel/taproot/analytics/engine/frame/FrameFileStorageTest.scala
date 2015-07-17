@@ -16,8 +16,8 @@
 
 package com.intel.taproot.analytics.engine.frame
 
+import com.intel.taproot.analytics.engine.EngineExecutionContext
 import com.intel.taproot.analytics.engine.plugin.Call
-import com.intel.taproot.analytics.engine.threading.EngineExecutionContext
 import org.scalatest.FlatSpec
 
 class FrameFileStorageTest extends FlatSpec {
