@@ -21,7 +21,7 @@ import com.intel.taproot.analytics.domain.command.{ Command, CommandDefinition, 
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphTemplate }
 import com.intel.taproot.analytics.domain.model.ModelEntity
-import com.intel.taproot.analytics.domain.query.RowQueryArgs
+import com.intel.taproot.analytics.domain.frame.RowQueryArgs
 import com.intel.taproot.analytics.engine.plugin.Invocation
 
 import scala.concurrent.Future
