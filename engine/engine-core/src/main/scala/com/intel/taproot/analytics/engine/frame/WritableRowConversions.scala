@@ -21,6 +21,7 @@ import org.apache.hadoop.io._
 /**
  * Convert supported dataTypes to/from Hadoop Writables
  */
+@deprecated("This was originally written for Giraph integration, we aren't using it yet though.  After detangle from Titan work is done we should delete it if still not used.")
 object WritableRowConversions {
 
   /**

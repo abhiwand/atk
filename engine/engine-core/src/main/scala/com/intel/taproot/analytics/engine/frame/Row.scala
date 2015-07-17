@@ -166,6 +166,7 @@ trait AbstractRow {
     setValuesIgnoreType(values)
   }
 
+  @deprecated("This was originally written for Giraph integration, we aren't using it yet though.  After detangle from Titan work is done we should delete it if still not used.")
   def setValues(values: List[Writable]): Row = {
     setValues(values.map(value => WritableRowConversions.writableToValue(value)).toArray)
   }
@@ -289,14 +290,17 @@ trait AbstractRow {
     arrayBuf.toArray
   }
 
+  @deprecated("This was originally written for Giraph integration, we aren't using it yet though.  After detangle from Titan work is done we should delete it if still not used.")
   def valueAsWritable(name: String): Writable = {
     WritableRowConversions.valueToWritable(value(name))
   }
 
+  @deprecated("This was originally written for Giraph integration, we aren't using it yet though.  After detangle from Titan work is done we should delete it if still not used.")
   def valueAsWritableComparable(name: String): WritableComparable[_] = {
     WritableRowConversions.valueToWritableComparable(value(name))
   }
 
+  @deprecated("This was originally written for Giraph integration, we aren't using it yet though.  After detangle from Titan work is done we should delete it if still not used.")
   def valuesAsWritable(names: Seq[String] = schema.columnNames): List[Writable] = {
     val indices = schema.columnIndices(names).toList
     indices.map(i => WritableRowConversions.valueToWritable(row(i)))
