@@ -16,8 +16,6 @@
 
 package com.intel.taproot.analytics.engine
 
-import com.intel.taproot.analytics.engine.CommandProgressUpdater
-
 /**
  * Update progress for spark command.
  * @param commandStorage command storage

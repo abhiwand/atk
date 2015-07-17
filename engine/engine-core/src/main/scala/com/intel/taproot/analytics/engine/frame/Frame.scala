@@ -16,28 +16,47 @@
 
 package com.intel.taproot.analytics.engine.frame
 
-import com.intel.taproot.analytics.domain.frame.{FrameEntity, FrameReference}
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.FrameStorage
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 
+/**
+ * Interface for Plugin Authors for interacting with Frames.
+ *
+ * Implicit conversion can be used to convert between a FrameReference and a Frame.
+ *
+ * Also see SparkFrame
+ */
 trait Frame {
 
+  /**
+   * The entity is the meta data representation for a Frame that we store in the DB.
+   *
+   * Ideally, plugin authors wouldn't work directly with entities.
+   */
   @deprecated("use other methods in interface, we want to move away from exposing entities to plugin authors")
   def entity: FrameEntity
 
+  /** name assigned by user */
   def name: Option[String]
 
   def name_=(updatedName: String): Unit
 
+  /** the schema of the frame (defines columns, etc) */
   def schema: Schema
 
+  /**
+   * lifecycle status. For example, ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete)
+   */
   def status: Long
 
+  /** description of frame (a good default description might be the name of the input file) */
   def description: Option[String]
 
+  /** number of rows in the frame, None if unknown or Frame has not been materialized */
   def rowCount: Option[Long]
 
   def sizeInBytes: Option[Long]
@@ -51,14 +70,19 @@ object Frame {
 }
 
 /**
- * Interface for interacting with Frames in Spark
+ * Interface for Plugin Authors for interacting with Frames in Spark runtime.
+ *
+ * Implicit conversion can be used to convert between a FrameReference and a SparkFrame.
  */
 trait SparkFrame extends Frame {
 
+  /** Load the frame's data as an RDD */
   def rdd: FrameRdd
 
+  /** Update the data for this frame */
   def save(rdd: FrameRdd): SparkFrame
 
+  /** Update the data for this frame */
   @deprecated("use FrameRdd instead")
   def save(rdd: LegacyFrameRdd): SparkFrame
 
@@ -71,6 +95,9 @@ object SparkFrame {
   implicit def sparkFrameToFrameReference(sparkFrame: SparkFrame): FrameReference = sparkFrame.entity.toReference
 }
 
+/**
+ * Actual implementation for Frame interface
+ */
 class FrameImpl(frame: FrameReference, frameStorage: FrameStorage)(implicit invocation: Invocation) extends Frame {
 
   override def entity: FrameEntity = frameStorage.expectFrame(frame)
@@ -90,14 +117,21 @@ class FrameImpl(frame: FrameReference, frameStorage: FrameStorage)(implicit invo
   override def sizeInBytes: Option[Long] = frameStorage.getSizeInBytes(entity)
 }
 
+/**
+ * Actual implementation for SparkFrame interface
+ */
 class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage)(implicit invocation: Invocation) extends FrameImpl(frame, sparkFrameStorage) with SparkFrame {
 
+  /** Load the frame's data as an RDD */
   override def rdd: FrameRdd = sparkFrameStorage.loadFrameData(sc, entity)
 
+  /** Update the data for this frame */
   override def save(rdd: FrameRdd): SparkFrame = {
     val result = sparkFrameStorage.saveFrameData(frame, rdd)
     new SparkFrameImpl(result, sc, sparkFrameStorage)
   }
+
+  /** Update the data for this frame */
   override def save(rdd: LegacyFrameRdd): SparkFrame = {
     val result = sparkFrameStorage.saveLegacyFrame(frame, rdd)
     new SparkFrameImpl(result, sc, sparkFrameStorage)

@@ -18,8 +18,7 @@ package com.intel.taproot.analytics.engine.plugin
 
 import com.intel.taproot.analytics.component._
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
-import com.intel.taproot.analytics.engine.frame.{FrameImpl, Frame}
-import com.intel.taproot.analytics.engine.spark.frame.FrameImpl
+import com.intel.taproot.analytics.engine.frame.{ FrameImpl, Frame }
 import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import spray.json.{ JsObject, _ }
