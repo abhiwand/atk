@@ -402,13 +402,15 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
 
          #def _repr_html_(self): TODO - Add this method for ipython notebooks
 
-    def inspect(self, frame, n, offset, selected_columns):
+    def inspect(self, frame, n, offset, selected_columns, wrap=None, truncate=None, round=None, width=80, margin=None):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
         result = self.take(frame, n, offset, selected_columns)
         data = result.data
         schema = result.schema
-
+        if wrap:
+            from taprootanalytics.core.ui import RowsInspection
+            return RowsInspection(data, schema, offset=offset, wrap=wrap, truncate=truncate, round=round, width=width, margin=margin)
         return FrameBackendRest.InspectionTable(schema, data)
 
     def join(self, left, right, left_on, right_on, how, name=None):
@@ -472,6 +474,24 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
                      'aggregations': aggregation_list}
 
         return execute_new_frame_command("group_by", arguments)
+
+
+    def categorical_summary(self, frame, column_inputs):
+        column_list_input = []
+        for input in column_inputs:
+            if isinstance(input, basestring):
+                column_list_input.append({'column' : input})
+            elif isinstance(input, tuple) and isinstance(input[0], basestring) and isinstance(input[1], dict):
+                column_dict = {'column' : input[0]}
+                column_dict.update(input[1])
+                column_list_input.append(column_dict)
+            else:
+                raise TypeError('Column inputs should be specified as strings or 2-element Tuple consisting of column name as string and dictionary for additional parameters')
+
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'column_input': column_list_input}
+        return executor.execute('frame/categorical_summary', self, arguments)
+
 
     def rename_columns(self, frame, column_names):
         if not isinstance(column_names, dict):

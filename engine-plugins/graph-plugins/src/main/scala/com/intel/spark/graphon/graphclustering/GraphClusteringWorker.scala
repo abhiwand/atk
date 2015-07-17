@@ -162,13 +162,13 @@ class GraphClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) e
         e.srcNodeCount,
         e.distance, e.isInternal))).distinct()
       activeEdges.unpersist()
+      nonSelectedEdges.unpersist()
 
       //remove collapsed edges from the active graph - by dest node
       val newGraphReducedBySrcAndDest = newGraphReducedBySrc.map((e: GraphClusteringEdge) => (e.dest, e)).subtractByKey(collapsedEdgesAsKVPair).values
       val newGraphWithoutInternalEdges = activeEdgesBothDirections.union(newGraphReducedBySrcAndDest).coalesce(activeEdgesBothDirections.partitions.length, true)
       val distinctNewGraphWithoutInternalEdges = newGraphWithoutInternalEdges.filter(e => (e.src != e.dest))
 
-      distinctNewGraphWithoutInternalEdges.persist(StorageLevel.MEMORY_AND_DISK)
       collapsableEdges.unpersist()
 
       val nextItLog = "Active edges to next iteration " + distinctNewGraphWithoutInternalEdges.count()

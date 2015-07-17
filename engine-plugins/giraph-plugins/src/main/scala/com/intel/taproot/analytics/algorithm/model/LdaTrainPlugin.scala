@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, Gir
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Column, FrameSchema }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, CommandInvocation, CommandPlugin, Invocation, PluginDoc }
-import org.apache.spark.sql.parquet.ia.giraph.frame.{ LdaParquetFrameEdgeInputFormat, LdaParquetFrameVertexOutputFormat }
+import org.apache.spark.sql.parquet.ia.giraph.frame.lda.{ LdaParquetFrameVertexOutputFormat, LdaParquetFrameEdgeInputFormat }
 import spray.json._
 import LdaJsonFormat._
 

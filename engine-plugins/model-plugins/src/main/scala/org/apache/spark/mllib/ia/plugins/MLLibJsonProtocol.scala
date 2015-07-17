@@ -20,9 +20,10 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel}
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
-import org.apache.spark.mllib.ia.plugins.classification.glm.{LogisticRegressionData, LogisticRegressionSummaryTable, LogisticRegressionTrainArgs}
-import org.apache.spark.mllib.ia.plugins.clustering.{KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn}
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector}
+import org.apache.spark.mllib.ia.plugins.classification.glm.{ LogisticRegressionSummaryTable, LogisticRegressionData, LogisticRegressionTrainArgs }
+import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn }
+import org.apache.spark.mllib.ia.plugins.dimensionalityreduction._
+import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector, Matrix, DenseMatrix }
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import spray.json._
 
@@ -189,6 +190,42 @@ object MLLibJsonProtocol {
     }
   }
 
+  implicit object DenseMatrixFormat extends JsonFormat[DenseMatrix] {
+    override def write(obj: DenseMatrix): JsValue = {
+      JsObject(
+        "numRows" -> JsNumber(obj.numRows),
+        "numCols" -> JsNumber(obj.numCols),
+        "values" -> new JsArray(obj.values.map(d => JsNumber(d)).toList),
+        "isTransposed" -> JsBoolean(obj.isTransposed)
+      )
+    }
+
+    override def read(json: JsValue): DenseMatrix = {
+      val fields = json.asJsObject.fields
+
+      val numRows = getOrInvalid(fields, "numRows").convertTo[Int]
+      val numCols = getOrInvalid(fields, "numCols").convertTo[Int]
+      val values = fields.get("values").get.asInstanceOf[JsArray].elements.map(i => i.asInstanceOf[JsNumber].value.doubleValue).toArray
+      val isTransposed = getOrInvalid(fields, "isTransposed").convertTo[Boolean]
+
+      new DenseMatrix(numRows, numCols, values, isTransposed)
+    }
+  }
+
+  implicit object MatrixFormat extends JsonFormat[Matrix] {
+    override def write(obj: Matrix): JsValue = {
+      obj match {
+
+        case dm: DenseMatrix => DenseMatrixFormat.write(dm)
+        case _ => throw new IllegalArgumentException("Objects doe not confirm to DenseMatrix format")
+      }
+    }
+
+    override def read(json: JsValue): Matrix = {
+      DenseMatrixFormat.read(json)
+    }
+  }
+
   implicit object KmeansModelFormat extends JsonFormat[KMeansModel] {
     /**
      * The write methods converts from KMeans to JsValue
@@ -278,36 +315,31 @@ object MLLibJsonProtocol {
 
   }
 
-  /* implicit object LogRegTrainResultsFormat extends JsonFormat[LogisticRegressionTrainResults] {
-    override def write(obj: LogisticRegressionTrainResults): JsValue = {
-      obj.covarianceMatrix match {
-        case Some(matrix) => JsObject(
-          "numFeatures" -> JsNumber(obj.numFeatures),
-          "numClasses" -> JsNumber(obj.numClasses),
-          "coefficients" -> obj.coefficients.toJson,
-          "covarianceMatrix" -> matrix.toJson)
-        case _ => {
-          JsObject(
-            "numFeatures" -> JsNumber(obj.numFeatures),
-            "numClasses" -> JsNumber(obj.numClasses),
-            "coefficients" -> obj.coefficients.toJson)
-        }
-      }
+  implicit object PrincipalComponentsModelFormat extends JsonFormat[PrincipalComponentsData] {
+
+    override def write(obj: PrincipalComponentsData): JsValue = {
+      val singularValues = VectorFormat.write(obj.singularValues)
+      JsObject(
+        "k" -> obj.k.toJson,
+        "observationColumns" -> obj.observationColumns.toJson,
+        "singularValues" -> singularValues,
+        "vFactor" -> obj.vFactor.toJson
+      )
     }
 
-    override def read(json: JsValue): LogisticRegressionTrainResults = {
+    override def read(json: JsValue): PrincipalComponentsData = {
       val fields = json.asJsObject.fields
-      val numFeatures = getOrInvalid(fields, "numFeatures").convertTo[Int]
-      val numClasses = getOrInvalid(fields, "numClasses").convertTo[Int]
-      val coefficients = getOrInvalid(fields, "coefficients").convertTo[Map[String, Double]]
-      val covarianceMatrix = fields.get("covarianceMatrix") match {
-        case Some(matrixFrame) => Some(matrixFrame.convertTo[FrameEntity])
-        case _ => None
-      }
-      LogisticRegressionTrainResults(numFeatures, numClasses, coefficients, covarianceMatrix)
-    }
-  }*/
+      val k = getOrInvalid(fields, "k").convertTo[Int]
+      val observationColumns = getOrInvalid(fields, "observationColumns").convertTo[List[String]]
 
+      val singularValues = VectorFormat.read(getOrInvalid(fields, "singularValues"))
+
+      val vFactor = MatrixFormat.read(getOrInvalid(fields, "vFactor"))
+
+      new PrincipalComponentsData(k, observationColumns, singularValues, vFactor)
+    }
+  }
+  
   def getOrInvalid[T](map: Map[String, T], key: String): T = {
     // throw exception if a programmer made a mistake
     map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
@@ -328,6 +360,10 @@ object MLLibJsonProtocol {
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
   implicit val logRegTrainFormat = jsonFormat18(LogisticRegressionTrainArgs)
   implicit val logRegTrainResultsFormat = jsonFormat8(LogisticRegressionSummaryTable)
+  implicit val pcaPredictFormat = jsonFormat6(PrincipalComponentsPredictArgs)
+  implicit val pcaTrainFormat = jsonFormat4(PrincipalComponentsTrainArgs)
+  implicit val pcaPredictReturnFormat = jsonFormat2(PrincipalComponentsPredictReturn)
+  implicit val pcaTrainReturnFormat = jsonFormat4(PrincipalComponentsTrainReturn)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)
