@@ -36,7 +36,7 @@ ia.errors.show_details = True
 
 ia.connect()
 
-#loggers.set_http()
+#ia.loggers.set_http()
 
 print("server ping")
 ia.server.ping()

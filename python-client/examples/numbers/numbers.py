@@ -38,7 +38,7 @@ ia.errors.show_details = True
 
 ia.connect()
 
-#loggers.set_http()
+#ia.loggers.set_http()
 
 print("define csv file")
 schema =  [("number", str), ("factor", str), ("binary", str), ("isPrime", str), ("reverse", str), ("isPalindrome", str)]
