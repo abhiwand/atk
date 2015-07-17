@@ -22,13 +22,13 @@ import com.intel.taproot.analytics.domain.query.{ PagedQueryResult, QueryDataRes
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
 import spray.json._
-import spray.http.{ StatusCodes }
+import spray.http.StatusCodes
 import com.intel.taproot.analytics.rest.v1.viewmodels._
-import com.intel.taproot.analytics.engine.{ Engine }
+import com.intel.taproot.analytics.engine.Engine
 import scala.concurrent._
 import scala.util._
-import com.intel.taproot.analytics.rest.{ CommonDirectives }
-import spray.routing.{ Directives }
+import com.intel.taproot.analytics.rest.CommonDirectives
+import spray.routing.Directives
 import org.apache.commons.lang.StringUtils
 import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
 import com.intel.taproot.analytics.rest.v1.decorators.{ QueryDecorator, FrameDecorator }
