@@ -17,8 +17,9 @@
 package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ RenameFrameArgs, FrameEntity }
+import com.intel.taproot.analytics.engine.frame.Frame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ Frame, SparkFrame }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 
 // Implicits needed for JSON conversion
 import spray.json._

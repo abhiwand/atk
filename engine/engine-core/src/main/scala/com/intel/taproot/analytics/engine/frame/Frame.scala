@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark.frame
+package com.intel.taproot.analytics.engine.frame
 
-import com.intel.taproot.analytics.domain.frame.{ FrameReference, FrameEntity }
+import com.intel.taproot.analytics.domain.frame.{FrameEntity, FrameReference}
 import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.FrameStorage
 import com.intel.taproot.analytics.engine.plugin.Invocation
