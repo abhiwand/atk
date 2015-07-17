@@ -45,7 +45,7 @@ trait Frame {
 
   def name_=(updatedName: String): Unit
 
-  /** the schema of the frame (defines columns, etc) */
+  /** the schema of the frame (defines columns, data types, etc) */
   def schema: Schema
 
   /**
@@ -100,18 +100,30 @@ object SparkFrame {
  */
 class FrameImpl(frame: FrameReference, frameStorage: FrameStorage)(implicit invocation: Invocation) extends Frame {
 
+  /**
+   * The entity is the meta data representation for a Frame that we store in the DB.
+   *
+   * Ideally, plugin authors wouldn't work directly with entities.
+   */
+  @deprecated("use other methods in interface, we want to move away from exposing entities to plugin authors")
   override def entity: FrameEntity = frameStorage.expectFrame(frame)
 
   override def description: Option[String] = entity.description
 
+  /** name assigned by user */
   override def name: Option[String] = entity.name
 
   override def name_=(updatedName: String): Unit = frameStorage.renameFrame(entity, updatedName)
 
+  /** number of rows in the frame, None if unknown or Frame has not been materialized */
   override def rowCount: Option[Long] = entity.rowCount
 
+  /**
+   * lifecycle status. For example, ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete)
+   */
   override def status: Long = entity.status
 
+  /** the schema of the frame (defines columns, data types, etc) */
   override def schema: Schema = entity.schema
 
   override def sizeInBytes: Option[Long] = frameStorage.getSizeInBytes(entity)
@@ -120,7 +132,8 @@ class FrameImpl(frame: FrameReference, frameStorage: FrameStorage)(implicit invo
 /**
  * Actual implementation for SparkFrame interface
  */
-class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage)(implicit invocation: Invocation) extends FrameImpl(frame, sparkFrameStorage) with SparkFrame {
+class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage)(implicit invocation: Invocation)
+  extends FrameImpl(frame, sparkFrameStorage) with SparkFrame {
 
   /** Load the frame's data as an RDD */
   override def rdd: FrameRdd = sparkFrameStorage.loadFrameData(sc, entity)
