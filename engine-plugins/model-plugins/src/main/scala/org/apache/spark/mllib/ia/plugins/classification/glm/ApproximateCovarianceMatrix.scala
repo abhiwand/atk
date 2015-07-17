@@ -15,12 +15,12 @@
 */
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import breeze.linalg.{ DenseMatrix => BDM, DenseVector, inv }
-import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
+import breeze.linalg.{DenseMatrix => BDM, DenseVector => BDV, inv}
+import com.intel.taproot.analytics.domain.schema.{Column, DataTypes, FrameSchema}
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.{ SparkContext, sql }
-import collection.JavaConverters._
+import org.apache.spark.{SparkContext, sql}
+
 import scala.util.Try
 
 /**
@@ -29,47 +29,69 @@ import scala.util.Try
  * Covariance matrix is the inverse of the Hessian matrix. The Hessian matrix is
  * the second-order partial derivatives of the model's log-likelihood function.
  *
- * @param model Logistic regression model
+ * @param hessianMatrix Hessian matrix
+ * @param reorderMatrix If true, reorder cova
  */
-case class ApproximateCovarianceMatrix(model: IaLogisticRegressionModel) {
-
+case class ApproximateCovarianceMatrix(hessianMatrix: BDM[Double],
+                                       reorderMatrix: Boolean = false) {
+  require(hessianMatrix != null, "Hessian matrix must not be null")
   /** Optional covariance matrix generated if flag for computing Hessian matrix was true */
-  val covarianceMatrix = computeCovarianceMatrix()
+  val covarianceMatrix = computeCovarianceMatrix(hessianMatrix)
 
   /**
-   * Convert covariance matrix to Frame RDD with a single column of type vector
+   * Convert covariance matrix to Frame RDD with a single row and column for each coefficient
    *
    * @param sparkContext Spark context
    * @param columnNames Column names
-   * @return Optional frame RDD with a single column of type vector
+   * @return Frame RDD
    */
-  def toFrameRdd(sparkContext: SparkContext, columnNames: List[String]): Option[FrameRdd] = {
-    covarianceMatrix match {
-      case Some(matrix) => {
-        val schema = FrameSchema(columnNames.map(name => Column(name, DataTypes.float64)))
+  def toFrameRdd(sparkContext: SparkContext, columnNames: List[String]): FrameRdd = {
+    val schema = FrameSchema(columnNames.map(name => Column(name, DataTypes.float64)))
 
-        val rows: IndexedSeq[sql.Row] = for {
-          i <- 0 until matrix.rows
-          row = matrix(i, ::).t.map(x => x: Any)
-        } yield new GenericRow(row.toArray)
+    val rows: IndexedSeq[sql.Row] = for {
+      i <- 0 until covarianceMatrix.rows
+      row = covarianceMatrix(i, ::).t.map(x => x: Any)
+    } yield new GenericRow(row.toArray)
 
-        val rdd = sparkContext.parallelize(rows)
-        Some(new FrameRdd(schema, rdd))
-      }
-      case _ => None
-    }
+    val rdd = sparkContext.parallelize(rows)
+    new FrameRdd(schema, rdd)
   }
 
   /** Compute covariance matrix from model's hessian matrix */
-  private def computeCovarianceMatrix(): Option[BDM[Double]] = {
-    model.getHessianMatrix match {
-      case Some(hessianMatrix) => {
-        val covarianceMatrix = Try(inv(hessianMatrix)).getOrElse({
-          throw new scala.IllegalArgumentException("Could not compute covariance matrix: Hessian matrix is not invertable")
-        })
-        Some(covarianceMatrix)
+  private def computeCovarianceMatrix(hessianMatrix: BDM[Double]): BDM[Double] = {
+    val reorderedHessian = reorderMatrix(hessianMatrix)
+    val covarianceMatrix = Try(inv(reorderedHessian)).getOrElse({
+      throw new scala.IllegalArgumentException("Could not compute covariance matrix: Hessian matrix is not invertable")
+    })
+    covarianceMatrix
+  }
+
+  /**
+   * Reorder the matrix so that the intercept is stored in the first row and first column (standard convention)
+   * MLlib models store the intercept in the last row and last column of the matrix
+   */
+  def reorderMatrix(matrix: BDM[Double]): BDM[Double] = {
+    val rows = matrix.rows
+    val cols = matrix.cols
+    if (rows > 1 && cols > 1) {
+      var i = 0
+      var j = 0
+      var head = 0 //use the first row of matrix as a temporary buffer
+
+      while (i < rows) {
+        while (j < cols) {
+          val ni = (i + 1) % rows
+          val nj = (j + i + 1) % cols
+          val tmp = matrix(ni, nj)
+          matrix(ni, nj) = matrix(0, head)
+          matrix(0, head) = tmp
+          head = (head + 1) % cols
+          j = j + 1
+        }
+        i = i + 1
+        j = 0
       }
-      case _ => None
     }
+    matrix
   }
 }

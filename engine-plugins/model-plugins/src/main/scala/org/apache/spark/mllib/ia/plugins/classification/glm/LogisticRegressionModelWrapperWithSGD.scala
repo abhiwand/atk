@@ -16,30 +16,29 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.mllib.classification.LogisticRegressionWithFrequencyLBFGS
+import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, LogisticRegressionWithFrequencySGD }
 import org.apache.spark.mllib.optimization.{ L1Updater, SquaredL2Updater }
+import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
 
 /**
- * Logistic regression model with Limited-memory BFGS
+ * Logistic regression model with Stochastic Gradient Descent
  */
-class IaLogisticRegressionModelWithLBFGS() extends IaLogisticRegressionModel {
+class LogisticRegressionModelWrapperWithSGD extends LogisticRegressionModelWrapper {
 
-  /** Logistic regression model */
-  val model = new LogisticRegressionWithFrequencyLBFGS()
+  val model = new LogisticRegressionWithFrequencySGD()
 
   /**
-   * Create Logistic regression model with Limited-memory BFGS
+   * Create Logistic regression model with Stochastic Gradient Descent
    * @param arguments model arguments
    */
   def this(arguments: LogisticRegressionTrainArgs) = {
     this()
-    model.setNumClasses(arguments.numClasses)
     model.setFeatureScaling(arguments.getFeatureScaling)
     model.setIntercept(arguments.getIntercept)
     model.optimizer.setNumIterations(arguments.numIterations)
-    model.optimizer.setConvergenceTol(arguments.convergenceTolerance)
-    model.optimizer.setNumCorrections(arguments.numCorrections)
+    model.optimizer.setStepSize(arguments.stepSize)
     model.optimizer.setRegParam(arguments.regParam)
+    model.optimizer.setMiniBatchFraction(arguments.miniBatchFraction)
     model.optimizer.setComputeHessian(arguments.getComputeCovariance)
 
     model.optimizer.setUpdater(arguments.regType match {
@@ -51,7 +50,7 @@ class IaLogisticRegressionModelWithLBFGS() extends IaLogisticRegressionModel {
   /**
    * Get logistic regression model
    */
-  override def getModel: LogisticRegressionWithFrequencyLBFGS = model
+  override def getModel: GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency] = model
 
   /**
    * Get the approximate Hessian matrix for the model

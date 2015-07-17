@@ -17,13 +17,12 @@
 package org.apache.spark.mllib.ia.plugins
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
-import com.intel.taproot.analytics.domain.frame.FrameEntity
-import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel }
+import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel}
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.ia.plugins.classification._
-import org.apache.spark.mllib.ia.plugins.classification.glm.{ LogisticRegressionTrainResults, LogisticRegressionData, LogisticRegressionTrainArgs }
-import org.apache.spark.mllib.ia.plugins.clustering.{ KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn }
-import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
+import org.apache.spark.mllib.ia.plugins.classification.glm.{LogisticRegressionData, LogisticRegressionSummaryTable, LogisticRegressionTrainArgs}
+import org.apache.spark.mllib.ia.plugins.clustering.{KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn}
+import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector}
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import spray.json._
 
@@ -328,7 +327,7 @@ object MLLibJsonProtocol {
   implicit val naiveBayesTrainFormat = jsonFormat5(NaiveBayesTrainArgs)
   implicit val naiveBayesPredictFormat = jsonFormat3(NaiveBayesPredictArgs)
   implicit val logRegTrainFormat = jsonFormat18(LogisticRegressionTrainArgs)
-  implicit val logRegTrainResultsFormat = jsonFormat4(LogisticRegressionTrainResults.apply)
+  implicit val logRegTrainResultsFormat = jsonFormat8(LogisticRegressionSummaryTable)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)

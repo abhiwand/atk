@@ -94,7 +94,7 @@ coefficients: dict
     Value for each of the coefficients trained
 covarianceMatrix: Frame (optional)
     Covariance matrix of the trained model.""""")
-class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressionTrainArgs, LogisticRegressionTrainResults] {
+class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressionTrainArgs, LogisticRegressionSummaryTable] {
   /**
    * The name of the command.
    *
@@ -119,7 +119,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: LogisticRegressionTrainArgs)(implicit invocation: Invocation): LogisticRegressionTrainResults =
+  override def execute(arguments: LogisticRegressionTrainArgs)(implicit invocation: Invocation): LogisticRegressionSummaryTable =
     {
       val models = engine.models
       val frames = engine.frames
@@ -138,6 +138,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
 
       //Compute optional covariance matrix
       val frameColumns = arguments.observationColumns :+ "intercept"
+      model.getModel
       val covarianceFrame = ApproximateCovarianceMatrix(model)
         .toFrameRdd(labeledTrainRdd.sparkContext, frameColumns) match {
           case Some(frameRdd) => {
@@ -155,6 +156,6 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
       val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns)
       //TODO: Call save instead once implemented for models
       models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
-      new LogisticRegressionTrainResults(logRegModel, arguments.observationColumns, covarianceFrame)
+      new LogisticRegressionSummaryTable(logRegModel, arguments.observationColumns, covarianceFrame)
     }
 }

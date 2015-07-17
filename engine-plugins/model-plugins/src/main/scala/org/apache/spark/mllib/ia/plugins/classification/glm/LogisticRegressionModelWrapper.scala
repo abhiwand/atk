@@ -19,7 +19,7 @@ import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequenc
 import org.apache.spark.mllib.evaluation.HessianMatrix
 import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
 
-trait IaLogisticRegressionModel extends HessianMatrix {
+trait LogisticRegressionModelWrapper extends HessianMatrix {
 
   /**
    * Get logistic regression model

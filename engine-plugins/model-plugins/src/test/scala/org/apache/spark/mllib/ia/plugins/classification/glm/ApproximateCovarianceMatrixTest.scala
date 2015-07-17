@@ -16,42 +16,85 @@
 
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import breeze.linalg.DenseMatrix
+import breeze.linalg.{DenseMatrix, inv}
+import com.intel.taproot.testutils.MatcherUtils._
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
+import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
 import org.mockito.Mockito._
 import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
-import com.intel.taproot.testutils.MatcherUtils._
 
 class ApproximateCovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers with MockitoSugar {
 
-  "ApproximateCovarianceMatrix" should "compute covariance matrix using model's Hessian matrix" in {
-    val hessianMatrix = DenseMatrix((1330d, 480d), (480d, 200d))
-    val model = mock[IaLogisticRegressionModel]
-    when(model.getHessianMatrix).thenReturn(Some(hessianMatrix))
+  val glmModel = mock[GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency]]
 
-    val covarianceMatrix = ApproximateCovarianceMatrix(model).covarianceMatrix
-    val expectedCovariance = DenseMatrix((0.005617978, -0.1348315), (-0.013483146, 0.03735955))
+  "ApproximateCovarianceMatrix" should "compute covariance matrix when intercept is not added to model" in {
+    val hessianMatrix = DenseMatrix((1330d, 480d), (480d, 200d))
+
+    val model = mock[LogisticRegressionModelWrapper]
+    when(model.getHessianMatrix).thenReturn(Some(hessianMatrix))
+    when(model.getModel).thenReturn(glmModel)
+    when(model.getModel.isAddIntercept).thenReturn(false)
+
+    val covarianceMatrix = ApproximateCovarianceMatrix(hessianMatrix).covarianceMatrix
+    val expectedCovariance = DenseMatrix((0.005617978, -0.01348315), (-0.013483146, 0.03735955))
 
     covarianceMatrix should not be ('empty)
-    covarianceMatrix.get should equalWithToleranceMatrix(expectedCovariance, 1d)
+    covarianceMatrix.get should equalWithToleranceMatrix(expectedCovariance)
   }
+
+  "ApproximateCovarianceMatrix" should "compute re-ordered covariance matrix when intercept is added to model" in {
+    //Reorder the matrix so that the intercept is stored in the first row and first column
+    // instead of in the last row and last column of the matrix
+    val matrix = DenseMatrix(
+      (1d, 8d, -9d, 7d, 5d),
+      (0d, 1d, 0d, 4d, 4d),
+      (0d, 0d, 1d, 2d, 5d),
+      (0d, 0d, 0d, 1d, -5d),
+      (0d, 0d, 0d, 0d, 1d)
+    )
+    val hessianMatrix = inv(matrix)
+
+    val reorderedMatrix = DenseMatrix(
+      (1d, 0d, 0d, 0d, 0d),
+      (5d, 1d, 8d, -9d, 7d),
+      (4d, 0d, 1d, 0d, 4d),
+      (5d, 0d, 0d, 1d, 2d),
+      (-5d, 0d, 0d, 0d, 1d)
+    )
+
+    val model = mock[LogisticRegressionModelWrapper]
+    when(model.getHessianMatrix).thenReturn(Some(hessianMatrix))
+    when(model.getModel).thenReturn(glmModel)
+    when(model.getModel.isAddIntercept).thenReturn(true)
+
+    val covarianceMatrix = ApproximateCovarianceMatrix(model).covarianceMatrix
+
+    covarianceMatrix should not be ('empty)
+    covarianceMatrix.get should equalWithToleranceMatrix(reorderedMatrix)
+  }
+
 
   "ApproximateCovarianceMatrix" should "throw an IllegalArgument exception if Hessian matrix is not invertable" in {
     intercept[IllegalArgumentException] {
       val hessianMatrix = DenseMatrix((1d, 0d, 0d), (-2d, 0d, 0d), (4d, 6d, 1d))
-      val model = mock[IaLogisticRegressionModel]
+
+      val model = mock[LogisticRegressionModelWrapper]
       when(model.getHessianMatrix).thenReturn(Some(hessianMatrix))
+      when(model.getModel).thenReturn(glmModel)
+      when(model.getModel.isAddIntercept).thenReturn(true)
 
       ApproximateCovarianceMatrix(model).covarianceMatrix
     }
   }
 
   "ApproximateCovarianceMatrix" should "return None if Hessian matrix is empty" in {
-    val model = mock[IaLogisticRegressionModel]
+    val model = mock[LogisticRegressionModelWrapper]
+    when(model.getModel).thenReturn(glmModel)
     when(model.getHessianMatrix).thenReturn(None)
 
     val covarianceMatrix = ApproximateCovarianceMatrix(model).covarianceMatrix
-    covarianceMatrix should be ('empty)
+    covarianceMatrix should be('empty)
   }
 }

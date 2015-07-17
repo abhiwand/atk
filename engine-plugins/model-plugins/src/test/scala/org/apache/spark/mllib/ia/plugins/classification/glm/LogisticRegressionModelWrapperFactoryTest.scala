@@ -21,7 +21,7 @@ import com.intel.taproot.analytics.domain.model.ModelReference
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ FlatSpec, Matchers }
 
-class IaLogisticRegressionModelFactoryTest extends FlatSpec with Matchers with MockitoSugar {
+class LogisticRegressionModelWrapperFactoryTest extends FlatSpec with Matchers with MockitoSugar {
 
   "createModel" should "create L-BFGS logistic regression model" in {
     val modelRef = mock[ModelReference]
@@ -30,7 +30,7 @@ class IaLogisticRegressionModelFactoryTest extends FlatSpec with Matchers with M
 
     val model = IaLogisticRegressionModelFactory.createModel(trainArgs)
 
-    model shouldBe a[IaLogisticRegressionModelWithLBFGS]
+    model shouldBe a[LogisticRegressionModelWrapperWithLBFGS]
   }
 
   "createModel" should "create SGD logistic regression model" in {
@@ -40,7 +40,7 @@ class IaLogisticRegressionModelFactoryTest extends FlatSpec with Matchers with M
 
     val model = IaLogisticRegressionModelFactory.createModel(trainArgs)
 
-    model shouldBe a[IaLogisticRegressionModelWithSGD]
+    model shouldBe a[LogisticRegressionModelWrapperWithSGD]
   }
 
   "createModel" should "throw an IllegalArgumentException for unsupported optimizers" in {
