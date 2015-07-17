@@ -16,11 +16,11 @@
 
 package com.intel.taproot.analytics.repository
 
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, DataFrameTemplate }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes }
 import DataTypes.DataType
-import com.intel.taproot.analytics.security.UserPrincipal
 
 import scala.util.Try
 

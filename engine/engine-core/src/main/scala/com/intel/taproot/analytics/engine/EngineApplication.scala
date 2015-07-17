@@ -54,7 +54,7 @@ class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: Class
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
       engine = com.intel.taproot.analytics.component.Boot.getArchive("engine-core")
-        .load("com.intel.taproot.analytics.engine.spark.SparkEngineComponent")
+        .load("com.intel.taproot.analytics.engine.SparkEngineComponent")
         .asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
     }
     catch {

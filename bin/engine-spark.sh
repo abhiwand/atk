@@ -16,7 +16,7 @@ pwd                             i
 
 export HOSTNAME=`hostname`
 
-echo java $@ -XX:MaxPermSize=256m -Dconfig.trace=loads -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot engine-core com.intel.taproot.analytics.engine.spark.CommandDumper
-java $@ -XX:MaxPermSize=256m -Dconfig.trace=loads -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot engine-core com.intel.taproot.analytics.engine.spark.CommandDumper
+echo java $@ -XX:MaxPermSize=256m -Dconfig.trace=loads -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot engine-core com.intel.taproot.analytics.engine.CommandDumper
+java $@ -XX:MaxPermSize=256m -Dconfig.trace=loads -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot engine-core com.intel.taproot.analytics.engine.CommandDumper
 
 popd

@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine
 
-import com.intel.taproot.analytics.engine.spark.CommandProgressUpdater
+import com.intel.taproot.analytics.engine.CommandProgressUpdater
 
 /**
  * Update progress for spark command.

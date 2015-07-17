@@ -18,7 +18,7 @@ package org.apache.spark.ia.graph
 
 import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property => GBProperty }
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema, DataTypes }
-import com.intel.taproot.analytics.engine.spark.frame.AbstractRow
+import com.intel.taproot.analytics.engine.frame.AbstractRow
 import org.apache.spark.sql.Row
 
 /**

@@ -17,17 +17,17 @@
 package com.intel.taproot.analytics.engine.plugin
 
 import com.intel.taproot.analytics.component._
-import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
-import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 import com.intel.taproot.analytics.engine.spark.frame.{ FrameImpl, Frame }
-import com.intel.taproot.analytics.security.UserPrincipal
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import spray.json.{ JsObject, _ }
 
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.util.control.NonFatal
+import com.intel.taproot.analytics.domain.command.CommandDoc
+import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
