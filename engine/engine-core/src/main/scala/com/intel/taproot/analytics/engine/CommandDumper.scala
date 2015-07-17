@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark
+package com.intel.taproot.analytics.engine
 
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import com.intel.taproot.analytics.component.{ Archive, ArchiveDefinition, DefaultArchive, FileUtil }

@@ -14,15 +14,15 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark
+package com.intel.taproot.analytics.engine
 
-import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.EventLoggingImplicits
 import com.intel.taproot.analytics.component.Archive
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.spark.util.KerberosAuthenticator
+import com.intel.taproot.event.EventLogging
 import org.apache.commons.lang3.StringUtils
-import org.apache.spark.{ SparkConf, SparkContext }
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
  * Class Factory for creating spark contexts

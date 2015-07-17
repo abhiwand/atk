@@ -14,49 +14,35 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark
+package com.intel.taproot.analytics.engine
 
-import java.util.{ ArrayList => JArrayList, List => JList }
+import java.util.{ArrayList => JArrayList, List => JList}
 
-import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.component.ClassLoaderAware
+import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.command.{Command, CommandDefinition, CommandTemplate, Execution}
+import com.intel.taproot.analytics.domain.frame.{FrameEntity, FrameReference}
 import com.intel.taproot.analytics.domain.graph._
-import com.intel.taproot.analytics.domain.model.{ ModelReference, ModelEntity }
-import com.intel.taproot.analytics.engine.spark.gc.{ GarbageCollectionPlugin, GarbageCollector }
+import com.intel.taproot.analytics.domain.model.{ModelEntity, ModelReference}
+import com.intel.taproot.analytics.domain.query._
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.spark.command.{ CommandExecutor, CommandPluginRegistry }
-
-import com.intel.taproot.analytics.engine.spark.graph.SparkGraphStorage
-import com.intel.taproot.analytics.engine.spark.partitioners.SparkAutoPartitioner
+import com.intel.taproot.analytics.engine.spark.command.{CommandExecutor, CommandPluginRegistry}
 import com.intel.taproot.analytics.engine.spark.frame._
-import com.intel.taproot.analytics.{ EventLoggingImplicits, NotFoundException }
-import org.apache.spark.SparkContext
+import com.intel.taproot.analytics.engine.spark.gc.{GarbageCollectionPlugin, GarbageCollector}
+import com.intel.taproot.analytics.engine.spark.graph.SparkGraphStorage
 import com.intel.taproot.analytics.engine.spark.model.SparkModelStorage
-import com.intel.taproot.analytics.engine._
-import com.intel.taproot.analytics.engine.{ ProgressInfo, _ }
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
-
-import spray.json._
+import com.intel.taproot.analytics.engine.spark.partitioners.SparkAutoPartitioner
+import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext.global
+import com.intel.taproot.analytics.engine.spark.user.UserStorage
+import com.intel.taproot.analytics.security.UserPrincipal
+import com.intel.taproot.analytics.{EventLoggingImplicits, NotFoundException}
+import com.intel.taproot.event.EventLogging
+import org.apache.spark.SparkContext
+import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.frame.FrameRdd
 
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
-import spray.json._
-
 import scala.concurrent._
-import org.apache.spark.engine.SparkProgressListener
-import com.intel.taproot.analytics.domain.CreateEntityArgs
-
-import com.intel.taproot.analytics.security.UserPrincipal
-import com.intel.taproot.analytics.domain.frame.FrameReference
-import com.intel.taproot.analytics.domain.query._
-import com.intel.taproot.analytics.domain.command.CommandDefinition
-import com.intel.taproot.analytics.domain.frame.FrameEntity
-import com.intel.taproot.analytics.domain.command.Execution
-import com.intel.taproot.analytics.domain.command.Command
-import com.intel.taproot.analytics.domain.command.CommandTemplate
-import com.intel.taproot.analytics.engine.spark.user.UserStorage
-import scala.util.{ Try, Success, Failure }
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext.global
+import scala.util.{Failure, Success, Try}
 
 object EngineImpl {
   private val pythonRddDelimiter = "YoMeDelimiter"

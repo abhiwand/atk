@@ -14,16 +14,15 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark
+package com.intel.taproot.analytics.engine
 
 import com.esotericsoftware.kryo.Kryo
-import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
 import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
-import com.intel.taproot.analytics.engine.spark.frame.{ LegacyFrameRdd, MiscFrameFunctions }
+import com.intel.taproot.analytics.engine.spark.frame.{LegacyFrameRdd, MiscFrameFunctions}
+import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
 import org.apache.spark.frame.FrameRdd
-
 import org.apache.spark.serializer.KryoRegistrator
 
 /**

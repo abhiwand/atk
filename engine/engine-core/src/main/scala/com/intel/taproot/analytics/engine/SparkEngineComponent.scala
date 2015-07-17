@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark
+package com.intel.taproot.analytics.engine
 
-import com.intel.taproot.analytics.engine.spark.gc.GarbageCollector
 import com.intel.taproot.analytics.engine.spark.command._
-import com.intel.taproot.analytics.engine.spark.util.{ EnvironmentLogger, JvmVersionReporter, DiskSpaceReporter }
+import com.intel.taproot.analytics.engine.spark.gc.GarbageCollector
+import com.intel.taproot.analytics.engine.spark.util.{DiskSpaceReporter, EnvironmentLogger, JvmVersionReporter}
 
 /**
  * Main class for initializing the Spark Engine

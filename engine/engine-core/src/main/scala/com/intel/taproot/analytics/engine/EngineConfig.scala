@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark
+package com.intel.taproot.analytics.engine
 
 import java.io.File
 import java.net.InetAddress

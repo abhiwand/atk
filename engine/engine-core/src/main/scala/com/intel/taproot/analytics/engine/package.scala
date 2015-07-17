@@ -14,9 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine
+package com.intel.taproot.analytics
 
-package object spark {
+package object engine {
 
   /**
    * Concatenates two paths, adding an extra slash in between if necessary.

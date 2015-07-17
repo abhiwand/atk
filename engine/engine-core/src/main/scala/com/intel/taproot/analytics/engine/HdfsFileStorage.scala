@@ -14,15 +14,16 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.spark
+package com.intel.taproot.analytics.engine
 
-import java.io.{ InputStream, OutputStream }
+import java.io.{InputStream, OutputStream}
+
 import com.intel.taproot.analytics.engine.spark.util.KerberosAuthenticator
+import com.intel.taproot.event.{EventContext, EventLogging}
 import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ Path, FileSystem, LocalFileSystem }
+import org.apache.hadoop.fs.{FileSystem, LocalFileSystem, Path}
 import org.apache.hadoop.hdfs.DistributedFileSystem
-import com.intel.taproot.event.{ EventContext, EventLogging }
 
 /**
  * HDFS Access
