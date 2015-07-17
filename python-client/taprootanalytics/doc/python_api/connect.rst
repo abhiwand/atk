@@ -14,7 +14,7 @@ that the Python client can download the API and configure itself::
 
 .. autofunction:: taprootanalytics.connect
 
-Connecting to |TA| server
+Connecting to |PACKAGE| server
 ==========================
 
 .. contents:: Table of Contents
@@ -42,13 +42,13 @@ To connect to a specific server:
 Connections requiring OAuth
 ---------------------------
 
-To connect to a Analytics PaaS instance of |TA|, the python client must have an OAuth
+To connect to a Analytics PaaS instance of |PACKAGE|, the python client must have an OAuth
 access token (see
 `oauth tokens <http://self-issued.info/docs/draft-ietf-oauth-v2-bearer.html>`).
 The user must have a credentials file which holds an OAuth access token and
 a refresh token.
 
-The user can create a credentials file using |TA| client running in an
+The user can create a credentials file using |PACKAGE| client running in an
 interactive python REPL.
 Call ``create_connect_file('filename_of_your_choice')`` and interactively
 provide answers to its prompt.
@@ -92,7 +92,7 @@ They should be protected with appropriate OS privileges.
 Using Environmental Variables
 -----------------------------
 
-The URI of the |TA| server can be specified by the environmental variable ``$TA_URI``.
+The URI of the |PACKAGE| server can be specified by the environmental variable ``$TA_URI``.
 The python client will initialize its config setting to this value.
 It may still be overridden as shown above in the session or script.
 

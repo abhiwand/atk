@@ -86,7 +86,7 @@ You should see a list of variable types similar to this:
 
 .. note::
 
-    Although the |TA| utilizes the Numpy package, numpy values of positive
+    Although the |PACKAGE| utilizes the Numpy package, numpy values of positive
     infinity (np.inf), negative infinity (-np.inf) or nan (np.nan) are treated
     as None.
     Results of any user-defined functions which deal with such values are
@@ -226,7 +226,7 @@ A :term:`Frame (capital F)` is a class of objects capable of accessing and
 controlling a :term:`frame (lower case f)` containing "big data".
 The frame is visualized as a two-dimensional table structure of rows and
 columns.
-The |TA| can handle frames with large volumes of data, because it is
+The |PACKAGE| can handle frames with large volumes of data, because it is
 designed to work with data spread over multiple machines.
 
 Create A Frame
@@ -391,7 +391,7 @@ See also the :code:`join` method in the :doc:`API </python_api/index>` section.
 
 Inspect The Data
 ================
-|TA| provides several methods that allow you to inspect your data,
+|PACKAGE| provides several methods that allow you to inspect your data,
 including :code:`inspect()` and :code:`take()`.
 The Frame class also contains frame information like *row_count*.
 
@@ -495,7 +495,7 @@ Clean The Data
 
 The process of "data cleaning" encompasses the identification and removal or
 repair of incomplete, incorrect, or malformed information in a data set.
-The |TA|'s Python API provides much of the functionality necessary for these
+The |PACKAGE|'s Python API provides much of the functionality necessary for these
 tasks.
 It is important to keep in mind that it was designed for data scalability.
 Thus, using external Python packages for these tasks, while possible, may

@@ -11,7 +11,7 @@ Tracking Metadata
     :local:
     :backlinks: none
 
-By default, the |TA| uses H2, an in-memory database that is lost on
+By default, the |PACKAGE| uses H2, an in-memory database that is lost on
 application restart.
 This is convenient for testing.
 H2 setup is completely automatic.

@@ -16,7 +16,7 @@
 
 # -*- coding: utf-8 -*-
 #
-# TAProotAnalytics documentation build configuration file, created by
+# Documentation build configuration file, created by
 # sphinx-quickstart on Tue Apr  8 15:19:15 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -55,12 +55,17 @@ rst_epilog = """
 .. |OLAP|   replace:: :abbr:`OLAP (OnLine Analytical Processing)`
 .. |OLTP|   replace:: :abbr:`OLAP (OnLine Transaction Processing)`
 .. |RTM|    unicode:: U+000AE .. Registered Trade Mark symbol
-.. |TA|     replace:: TAProot Analytics
 .. |TRADE|  unicode:: U+2122 .. Trademark symbol
 .. |UDF|    replace:: :abbr:`UDF (Python User-defined Function)`
 .. |VM|     replace:: :abbr:`VM (Virtual Machine)`
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
 .. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`
+.. |PACKAGE|    replace:: TAProot Analytics
+.. |PACKAGE_1LC|    replace:: taprootanalytics
+.. |PACKAGE_DLC|    replace:: taproot-analytics
+.. |PACKAGE_SLC|    replace:: ta
+.. |PACKAGE_SUC|    replace:: TA
+.. |TOOLKIT|    replace:: |PACKAGE| Toolkit
 """
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -275,7 +280,7 @@ html_show_copyright = True
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-#htmlhelp_basename = 'TAProotAnalyticsDoc'
+#htmlhelp_basename = 'TaprootAnalyticsDoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------

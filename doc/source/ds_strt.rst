@@ -12,7 +12,7 @@ Before You Start
 
 You'll want to know about `Apache Hadoop <http://hadoop.apache.org/>`__ and its
 various components.
-The |TA| uses standards and open-source routines such as |HDFS|,
+The |PACKAGE| uses standards and open-source routines such as |HDFS|,
 :term:`MapReduce`, YARN, as well as
 `Apache Giraph <http://giraph.apache.org/>`__ for graph-based machine learning
 and graph analytics.
@@ -34,7 +34,7 @@ Features
 Built-in Databases
 ------------------
 
-The |TA| stores data in either a traditional table-based format,
+The |PACKAGE| stores data in either a traditional table-based format,
 or in a graph format.
 It provides the tools to allow to easily manipulate data in either of these
 data formats.
@@ -43,7 +43,7 @@ data formats.
 Script Examples
 ---------------
 
-The |TA| ships with example Python scripts and data sets that exercise the
+The |PACKAGE| ships with example Python scripts and data sets that exercise the
 various features of the platform.
 The default location for the example scripts is *taproot*'s home directory
 '/home/taproot'.
@@ -72,7 +72,7 @@ The datasets are located in '/home/taproot/examples/datasets' and
     -rw-r--r--  ...  /user/taproot/datasets/test_lda.csv
 
 The datasets in '/home/taproot/examples/datasets' are for reference.
-The actual data that is being used by the Python examples and the |TA| server
+The actual data that is being used by the Python examples and the |PACKAGE| server
 is in the |HDFS| system.
 
 To get access to the scripts, login as *taproot* and go to the example scripts

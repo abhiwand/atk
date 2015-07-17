@@ -12,7 +12,7 @@ See: http://en.wikipedia.org/wiki/Belief_propagation.
 Loopy Belief Propagation (LBP) is a message passing algorithm for inferring
 state probabilities, given a graph and a set of noisy initial estimates of
 state probabilities.
-The |TA| provides two implementations of LBP, which differ in their
+The |PACKAGE| provides two implementations of LBP, which differ in their
 assumptions about the joint distribution of the data.
 The standard LBP implementation assumes that the joint distribution of the
 data is given by a Boltzmann distribution, while Gaussian LBP

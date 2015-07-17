@@ -18,10 +18,10 @@ Prerequisites
 These instructions assume you have already installed:
 
 -   Python 2.7.
--   |TA| Python REST Client and required dependencies.
+-   |PACKAGE| Python REST Client and required dependencies.
 -   `PyCharm <http://www.jetbrains.com/pycharm/>`_.
 
-The |TA| should work with any version of PyCharm but these instructions were
+The |PACKAGE| should work with any version of PyCharm but these instructions were
 tested with PyCharm Community Edition 3.4.1.
 
 -----
@@ -46,7 +46,7 @@ Setup
 #)  Choose :menuselection:`File --> Settings`.
 
     a)  Choose *Project Structure*.
-    #)  Choose *Add Content Root* and browse to the |TA| Python REST Client
+    #)  Choose *Add Content Root* and browse to the |PACKAGE| Python REST Client
         libraries.
         On RedHat or Centos these are found under
         '/usr/lib/taprootanalytics/rest-client/python'.
@@ -68,7 +68,7 @@ Setup
         setup correctly.
 
         i)  You may not have installed all of the Python dependencies for the
-            |TA| REST Client correctly.
+            |PACKAGE| REST Client correctly.
         #)  You may have chosen the wrong Python interpreter.
 
 

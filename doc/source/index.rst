@@ -1,11 +1,11 @@
 ============
-|TA| Toolkit
+|Toolkit|
 ============
 
 .. toctree::
     :maxdepth: 2
 
-    ta_over
+    over
     ds_over
     dev_over
     ad_over
@@ -20,7 +20,7 @@ References
    :maxdepth: 1
 
 * :doc:`glossary`
-* :doc:`ta_legal`
+* :doc:`legal`
 * :doc:`Index <genindex>`
 * :doc:`appendices`
 * :doc:`errata`
@@ -31,7 +31,7 @@ References
     :maxdepth: 1
 
     glossary
-    ta_legal
+    legal
     appendices
     errata
 

@@ -16,11 +16,11 @@ Prerequisites
 These instructions assume you have already installed:
 
 -   :ref:`Python 2.7 <windows_python_setup>`.
--   |TA| :ref:`Python REST Client <installing_ta_packages>` and required
+-   |PACKAGE| :ref:`Python REST Client <installing_ta_packages>` and required
     dependencies.
 -   Eclipse Standard.
 
-The |TA| should work with any version of Eclipse, but these instructions were
+The |PACKAGE| should work with any version of Eclipse, but these instructions were
 tested with Eclipse Standard Version 4.4 Luna.
 
 If you are on a corporate network, you may need to configure proxy settings in
@@ -78,7 +78,7 @@ Setup
     #)  Choose *PyDev - PYTHONPATH* in the left hand pane.
     #)  Choose the *External Libraries* tab.
     #)  Choose *Add source folder* button.
-    #)  Browse for the |TA| Python REST Client libraries.
+    #)  Browse for the |PACKAGE| Python REST Client libraries.
         On RedHat and Centos these are found under
         '/usr/lib/taprootanalytics/rest-client/python'.
     #)  Choose the *OK* button.

@@ -1,8 +1,8 @@
 ========
-The |TA|
+|PACKAGE|
 ========
 
 .. toctree::
     :maxdepth: 1
 
-    ta_intro
+    intro

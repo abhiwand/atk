@@ -13,7 +13,7 @@ Package Installation
 Introduction
 ------------
 
-This guide covers the |TA| installation and configuration.
+This guide covers the |PACKAGE| installation and configuration.
 
 Cloudera installation documentation can be found at:
 http://www.cloudera.com/content/cloudera-content/cloudera-docs/CM5/latest/Cloudera-Manager-Installation-Guide/cm5ig_install_cm_cdh.html .
@@ -27,7 +27,7 @@ Operating System Requirements
 
 These instructions are oriented towards `Red Hat Enterprise Linux
 <http://redhat.com/>`__ or `CentOS <http://centos.org/>`__ version 6.6.
-|TA| uses 'yum' for installation, 'sudo' for proper authority.
+|PACKAGE| uses 'yum' for installation, 'sudo' for proper authority.
 
 .. index::
     single: cluster
@@ -43,10 +43,10 @@ Cloudera cluster 5.3.x with following services:
 #.  Yarn(MR2)
 #.  Zookeeper
 
-The |TA| Python client supports Python 2.7.
+The |PACKAGE| Python client supports Python 2.7.
 
 ---------------------------
-|TA| Packages Installation
+|PACKAGE| Packages Installation
 ---------------------------
 
 .. index::
@@ -55,10 +55,10 @@ The |TA| Python client supports Python 2.7.
 Adding Extra Repositories
 =========================
 
-The EPEL and |TA| repositories must be installed on the REST server node and
+The EPEL and |PACKAGE| repositories must be installed on the REST server node and
 all spark nodes (master and worker).
-The |TA| Dependency repository and the yum-s3 package must be installed before
-the |TA| private repository.
+The |PACKAGE| Dependency repository and the yum-s3 package must be installed before
+the |PACKAGE| private repository.
 
 EPEL Repository
 ---------------
@@ -113,11 +113,11 @@ If the "epel" repository is not listed, do this to install it:
 .. index::
     single: repository
 
-|TA| Dependency Repository
+|PACKAGE| Dependency Repository
 ---------------------------
 
 Some open source libraries are included to aid with the installation of the
-|TA|.
+|PACKAGE|.
 Some of these libraries are newer versions than what is available in RHEL,
 EPEL or CentOS repositories.
 
@@ -185,7 +185,7 @@ To install the *yum-s3* package, do this:
 .. index::
     single: repository
 
-|TA| Private Repository
+|PACKAGE| Private Repository
 ------------------------
 
 Create '/etc/yum.repos.d/ta.repo':
@@ -227,7 +227,7 @@ Create '/etc/yum.repos.d/ta.repo':
 
     Replace "ACCESS_TOKEN" and "SECRET_TOKEN" with appropriate tokens.
 
-To verify the installation of the |TA| repository, do this:
+To verify the installation of the |PACKAGE| repository, do this:
 
 .. code::
 
@@ -264,8 +264,8 @@ Troubleshooting Private Repository
         $ sudo service ntpd start
 
 
-*   The |TA| Dependency repository and the yum-s3 package must be installed
-    before the |TA| private repository.
+*   The |PACKAGE| Dependency repository and the yum-s3 package must be installed
+    before the |PACKAGE| private repository.
 *   To use the yum command inside a corporate proxy make sure the
     *http_proxy* and *https_proxy* environment variables are set.
 *   The sudo command may need the -E option to maintain environment variables:
@@ -276,13 +276,13 @@ Troubleshooting Private Repository
 
 .. _installing_tA_packages:
 
-Installing |TA| Packages
+Installing |PACKAGE| Packages
 =========================
 
 Installing On The Master Node
 -----------------------------
 
-Install the |TA| Python REST server and its dependencies.
+Install the |PACKAGE| Python REST server and its dependencies.
 Only one instance of the REST server needs to be installed.
 Installation location is flexible, but it is usually installed
 with the HDFS name node.
@@ -294,7 +294,7 @@ with the HDFS name node.
 Installing On A Worker Node
 ---------------------------
 
-The |TA| spark dependencies package needs to be installed on every node
+The |PACKAGE| spark dependencies package needs to be installed on every node
 running the spark worker role.
 
 .. only:: html
@@ -327,9 +327,9 @@ The server configuration is semi-automated via the use of a Python script
 It will query Cloudera Manager for the necessary configuration values and
 create a new 'application.conf' file based on the 'application.conf.tpl' file.
 The script will also fully configure the local PostgreSQL installation to
-work with the |TA| server.
+work with the |PACKAGE| server.
 
-To configure the |TA| installation, do this:
+To configure the |PACKAGE| installation, do this:
 
 .. code::
 
@@ -339,7 +339,7 @@ To configure the |TA| installation, do this:
 Answer the prompts to configure the cluster.
 To see an example of the prompts see :doc:`/ad_inst_ta3`.
 
-The script goes through all the necessary configurations to get the |TA|
+The script goes through all the necessary configurations to get the |PACKAGE|
 service running.
 The script can be run multiple times but there is a danger that configuring the
 database multiple times can wipe out a users data frames and graphs.
@@ -494,7 +494,7 @@ See :ref:`Fig. 12.1 <fig_12_01>`.
 Set the Bind IP Address (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The |TA| server can bind to all IP addresses, as opposed to just a single
+The |PACKAGE| server can bind to all IP addresses, as opposed to just a single
 address, by updating the following lines and follow the commented instructions.
 This configuration section is also near the top of the file.
 
@@ -560,7 +560,7 @@ See :ref:`Fig. 13.3 <fig_13_03>`.
 Database Configuration
 ======================
 
-The |TA| service can use two different databases H2 and PostgreSQL.
+The |PACKAGE| service can use two different databases H2 and PostgreSQL.
 The configuration script configures postgresql automatically.
 
 .. index::
@@ -769,13 +769,13 @@ Now that the database is created, uncomment all the postgres lines in
         #comment any h2 configuration lines with a # or //::
          //metastore.connection = ${intel.taproot.analytics.metastore.connection-h2}
 
-Restart the |TA| service:
+Restart the |PACKAGE| service:
 
 .. code::
 
-    $ sudo service taprootanalytics restart
+    $ sudo service taproot-analytics restart
 
-After restarting the service, the |TA| will create all the database tables.
+After restarting the service, the |PACKAGE| will create all the database tables.
 Now insert a meta user to enable Python client requests.
 
 Login to the postgres linux user:
@@ -843,7 +843,7 @@ sent.
 .. index::
     single: REST server
 
-Starting The |TA| REST Server
+Starting The |PACKAGE| REST Server
 ==============================
 
 Starting the REST server is very easy.
@@ -851,12 +851,12 @@ It can be started like any other Linux service.
 
 .. code::
 
-    $ sudo service taprootanalytics start
+    $ sudo service taproot-analytics start
 
 After starting the REST server, browse to the host on port 9099
 (<master node ip address>:9099) to see if the server started successfully.
 
-Troubleshooting |TA| REST Server
+Troubleshooting |PACKAGE| REST Server
 =================================
 
 A log gets written to '/var/log/taprootanalytics/rest-server/output.log or

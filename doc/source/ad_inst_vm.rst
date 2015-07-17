@@ -13,9 +13,9 @@ Virtual Machines
 Introduction
 ------------
 
-This guide goes through the download and import of the |TA| beta on a virtual
+This guide goes through the download and import of the |PACKAGE| beta on a virtual
 machine (VM).
-Currently the |TA| |VM| only supports
+Currently the |PACKAGE| |VM| only supports
 `Virtual Box <https://www.virtualbox.org/>`_.
 These instructions do not cover the installation of Virtual Box.
 Virtual Box supports many platforms and can be `downloaded for free
@@ -314,7 +314,7 @@ To import the |VM| image, do the following steps in Virtual Box.
 
             Appliance to Import
 
-#)  Import the |TA| |VM|.
+#)  Import the |PACKAGE| |VM|.
     See :ref:`Fig. 15.9 <fig_15_09>`.
 
     .. _fig_15_09:
@@ -379,16 +379,16 @@ To import the |VM| image, do the following steps in Virtual Box.
             Boot the VM
 
 ------------------------
-Running |TA| |VM| Image
+Running |PACKAGE| |VM| Image
 ------------------------
 
 Before starting
 ===============
 
-After every reboot of the |VM|, the |TA| server must also be restarted.
+After every reboot of the |VM|, the |PACKAGE| server must also be restarted.
 ::
 
-    $ sudo service taprootanalytics restart
+    $ sudo service taproot-analytics restart
 
 Upon restart, if the service wasn't running before it was told to stop,
 the system reports::
@@ -401,9 +401,9 @@ This message can be safely ignored.
 Sample Scripts
 ==============
 
-The |VM| is pre-configured and installed with the |TA|.
+The |VM| is pre-configured and installed with the |PACKAGE|.
 Several examples and datasets are included to get people
-familiar with the coding and behavior of the |TA|.
+familiar with the coding and behavior of the |PACKAGE|.
 
 The examples are located in '/home/cloudera/examples'.
 ::
@@ -424,7 +424,7 @@ The datasets are located in '/home/cloudera/examples/datasets' and
     -rw-r--r--   1 taproot taproot  311641390 2014-08-01 /user/taproot/datasets/test_lda.csv
 
 The datasets in '/home/cloudera/examples/datasets' are for reference.
-The actual data that is being used by the Python examples and the |TA| server
+The actual data that is being used by the Python examples and the |PACKAGE| server
 is in 'hdfs://user/taproot/datasets'.
 
 To run any of the Python example scripts, start in the examples directory and

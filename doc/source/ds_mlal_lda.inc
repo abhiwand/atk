@@ -158,7 +158,7 @@ being analyzed.
 
 Graph construction
 ------------------
-|TA| uses a bipartite graph, to learn an |LDA| topic model.
+|PACKAGE| uses a bipartite graph, to learn an |LDA| topic model.
 This graph contains vertices in two columns.
 The left-hand column contains unique ids, each corresponding to a document in
 the training collection, while the right-hand column contains unique ids
@@ -224,7 +224,7 @@ and the observed word :math:`w_{d,n}` depends on topic assignment
 Although there are no analytical solutions to learning the |LDA| model, there
 are a variety of approximate solutions that are used, most of which are based
 on Gibbs Sampling (for example, Porteous et al., 2008 [#LDA5]_ ).
-The |TA| uses an implementation related to this.
+The |PACKAGE| uses an implementation related to this.
 We refer the interested reader to the primary source on this approach to learn
 more (Teh et al., 2006 [#LDA6]_ ).
 
@@ -271,7 +271,7 @@ regarding topic membership, using this information.
 
     Command Line Options
     - ------------------
-    |LDA| can be invoked in the |TA| using the function
+    |LDA| can be invoked in the |PACKAGE| using the function
     ``latent_dirichlet_allocation``.
     It can take several parameters, each of which are explained below.
     ::

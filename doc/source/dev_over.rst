@@ -2,7 +2,7 @@
     single: extending, development
 
 ==============
-Extending |TA|
+Extending |PACKAGE|
 ==============
 
 .. toctree::

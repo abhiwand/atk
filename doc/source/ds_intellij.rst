@@ -16,14 +16,14 @@ Prerequisites
 These instructions assume you have already installed:
 
 - Python 2.7:
-- |TA| Python REST Client and required dependencies.
+- |PACKAGE| Python REST Client and required dependencies.
 - `IntelliJ IDEA <http://www.jetbrains.com/idea/>`_.
 
 Verify the Python plugin is enabled in IntelliJ by choosing
 :menuselection:`File --> Settings`, searching for *Python*, and choosing
 *Plugins* from the pane on the left-hand side.
 
-The |TA| should work with any version of IntelliJ IDEA but these instructions
+The |PACKAGE| should work with any version of IntelliJ IDEA but these instructions
 were tested with IntelliJ IDEA 13.1.3 Ultimate.
 
 -----
@@ -57,7 +57,7 @@ Setup
         *Apply*.
     #)  Choose *Libraries* in the left hand pane.
     #)  Choose the plus sign *+*.
-    #)  Choose *Java* and browse to the |TA| Python REST Client libraries.
+    #)  Choose *Java* and browse to the |PACKAGE| Python REST Client libraries.
         On RedHat and Centos these are found under
         '/usr/lib/taprootanalytics/rest-client/python'.
     #)  Choose *classes*.
