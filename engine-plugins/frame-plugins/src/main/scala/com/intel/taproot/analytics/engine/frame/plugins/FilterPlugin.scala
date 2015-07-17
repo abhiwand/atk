@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins
 import com.intel.taproot.analytics.domain.FilterArgs
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData, PythonRddStorage }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, PythonRddStorage }
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
@@ -58,9 +58,8 @@ class FilterPlugin extends SparkCommandPlugin[FilterArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FilterArgs)(implicit invocation: Invocation): FrameEntity = {
-    val frame: SparkFrameData = resolve(arguments.frame)
-
-    val updatedRdd = PythonRddStorage.mapWith(frame.data, arguments.udf, sc = sc)
-    engine.frames.saveFrameData(frame.meta.toReference, updatedRdd)
+    val frame: SparkFrame = arguments.frame
+    val updatedRdd = PythonRddStorage.mapWith(frame.rdd, arguments.udf, sc = sc)
+    frame.save(updatedRdd)
   }
 }

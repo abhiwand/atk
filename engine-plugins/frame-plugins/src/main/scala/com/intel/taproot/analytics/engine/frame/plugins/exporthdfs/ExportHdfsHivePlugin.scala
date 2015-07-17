@@ -26,11 +26,10 @@ import com.intel.taproot.analytics.engine.PluginDocAnnotation
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.spark.HdfsFileStorage
 import com.intel.taproot.analytics.engine.spark.EngineConfig
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.frame.plugins.cumulativedist.EcdfJsonFormat
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.engine.spark.{ EngineConfig, HdfsFileStorage }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.hadoop.fs.Path
 
@@ -66,11 +65,8 @@ class ExportHdfsHivePlugin extends SparkCommandPlugin[ExportHdfsHiveArgs, UnitRe
    * @return value of type declared as the Return type
    */
   override def execute(arguments: ExportHdfsHiveArgs)(implicit invocation: Invocation): UnitReturn = {
-
-    val frame: SparkFrameData = resolve(arguments.frame)
-    // load frame as RDD
-    val rdd = frame.data
-    FrameExportHdfs.exportToHdfsHive(sc, rdd, arguments.tableName)
+    val frame: SparkFrame = arguments.frame
+    FrameExportHdfs.exportToHdfsHive(sc, frame.rdd, arguments.tableName)
     new UnitReturn
   }
 }

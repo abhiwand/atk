@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Column }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ PythonRddStorage, SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, PythonRddStorage }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.sql
@@ -57,20 +57,17 @@ class AddColumnsPlugin extends SparkCommandPlugin[AddColumnsArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: AddColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
-    val frame: SparkFrameData = resolve(arguments.frame)
-
+    val frame: SparkFrame = arguments.frame
     val newColumns = arguments.columnNames.zip(arguments.columnTypes.map(x => x: DataType))
     val columnList = newColumns.map { case (name, dataType) => Column(name, dataType) }
     val newSchema = new FrameSchema(columnList)
-    val finalSchema = frame.meta.schema.addColumns(columnList)
 
     // Update the data
     // What we pass to PythonRddStorage is a stripped down version of FrameRdd if columnsAccessed is defined
     val rdd = arguments.columnsAccessed.isEmpty match {
-      case true => PythonRddStorage.mapWith(frame.data, arguments.udf, newSchema, sc)
-      case false => PythonRddStorage.mapWith(frame.data.selectColumns(arguments.columnsAccessed), arguments.udf, newSchema, sc)
+      case true => PythonRddStorage.mapWith(frame.rdd, arguments.udf, newSchema, sc)
+      case false => PythonRddStorage.mapWith(frame.rdd.selectColumns(arguments.columnsAccessed), arguments.udf, newSchema, sc)
     }
-
-    save(new SparkFrameData(frame.meta.withSchema(finalSchema), frame.data.zipFrameRdd(rdd))).meta
+    frame.save(frame.rdd.zipFrameRdd(rdd))
   }
 }

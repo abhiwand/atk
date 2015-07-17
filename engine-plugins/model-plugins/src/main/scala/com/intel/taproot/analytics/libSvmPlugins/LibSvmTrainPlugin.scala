@@ -21,7 +21,7 @@ import java.util.StringTokenizer
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import libsvm.{ svm_node, svm_problem, svm_parameter, svm }
@@ -68,13 +68,11 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     val modelRef = arguments.model
     val modelMeta = models.expectModel(modelRef)
 
-    val frame: SparkFrameData = resolve(arguments.frame)
-    // load frame as RDD
-    val trainFrameRdd = frame.data
+    val frame: SparkFrame = arguments.frame
 
     //Running LibSVM
     val param = initializeParameters(arguments)
-    val prob = initializeProblem(trainFrameRdd, arguments, param)
+    val prob = initializeProblem(frame.rdd, arguments, param)
 
     svm.svm_check_parameter(prob, param) match {
       case null => None

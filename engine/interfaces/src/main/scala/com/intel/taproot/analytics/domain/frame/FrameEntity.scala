@@ -146,3 +146,4 @@ case class FrameEntity(id: Long,
   }
 
 }
+

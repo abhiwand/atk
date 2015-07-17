@@ -21,7 +21,6 @@ import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.DataTypes.vector

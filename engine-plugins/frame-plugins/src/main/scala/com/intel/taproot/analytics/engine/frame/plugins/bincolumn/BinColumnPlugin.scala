@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.bincolumn
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.frame.FrameRdd
 
@@ -105,20 +105,16 @@ class BinColumnPlugin extends SparkCommandPlugin[BinColumnArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: BinColumnArgs)(implicit invocation: Invocation): FrameEntity = {
-    val frame: SparkFrameData = resolve(arguments.frame)
-    val columnIndex = frame.meta.schema.columnIndex(arguments.columnName)
-    val columnType = frame.meta.schema.columnDataType(arguments.columnName)
-    require(columnType.isNumerical, s"Invalid column ${arguments.columnName} for bin column.  Expected a numerical data type, but got $columnType.")
-    val binColumnName = arguments.binColumnName.getOrElse(frame.meta.schema.getNewColumnName(arguments.columnName + "_binned"))
-    if (frame.meta.schema.hasColumn(binColumnName))
-      throw new IllegalArgumentException(s"Duplicate column name: ${arguments.binColumnName}")
+    val frame: SparkFrame = arguments.frame
+    val columnIndex = frame.schema.columnIndex(arguments.columnName)
+    frame.schema.requireColumnIsNumerical(arguments.columnName)
+    val binColumnName = arguments.binColumnName.getOrElse(frame.schema.getNewColumnName(arguments.columnName + "_binned"))
 
     // run the operation and save results
-    val updatedSchema = frame.meta.schema.addColumn(binColumnName, DataTypes.int32)
-    val rdd = frame.data
+    val updatedSchema = frame.schema.addColumn(binColumnName, DataTypes.int32)
     val binnedRdd = DiscretizationFunctions.binColumns(columnIndex, arguments.cutoffs,
-      arguments.includeLowest.getOrElse(true), arguments.strictBinning.getOrElse(false), rdd)
+      arguments.includeLowest.getOrElse(true), arguments.strictBinning.getOrElse(false), frame.rdd)
 
-    save(new SparkFrameData(frame.meta.withSchema(updatedSchema), new FrameRdd(updatedSchema, binnedRdd))).meta
+    frame.save(new FrameRdd(updatedSchema, binnedRdd))
   }
 }

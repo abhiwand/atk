@@ -22,15 +22,3 @@ case class FrameName(name: String)
 
 object FrameName extends Naming("frame")
 
-import com.intel.taproot.analytics.domain.HasMetaData
-
-/**
- * A FrameReference with metadata
- */
-class FrameMeta(frame: FrameEntity) extends FrameReference(frame.id) with HasMetaData {
-
-  type Meta = FrameEntity
-
-  val meta = frame
-
-}

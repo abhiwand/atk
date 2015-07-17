@@ -17,9 +17,8 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.FrameMeta
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.engine.plugin.PluginDoc
 
@@ -77,11 +76,11 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
       val covarianceFrame = ApproximateCovarianceMatrix(model)
         .toFrameRdd(labeledTrainRdd.sparkContext, "covariance") match {
           case Some(frameRdd) => {
-            val frame = tryNew(CreateEntityArgs(
+            val frame = engine.frames.tryNewFrame(CreateEntityArgs(
               description = Some("covariance matrix created by LogisticRegression train operation"))) {
-              newTrainFrame: FrameMeta =>
-                save(new SparkFrameData(newTrainFrame.meta, frameRdd))
-            }.meta
+              newTrainFrame: FrameEntity =>
+                newTrainFrame.save(frameRdd)
+            }
             Some(frame)
           }
           case _ => None

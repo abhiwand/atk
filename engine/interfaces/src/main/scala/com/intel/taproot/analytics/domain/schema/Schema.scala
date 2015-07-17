@@ -246,6 +246,28 @@ trait Schema {
     require(dataTypeChecker(colDataType), s"column $columnName has bad type $colDataType")
   }
 
+  def requireColumnIsNumerical(columnName: String): Unit = {
+    val colDataType = columnDataType(columnName)
+    require(colDataType.isNumerical, s"Column $columnName was not numerical. Expected a numerical data type, but got $colDataType.")
+  }
+
+  /**
+   * Either single column name that is a vector or a list of columns that are numeric primitives
+   * that can be converted to a vector.
+   *
+   * List cannot be empty
+   */
+  def requireColumnsAreVectorizable(columnNames: List[String]): Unit = {
+    require(columnNames.nonEmpty, "single vector column, or one or more numeric columns required")
+    if (columnNames.size > 1) {
+      requireColumnsOfNumericPrimitives(columnNames)
+    }
+    else {
+      val colDataType = columnDataType(columnNames.head)
+      require(colDataType.isVector || colDataType.isNumerical, s"column ${columnNames.head} should be of type numeric")
+    }
+  }
+
   /**
    * Column names as comma separated list in a single string
    * (useful for error messages, etc)
