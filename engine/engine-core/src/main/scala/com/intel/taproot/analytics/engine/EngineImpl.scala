@@ -21,7 +21,7 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.domain.{ UserPrincipal, CreateEntityArgs }
 import com.intel.taproot.analytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
 import com.intel.taproot.analytics.domain.query._
@@ -153,7 +153,7 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
    * @param arguments RowQuery object describing id, offset, and count
    * @return A QueryResult describing the data and schema of this take
    */
-  def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult = {
+  def getRows(arguments: RowQueryArgs[Identifier])(implicit invocation: Invocation): QueryResult = {
     withMyClassLoader {
       val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
       val rows = frames.getRows(frame, arguments.offset, arguments.count)

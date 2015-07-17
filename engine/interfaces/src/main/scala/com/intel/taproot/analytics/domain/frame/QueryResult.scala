@@ -14,12 +14,19 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.domain.query
+package com.intel.taproot.analytics.domain.frame
 
-import scala.concurrent.Future
+import com.intel.taproot.analytics.domain.schema.Schema
 
 /**
- * Encapsulates a Query in two states - one snapshot that is taken just before running the command,
- * and a future that will contain the eventual finished state of the query.
+ * Response for a query from an RDD. Subclassed for either Parquet or Sequence file storage.
+ * @param schema schema to describe the data
  */
-case class Execution(start: Query, end: Future[Query])
+class QueryResult(schema: Option[Schema])
+
+/**
+ * Result returned by query
+ * @param data data from the query
+ * @param schema schema to describe the data
+ */
+case class QueryDataResult(data: Iterable[Array[Any]], schema: Option[Schema]) extends QueryResult(schema)

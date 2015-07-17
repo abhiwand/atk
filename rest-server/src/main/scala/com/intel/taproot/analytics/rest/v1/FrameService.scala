@@ -18,7 +18,8 @@ package com.intel.taproot.analytics.rest.v1
 
 import com.intel.taproot.analytics.DuplicateNameException
 import com.intel.taproot.analytics.domain._
-import com.intel.taproot.analytics.domain.query.{ PagedQueryResult, QueryDataResult, RowQuery }
+import com.intel.taproot.analytics.domain.frame.{RowQueryArgs, QueryDataResult}
+import com.intel.taproot.analytics.domain.query.RowQueryArgs
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
 import spray.json._
@@ -31,7 +32,7 @@ import com.intel.taproot.analytics.rest.CommonDirectives
 import spray.routing.Directives
 import org.apache.commons.lang.StringUtils
 import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
-import com.intel.taproot.analytics.rest.v1.decorators.{ QueryDecorator, FrameDecorator }
+import com.intel.taproot.analytics.rest.v1.decorators.{ FrameDecorator }
 
 import scala.util.matching.Regex
 import com.intel.taproot.event.EventLogging
@@ -127,7 +128,7 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                 (offset, count) =>
                   {
                     import ViewModelJsonImplicits._
-                    val queryArgs = RowQuery[Long](id, offset, count)
+                    val queryArgs = RowQueryArgs[Long](id, offset, count)
                     onComplete(Future { engine.getRows(queryArgs) }) {
                       case Success(r: QueryDataResult) => {
                         complete(GetQuery(id = None, error = None,
@@ -135,11 +136,6 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                           result = Some(GetQueryPage(
                             Some(dataToJson(r.data)), None, None, r.schema)),
                           links = List(Rel.self(uri.toString))))
-                      }
-                      case Success(exec: PagedQueryResult) => {
-                        val pattern = new Regex(prefix + ".*")
-                        val commandUri = pattern.replaceFirstIn(uri.toString, "queries/") + exec.execution.start.id
-                        complete(QueryDecorator.decorateEntity(commandUri, List(Rel.self(commandUri)), exec.execution.start, exec.schema))
                       }
                       case Failure(ex) => throw ex
                     }

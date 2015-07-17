@@ -14,12 +14,16 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.domain.query
-
-import com.intel.taproot.analytics.domain.schema.Schema
+package com.intel.taproot.analytics.domain.frame
 
 /**
- * Response for a query from an RDD. Subclassed for either Parquet or Sequence file storage.
- * @param schema schema to describe the data
+ * Describes the arguments necessary for an execution of a get rows command. Can be used as the input for any command
+ *
+ * @param id Primary key of object that contains the data needed to be retrieved.
+ * @param offset Starting offset of data
+ * @param count Number of records to return
+ * @tparam Identifier DataType of Primary Key. Will usually be a Long
  */
-class QueryResult(schema: Option[Schema])
+case class RowQueryArgs[Identifier](id: Identifier, offset: Long, count: Long) {
+  require(count >= 0, s"Bad count value $count. Count must be >= 0.")
+}

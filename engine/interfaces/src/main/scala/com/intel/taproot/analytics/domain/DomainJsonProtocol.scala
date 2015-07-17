@@ -30,7 +30,6 @@ import com.intel.taproot.analytics.domain.model._
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.domain.frame.load._
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.domain.query.{ RowQuery }
 import DataTypes.DataType
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Call, Invocation }
 import com.intel.taproot.analytics.spray.json._
@@ -42,7 +41,7 @@ import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.graph.construction._
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, LoadGraphArgs, GraphReference, GraphTemplate }
-import com.intel.taproot.analytics.domain.query.RowQuery
+import RowQueryArgs
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.{ Duration, DateTime }
@@ -359,7 +358,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val columnMedianFormat = jsonFormat3(ColumnMedianArgs)
   implicit val columnMedianReturnFormat = jsonFormat1(ColumnMedianReturn)
 
-  implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
+  implicit val rowQueryFormat = jsonFormat3(RowQueryArgs[Long])
 
   implicit val cumulativeSumFormat = jsonFormat2(CumulativeSumArgs)
   implicit val cumulativePercentSumFormat = jsonFormat2(CumulativePercentArgs)
