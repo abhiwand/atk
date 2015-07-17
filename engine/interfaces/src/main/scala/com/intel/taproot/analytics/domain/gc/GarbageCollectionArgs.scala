@@ -14,8 +14,9 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.gc
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+package com.intel.taproot.analytics.domain.gc
+
+import com.intel.taproot.analytics.engine.plugin.ArgDoc
 
 /**
  * Arguments used for a single execution of garbage collection

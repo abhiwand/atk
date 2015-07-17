@@ -25,7 +25,7 @@ import com.intel.taproot.analytics.domain.command.{ CommandPost, CommandDefiniti
 import com.intel.taproot.analytics.domain.frame.{ UdfDependency, Udf }
 import com.intel.taproot.analytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }
 import com.intel.taproot.analytics.domain.frame.partitioning.{ RepartitionArgs, CoalesceArgs }
-import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionEntry, GarbageCollection }
+import com.intel.taproot.analytics.domain.gc.{GarbageCollectionArgs, GarbageCollectionEntry, GarbageCollection}
 import com.intel.taproot.analytics.domain.model._
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.domain.frame.load._
@@ -33,7 +33,6 @@ import com.intel.taproot.analytics.domain.schema._
 import com.intel.taproot.analytics.domain.query.{ RowQuery }
 import DataTypes.DataType
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Call, Invocation, QueryPluginResults }
-import com.intel.taproot.analytics.engine.gc.GarbageCollectionArgs
 import com.intel.taproot.analytics.schema._
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag
@@ -54,7 +53,7 @@ import org.joda.time.DateTime
 import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import com.intel.taproot.analytics.algorithm.Quantile
-import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
+import com.intel.taproot.analytics.spray.json._
 import scala.util.Success
 import com.intel.taproot.analytics.UnitReturn
 

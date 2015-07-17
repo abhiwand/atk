@@ -14,12 +14,10 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.schema
+package com.intel.taproot.analytics.spray.json
 
-import java.beans.{ Introspector, BeanInfo }
 import java.net.URI
 
-import spray.json.{ JsValue, JsonFormat }
 import scala.annotation.Annotation
 
 trait JsonSchema {

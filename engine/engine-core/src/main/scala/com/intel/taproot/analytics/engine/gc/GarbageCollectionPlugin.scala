@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.engine.gc
 import java.util.concurrent.TimeUnit
 
 import com.intel.taproot.analytics.UnitReturn
+import com.intel.taproot.analytics.domain.gc.GarbageCollectionArgs
 import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.EngineConfig
 import com.typesafe.config.ConfigFactory

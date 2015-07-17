@@ -22,8 +22,8 @@ import com.intel.taproot.analytics.domain.command.{ CommandDocLoader, CommandDef
 import com.intel.taproot.analytics.engine.PluginDocAnnotation
 import com.intel.taproot.analytics.engine.plugin.{ PluginDoc, CommandPlugin, Invocation }
 import com.intel.taproot.analytics.engine.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.taproot.analytics.schema.ObjectSchema
 import com.intel.taproot.analytics.shared.JsonSchemaExtractor
+import com.intel.taproot.analytics.spray.json.ObjectSchema
 import spray.json.JsonFormat
 import scala.reflect.runtime.{ universe => ru }
 import ru._
