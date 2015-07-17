@@ -41,7 +41,6 @@ import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.graph.construction._
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, LoadGraphArgs, GraphReference, GraphTemplate }
-import RowQueryArgs
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.{ Duration, DateTime }

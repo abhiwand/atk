@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.rest.v1
 
 import com.intel.taproot.analytics.DuplicateNameException
 import com.intel.taproot.analytics.domain._
-import com.intel.taproot.analytics.domain.frame.{RowQueryArgs, QueryDataResult}
+import com.intel.taproot.analytics.domain.frame.{ RowQueryArgs, QueryDataResult }
 import com.intel.taproot.analytics.domain.query.RowQueryArgs
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
