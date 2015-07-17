@@ -49,7 +49,7 @@ import com.intel.taproot.analytics.domain.query.RowQuery
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.{ Duration, DateTime }
-import com.intel.taproot.analytics.engine.{ ReferenceResolver, ProgressInfo, TaskProgressInfo }
+import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
 import org.joda.time.DateTime
 import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
 
@@ -175,21 +175,30 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
     }
   }
 
-  class ReferenceFormat[T <: UriReference: TypeTag](entity: EntityType)
+  abstract class UriReferenceFormat[T <: UriReference]
       extends JsonFormat[T] {
     override def write(obj: T): JsValue = JsString(obj.uri)
 
     override def read(json: JsValue): T = {
       implicit val invocation: Invocation = Call(null, EngineExecutionContext.global)
-      json match {
-        case JsString(name) => ReferenceResolver.resolve[T](name).get
-        case JsNumber(n) => ReferenceResolver.resolve[T](s"ia://${entity.name.plural}/$n").get
-        case _ => deserializationError(s"Expected valid ${entity.name.plural} URI, but received " + json)
+      try {
+        json match {
+          case JsString(uri) => createReference(uri.substring(uri.lastIndexOf('/') + 1).toLong)
+          case JsNumber(n) => createReference(n.toLong)
+          case _ => deserializationError(s"Expected valid URI, but received $json")
+        }
+      }
+      catch {
+        case e: Exception => deserializationError(s"Expected valid URI, but received $json")
       }
     }
+
+    def createReference(id: Long): T
   }
 
-  implicit val frameReferenceFormat = new ReferenceFormat[FrameReference](FrameEntityType)
+  implicit val frameReferenceFormat = new UriReferenceFormat[FrameReference] {
+    override def createReference(id: Long): FrameReference = new FrameReference(id)
+  }
   implicit def singletonOrListFormat[T: JsonFormat] = new JsonFormat[SingletonOrListValue[T]] {
     def write(list: SingletonOrListValue[T]) = JsArray(list.value.map(_.toJson))
     def read(value: JsValue): SingletonOrListValue[T] = value match {
@@ -390,7 +399,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val commandActionFormat = jsonFormat1(CommandPost)
 
   // model service formats
-  implicit val ModelReferenceFormat = new ReferenceFormat[ModelReference](ModelEntityType)
+  implicit val ModelReferenceFormat = new UriReferenceFormat[ModelReference] {
+    override def createReference(id: Long): ModelReference = new ModelReference(id)
+  }
   implicit val modelTemplateFormat = jsonFormat2(ModelTemplate)
   implicit val modelRenameFormat = jsonFormat2(RenameModelArgs)
   implicit val modelFormat = jsonFormat11(ModelEntity)
@@ -404,7 +415,9 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val frameNoArgsFormat = jsonFormat1(FrameNoArgs)
 
   // graph service formats
-  implicit val graphReferenceFormat = new ReferenceFormat[GraphReference](GraphEntityType)
+  implicit val graphReferenceFormat = new UriReferenceFormat[GraphReference] {
+    override def createReference(id: Long): GraphReference = new GraphReference(id)
+  }
   implicit val graphTemplateFormat = jsonFormat2(GraphTemplate)
   implicit val graphRenameFormat = jsonFormat2(RenameGraphArgs)
 
@@ -546,7 +559,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   lazy implicit val commandDefinitionFormat = jsonFormat5(CommandDefinition)
 
   implicit object dataFrameFormat extends JsonFormat[FrameEntity] {
-    implicit val dataFrameFormatOriginal = jsonFormat19(FrameEntity)
+    implicit val dataFrameFormatOriginal = jsonFormat19(FrameEntity.apply)
 
     override def read(value: JsValue): FrameEntity = {
       dataFrameFormatOriginal.read(value)

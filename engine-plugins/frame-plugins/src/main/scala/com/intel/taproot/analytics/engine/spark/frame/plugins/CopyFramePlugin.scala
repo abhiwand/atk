@@ -19,9 +19,8 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, PythonRddStorage }
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
-import com.intel.taproot.analytics.engine.spark.frame.PythonRddStorage
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -56,31 +55,29 @@ class CopyFramePlugin extends SparkCommandPlugin[CopyFrameArgs, FrameEntity] {
    */
   override def execute(arguments: CopyFrameArgs)(implicit invocation: Invocation): FrameEntity = {
 
-    val sourceFrame: SparkFrameData = resolve(arguments.frame)
-    val sourceRdd = sourceFrame.data
+    val frame: SparkFrame = arguments.frame
 
     val finalRdd = if (arguments.where.isDefined) {
       val finalSchema = arguments.columns.isDefined match {
-        case true => sourceRdd.frameSchema.copySubsetWithRename(arguments.columns.get)
-        case false => sourceRdd.frameSchema
+        case true => frame.schema.copySubsetWithRename(arguments.columns.get)
+        case false => frame.schema
       }
 
       // predicated copy - the column select is baked into the 'where' function, see Python client spark.py
       // Note: Update if UDF wrapping logic ever moves out of the client and into the server
-      PythonRddStorage.mapWith(sourceRdd, arguments.where.get, finalSchema, sc)
+      PythonRddStorage.mapWith(frame.rdd, arguments.where.get, finalSchema, sc)
     }
     else {
       if (arguments.columns.isDefined) {
-        sourceRdd.selectColumnsWithRename(arguments.columns.get)
+        frame.rdd.selectColumnsWithRename(arguments.columns.get)
       }
       else {
-        sourceRdd
+        frame.rdd
       }
     }
 
-    val frames = engine.frames
-    frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created by copy command"))) {
-      newFrame => frames.saveFrameData(newFrame.toReference, finalRdd)
+    engine.frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created by copy command"))) {
+      newFrame => newFrame.save(finalRdd)
     }
   }
 }

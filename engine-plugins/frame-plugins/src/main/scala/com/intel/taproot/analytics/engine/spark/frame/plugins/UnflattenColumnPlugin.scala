@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins
 import com.intel.taproot.analytics.domain.frame.{ UnflattenColumnArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes, Column }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ RowWrapper }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, RowWrapper }
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.frame.FrameRdd
@@ -66,19 +66,17 @@ class UnflattenColumnPlugin extends SparkCommandPlugin[UnflattenColumnArgs, Fram
    * @return a value of type declared as the return type
    */
   override def execute(arguments: UnflattenColumnArgs)(implicit invocation: Invocation): FrameEntity = {
-
-    val frames = engine.frames
-    val frameEntity = frames.expectFrame(arguments.frame)
-    val schema = frameEntity.schema
+    val frame: SparkFrame = arguments.frame
+    val schema = frame.schema
     val compositeKeyNames = arguments.compositeKeyColumnNames
-    val compositeKeyIndices = compositeKeyNames.map(frameEntity.schema.columnIndex)
+    val compositeKeyIndices = compositeKeyNames.map(schema.columnIndex)
 
     // run the operation
     val targetSchema = UnflattenColumnFunctions.createTargetSchema(schema, compositeKeyNames)
-    val initialRdd = frames.loadFrameData(sc, frameEntity).groupByRows(row => row.values(compositeKeyNames))
+    val initialRdd = frame.rdd.groupByRows(row => row.values(compositeKeyNames))
     val resultRdd = UnflattenColumnFunctions.unflattenRddByCompositeKey(compositeKeyIndices, initialRdd, targetSchema, arguments.delimiter.getOrElse(defaultDelimiter))
 
-    frames.saveFrameData(frameEntity.toReference, new FrameRdd(targetSchema, resultRdd))
+    frame.save(new FrameRdd(targetSchema, resultRdd))
   }
 
 }

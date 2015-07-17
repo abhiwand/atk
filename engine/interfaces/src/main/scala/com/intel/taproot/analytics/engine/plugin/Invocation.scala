@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.plugin
 
 import com.intel.taproot.event.EventContext
-import com.intel.taproot.analytics.engine.{ ReferenceResolver, CommandStorage, Engine }
+import com.intel.taproot.analytics.engine.{ CommandStorage, Engine }
 import com.intel.taproot.analytics.security.UserPrincipal
 import spray.json.JsObject
 
@@ -40,11 +40,6 @@ trait Invocation {
   private[analytics] def executionContext: ExecutionContext
 
   /**
-   * Reference resolver to enable de-referencing of UriReference objects
-   */
-  private[analytics] def resolver: ReferenceResolver
-
-  /**
    * EventContext of the caller
    */
   private[analytics] def eventContext: EventContext
@@ -59,17 +54,14 @@ trait Invocation {
 /**
  * Invocation class to be used by Engine when performing operations by scheduled tasks
  * @param executionContext A Scala execution context for use with methods that require one
- * @param resolver Reference resolver to enable de-referencing of UriReference objects
  */
-case class BackendInvocation(executionContext: ExecutionContext,
-                             resolver: ReferenceResolver = ReferenceResolver) extends Invocation {
+case class BackendInvocation(executionContext: ExecutionContext) extends Invocation {
   private[analytics] def user: UserPrincipal = null
   private[analytics] def eventContext: EventContext = null
 }
 
 case class Call(user: UserPrincipal,
                 executionContext: ExecutionContext,
-                resolver: ReferenceResolver = ReferenceResolver,
                 eventContext: EventContext = null) extends Invocation
 
 trait CommandInvocation extends Invocation {

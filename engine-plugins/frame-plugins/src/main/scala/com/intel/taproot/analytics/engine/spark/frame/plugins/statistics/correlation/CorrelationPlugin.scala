@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.correl
 import com.intel.taproot.analytics.domain.DoubleValue
 import com.intel.taproot.analytics.domain.frame.{ CorrelationArgs }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
@@ -61,11 +61,9 @@ class CorrelationPlugin extends SparkCommandPlugin[CorrelationArgs, DoubleValue]
    */
   override def execute(arguments: CorrelationArgs)(implicit invocation: Invocation): DoubleValue = {
 
-    val frame: SparkFrameData = resolve(arguments.frame)
-    frame.meta.schema.validateColumnsExist(arguments.dataColumnNames)
-    // load frame as RDD
-    val rdd = frame.data
-    Correlation.correlation(rdd, arguments.dataColumnNames)
+    val frame: SparkFrame = arguments.frame
+    frame.schema.validateColumnsExist(arguments.dataColumnNames)
+    Correlation.correlation(frame.rdd, arguments.dataColumnNames)
   }
 
 }

@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.cumulativedist
 
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData, LegacyFrameRdd }
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, LegacyFrameRdd }
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes, Column }
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 
@@ -80,24 +80,20 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: EcdfArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-
     // validate arguments
-    val frame: SparkFrameData = resolve(arguments.frame)
-    val sampleColumn = frame.meta.schema.column(arguments.column)
+    val frame: SparkFrame = arguments.frame
+    val sampleColumn = frame.schema.column(arguments.column)
     require(sampleColumn.dataType.isNumerical, s"Invalid column ${sampleColumn.name} for ECDF.  Expected a numeric data type, but got ${sampleColumn.dataType}.")
     val ecdfSchema = FrameSchema(List(sampleColumn.copy(), Column(sampleColumn.name + "_ECDF", DataTypes.float64)))
 
     // run the operation
-    val newFrameEntity = tryNew(CreateEntityArgs(description = Some("created by ECDF operation"))) { ecdfFrame: FrameMeta =>
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by ECDF operation"))) { ecdfFrame: FrameEntity =>
       if (arguments.resultFrameName.isDefined) {
-        engine.frames.renameFrame(ecdfFrame.meta, FrameName.validate(arguments.resultFrameName.get))
+        engine.frames.renameFrame(ecdfFrame, FrameName.validate(arguments.resultFrameName.get))
       }
-      val rdd = frame.data.toLegacyFrameRdd
+      val rdd = frame.rdd.toLegacyFrameRdd
       val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
-      save(new SparkFrameData(ecdfFrame.meta.withSchema(ecdfSchema),
-        new LegacyFrameRdd(ecdfSchema, ecdfRdd).toFrameRdd()))
-    }.meta
-    newFrameEntity
+      ecdfFrame.save(new LegacyFrameRdd(ecdfSchema, ecdfRdd).toFrameRdd())
+    }
   }
 }

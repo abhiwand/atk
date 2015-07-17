@@ -16,10 +16,9 @@
 
 package com.intel.taproot.spark.graphon.pagerank
 
-import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.domain.graph.{ GraphReference }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import org.apache.spark.frame.FrameRdd
@@ -96,20 +95,20 @@ class PageRankPlugin extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val edgeFrameRddMap = FrameRdd.toFrameRddMap(outEdges, outVertices)
 
     val edgeMap = edgeFrameRddMap.keys.map(edgeLabel => {
-      val edgeFrame = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val edgeFrame = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = edgeFrameRddMap(edgeLabel)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (edgeLabel, edgeFrame)
     }).toMap
 
     val vertexFrameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
     val vertexMap = vertexFrameRddMap.keys.map(vertexLabel => {
-      val vertexFrame = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val vertexFrame = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = vertexFrameRddMap(vertexLabel)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (vertexLabel, vertexFrame)
     }).toMap
 

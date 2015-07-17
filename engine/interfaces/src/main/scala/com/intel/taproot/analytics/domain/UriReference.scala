@@ -16,37 +16,20 @@
 
 package com.intel.taproot.analytics.domain
 
-import java.net.URI
-
-import com.intel.taproot.analytics.engine.{ ReferenceResolver, EntityTypeRegistry }
-import com.intel.taproot.analytics.engine.plugin.Invocation
-
-import scala.util.Try
-
-import scala.reflect.runtime.{ universe => ru }
-import ru._
-
 /**
- * Things that can be referenced with a simple URI of the form scheme://entity/id.
+ * Things that can be referenced with a simple URI of the form ia://entity/id.
  */
-trait UriReference extends HasId {
-
-  /** URI scheme. Default is "ia" */
-  def scheme: String = "ia"
+trait UriReference {
 
   /** The entity id */
   def id: Long
 
-  /** The entity name */
-  def name: String = null
-
-  /** The entity type */
-  def entityType: EntityType
+  /** The entity name e.g. "frame", "graph", ... */
+  def name: String
 
   /** The full URI */
   def uri: String = {
-    val ia_uri: String = s"$scheme://${entityType.name.singular}/$id"
-    ia_uri
+    s"ia://${name}/$id"
   }
 
   override def hashCode(): Int = uri.hashCode()

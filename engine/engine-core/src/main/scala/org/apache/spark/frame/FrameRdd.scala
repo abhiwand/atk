@@ -64,6 +64,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   /**
    * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]]
    */
+  @deprecated("use FrameRdd instead")
   def toLegacyFrameRdd: LegacyFrameRdd = {
     new LegacyFrameRdd(this.frameSchema, this.toDataFrame)
   }

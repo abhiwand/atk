@@ -46,6 +46,9 @@ object DotProductFunctions extends Serializable {
                  defaultLeftValues: Option[List[Double]] = None,
                  defaultRightValues: Option[List[Double]] = None): RDD[sql.Row] = {
 
+    frameRdd.frameSchema.requireColumnsAreVectorizable(leftColumnNames)
+    frameRdd.frameSchema.requireColumnsAreVectorizable(rightColumnNames)
+
     val leftVectorSize = getVectorSize(frameRdd, leftColumnNames)
     val rightVectorSize = getVectorSize(frameRdd, rightColumnNames)
 

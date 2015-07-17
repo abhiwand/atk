@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.descri
 
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 
@@ -90,20 +90,19 @@ class CategoricalSummaryPlugin extends SparkCommandPlugin[CategoricalSummaryArgs
    */
   override def execute(arguments: CategoricalSummaryArgs)(implicit invocation: Invocation): CategoricalSummaryReturn = {
 
-    val sourceFrame: SparkFrameData = resolve(arguments.frame)
-    val sourceRdd = sourceFrame.data
+    val frame: SparkFrame = arguments.frame
 
     val default_top_k = configuration.getInt("top_k")
     val default_threshold = configuration.getDouble("threshold")
 
     // Select each column and invoke summary statistics
     val selectedRdds: List[(FrameRdd, CategoricalColumnInput)] =
-      arguments.columnInput.map(elem => (sourceRdd.selectColumn(elem.column), elem))
+      arguments.columnInput.map(elem => (frame.rdd.selectColumn(elem.column), elem))
 
     val output = for { rdd <- selectedRdds }
       yield CategoricalSummaryImpl.getSummaryStatistics(
       rdd._1,
-      sourceFrame.meta.rowCount.get.asInstanceOf[Double],
+      frame.rowCount.get.asInstanceOf[Double],
       rdd._2.topK,
       rdd._2.threshold,
       default_top_k,

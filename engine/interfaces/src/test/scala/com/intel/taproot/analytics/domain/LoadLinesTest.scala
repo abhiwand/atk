@@ -16,17 +16,14 @@
 
 package com.intel.taproot.analytics.domain
 
-import com.intel.taproot.analytics.domain.frame.{ FrameReferenceManagement, FrameEntityType }
 import com.intel.taproot.analytics.domain.frame.load._
 import com.intel.taproot.analytics.domain.schema.{ DataTypes }
-import com.intel.taproot.analytics.engine.EntityTypeRegistry
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import spray.json._
 import DomainJsonProtocol._
 
 class LoadLinesTest extends FlatSpec with Matchers {
-  EntityTypeRegistry.register(FrameEntityType, FrameReferenceManagement)
 
   "Load" should "parse a Load object with for a file source" in {
     val string =

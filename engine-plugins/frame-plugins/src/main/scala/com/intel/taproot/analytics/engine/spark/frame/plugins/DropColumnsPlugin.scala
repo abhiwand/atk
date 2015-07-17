@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ DropColumnsArgs, FrameEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
@@ -53,18 +53,14 @@ class DropColumnsPlugin extends SparkCommandPlugin[DropColumnsArgs, FrameEntity]
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: DropColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
-    val frame: SparkFrameData = resolve(arguments.frame)
-    val schema = frame.meta.schema
+    val frame: SparkFrame = arguments.frame
+    val schema = frame.schema
     schema.validateColumnsExist(arguments.columns)
-
-    require(schema.columnNamesExcept(arguments.columns).length > 0,
+    require(schema.columnNamesExcept(arguments.columns).nonEmpty,
       "Cannot delete all columns, please leave at least one column remaining")
 
     // run the operation
-    val result = frame.data.selectColumns(schema.columnNamesExcept(arguments.columns))
-    assert(result.frameSchema.columnNames.intersect(arguments.columns).isEmpty, "Column was not removed from schema!")
-
-    // save results
-    save(new SparkFrameData(frame.meta, result)).meta
+    val result = frame.rdd.selectColumns(schema.columnNamesExcept(arguments.columns))
+    frame.save(result)
   }
 }
