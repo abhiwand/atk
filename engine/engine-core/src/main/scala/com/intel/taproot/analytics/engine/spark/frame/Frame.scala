@@ -18,19 +18,19 @@ package com.intel.taproot.analytics.engine.spark.frame
 
 import com.intel.taproot.analytics.domain.frame.{ FrameReference, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.Schema
+import com.intel.taproot.analytics.engine.FrameStorage
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 
-/**
- * Interface for interacting with Frames in Spark
- */
-trait SparkFrame {
+trait Frame {
 
   @deprecated("use other methods in interface, we want to move away from exposing entities to plugin authors")
   def entity: FrameEntity
 
   def name: Option[String]
+
+  def name_=(updatedName: String): Unit
 
   def schema: Schema
 
@@ -40,6 +40,21 @@ trait SparkFrame {
 
   def rowCount: Option[Long]
 
+  def sizeInBytes: Option[Long]
+}
+
+object Frame {
+
+  implicit def frameToFrameEntity(frame: Frame): FrameEntity = frame.entity
+
+  implicit def frameToFrameReference(frame: Frame): FrameReference = frame.entity.toReference
+}
+
+/**
+ * Interface for interacting with Frames in Spark
+ */
+trait SparkFrame extends Frame {
+
   def rdd: FrameRdd
 
   def save(rdd: FrameRdd): SparkFrame
@@ -47,7 +62,6 @@ trait SparkFrame {
   @deprecated("use FrameRdd instead")
   def save(rdd: LegacyFrameRdd): SparkFrame
 
-  def sizeInBytes: Option[Long]
 }
 
 object SparkFrame {
@@ -57,17 +71,28 @@ object SparkFrame {
   implicit def sparkFrameToFrameReference(sparkFrame: SparkFrame): FrameReference = sparkFrame.entity.toReference
 }
 
-class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage)(implicit invocation: Invocation) extends SparkFrame {
+class FrameImpl(frame:FrameReference, frameStorage: FrameStorage)(implicit invocation: Invocation) extends Frame {
 
-  override def entity: FrameEntity = sparkFrameStorage.expectFrame(frame)
-
-  override def rowCount: Option[Long] = entity.rowCount
-
-  override def rdd: FrameRdd = sparkFrameStorage.loadFrameData(sc, entity)
+  override def entity: FrameEntity = frameStorage.expectFrame(frame)
 
   override def description: Option[String] = entity.description
 
   override def name: Option[String] = entity.name
+
+  override def name_=(updatedName: String): Unit = frameStorage.renameFrame(entity, updatedName)
+
+  override def rowCount: Option[Long] = entity.rowCount
+
+  override def status: Long = entity.status
+
+  override def schema: Schema = entity.schema
+
+  override def sizeInBytes: Option[Long] = frameStorage.getSizeInBytes(entity)
+}
+
+class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage)(implicit invocation: Invocation) extends FrameImpl(frame,sparkFrameStorage) with SparkFrame {
+
+  override def rdd: FrameRdd = sparkFrameStorage.loadFrameData(sc, entity)
 
   override def save(rdd: FrameRdd): SparkFrame = {
     val result = sparkFrameStorage.saveFrameData(frame, rdd)
@@ -77,11 +102,5 @@ class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage:
     val result = sparkFrameStorage.saveLegacyFrame(frame, rdd)
     new SparkFrameImpl(result, sc, sparkFrameStorage)
   }
-
-  override def status: Long = entity.status
-
-  override def schema: Schema = entity.schema
-
-  override def sizeInBytes: Option[Long] = sparkFrameStorage.getSizeInBytes(entity)
 
 }

@@ -18,6 +18,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ RenameFrameArgs, FrameEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.frame.{Frame, SparkFrame}
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -55,14 +56,8 @@ class RenameFramePlugin extends CommandPlugin[RenameFrameArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: RenameFrameArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frame = frames.expectFrame(arguments.frame)
-    val newName = arguments.newName
-
-    // run the operation and save results
-    frames.renameFrame(frame, newName)
+    val frame: Frame = arguments.frame
+    frame.name = arguments.newName
+    frame
   }
 }

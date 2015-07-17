@@ -16,19 +16,18 @@
 
 package com.intel.taproot.analytics.engine.plugin
 
-import com.intel.taproot.event.{ EventContext, EventLogging }
 import com.intel.taproot.analytics.component._
-import com.intel.taproot.analytics.domain._
-import com.intel.taproot.analytics.domain.command.{ CommandDocLoader }
-import spray.json.JsObject
-import spray.json._
+import com.intel.taproot.analytics.domain.command.CommandDoc
+import com.intel.taproot.analytics.domain.frame.{FrameEntity, FrameReference}
+import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
+import com.intel.taproot.analytics.engine.spark.frame.{FrameImpl, Frame}
+import com.intel.taproot.analytics.security.UserPrincipal
+import com.intel.taproot.event.{EventContext, EventLogging}
+import spray.json.{JsObject, _}
 
-import scala.reflect.runtime.{ universe => ru }
+import scala.reflect.runtime.{universe => ru}
 import ru._
 import scala.util.control.NonFatal
-import com.intel.taproot.analytics.security.UserPrincipal
-import com.intel.taproot.analytics.domain.command.CommandDoc
-import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 
 /**
  * Base trait for all operation-based plugins (query and command, for example).
@@ -70,7 +69,7 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
    *
    * - graph:titan means command is loaded into class TitanGraph
    * - graph: means command is loaded into class Graph, our default type which will be the Parquet-backed graph
-   * - graph would mean command is loaded into class BaseGraph, which applies to all graph classes
+   * - graph would mean command is loaded into class _BaseGraph, which applies to all graph classes
    * - frame: and means command is loaded in class Frame.  Example: "frame:/assign_sample"
    * - model:logistic_regression  means command is loaded into class LogisticRegressionModel
    *
@@ -159,6 +158,10 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
  */
 abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag]
     extends OperationPlugin[Arguments, Return] with EventLogging {
+
+  implicit def frameRefToFrame(frame: FrameReference)(implicit invocation: Invocation): Frame = new FrameImpl(frame, engine.frames)
+
+  implicit def frameEntityToFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): Frame = frameRefToFrame(frameEntity.toReference)
 
   def engine(implicit invocation: Invocation) = invocation.asInstanceOf[CommandInvocation].engine
 
