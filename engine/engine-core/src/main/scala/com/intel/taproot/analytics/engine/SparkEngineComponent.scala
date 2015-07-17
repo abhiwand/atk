@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine
 
 import com.intel.taproot.analytics.engine.command._
 import com.intel.taproot.analytics.engine.gc.GarbageCollector
-import com.intel.taproot.analytics.engine.util.{DiskSpaceReporter, EnvironmentLogger, JvmVersionReporter}
+import com.intel.taproot.analytics.engine.util.{ DiskSpaceReporter, EnvironmentLogger, JvmVersionReporter }
 
 /**
  * Main class for initializing the Spark Engine

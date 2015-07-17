@@ -31,7 +31,7 @@ import org.apache.spark.rdd.RDD
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[spark] object GroupByAggregationFunctions extends Serializable {
+private object GroupByAggregationFunctions extends Serializable {
 
   /**
    * Create a Summarized Frame with Aggregations (Avg, Count, Max, Min, ...).

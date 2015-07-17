@@ -27,7 +27,6 @@ import spray.http.{ StatusCodes, Uri }
 import spray.routing.{ ValidationRejection, Directives, Route }
 import scala.util.Failure
 import scala.util.Success
-import UserPrincipal
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.intel.taproot.analytics.rest.v1.viewmodels._

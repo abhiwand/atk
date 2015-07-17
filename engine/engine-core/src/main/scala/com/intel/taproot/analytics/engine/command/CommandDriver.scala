@@ -16,11 +16,10 @@
 
 package com.intel.taproot.analytics.engine.command
 
-import com.intel.taproot.event.{ EventLogging }
+import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.domain.User
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, Call }
 import com.intel.taproot.analytics.engine._
-import EngineExecutionContext
 import com.typesafe.config.ConfigFactory
 import org.apache.commons.lang.exception.ExceptionUtils
 import scala.reflect.io.Directory

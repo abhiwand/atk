@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.algorithm
+package com.intel.taproot.analytics.domain.frame
 
 /**
- * Quantile target that will be applied to an element
- * @param quantile quantile. For eg, 40 means 40th quantile
- * @param weight weight that will be applied to the element
+ * Quantile composing element which contains element's index and its weight
+ * @param index element index
+ * @param quantileTarget the quantile target that the element can be applied to
  */
-case class QuantileTarget(quantile: Double, weight: BigDecimal)
+case class QuantileComposingElement(index: Long, quantileTarget: QuantileTarget)

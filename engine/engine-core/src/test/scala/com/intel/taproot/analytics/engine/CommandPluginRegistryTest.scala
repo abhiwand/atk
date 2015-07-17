@@ -24,7 +24,7 @@ import scala.collection.immutable.HashMap
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, CumulativeSumArgs }
 import com.intel.taproot.analytics.engine.plugin.SparkInvocation
 
-import com.intel.taproot.analytics.domain.{UserPrincipal, DomainJsonProtocol}
+import com.intel.taproot.analytics.domain.{ UserPrincipal, DomainJsonProtocol }
 import DomainJsonProtocol._
 import org.scalatest.mock.MockitoSugar
 

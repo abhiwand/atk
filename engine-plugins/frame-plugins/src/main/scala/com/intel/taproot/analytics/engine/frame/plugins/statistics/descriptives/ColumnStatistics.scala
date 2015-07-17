@@ -29,7 +29,7 @@ import spray.json._
 /**
  * Provides functions for taking statistics on column data.
  */
-private[spark] object ColumnStatistics extends Serializable {
+object ColumnStatistics extends Serializable {
 
   /**
    * Calculate (weighted) mode of a data column, the weight of the mode, and the total weight of the column.

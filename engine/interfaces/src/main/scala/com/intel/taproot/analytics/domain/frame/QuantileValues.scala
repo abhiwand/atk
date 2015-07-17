@@ -16,8 +16,6 @@
 
 package com.intel.taproot.analytics.domain.frame
 
-import com.intel.taproot.analytics.algorithm.Quantile
-
 /**
  * The result object for quantile calculation
  * @param quantiles value for the quantiles

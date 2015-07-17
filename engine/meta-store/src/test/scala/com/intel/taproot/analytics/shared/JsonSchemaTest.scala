@@ -17,8 +17,7 @@
 package com.intel.taproot.analytics.shared
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
-import com.intel.taproot.analytics.schema.NumberSchema
-import com.intel.taproot.analytics.spray.json.{ArraySchema, StringSchema, ObjectSchema, JsonSchema}
+import com.intel.taproot.analytics.spray.json.{ ArraySchema, StringSchema, ObjectSchema, JsonSchema, NumberSchema }
 import org.scalatest.{ Matchers, FlatSpec }
 
 case class SchemaSample(other_frame: FrameReference, int: Int, long: Long,

@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.statistics.quantiles
 
-import com.intel.taproot.analytics.algorithm.{ QuantileComposingElement, QuantileTarget }
+import com.intel.taproot.analytics.domain.frame.{ QuantileComposingElement, QuantileTarget }
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import org.apache.spark.rdd.RDD

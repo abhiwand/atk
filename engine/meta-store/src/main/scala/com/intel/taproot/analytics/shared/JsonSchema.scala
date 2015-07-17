@@ -23,7 +23,6 @@ import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.PluginDocAnnotation
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, PluginDoc }
-import com.intel.taproot.analytics.schema._
 import spray.json.{ AdditionalFormats, StandardFormats }
 import com.intel.taproot.analytics.spray.json._
 import org.joda.time.DateTime

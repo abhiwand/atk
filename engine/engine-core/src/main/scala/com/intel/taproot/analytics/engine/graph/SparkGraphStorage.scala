@@ -32,7 +32,6 @@ import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import com.intel.taproot.analytics.engine.plugin.SparkInvocation
 import com.intel.taproot.analytics.engine.{ GraphBackendStorage, GraphStorage }
 import com.intel.taproot.analytics.repository.MetaStore
-import UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
 import org.apache.spark.SparkContext
 import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }

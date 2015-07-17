@@ -16,15 +16,15 @@
 
 package com.intel.taproot.analytics.engine
 
-import com.intel.taproot.analytics.domain.command.{Command, CommandTemplate}
+import com.intel.taproot.analytics.domain.command.{ Command, CommandTemplate }
 import com.intel.taproot.analytics.engine.command._
-import com.intel.taproot.analytics.engine.plugin.{CommandPlugin, Invocation}
+import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation }
 import org.apache.spark.SparkContext
 import org.joda.time.DateTime
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import spray.json._
 
 import scala.collection._

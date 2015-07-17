@@ -99,7 +99,7 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[spark] object EntropyRddFunctions extends Serializable {
+private object EntropyRddFunctions extends Serializable {
 
   /**
    * Calculate the Shannon entropy for specified column in data frame.

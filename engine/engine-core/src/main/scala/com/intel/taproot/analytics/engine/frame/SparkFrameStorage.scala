@@ -16,8 +16,6 @@
 
 package com.intel.taproot.analytics.engine.frame
 
-import java.util.UUID
-import com.intel.taproot.analytics.domain.graph.GraphEntity
 import com.intel.taproot.analytics.domain.schema.{ Schema, FrameSchema }
 import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.component.ClassLoaderAware
@@ -34,7 +32,6 @@ import com.intel.taproot.analytics.engine.graph
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
 import com.intel.taproot.analytics.engine.plugin.SparkInvocation
 import com.intel.taproot.analytics.repository.SlickMetaStoreComponent
-import UserPrincipal
 import com.intel.taproot.analytics.{ EventLoggingImplicits, DuplicateNameException, NotFoundException }
 import org.apache.hadoop.fs.Path
 import org.apache.spark.frame.FrameRdd

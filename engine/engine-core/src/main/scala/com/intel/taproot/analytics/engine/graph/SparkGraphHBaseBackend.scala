@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.graph
 import java.util.UUID
 import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.EventLoggingImplicits
-import com.intel.taproot.analytics.engine.{EngineExecutionContext, GraphBackendStorage}
+import com.intel.taproot.analytics.engine.{ EngineExecutionContext, GraphBackendStorage }
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.util.KerberosAuthenticator
 import scala.concurrent.Future

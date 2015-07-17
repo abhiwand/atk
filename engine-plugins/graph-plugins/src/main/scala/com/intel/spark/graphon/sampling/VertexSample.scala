@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.engine.graph.GraphBackendName
 import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
 import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
 import com.intel.taproot.analytics.engine.plugin.{ SparkInvocation, SparkCommandPlugin }
-import com.intel.taproot.analytics.domain.{UserPrincipal, StorageFormats, DomainJsonProtocol}
+import com.intel.taproot.analytics.domain.{ UserPrincipal, StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphReference }
 import spray.json._
 import scala.concurrent._

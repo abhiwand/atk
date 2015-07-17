@@ -21,7 +21,7 @@ import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class EngineKryoRegistratorTest extends WordSpec with Matchers with MockitoSugar {
 

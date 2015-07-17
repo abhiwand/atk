@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine
 import com.intel.taproot.analytics.domain.model.{ ModelReference, ModelTemplate, ModelEntity }
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import spray.json.{ JsValue, JsObject }
-import com.intel.taproot.analytics.domain.{UserPrincipal, CreateEntityArgs}
+import com.intel.taproot.analytics.domain.{ UserPrincipal, CreateEntityArgs }
 
 trait ModelStorage {
 

@@ -16,32 +16,32 @@
 
 package com.intel.taproot.analytics.engine
 
-import java.util.{ArrayList => JArrayList, List => JList}
+import java.util.{ ArrayList => JArrayList, List => JList }
 
 import com.intel.taproot.analytics.component.ClassLoaderAware
-import com.intel.taproot.analytics.domain.{UserPrincipal, CreateEntityArgs}
-import com.intel.taproot.analytics.domain.command.{Command, CommandDefinition, CommandTemplate, Execution}
-import com.intel.taproot.analytics.domain.frame.{FrameEntity, FrameReference}
+import com.intel.taproot.analytics.domain.{ UserPrincipal, CreateEntityArgs }
+import com.intel.taproot.analytics.domain.command.{ Command, CommandDefinition, CommandTemplate, Execution }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.graph._
-import com.intel.taproot.analytics.domain.model.{ModelEntity, ModelReference}
+import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
 import com.intel.taproot.analytics.domain.query._
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.command.{CommandExecutor, CommandPluginRegistry}
+import com.intel.taproot.analytics.engine.command.{ CommandExecutor, CommandPluginRegistry }
 import com.intel.taproot.analytics.engine.frame._
-import com.intel.taproot.analytics.engine.gc.{GarbageCollectionPlugin, GarbageCollector}
+import com.intel.taproot.analytics.engine.gc.{ GarbageCollectionPlugin, GarbageCollector }
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
 import com.intel.taproot.analytics.engine.model.SparkModelStorage
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
 import EngineExecutionContext.global
 import com.intel.taproot.analytics.engine.user.UserStorage
-import com.intel.taproot.analytics.{EventLoggingImplicits, NotFoundException}
+import com.intel.taproot.analytics.{ EventLoggingImplicits, NotFoundException }
 import com.intel.taproot.event.EventLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent._
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object EngineImpl {
   private val pythonRddDelimiter = "YoMeDelimiter"

@@ -31,7 +31,7 @@ import org.apache.spark.rdd.RDD
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[spark] object CumulativeDistFunctions extends Serializable {
+private object CumulativeDistFunctions extends Serializable {
 
   /**
    * Generate the empirical cumulative distribution for an input dataframe column

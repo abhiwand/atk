@@ -79,9 +79,9 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging wi
    * @param shuffle If true, RDD partitions can increase or decrease, else if false, RDD partitions can only decrease
    * @return repartitioned frame RDD
    */
-  private[spark] def repartition(path: String,
-                                 frameRdd: FrameRdd,
-                                 shuffle: Boolean = false): FrameRdd = {
+  private[engine] def repartition(path: String,
+                                  frameRdd: FrameRdd,
+                                  shuffle: Boolean = false): FrameRdd = {
     val framePartitions = frameRdd.partitions.length
 
     // Frame compression ratio prevents us from under-estimating actual file size for compressed formats like Parquet
@@ -103,7 +103,7 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging wi
    * @param fileSize size of file in bytes
    * @return partition count that should be used
    */
-  private[spark] def partitionsFromFileSize(fileSize: Long): Int = {
+  private[engine] def partitionsFromFileSize(fileSize: Long): Int = {
     var partitionCount = EngineConfig.maxPartitions
     EngineConfig.autoPartitionerConfig.foreach(partitionConfig => {
       if (fileSize <= partitionConfig.fileSizeUpperBound) {

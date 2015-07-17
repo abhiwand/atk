@@ -26,7 +26,6 @@ import spray.json._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.util.control.NonFatal
-import UserPrincipal
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 

@@ -21,11 +21,10 @@ import com.intel.taproot.analytics.component.{ Archive, ArchiveDefinition, Defau
 import FileUtil.writeFile
 import com.intel.taproot.analytics.engine.plugin.Call
 import com.intel.taproot.analytics.engine.command.{ CommandExecutor, CommandLoader, CommandPluginRegistry, CommandStorageImpl }
-import EngineExecutionContext
 import com.intel.taproot.analytics.repository.{ DbProfileComponent, Profile, SlickMetaStoreComponent }
 import com.typesafe.config.Config
 import org.joda.time.DateTime
-import com.intel.taproot.analytics.domain.{UserPrincipal, User, DomainJsonProtocol}
+import com.intel.taproot.analytics.domain.{ UserPrincipal, User, DomainJsonProtocol }
 import spray.json._
 import DomainJsonProtocol.commandDefinitionFormat
 import scala.concurrent.Await

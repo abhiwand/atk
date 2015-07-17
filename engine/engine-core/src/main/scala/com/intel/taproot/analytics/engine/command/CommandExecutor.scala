@@ -36,11 +36,9 @@ import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.util.Try
 import com.intel.taproot.analytics.domain.command.CommandTemplate
-import UserPrincipal
 import com.intel.taproot.analytics.domain.command.Execution
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.command.Command
-import scala.collection.mutable
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import scala.concurrent.duration._
 import EngineExecutionContext.global

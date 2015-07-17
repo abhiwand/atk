@@ -33,7 +33,7 @@ import scala.collection.mutable.PriorityQueue
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
  */
-private[spark] object TopKRddFunctions extends Serializable {
+private object TopKRddFunctions extends Serializable {
 
   case class CountPair(key: Any, value: Double) extends Ordered[CountPair] {
     def compare(that: CountPair) = this.value compare that.value

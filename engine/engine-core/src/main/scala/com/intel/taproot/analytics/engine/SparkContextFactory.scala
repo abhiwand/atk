@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.util.KerberosAuthenticator
 import com.intel.taproot.event.EventLogging
 import org.apache.commons.lang3.StringUtils
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
  * Class Factory for creating spark contexts

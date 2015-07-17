@@ -14,19 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics
+package com.intel.taproot.analytics.domain.frame
 
-package object engine {
-
-  /**
-   * Concatenates two paths, adding an extra slash in between if necessary.
-   */
-  private[spark] def concatPaths(first: String, second: String) = {
-    if (first.endsWith("/") || second.startsWith("/")) {
-      first + second
-    }
-    else {
-      first + "/" + second
-    }
-  }
-}
+/**
+ * Represent a quantile and its value
+ * @param quantile quantile
+ * @param value value at the quantile
+ */
+case class Quantile(quantile: Double, value: BigDecimal)

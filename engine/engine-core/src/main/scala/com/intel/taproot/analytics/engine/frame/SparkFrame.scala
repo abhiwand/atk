@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame
 
-import com.intel.taproot.analytics.domain.frame.{FrameEntity, FrameReference}
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import org.apache.spark.SparkContext

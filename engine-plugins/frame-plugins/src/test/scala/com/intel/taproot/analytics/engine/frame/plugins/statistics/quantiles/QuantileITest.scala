@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.statistics.quantiles
 
-import com.intel.taproot.analytics.algorithm.Quantile
+import com.intel.taproot.analytics.domain.frame.Quantile
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD

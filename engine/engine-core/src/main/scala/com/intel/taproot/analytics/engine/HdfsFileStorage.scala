@@ -16,13 +16,13 @@
 
 package com.intel.taproot.analytics.engine
 
-import java.io.{InputStream, OutputStream}
+import java.io.{ InputStream, OutputStream }
 
 import com.intel.taproot.analytics.engine.util.KerberosAuthenticator
-import com.intel.taproot.event.{EventContext, EventLogging}
+import com.intel.taproot.event.{ EventContext, EventLogging }
 import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, LocalFileSystem, Path}
+import org.apache.hadoop.fs.{ FileSystem, LocalFileSystem, Path }
 import org.apache.hadoop.hdfs.DistributedFileSystem
 
 /**
@@ -83,7 +83,7 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
    * Path from a path
    * @param path a path relative to the root or that includes the root
    */
-  private[spark] def absolutePath(path: String): Path = {
+  def absolutePath(path: String): Path = {
     if (absolutePathPattern.findFirstIn(path).isDefined) {
       new Path(path)
     }
@@ -170,6 +170,15 @@ class HdfsFileStorage(fsRoot: String) extends EventLogging {
    */
   def isDirectory(path: Path): Boolean = withContext("file.isDirectory") {
     fs.isDirectory(path)
+  }
+
+  private def concatPaths(first: String, second: String) = {
+    if (first.endsWith("/") || second.startsWith("/")) {
+      first + second
+    }
+    else {
+      first + "/" + second
+    }
   }
 
 }
