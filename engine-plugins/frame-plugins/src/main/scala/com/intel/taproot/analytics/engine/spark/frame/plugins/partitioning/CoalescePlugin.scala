@@ -20,6 +20,7 @@ import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.frame.partitioning.CoalesceArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 
@@ -60,17 +61,8 @@ class CoalescePlugin extends SparkCommandPlugin[CoalesceArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: CoalesceArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frame = frames.expectFrame(arguments.frame)
-
-    // run the operation
-    val frameRdd = frames.loadFrameData(sc, frame)
-    val coalescedRdd = frameRdd.coalesce(arguments.numberPartitions, arguments.shuffle.get)
-
-    // save results
-    frames.saveFrameData(frame.toReference, new FrameRdd(frameRdd.frameSchema, coalescedRdd))
+    val frame: SparkFrame = arguments.frame
+    val coalescedRdd = frame.rdd.coalesce(arguments.numberPartitions, arguments.shuffle.get)
+    frame.save(new FrameRdd(frame.schema, coalescedRdd))
   }
 }

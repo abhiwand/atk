@@ -16,12 +16,11 @@
 
 package com.intel.taproot.spark.graphon.connectedcomponents
 
-import com.intel.taproot.graphbuilder.elements.{ Property }
-import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
-import com.intel.taproot.analytics.domain.graph.{ GraphReference }
+import com.intel.taproot.graphbuilder.elements.Property
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
@@ -83,10 +82,10 @@ class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsAr
     val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
     new ConnectedComponentsReturn(frameRddMap.keys.map(label => {
-      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val result = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = frameRddMap(label)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (label, result)
     }).toMap)
 

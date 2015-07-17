@@ -20,6 +20,7 @@ import com.intel.taproot.analytics.domain.IntValue
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.FrameNoArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
@@ -59,14 +60,7 @@ class PartitionCountPlugin extends SparkCommandPlugin[FrameNoArgs, IntValue] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FrameNoArgs)(implicit invocation: Invocation): IntValue = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frame = frames.expectFrame(arguments.frame)
-
-    // run the operation
-    val frameRdd = frames.loadFrameData(sc, frame)
-    new IntValue(frameRdd.partitions.size)
+    val frame: SparkFrame = arguments.frame
+    new IntValue(frame.rdd.partitions.size)
   }
 }

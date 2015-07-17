@@ -18,6 +18,11 @@ package com.intel.taproot.analytics.engine.spark.plugin
 
 import java.nio.file.{ Paths, Files }
 import java.nio.charset.StandardCharsets
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.schema.Schema
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameImpl, SparkFrame }
+import org.apache.spark.frame.FrameRdd
+
 import scala.collection.JavaConversions._
 
 import com.intel.taproot.analytics.component.Archive
@@ -47,6 +52,10 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
 
   def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
+  implicit def frameRefToSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkFrame = new SparkFrameImpl(frame, sc, engine.frames)
+
+  implicit def frameEntityToSparkFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): SparkFrame = frameRefToSparkFrame(frameEntity.toReference)
+
   /**
    * Can be overridden by subclasses to provide a more specialized Invocation. Called before
    * calling the execute method.
@@ -63,7 +72,6 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
       //TODO: Hide context factory behind a property on SparkEngine?
       null,
       commandInvocation.commandStorage,
-      invocation.resolver,
       invocation.eventContext)
     sparkInvocation.copy(sparkContext = createSparkContextForCommand(arguments, sparkEngine.sparkContextFactory)(sparkInvocation))
   }

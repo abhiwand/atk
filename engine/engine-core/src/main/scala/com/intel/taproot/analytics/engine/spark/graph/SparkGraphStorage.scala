@@ -30,7 +30,7 @@ import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, VertexSchema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.spark.frame.SparkFrameStorage
 import com.intel.taproot.analytics.engine.spark.plugin.SparkInvocation
-import com.intel.taproot.analytics.engine.{ EntityTypeRegistry, GraphBackendStorage, GraphStorage }
+import com.intel.taproot.analytics.engine.{ GraphBackendStorage, GraphStorage }
 import com.intel.taproot.analytics.repository.MetaStore
 import com.intel.taproot.analytics.security.UserPrincipal
 import com.thinkaurelius.titan.core.TitanGraph
@@ -56,58 +56,6 @@ class SparkGraphStorage(metaStore: MetaStore,
         metaStore.graphRepo.updateLastReadDate(graph).toOption
     }
   }
-
-  object SparkGraphManagement extends EntityManager[GraphEntityType.type] {
-
-    override implicit val referenceTag = GraphEntityType.referenceTag
-
-    override type Reference = GraphReference
-
-    override type MetaData = GraphMeta
-
-    override type Data = SparkGraphData
-
-    override def getData(reference: Reference)(implicit invocation: Invocation): Data = {
-      val meta = getMetaData(reference)
-      new SparkGraphData(meta.meta, None)
-    }
-
-    override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = new GraphMeta(expectGraph(reference))
-
-    override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = storage.createGraph(
-      GraphTemplate(args.name))
-
-    def getReference(reference: Reference)(implicit invocation: Invocation): Reference = expectGraph(reference)
-
-    //
-    // Do not use. Use getReference(reference: Reference) instead.
-    //
-    override def getReference(id: Long)(implicit invocation: Invocation): Reference = getReference(GraphReference(id))
-
-    implicit def graphToRef(graph: GraphEntity): Reference = GraphReference(graph.id)
-
-    implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
-
-    //TODO: implement!
-    /**
-     * Save data of the given type, possibly creating a new object.
-     */
-    override def saveData(data: SparkGraphStorage.this.SparkGraphManagement.Data)(implicit invocation: Invocation): SparkGraphStorage.this.SparkGraphManagement.Data = ???
-
-    /**
-     * Creates an (empty) instance of the given type, reserving a URI
-     */
-    override def delete(reference: SparkGraphStorage.this.SparkGraphManagement.Reference)(implicit invocation: Invocation): Unit = {
-      val meta = getMetaData(reference)
-      drop(meta.meta)
-    }
-  }
-
-  //TODO: enable
-  //EntityRegistry.register(GraphEntity, SparkGraphManagement)
-  //in the meantime,
-  //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  EntityTypeRegistry.register(GraphEntityType, SparkGraphManagement)
 
   /** Lookup a Graph, throw an Exception if not found */
   override def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity = {
@@ -405,7 +353,7 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   def loadGbElements(sc: SparkContext, graph: GraphEntity)(implicit invocation: Invocation): (RDD[GBVertex], RDD[GBEdge]) = {
-    val graphEntity = expectGraph(SparkGraphManagement.graphToRef(graph))
+    val graphEntity = expectGraph(graph.toReference)
 
     if (graphEntity.isSeamless) {
       val vertexRDD = loadGbVertices(sc, graph)

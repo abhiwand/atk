@@ -17,13 +17,12 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.FrameMeta
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.PluginDoc
 
 //Implicits needed for JSON conversion
-
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import spray.json._
 
@@ -69,7 +68,6 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
    * (this configuration is used to prevent multiple progress bars in Python client)
    */
   override def numberOfJobs(arguments: LogisticRegressionTrainArgs)(implicit invocation: Invocation) = 109
-
   /**
    * Run MLLib's LogisticRegressionWithSGD() on the training frame and create a Model for it.
    *
@@ -106,11 +104,11 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
     val covarianceFrame = summaryTable.approxCovarianceMatrix match {
       case Some(matrix) => {
         val frameRdd = matrix.toFrameRdd(sc, summaryTable.coefficientNames)
-        val frame = tryNew(CreateEntityArgs(
+        val frame = engine.frames.tryNewFrame(CreateEntityArgs(
           description = Some("covariance matrix created by LogisticRegression train operation"))) {
-          newTrainFrame: FrameMeta =>
-            save(new SparkFrameData(newTrainFrame.meta, frameRdd))
-        }.meta
+          newTrainFrame: FrameEntity =>
+            newTrainFrame.save(frameRdd)
+        }
         Some(frame)
       }
       case _ => None

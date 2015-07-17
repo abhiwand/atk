@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins.statistics.covari
 import com.intel.taproot.analytics.domain.DoubleValue
 import com.intel.taproot.analytics.domain.frame.CovarianceArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
@@ -61,11 +61,8 @@ class CovariancePlugin extends SparkCommandPlugin[CovarianceArgs, DoubleValue] {
    * @return value of type declared as the Return type
    */
   override def execute(arguments: CovarianceArgs)(implicit invocation: Invocation): DoubleValue = {
-
-    val frame: SparkFrameData = resolve(arguments.frame)
-    // load frame as RDD
-    val rdd = frame.data
-    CovarianceFunctions.covariance(rdd, arguments.dataColumnNames)
+    val frame: SparkFrame = arguments.frame
+    CovarianceFunctions.covariance(frame.rdd, arguments.dataColumnNames)
   }
 
 }

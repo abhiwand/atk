@@ -1,11 +1,10 @@
 package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameMeta, FrameReference }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.model.ModelReference
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.Vectors
@@ -46,43 +45,42 @@ class NaiveBayesPredictPlugin extends SparkCommandPlugin[NaiveBayesPredictArgs, 
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: NaiveBayesPredictArgs)(implicit invocation: Invocation): FrameEntity =
-    {
-      val models = engine.models
-      val frames = engine.frames
+  override def execute(arguments: NaiveBayesPredictArgs)(implicit invocation: Invocation): FrameEntity = {
+    val models = engine.models
+    val frames = engine.frames
 
-      val inputFrame = frames.expectFrame(arguments.frame)
-      val modelMeta = models.expectModel(arguments.model)
+    val inputFrame = frames.expectFrame(arguments.frame)
+    val modelMeta = models.expectModel(arguments.model)
 
-      //Running MLLib
-      val naiveBayesJsObject = modelMeta.data.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
-      val naiveBayesData = naiveBayesJsObject.convertTo[NaiveBayesData]
-      val naiveBayesModel = naiveBayesData.naiveBayesModel
-      if (arguments.observationColumns.isDefined) {
-        require(naiveBayesData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
-      }
-      val naiveBayesColumns = arguments.observationColumns.getOrElse(naiveBayesData.observationColumns)
-
-      //create RDD from the frame
-      val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
-
-      //predicting a label for the observation columns
-      val predictionsRDD = inputFrameRdd.mapRows(row => {
-        val array = row.valuesAsArray(naiveBayesColumns)
-        val doubles = array.map(i => DataTypes.toDouble(i))
-        val point = Vectors.dense(doubles)
-        val prediction = naiveBayesModel.predict(point)
-        row.addValue(DataTypes.toDouble(prediction))
-      })
-
-      val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_class", DataTypes.float64)
-      val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
-
-      tryNew(CreateEntityArgs(description = Some("created by NaiveBayes predict operation"))) {
-        newPredictedFrame: FrameMeta =>
-          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
-      }.meta
+    //Running MLLib
+    val naiveBayesJsObject = modelMeta.data.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
+    val naiveBayesData = naiveBayesJsObject.convertTo[NaiveBayesData]
+    val naiveBayesModel = naiveBayesData.naiveBayesModel
+    if (arguments.observationColumns.isDefined) {
+      require(naiveBayesData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
     }
+    val naiveBayesColumns = arguments.observationColumns.getOrElse(naiveBayesData.observationColumns)
+
+    //create RDD from the frame
+    val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
+
+    //predicting a label for the observation columns
+    val predictionsRDD = inputFrameRdd.mapRows(row => {
+      val array = row.valuesAsArray(naiveBayesColumns)
+      val doubles = array.map(i => DataTypes.toDouble(i))
+      val point = Vectors.dense(doubles)
+      val prediction = naiveBayesModel.predict(point)
+      row.addValue(DataTypes.toDouble(prediction))
+    })
+
+    val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_class", DataTypes.float64)
+    val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
+
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by NaiveBayes predict operation"))) {
+      newPredictedFrame: FrameEntity =>
+        newPredictedFrame.save(predictFrameRdd)
+    }
+  }
 
 }
 

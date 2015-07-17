@@ -16,13 +16,12 @@
 
 package com.intel.taproot.spark.graphon.beliefpropagation
 
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameMeta }
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol
 
 import spray.json._
@@ -123,10 +122,10 @@ class BeliefPropagationPlugin extends SparkCommandPlugin[BeliefPropagationArgs, 
 
     val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
     val frameMap = frameRddMap.keys.map(label => {
-      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val result = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = frameRddMap(label)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (label, result)
     }).toMap
     val time = (System.currentTimeMillis() - start).toDouble / 1000.0

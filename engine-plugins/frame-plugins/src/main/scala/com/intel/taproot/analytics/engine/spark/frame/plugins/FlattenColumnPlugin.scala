@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.spark.frame.plugins
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
 import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.LegacyFrameRdd
+import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrame, LegacyFrameRdd }
 import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin }
 import org.apache.spark.rdd.RDD
 import com.intel.taproot.analytics.domain.schema.{ DataTypes }
@@ -66,15 +66,12 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEnt
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FlattenColumnArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
     // validate arguments
-    val frameEntity = frames.expectFrame(arguments.frame)
-    var schema = frameEntity.schema
+    val frame: SparkFrame = arguments.frame
+    var schema = frame.schema
     var flattener: RDD[Row] => RDD[Row] = null
-    val columnIndex = frameEntity.schema.columnIndex(arguments.column)
-    val columnDataType = frameEntity.schema.columnDataType(arguments.column)
+    val columnIndex = schema.columnIndex(arguments.column)
+    val columnDataType = schema.columnDataType(arguments.column)
     columnDataType match {
       case DataTypes.string => flattener = FlattenColumnFunctions.flattenRddByStringColumnIndex(columnIndex, arguments.delimiter.getOrElse(","))
       case DataTypes.vector(length) =>
@@ -84,11 +81,11 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEnt
     }
 
     // run the operation
-    val rdd = frames.loadLegacyFrameRdd(sc, frameEntity)
+    val rdd = frame.rdd.toLegacyFrameRdd
     val flattenedRDD = flattener(rdd)
 
     // save results
-    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRdd(schema, flattenedRDD))
+    frame.save(new LegacyFrameRdd(schema, flattenedRDD))
   }
 
 }

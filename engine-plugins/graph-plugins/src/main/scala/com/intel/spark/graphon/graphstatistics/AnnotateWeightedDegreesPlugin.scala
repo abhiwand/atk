@@ -17,12 +17,11 @@
 package com.intel.taproot.spark.graphon.graphstatistics
 
 import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property }
-import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
@@ -124,10 +123,10 @@ class AnnotateWeightedDegreesPlugin extends SparkCommandPlugin[AnnotateWeightedD
     val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
     new AnnotateWeightedDegreesReturn(frameRddMap.keys.map(label => {
-      val result = tryNew(CreateEntityArgs(description = Some("created by annotate weighted degrees operation"))) { newOutputFrame: FrameMeta =>
+      val result = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by annotate weighted degrees operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = frameRddMap(label)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (label, result)
     }).toMap)
 

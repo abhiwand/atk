@@ -64,41 +64,38 @@ class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: JoinArgs)(implicit invocation: Invocation): FrameEntity = {
-    val frames = engine.frames
-
-    val leftFrame: SparkFrameData = resolve(arguments.leftFrame.frame)
-    val rightFrame: SparkFrameData = resolve(arguments.rightFrame.frame)
+    val leftFrame: SparkFrame = arguments.leftFrame.frame
+    val rightFrame: SparkFrame = arguments.rightFrame.frame
 
     //first validate join columns are valid
-    leftFrame.data.frameSchema.validateColumnsExist(List(arguments.leftFrame.joinColumn))
-    rightFrame.data.frameSchema.validateColumnsExist(List(arguments.rightFrame.joinColumn))
+    leftFrame.schema.validateColumnsExist(List(arguments.leftFrame.joinColumn))
+    rightFrame.schema.validateColumnsExist(List(arguments.rightFrame.joinColumn))
 
     // Get estimated size of frame to determine whether to use a broadcast join
     val broadcastJoinThreshold = EngineConfig.broadcastJoinThreshold
 
     val joinResultRDD = JoinRddFunctions.joinRDDs(
-      createRDDJoinParam(frames, leftFrame, arguments.leftFrame.joinColumn, broadcastJoinThreshold),
-      createRDDJoinParam(frames, rightFrame, arguments.rightFrame.joinColumn, broadcastJoinThreshold),
+      createRDDJoinParam(leftFrame, arguments.leftFrame.joinColumn, broadcastJoinThreshold),
+      createRDDJoinParam(rightFrame, arguments.rightFrame.joinColumn, broadcastJoinThreshold),
       arguments.how, broadcastJoinThreshold
     )
 
-    val allColumns = Schema.join(leftFrame.data.frameSchema.columns, rightFrame.data.frameSchema.columns)
+    val allColumns = Schema.join(leftFrame.schema.columns, rightFrame.schema.columns)
     val newJoinSchema = FrameSchema(allColumns)
 
     val joinedFrame = new FrameRdd(newJoinSchema, joinResultRDD)
 
-    frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created from join operation"))) {
-      newFrame => frames.saveFrameData(newFrame.toReference, joinedFrame)
+    engine.frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created from join operation"))) {
+      newFrame => newFrame.save(joinedFrame)
     }
   }
 
   //Create parameters for join
-  private def createRDDJoinParam(frames: SparkFrameStorage,
-                                 frame: SparkFrameData,
+  private def createRDDJoinParam(frame: SparkFrame,
                                  joinColumn: String,
                                  broadcastJoinThreshold: Long)(implicit invocation: Invocation): RddJoinParam = {
-    val frameSize = if (broadcastJoinThreshold > 0) frames.getSizeInBytes(frame.meta) else None
-    val pairRdd = frame.data.keyByRows(row => row.value(joinColumn))
-    RddJoinParam(pairRdd, frame.data.frameSchema.columns.length, frameSize)
+    val frameSize = if (broadcastJoinThreshold > 0) frame.sizeInBytes else None
+    val pairRdd = frame.rdd.keyByRows(row => row.value(joinColumn))
+    RddJoinParam(pairRdd, frame.schema.columns.length, frameSize)
   }
 }

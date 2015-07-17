@@ -20,6 +20,7 @@ import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.frame.partitioning.RepartitionArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.spark.frame.SparkFrame
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 
@@ -60,17 +61,8 @@ class RepartitionPlugin extends SparkCommandPlugin[RepartitionArgs, FrameEntity]
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: RepartitionArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frame = frames.expectFrame(arguments.frame)
-
-    // run the operation
-    val frameRdd = frames.loadFrameData(sc, frame)
-    val repartitionedRdd = frameRdd.repartition(arguments.numberPartitions)
-
-    // save results
-    frames.saveFrameData(frame.toReference, new FrameRdd(frameRdd.frameSchema, repartitionedRdd))
+    val frame: SparkFrame = arguments.frame
+    val repartitionedRdd = frame.rdd.repartition(arguments.numberPartitions)
+    frame.save(new FrameRdd(frame.schema, repartitionedRdd))
   }
 }
