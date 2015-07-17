@@ -13,19 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
+package org.apache.spark.mllib.ia.plugins.dimensionalityreduction
 
-package org.apache.spark.sql.parquet.ia.giraph.frame
+/**
+ * Results for principal components train plugin
+ */
+case class PrincipalComponentsTrainReturn(k: Int,
+                                          observationColumns: List[String],
+                                          singularValues: Array[Double],
+                                          rightSingularVectors: Array[Double]) {
 
-import org.apache.spark.sql.parquet.ParquetTypesConverter
-import org.apache.spark.sql.parquet.ia.giraph.frame.lda.LdaOutputFormat
-import org.scalatest.WordSpec
-
-class LdaOutputFormatTest extends WordSpec {
-
-  "LdaOutputFormat" should {
-    "have a parse-able row schema" in {
-      ParquetTypesConverter.convertFromString(LdaOutputFormat.OutputRowSchema)
-    }
+  def this(pcData: PrincipalComponentsData) = {
+    this(pcData.k,
+      pcData.observationColumns,
+      pcData.singularValues.toArray,
+      pcData.vFactor.toArray)
   }
 
 }

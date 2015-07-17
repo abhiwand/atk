@@ -760,12 +760,81 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.group_by(self, group_by_columns, aggregation_arguments)
 
+    @api
+    @alpha
+    @arg('column_inputs', 'str | tuple(str, dict)', 'Comma separated column names to summarize. If additional parameters need to '
+         'be provided for specific column(s), specify a tuple with column name and dictionary for additional params')
+    @returns(dict, 'Categorical Summary for specified columns consisting of all levels with their frequency and percentage')
+    def __categorical_summary(self, *column_inputs):
+        """
+        Compute the categorical summary of the data in a column.
+        The returned value is a Map containing categorical summary for each specified column.
+        For each column, levels which satisfy the top k and/or threshold cutoffs are displayed along
+        with their frequency and percentage occurrence with respect to the total rows in the dataset.
+        Missing data is reported when a column value is empty ("") or null. All remaining data is
+        grouped together in the Other category and its frequency and percentage are reported as well.
+
+        User needs to specify the column name and can specify either/both top_k and threshold cutoff.
+        Specifying top_k parameter displays levels which are in the top k most frequently occuring values
+        for that column.
+        Specifying threshold parameter displays levels which are atleast above the threshold percentage
+        with respect to the total row count
+        Specifying both of these parameters will do the level pruning first based on top k and next filter
+        out levels which satisfy the threshold criterion.
+        Specifying none of these parameters will default the top_k to 10 and threshold to 0.0 i.e. show all
+        levels which are in Top 10. These defaults can be configured if needed in application.conf.
+
+        Examples:
+
+        frame.categorical_summary('source','target')
+        frame.categorical_summary(('source', {'top_k' : 2}))
+        frame.categorical_summary(('source', {'threshold' : 0.5}))
+        frame.categorical_summary(('source', {'top_k' : 2}), ('target', {'threshold' : 0.5}))
+
+        Sample output (for last example above):
+
+        {u'categorical_summary': [{u'column': u'source', u'levels': [
+            {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'thing'},
+            {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'abstraction'},
+            {u'percentage': 0.25, u'frequency': 7, u'level': u'physical_entity'},
+            {u'percentage': 0.10714285714285714, u'frequency': 3, u'level': u'entity'},
+            {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
+            {u'percentage': 0.0, u'frequency': 0, u'level': u'Other'}]}, {u'column': u'target', u'levels': [
+            {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'thing'},
+            {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'physical_entity'},
+            {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'entity'},
+            {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'variable'},
+            {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'unit'},
+            {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'substance'},
+            {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'subject'},
+            {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'set'},
+            {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'reservoir'},
+            {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'relation'},
+            {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
+            {u'percentage': 0.5357142857142857, u'frequency': 15, u'level': u'Other'}]}]}
+
+        returns:
+        categorical_summary: Map
+            Dictionary for each column specified in the input dataset
+                column : str
+                    Name of input column.
+                levels : Array of Map
+                    A list of dictionary which holds information on level, frequency and percentage.)
+        """
+        return self._backend.categorical_summary(self, column_inputs)
 
     @api
     @arg('n', int, 'The number of rows to print.')
     @arg('offset', int, 'The number of rows to skip before printing.')
     @arg('columns', int, 'Filter columns to be included.  By default, all columns are included')
-    def __inspect(self, n=10, offset=0, columns=None):
+    @arg('wrap', "int or 'stripes'", "If set to 'stripes' then inspect prints rows in stripes; if set to an integer N, "
+                                     "rows will be printed in clumps of N columns, where the columns are wrapped")
+    @arg('truncate', int, 'If set to integer N, all strings will be truncated to length N, including a tagged ellipses')
+    @arg('round', int, 'If set to integer N, all floating point numbers will be rounded and truncated to N digits')
+    @arg('width', int, 'If set to integer N, the print out will try to honor a max line width of N')
+    @arg('margin', int, "('stripes' mode only) If set to integer N, the margin for printing names in a "
+                        "stripe will be limited to N characters")
+    def __inspect(self, n=10, offset=0, columns=None, wrap=None, truncate=None, round=None, width=80, margin=None):
         """
         Prints the frame data in readable format.
 
@@ -789,7 +858,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         # For other examples, see :ref:`example_frame.inspect`.
         """
-        return self._backend.inspect(self, n, offset, columns)
+        return self._backend.inspect(self, n, offset, columns, wrap=wrap, truncate=truncate, round=round, width=width, margin=margin)
 
     @api
     @beta
