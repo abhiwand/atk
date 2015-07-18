@@ -475,6 +475,24 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
 
         return execute_new_frame_command("group_by", arguments)
 
+
+    def categorical_summary(self, frame, column_inputs):
+        column_list_input = []
+        for input in column_inputs:
+            if isinstance(input, basestring):
+                column_list_input.append({'column' : input})
+            elif isinstance(input, tuple) and isinstance(input[0], basestring) and isinstance(input[1], dict):
+                column_dict = {'column' : input[0]}
+                column_dict.update(input[1])
+                column_list_input.append(column_dict)
+            else:
+                raise TypeError('Column inputs should be specified as strings or 2-element Tuple consisting of column name as string and dictionary for additional parameters')
+
+        arguments = {'frame': self.get_ia_uri(frame),
+                     'column_input': column_list_input}
+        return executor.execute('frame/categorical_summary', self, arguments)
+
+
     def rename_columns(self, frame, column_names):
         if not isinstance(column_names, dict):
             raise ValueError("rename_columns requires a dictionary of string pairs")

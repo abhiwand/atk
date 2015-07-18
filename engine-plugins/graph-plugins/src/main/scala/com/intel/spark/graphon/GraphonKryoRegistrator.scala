@@ -16,7 +16,7 @@
 
 package com.intel.taproot.spark.graphon
 
-import com.intel.taproot.analytics.engine.spark.EngineKryoRegistrator
+import com.intel.taproot.analytics.engine.EngineKryoRegistrator
 import com.intel.taproot.spark.graphon.beliefpropagation.VertexState
 import com.intel.taproot.spark.graphon.iatpregel._
 import com.esotericsoftware.kryo.Kryo

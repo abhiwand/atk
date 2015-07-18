@@ -24,9 +24,8 @@ import com.intel.taproot.analytics.domain.schema.Column
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
 import spray.json._
@@ -133,10 +132,9 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     val updatedSchema = inputFrameRdd.frameSchema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
     val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-    tryNew(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameMeta =>
-      save(new SparkFrameData(
-        newPredictedFrame.meta, predictFrameRdd))
-    }.meta
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameEntity =>
+      newPredictedFrame.save(predictFrameRdd)
+    }
   }
 
 }

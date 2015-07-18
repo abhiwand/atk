@@ -17,7 +17,6 @@
 package com.intel.taproot.analytics.engine.plugin
 
 import com.intel.taproot.event.{ EventContext, EventLogging }
-import com.intel.taproot.analytics.NotNothing
 import com.intel.taproot.analytics.component._
 import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.domain.command.{ CommandDocLoader }
@@ -27,7 +26,6 @@ import spray.json._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.util.control.NonFatal
-import com.intel.taproot.analytics.security.UserPrincipal
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 
@@ -191,61 +189,6 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * @return number of jobs in this command
    */
   def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
-
-  //  /**
-  //   * Resolves a reference down to the requested type
-  //   */
-  //  def resolve[T <: UriReference: TypeTag](reference: UriReference)(implicit invocation: Invocation): T =
-  //    invocation.resolver.resolve(reference).get
-
-  /**
-   * Creates an object of the requested type.
-   */
-  def create[T <: UriReference: TypeTag](args: CreateEntityArgs)(implicit invocation: Invocation, ev: NotNothing[T]): T = withPluginContext("create") {
-    invocation.resolver.create[T](args)
-  }
-
-  /**
-   * Deletes an object of the requested type.
-   */
-  def delete[T <: UriReference: TypeTag](entity: T)(implicit invocation: Invocation, ev: NotNothing[T]): Unit = withPluginContext("create") {
-    invocation.resolver.delete[T](entity)
-  }
-  /**
-   * Save data, possibly creating a new object
-   */
-  def save[T <: UriReference with HasData: TypeTag](data: T)(implicit invocation: Invocation): T = withPluginContext("save") {
-    invocation.resolver.saveData(data)
-  }
-
-  /**
-   * Create a new object of the requested type, pass it to the block. If block throws an exception,
-   * delete the newly created object and rethrow the exception.
-   */
-  def tryNew[T <: UriReference with HasMetaData: TypeTag](args: CreateEntityArgs = CreateEntityArgs())(block: T => T)(implicit invocation: Invocation) = {
-    val thing = create[T](args)
-    try {
-      block(thing)
-    }
-    catch {
-      case NonFatal(e) =>
-        delete(thing)
-        throw e
-    }
-  }
-
-  /**
-   * Implicit conversion that lets plugin authors simply add type annotations to UriReferences
-   * to convert them to [[com.intel.taproot.analytics.domain.HasMetaData]] or
-   * [[com.intel.taproot.analytics.domain.HasData]] instances
-   */
-  implicit def resolve[In <: UriReference, Out <: UriReference](ref: In)(implicit invocation: Invocation,
-                                                                         ev: Out <:< In,
-                                                                         tagIn: TypeTag[In],
-                                                                         tagOut: TypeTag[Out]): Out =
-    withPluginContext("resolve") {
-      invocation.resolver.resolve[Out](ref).get
-    }
 
 }
 

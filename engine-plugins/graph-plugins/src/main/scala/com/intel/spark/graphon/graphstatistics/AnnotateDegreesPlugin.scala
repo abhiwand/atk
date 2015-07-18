@@ -20,15 +20,14 @@ import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, G
 import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.taproot.graphbuilder.parser.InputSchema
 import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
-import com.intel.taproot.analytics.engine.spark.graph.GraphBuilderConfigFactory
-import com.intel.taproot.analytics.engine.spark.graph._
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
+import com.intel.taproot.analytics.engine.graph._
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
@@ -122,10 +121,10 @@ class AnnotateDegreesPlugin extends SparkCommandPlugin[AnnotateDegreesArgs, Anno
     val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
 
     new AnnotateDegreesReturn(frameRddMap.keys.map(label => {
-      val result = tryNew(CreateEntityArgs(description = Some("created by annotated degrees operation"))) { newOutputFrame: FrameMeta =>
+      val result = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by annotated degrees operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = frameRddMap(label)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (label, result)
     }).toMap)
 

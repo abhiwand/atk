@@ -16,66 +16,12 @@
 
 package com.intel.taproot.analytics.domain.graph
 
-import com.intel.taproot.analytics.domain._
-import com.intel.taproot.analytics.engine.EntityTypeRegistry
-import com.intel.taproot.analytics.engine.plugin.Invocation
-import scala.reflect.runtime.{ universe => ru }
-import ru._
+import com.intel.taproot.analytics.domain.UriReference
 
 case class GraphReference(graphId: Long) extends UriReference {
-  /** The entity type */
-  override def entityType: EntityType = GraphEntityType
-
   /** The entity id */
   override def id: Long = graphId
-}
 
-/**
- * Place to store type tag for graph reference.
- *
- * The same code in GraphEntity had typeTag returning null, presumably
- * due to initialization order issues of some kind. Keeping it in a separate
- * object avoids that problem.
- */
-private object GraphTag {
-  val referenceTag = typeTag[GraphReference]
-}
-
-object GraphEntityType extends EntityType {
-
-  override type Reference = GraphReference
-
-  override implicit val referenceTag: TypeTag[Reference] = GraphTag.referenceTag
-
-  def name = EntityName("graph", "graphs")
-}
-
-object GraphReferenceManagement extends EntityManager[GraphEntityType.type] { self =>
-
-  override implicit val referenceTag = GraphEntityType.referenceTag
-
-  //Default resolver that simply creates a reference, with no guarantee that it is valid.
-  EntityTypeRegistry.register(GraphEntityType, this)
-
-  override type MetaData = Reference with NoMetaData
-
-  override def getData(reference: Reference)(implicit invocation: Invocation): Data = ???
-
-  override def getMetaData(reference: Reference)(implicit invocation: Invocation): MetaData = ???
-
-  override def create(args: CreateEntityArgs)(implicit invocation: Invocation): Reference = ???
-
-  override def getReference(id: Long)(implicit invocation: Invocation): Reference = new GraphReference(id)
-
-  /**
-   * Creates an (empty) instance of the given type, reserving a URI
-   */
-  override def delete(reference: GraphReferenceManagement.Reference)(implicit invocation: Invocation): Unit = ???
-
-  override type Data = Reference with NoData
-
-  /**
-   * Save data of the given type, possibly creating a new object.
-   */
-  override def saveData(data: Data)(implicit invocation: Invocation): Data = ???
+  /** The entity name e.g. "frame", "graph", ... */
+  override def name: String = "graph"
 }

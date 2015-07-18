@@ -20,9 +20,9 @@ import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema._
 import com.intel.taproot.analytics.engine.Rows.Row
-import com.intel.taproot.analytics.engine.spark.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
+import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
-import com.intel.taproot.analytics.engine.spark.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
@@ -64,6 +64,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   /**
    * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]]
    */
+  @deprecated("use FrameRdd instead")
   def toLegacyFrameRdd: LegacyFrameRdd = {
     new LegacyFrameRdd(this.frameSchema, this.toDataFrame)
   }
@@ -100,13 +101,15 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
     this.mapRows(row =>
       {
         val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
-        if (frequencyColumnName.isDefined) {
-          new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
-            new DenseVector(features.toArray), DataTypes.toDouble(row.value(frequencyColumnName.get)))
-        }
-        else {
-          new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
-            new DenseVector(features.toArray), DataTypes.toDouble(1.0))
+        frequencyColumnName match {
+          case Some(freqColumn) => {
+            new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
+              new DenseVector(features.toArray), DataTypes.toDouble(row.value(freqColumn)))
+          }
+          case _ => {
+            new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
+              new DenseVector(features.toArray), DataTypes.toDouble(1.0))
+          }
         }
       })
   }

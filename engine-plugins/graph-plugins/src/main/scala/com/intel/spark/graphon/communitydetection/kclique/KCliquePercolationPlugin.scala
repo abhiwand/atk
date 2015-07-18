@@ -19,17 +19,15 @@ package com.intel.taproot.spark.graphon.communitydetection.kclique
 import java.util.Date
 import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.domain.frame.{ FrameMeta, FrameEntity }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
-import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.domain.{ UserPrincipal, CreateEntityArgs }
 import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.taproot.analytics.component.Boot
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.graph.GraphReference
-import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
-import com.intel.taproot.analytics.engine.spark.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
-import com.intel.taproot.analytics.engine.spark.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.taproot.analytics.security.UserPrincipal
+import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.graph.{ SparkGraphHBaseBackend, GraphBuilderConfigFactory }
+import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
 import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent._
@@ -119,10 +117,10 @@ class KCliquePercolationPlugin extends SparkCommandPlugin[KCliqueArgs, KCliqueRe
     val frameRddMap = FrameRdd.toFrameRddMap(mergedVertexRdd)
 
     val frameMap = frameRddMap.keys.map(label => {
-      val result = tryNew(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameMeta =>
+      val result = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
         val frameRdd = frameRddMap(label)
-        save(new SparkFrameData(newOutputFrame.meta, frameRdd))
-      }.meta
+        newOutputFrame.save(frameRdd)
+      }
       (label, result)
     }).toMap
     KCliqueResult(frameMap, time)
