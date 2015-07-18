@@ -19,8 +19,8 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD

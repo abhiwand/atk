@@ -21,7 +21,7 @@ import java.util
 import com.intel.taproot.giraph.io.EdgeData4CFWritable.EdgeType
 import com.intel.taproot.giraph.io.{ CFVertexId, EdgeData4CFWritable }
 import com.intel.taproot.giraph.cf.CollaborativeFilteringConfiguration
-import com.intel.taproot.analytics.engine.spark.frame.RowWrapper
+import com.intel.taproot.analytics.engine.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration

@@ -16,13 +16,13 @@
 
 package com.intel.taproot.analytics.engine.plugin
 
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.event.EventContext
 import com.intel.taproot.analytics.engine.{ CommandStorage, Engine }
-import com.intel.taproot.analytics.security.UserPrincipal
 import spray.json.JsObject
 
 import scala.concurrent.ExecutionContext
-import com.intel.taproot.analytics.engine.spark.CommandProgressUpdater
+import com.intel.taproot.analytics.engine.CommandProgressUpdater
 
 /**
  * Provides context for an invocation of a command or query.

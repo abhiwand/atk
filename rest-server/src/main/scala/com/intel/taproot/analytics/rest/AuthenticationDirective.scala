@@ -22,13 +22,13 @@ import java.util.concurrent.{ Callable, TimeUnit }
 
 import com.google.common.cache.CacheBuilder
 import com.intel.taproot.analytics.EventLoggingImplicits
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, Call }
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
 import spray.http.HttpHeader
 
 import scala.PartialFunction._
 import scala.concurrent._
-import com.intel.taproot.analytics.security.UserPrincipal
 import spray.routing._
 import org.apache.commons.lang.StringUtils
 import com.intel.taproot.analytics.engine.Engine

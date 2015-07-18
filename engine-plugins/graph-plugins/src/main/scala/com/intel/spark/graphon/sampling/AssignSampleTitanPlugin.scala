@@ -20,10 +20,10 @@ import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.graph.{ AssignSampleTitanArgs, GraphEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.{ SparkContextFactory, EngineConfig }
-import com.intel.taproot.analytics.engine.spark.frame.plugins.assignsample.MLDataSplitter
-import com.intel.taproot.analytics.engine.spark.graph.SparkGraphHBaseBackend
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
+import com.intel.taproot.analytics.engine.frame.plugins.assignsample.MLDataSplitter
+import com.intel.taproot.analytics.engine.graph.SparkGraphHBaseBackend
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 /**
  * Parameters

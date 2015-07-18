@@ -16,8 +16,8 @@
 
 package com.intel.taproot.analytics.domain.command
 
-import com.intel.taproot.analytics.schema.ObjectSchema
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
+import com.intel.taproot.analytics.spray.json.ObjectSchema
 
 /**
  * A description of a command in the system, including sample arguments and results
