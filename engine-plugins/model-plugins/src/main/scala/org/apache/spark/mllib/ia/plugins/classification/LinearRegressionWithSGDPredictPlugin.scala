@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.regression.LinearRegressionModel

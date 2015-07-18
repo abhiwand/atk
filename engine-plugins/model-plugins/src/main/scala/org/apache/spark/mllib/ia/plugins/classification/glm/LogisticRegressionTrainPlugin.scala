@@ -19,7 +19,7 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.engine.plugin.PluginDoc
 
 //Implicits needed for JSON conversion

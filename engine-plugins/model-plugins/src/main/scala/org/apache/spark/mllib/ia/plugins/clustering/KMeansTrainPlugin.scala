@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.{ KMeansModel, KMeans }
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.SparkContext._

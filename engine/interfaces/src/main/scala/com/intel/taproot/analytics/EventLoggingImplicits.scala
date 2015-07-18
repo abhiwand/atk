@@ -16,9 +16,9 @@
 
 package com.intel.taproot.analytics
 
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.event.EventContext
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.security.UserPrincipal
 
 /**
  * Implicits for working with invocations and event logging

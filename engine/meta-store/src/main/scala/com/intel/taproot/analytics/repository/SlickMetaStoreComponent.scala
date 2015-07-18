@@ -20,7 +20,6 @@ import org.apache.commons.dbcp.BasicDataSource;
 import com.github.tototoshi.slick.GenericJodaSupport
 
 import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollection, GarbageCollectionTemplate }
-import com.intel.taproot.analytics.domain.query.{ Query => QueryRecord }
 import com.intel.taproot.analytics.domain.schema.Schema
 import org.joda.time.DateTime
 import scala.slick.driver.{ JdbcDriver }

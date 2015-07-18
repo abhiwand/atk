@@ -25,7 +25,7 @@ import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
 import spray.json._

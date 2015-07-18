@@ -19,8 +19,6 @@ package com.intel.taproot.analytics.engine
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, VertexSchema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.security.UserPrincipal
-import com.intel.taproot.analytics.security.UserPrincipal
 
 /**
  * Manages multiple graphs in the underlying graph database.

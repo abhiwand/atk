@@ -49,7 +49,7 @@ ZeroDivisionError: integer division or modulo by zero
         org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:262)
         org.apache.spark.rdd.RDD.iterator(RDD.scala:229)
         org.apache.spark.rdd.MappedRDD.compute(MappedRDD.scala:31)
-        com.intel.taproot.analytics.engine.spark.frame.FrameRDD.compute(FrameRDD.scala:15)
+        com.intel.taproot.analytics.engine.frame.FrameRDD.compute(FrameRDD.scala:15)
         org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:262)
         org.apache.spark.rdd.RDD.iterator(RDD.scala:229)
         org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:35)

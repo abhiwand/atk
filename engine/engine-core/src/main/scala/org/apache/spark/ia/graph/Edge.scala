@@ -18,7 +18,7 @@ package org.apache.spark.ia.graph
 
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property => GBProperty, GBVertex }
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, EdgeSchema, DataTypes, Schema }
-import com.intel.taproot.analytics.engine.spark.frame.{ AbstractRow, RowWrapper }
+import com.intel.taproot.analytics.engine.frame.{ AbstractRow, RowWrapper }
 import org.apache.spark.sql.Row
 
 /**

@@ -25,38 +25,31 @@ import com.intel.taproot.analytics.domain.command.{ CommandPost, CommandDefiniti
 import com.intel.taproot.analytics.domain.frame.{ UdfDependency, Udf }
 import com.intel.taproot.analytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }
 import com.intel.taproot.analytics.domain.frame.partitioning.{ RepartitionArgs, CoalesceArgs }
-import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionEntry, GarbageCollection }
+import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionArgs, GarbageCollectionEntry, GarbageCollection }
 import com.intel.taproot.analytics.domain.model._
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.domain.frame.load._
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.domain.query.{ RowQuery }
 import DataTypes.DataType
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Call, Invocation, QueryPluginResults }
-import com.intel.taproot.analytics.engine.spark.gc.GarbageCollectionArgs
-import com.intel.taproot.analytics.engine.spark.threading.EngineExecutionContext
-import com.intel.taproot.analytics.schema._
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Call, Invocation }
+import com.intel.taproot.analytics.spray.json._
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag
 
-//import org.apache.spark.mllib.ia.plugins.classification.{SVMTrainArgs, ClassificationWithSGDPredictArgs, ClassificationWithSGDArgs}
 import spray.json._
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.graph.construction._
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, LoadGraphArgs, GraphReference, GraphTemplate }
-import com.intel.taproot.analytics.domain.query.RowQuery
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.{ Duration, DateTime }
-import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
+import com.intel.taproot.analytics.engine._
 import org.joda.time.DateTime
-import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 import scala.reflect.ClassTag
 import scala.util.matching.Regex
-import com.intel.taproot.analytics.algorithm.Quantile
-import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
+import com.intel.taproot.analytics.spray.json._
 import scala.util.Success
 import com.intel.taproot.analytics.UnitReturn
 
@@ -364,8 +357,7 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
   implicit val columnMedianFormat = jsonFormat3(ColumnMedianArgs)
   implicit val columnMedianReturnFormat = jsonFormat1(ColumnMedianReturn)
 
-  implicit val rowQueryFormat = jsonFormat3(RowQuery[Long])
-  implicit val queryResultsFormat = jsonFormat2(QueryPluginResults)
+  implicit val rowQueryFormat = jsonFormat3(RowQueryArgs[Long])
 
   implicit val cumulativeSumFormat = jsonFormat2(CumulativeSumArgs)
   implicit val cumulativePercentSumFormat = jsonFormat2(CumulativePercentArgs)

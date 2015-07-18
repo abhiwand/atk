@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.libSvmPlugins
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 @PluginDoc(oneLine = "model:libsvm/new",

@@ -18,7 +18,7 @@ package org.apache.spark.mllib.ia.plugins.dimensionalityreduction
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
