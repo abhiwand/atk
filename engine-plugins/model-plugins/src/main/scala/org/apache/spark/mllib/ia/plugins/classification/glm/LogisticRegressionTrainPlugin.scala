@@ -28,30 +28,30 @@ import spray.json._
 
 @PluginDoc(oneLine = "Build logistic regression model.",
   extended = "Creating a LogisticRegression Model using the observation column and label column of the train frame.",
-  returns = """
-    Results.
+  returns = """object
+    An object with a summary of the trained model.
     The data returned is composed of multiple components:
 numFeatures : Int
     Number of features in the training data
 numClasses : Int
     Number of classes in the training data
-coefficients: dict
-    Value for each of the coefficients trained.
-    The number of coefficients is (numClasses - 1) * (numFeatures + 1) if `addIntercept == true`, and
-    (numClasses - 1) * numFeatures if `addIntercept == false`
-degreesFreedom: dict
-    Degree of freedom for each model coefficient
+summaryTable: table
+    A summary table composed of:
+        coefficients: Value for each of the coefficients trained.
+            The number of coefficients is (numClasses - 1) * (numFeatures + 1) if intercept=True, and
+            (numClasses - 1) * numFeatures if intercept=False
+        degreesFreedom: Degree of freedom for each model coefficient
+        standardErrors: dict (optional)
+            Standard errors for model coefficients. The standard errors are the square root of the diagonal of the covariance matrix
+        waldStatistic: dict (optional)
+            Wald Chi-Squared statistic is the coefficients divided by the standard errors
+        pValue: dict (optional)
+            P-values for the model coefficients
 covarianceMatrix: Frame (optional)
     Covariance matrix of the trained model.
     The covariance matrix is the inverse of the Hessian matrix for the trained model.
     The Hessian matrix is the second-order partial derivatives of the model's log-likelihood function
-standardErrors: dict (optional)
-    Standard errors for model coefficients. The standard errors are the square root of
-    the diagonal of the covariance matrix
-waldStatistic: dict (optional)
-    Wald Chi-Squared statistic is the coefficients divided by the standard errors
-pValue: dict (optional)
-    P-values for the model coefficients""""")
+""""")
 class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressionTrainArgs, LogisticRegressionSummaryTable] {
   /**
    * The name of the command.
@@ -94,7 +94,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
     val logRegModel = model.getModel.run(labeledTrainRdd)
 
     //Create summary table and covariance frame
-    val summaryTable = new SummaryTableBuilder(
+    val summaryTable = SummaryTableBuilder(
       logRegModel,
       arguments.observationColumns,
       arguments.intercept,

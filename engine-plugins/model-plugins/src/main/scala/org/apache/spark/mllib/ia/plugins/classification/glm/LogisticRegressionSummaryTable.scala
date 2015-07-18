@@ -57,26 +57,28 @@ case class LogisticRegressionSummaryTable(numFeatures: Int,
  * @param isAddIntercept If true, intercept column was added to training data
  * @param hessianMatrix Optional Hessian matrix for trained model
  */
-class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency,
+case class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency,
                           observationColumns: List[String],
-                          isAddIntercept: Boolean,
-                          hessianMatrix: Option[DenseMatrix[Double]]) {
+                          isAddIntercept: Boolean = true,
+                          hessianMatrix: Option[DenseMatrix[Double]] = None) {
+  require(logRegModel != null, "logistic regression model must not be null")
+  require(observationColumns != null && observationColumns.length > 0, "list of observation columns must not be empty")
 
   val interceptName = "intercept"
-  val coefficients = computeCoefficients
-  val coefficientNames = computeCoefficientNames
-  val approxCovarianceMatrix = computeApproxCovarianceMatrix
-  val degreesFreedom = computeDegreesFreedom
+  val coefficients = getCoefficients
+  val coefficientNames = getCoefficientNames
+  val approxCovarianceMatrix = getApproxCovarianceMatrix
+  val degreesFreedom = getDegreesFreedom
 
   /**
    * Build summary table for trained model
    */
-  def build(covarianceFrame: Option[FrameEntity]): LogisticRegressionSummaryTable = {
+  def build(covarianceFrame: Option[FrameEntity] = None): LogisticRegressionSummaryTable = {
     approxCovarianceMatrix match {
       case Some(approxMatrix) => {
-        val stdErrors = computeStandardErrors(coefficients, approxMatrix.covarianceMatrix)
-        val waldStatistic = computeWaldStatistic(coefficients, stdErrors)
-        val pValues = computePValue(waldStatistic)
+        val stdErrors = getStandardErrors(coefficients, approxMatrix.covarianceMatrix)
+        val waldStatistic = getWaldStatistic(coefficients, stdErrors)
+        val pValues = getPValues(waldStatistic)
 
         LogisticRegressionSummaryTable(
           logRegModel.numFeatures,
@@ -99,10 +101,9 @@ class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency,
   }
 
   /**
-   *
-   * @return
+   * Compute the covariance matrix if the Hessian matrix is defined.
    */
-  def computeApproxCovarianceMatrix: Option[ApproximateCovarianceMatrix] = {
+  private def getApproxCovarianceMatrix: Option[ApproximateCovarianceMatrix] = {
     hessianMatrix match {
       case Some(hessian) => Some(ApproximateCovarianceMatrix(hessian, isAddIntercept))
       case _ => None
@@ -110,12 +111,12 @@ class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency,
   }
 
   /**
+   * Return the model coefficients.
+   *
    * The dimension of coefficients vector is (numClasses - 1) * (numFeatures + 1) if `addIntercept == true`,
    * and if `addIntercept != true`, the dimension will be (numClasses - 1) * numFeatures
-   *
-   * @return
    */
-  def computeCoefficients: DenseVector[Double] = {
+  private def getCoefficients: DenseVector[Double] = {
     if (isAddIntercept) {
       DenseVector(logRegModel.intercept +: logRegModel.weights.toArray)
     }
@@ -125,14 +126,18 @@ class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency,
   }
 
   /**
-   * The dimension of coefficients vector is (numClasses - 1) * (numFeatures + 1) if `addIntercept == true`,
-   * and if `addIntercept != true`, the dimension will be (numClasses - 1) * numFeatures
+   * Return the names of the model coefficients.
    *
-   * @return
+   * The names of the model coefficients correspond to the observation columns.
+   * If the number of classes > 2, then each observation column name is repeated (numClasses - 1) times.
+   * A suffix is added to the observation column name to differentiate repeated entries.
    */
-  def computeCoefficientNames: List[String] = {
+  private def getCoefficientNames: List[String] = {
     val names = if (logRegModel.numClasses > 2) {
-      for (i <- 0 until logRegModel.numFeatures) yield s"${observationColumns(i)}_${i + 1}"
+      for {
+        i <- 0 until (logRegModel.numFeatures)
+        j <- 0 until (logRegModel.numClasses - 1)
+      }  yield s"${observationColumns(i)}_${j}"
     }
     else {
       observationColumns
@@ -147,41 +152,33 @@ class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency,
   }
 
   /**
-   *
-   * @return
+   * Return the degrees of freedom for model coefficients.
    */
-  def computeDegreesFreedom: DenseVector[Double] = {
+  private def getDegreesFreedom: DenseVector[Double] = {
     DenseVector.fill(coefficients.length) {
       1
     }
   }
 
   /**
-   *
-   * @param coefficients
-   * @param covarianceMatrix
-   * @return
+   * Return the standard errors for model coefficients.
    */
-  def computeStandardErrors(coefficients: DenseVector[Double], covarianceMatrix: DenseMatrix[Double]): DenseVector[Double] = {
+  private def getStandardErrors(coefficients: DenseVector[Double],
+                        covarianceMatrix: DenseMatrix[Double]): DenseVector[Double] = {
     sqrt(diag(covarianceMatrix))
   }
 
   /**
-   *
-   * @param coefficients
-   * @param stdErrors
-   * @return
+   * Return the Wald Chi-Squared statistic for model coefficients.
    */
-  def computeWaldStatistic(coefficients: DenseVector[Double], stdErrors: DenseVector[Double]): DenseVector[Double] = {
+  private def getWaldStatistic(coefficients: DenseVector[Double], stdErrors: DenseVector[Double]): DenseVector[Double] = {
     coefficients :/ stdErrors //element-wise division
   }
 
   /**
-   *
-   * @param waldStatistic
-   * @return
+   * Return the p-values for model coeffients.
    */
-  def computePValue(waldStatistic: DenseVector[Double]): DenseVector[Double] = {
+  private def getPValues(waldStatistic: DenseVector[Double]): DenseVector[Double] = {
     val chi = ChiSquared(1)
     waldStatistic.map(w => 1 - chi.cdf(w))
   }

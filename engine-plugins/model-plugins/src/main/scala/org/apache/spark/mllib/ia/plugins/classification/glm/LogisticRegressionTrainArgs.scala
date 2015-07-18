@@ -37,11 +37,11 @@ case class LogisticRegressionTrainArgs(@ArgDoc("""Handle to the model to be used
 
                                        @ArgDoc(
                                          """Set type of optimizer.
-                                           LBFGS - Limited-memory BFGS
-                                           SGD - Stochastic Gradient Descent
+                                           LBFGS - Limited-memory BFGS. LBFGS supports multinomial logistic regression.
+                                           SGD - Stochastic Gradient Descent. SGD only supports binary logistic regression.
                                          """) optimizer: String = "LBFGS",
 
-                                       @ArgDoc("""If true, compute covariance matrix for the model""") computeCovariance: Boolean = false,
+                                       @ArgDoc("""If true, compute covariance matrix for the model.""") computeCovariance: Boolean = true,
 
                                        @ArgDoc("""If true, add intercept column to training data.""") intercept: Boolean = true,
 

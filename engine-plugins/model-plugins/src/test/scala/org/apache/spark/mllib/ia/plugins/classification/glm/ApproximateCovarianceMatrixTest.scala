@@ -36,9 +36,9 @@ class ApproximateCovarianceMatrixTest extends TestingSparkContextFlatSpec with M
     //Reorder the matrix so that the intercept is stored in the first row and first column
     // instead of in the last row and last column of the matrix
     val inputMatrix = DenseMatrix(
-      (1d, 8d, -9d, 7d, 5d),
-      (0d, 1d, 0d, 4d, 4d),
-      (0d, 0d, 1d, 2d, 5d),
+      (5d, 8d, -9d, 7d, 5d),
+      (0d, 6d, 0d, 4d, 4d),
+      (0d, 0d, 3d, 2d, 5d),
       (0d, 0d, 0d, 1d, -5d),
       (0d, 0d, 0d, 0d, 1d)
     )
@@ -46,9 +46,9 @@ class ApproximateCovarianceMatrixTest extends TestingSparkContextFlatSpec with M
 
     val reorderedMatrix = DenseMatrix(
       (1d, 0d, 0d, 0d, 0d),
-      (5d, 1d, 8d, -9d, 7d),
-      (4d, 0d, 1d, 0d, 4d),
-      (5d, 0d, 0d, 1d, 2d),
+      (5d, 5d, 8d, -9d, 7d),
+      (4d, 0d, 6d, 0d, 4d),
+      (5d, 0d, 0d, 3d, 2d),
       (-5d, 0d, 0d, 0d, 1d)
     )
 
