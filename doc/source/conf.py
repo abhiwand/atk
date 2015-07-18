@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+#### TODO: Search and replace PROJECT
+
 # -*- coding: utf-8 -*-
 #
 # Documentation build configuration file, created by
@@ -125,8 +127,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'TAProot Analytics'
-#project = 'Welcome to the Intel Big Data Platform: Analytics Toolkit'
+#project = u'TAProot Analytics Toolkit'
 copyright = u'2015, Intel'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -280,7 +281,7 @@ html_show_copyright = True
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-#htmlhelp_basename = 'TaprootAnalyticsDoc'
+#htmlhelp_basename = 'PACKAGE'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -299,11 +300,11 @@ latex_elements = {
 
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [('index', 'TAProotAnalytics.tex', 'TAProot Analytics Documentation', 'Author: Intel', 'manual')]
+latex_documents = [('index', 'Package_Documentation.tex', 'TAProot Analytics Documentation', 'Author: Intel', 'manual')]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-#latex_logo = "_static/taproot-logo.jpg"
+#latex_logo = "_static/PACKAGE.jpg"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -327,8 +328,8 @@ latex_domain_indices = True
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pythonapi', u'TAProotAnalytics Documentation',
-     [u'TAProot'], 1)
+    ('index', 'pythonapi', u'PACKAGE Documentation',
+     [u'PACKAGE'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -341,8 +342,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'TAProotAnalytics', u'TAProotAnalytics Documentation',
-   u'TAProot', 'TAProotAnalytics', 'One line description of project.',
+  ('index', 'PACKAGE', u'PACKAGE Documentation',
+   u'PACKAGE', 'PACKAGE', 'One line description of project.',
    'Miscellaneous'),
 ]
 

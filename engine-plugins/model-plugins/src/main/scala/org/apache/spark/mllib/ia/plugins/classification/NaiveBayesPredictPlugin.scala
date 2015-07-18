@@ -4,7 +4,7 @@ import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameMeta, FrameReference }
 import com.intel.taproot.analytics.domain.model.ModelReference
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, PluginDoc, ApiMaturityTag, Invocation }
 import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
 import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -13,12 +13,32 @@ import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-case class NaiveBayesPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: Option[List[String]]) {
+case class NaiveBayesPredictArgs(@ArgDoc(""" """) model: ModelReference,
+                                 @ArgDoc("""A frame whose labels are
+to be predicted.
+By default, predict is run on the same columns over which the model is
+trained.""") frame: FrameReference,
+                                 @ArgDoc("""Column(s) containing the
+observations whose labels are to be predicted.
+By default, we predict the labels over columns the NaiveBayesModel
+was trained on.""") observationColumns: Option[List[String]]) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
 
 }
+/*
+Make new frame with column for label prediction.
 
+Predict the labels for a test frame and create a new frame revision with
+existing columns and a new predicted label's column.
+
+Returns
+-------
+Frame
+    Frame containing the original frame's columns and a column with the
+    predicted label
+@PluginDoc(
+*/
 class NaiveBayesPredictPlugin extends SparkCommandPlugin[NaiveBayesPredictArgs, FrameEntity] {
   /**
    * The name of the command.

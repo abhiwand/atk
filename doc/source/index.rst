@@ -1,11 +1,11 @@
-============
+=========
 |Toolkit|
-============
+=========
 
 .. toctree::
     :maxdepth: 2
 
-    over
+    intro
     ds_over
     dev_over
     ad_over
@@ -24,7 +24,7 @@ References
 * :doc:`Index <genindex>`
 * :doc:`appendices`
 * :doc:`errata`
-* :download:`PDF <_downloads/TAProotAnalytics.pdf>`
+* :download:`PDF <_downloads/Package_Documentation.pdf>`
 
 .. toctree::
     :hidden:
