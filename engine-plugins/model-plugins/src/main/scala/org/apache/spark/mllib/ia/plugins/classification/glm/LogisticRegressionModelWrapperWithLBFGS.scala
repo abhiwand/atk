@@ -19,9 +19,34 @@ import breeze.linalg.DenseMatrix
 import org.apache.spark.mllib.classification.LogisticRegressionWithFrequencyLBFGS
 import org.apache.spark.mllib.optimization.{ L1Updater, SquaredL2Updater }
 
-class IaLogisticRegressionModelWithLBFGS() extends IaLogisticRegressionModel {
+/**
+ * Logistic regression model with Limited-memory BFGS
+ */
+class LogisticRegressionModelWrapperWithLBFGS() extends LogisticRegressionModelWrapper {
 
+  /** Logistic regression model */
   val model = new LogisticRegressionWithFrequencyLBFGS()
+
+  /**
+   * Create Logistic regression model with Limited-memory BFGS
+   * @param arguments model arguments
+   */
+  def this(arguments: LogisticRegressionTrainArgs) = {
+    this()
+    model.setNumClasses(arguments.numClasses)
+    model.setFeatureScaling(arguments.featureScaling)
+    model.setIntercept(arguments.intercept)
+    model.optimizer.setNumIterations(arguments.numIterations)
+    model.optimizer.setConvergenceTol(arguments.convergenceTolerance)
+    model.optimizer.setNumCorrections(arguments.numCorrections)
+    model.optimizer.setRegParam(arguments.regParam)
+    model.optimizer.setComputeHessian(arguments.computeCovariance)
+
+    model.optimizer.setUpdater(arguments.regType match {
+      case "L1" => new L1Updater()
+      case other => new SquaredL2Updater()
+    })
+  }
 
   /**
    * Get logistic regression model
@@ -29,33 +54,9 @@ class IaLogisticRegressionModelWithLBFGS() extends IaLogisticRegressionModel {
   override def getModel: LogisticRegressionWithFrequencyLBFGS = model
 
   /**
-   * Get the approximate Hessian matrix at the solution (i.e., final iteration)
+   * Get the approximate Hessian matrix for the model
    */
   override def getHessianMatrix: Option[DenseMatrix[Double]] = {
     model.optimizer.getHessianMatrix
   }
-
-  /**
-   * Create logistic regression model
-   *
-   * @param arguments model arguments
-   * @return Logistic regression model
-   */
-  override def initialize(arguments: LogisticRegressionTrainArgs): Unit = {
-    model.optimizer.setNumIterations(arguments.getNumIterations)
-    model.optimizer.setConvergenceTol(arguments.getConvergenceTolerance)
-    model.optimizer.setNumCorrections(arguments.getNumCorrections)
-    model.optimizer.setRegParam(arguments.getRegParam)
-    model.setNumClasses(arguments.getNumClasses)
-    model.setFeatureScaling(arguments.getFeatureScaling)
-
-    if (arguments.regType.isDefined) {
-      model.optimizer.setUpdater(arguments.regType.get match {
-        case "L1" => new L1Updater()
-        case other => new SquaredL2Updater()
-      })
-    }
-    model.setIntercept(arguments.getIntercept)
-  }
-
 }
