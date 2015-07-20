@@ -19,6 +19,8 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -73,18 +75,11 @@ class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationW
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity = {
-    val models = engine.models
-    val frames = engine.frames
-
-    val inputFrame = frames.expectFrame(arguments.frame)
-    val model = models.expectModel(arguments.model)
-
-    //create RDD from the frame
-    val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
+    val frame: SparkFrame = arguments.frame
+    val model: Model = arguments.model
 
     //Running MLLib
-    val logRegJsObject = model.data.get
-    val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
+    val logRegData = model.data.convertTo[LogisticRegressionData]
     val logRegModel = logRegData.logRegModel
     if (arguments.observationColumns.isDefined) {
       require(logRegData.observationColumns.length == arguments.observationColumns.get.length,
@@ -93,7 +88,7 @@ class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationW
     val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
 
     //predicting a label for the observation columns
-    val predictionsRDD = inputFrameRdd.mapRows(row => {
+    val predictionsRDD = frame.rdd.mapRows(row => {
       val array = row.valuesAsArray(logRegColumns)
       val doubles = array.map(i => DataTypes.toDouble(i))
       val point = Vectors.dense(doubles)
@@ -101,7 +96,7 @@ class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationW
       row.addValue(prediction.toInt)
     })
 
-    val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_label", DataTypes.int32)
+    val updatedSchema = frame.schema.addColumn("predicted_label", DataTypes.int32)
     val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
     engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by LogisticRegression predict operation"))) {
