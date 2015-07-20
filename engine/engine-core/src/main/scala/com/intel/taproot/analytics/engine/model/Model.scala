@@ -41,6 +41,8 @@ trait Model {
    */
   def data: JsObject
 
+  def data_=(updatedData: JsObject): Unit
+
   def dataOption: Option[JsObject]
 }
 
@@ -68,6 +70,8 @@ class ModelImpl(modelRef: ModelReference, modelStorage: ModelStorage) extends Mo
    * Expects model has been trained and data exists, throws appropriate exception otherwise
    */
   override def data: JsObject = entity.data.getOrElse(throw new RuntimeException("Model has not yet been trained"))
+
+  override def data_=(updatedData: JsObject): Unit = modelStorage.updateModel(modelRef, updatedData)
 
   override def dataOption: Option[JsObject] = entity.data
 

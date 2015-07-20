@@ -18,6 +18,8 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.command.CommandDoc
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD
@@ -87,28 +89,22 @@ class LinearRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classificati
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ClassificationWithSGDTrainArgs)(implicit invocation: Invocation): UnitReturn =
-    {
-      val models = engine.models
-      val frames = engine.frames
+  override def execute(arguments: ClassificationWithSGDTrainArgs)(implicit invocation: Invocation): UnitReturn = {
+    val model: Model = arguments.model
+    val frame: SparkFrame = arguments.frame
 
-      val inputFrame = frames.expectFrame(arguments.frame)
-      val modelMeta = models.expectModel(arguments.model)
+    val labeledTrainRdd: RDD[LabeledPoint] = frame.rdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
-      //create RDD from the frame
-      val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
-      val labeledTrainRdd: RDD[LabeledPoint] = trainFrameRdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
+    //Running MLLib
+    val linReg = initializeLinearRegressionModel(arguments)
+    val linRegModel = linReg.run(labeledTrainRdd)
+    val jsonModel = new LinearRegressionData(linRegModel, arguments.observationColumns)
 
-      //Running MLLib
-      val linReg = initializeLinearRegressionModel(arguments)
+    model.data = jsonModel.toJson.asJsObject
+  
+    new UnitReturn
+  }
 
-      val linRegModel = linReg.run(labeledTrainRdd)
-      val jsonModel = new LinearRegressionData(linRegModel, arguments.observationColumns)
-
-      //TODO: Call save instead once implemented for models
-      models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
-      new UnitReturn
-    }
   private def initializeLinearRegressionModel(arguments: ClassificationWithSGDTrainArgs): LinearRegressionWithSGD = {
     val linReg = new LinearRegressionWithSGD()
     linReg.optimizer.setNumIterations(arguments.getNumIterations)
