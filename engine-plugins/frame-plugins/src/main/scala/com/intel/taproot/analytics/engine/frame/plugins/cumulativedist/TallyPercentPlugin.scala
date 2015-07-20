@@ -68,7 +68,7 @@ class TallyPercentPlugin extends SparkCommandPlugin[TallyPercentArgs, FrameEntit
     val sampleIndex = frame.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentCount(frame.rdd.toLegacyFrameRdd, sampleIndex, arguments.countVal), "_tally_percent")
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentCount(frame.rdd.toRowRdd, sampleIndex, arguments.countVal), "_tally_percent")
     val updatedSchema = frame.schema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
     frame.save(FrameRdd.toFrameRdd(updatedSchema, cumulativeDistRdd))
   }

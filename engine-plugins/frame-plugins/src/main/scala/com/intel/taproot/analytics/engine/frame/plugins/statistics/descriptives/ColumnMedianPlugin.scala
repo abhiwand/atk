@@ -87,6 +87,6 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedianArgs, ColumnMedi
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
       (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
     }
-    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, frame.rdd.toArrayAnyRdd)
+    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, frame.rdd.toRowRdd)
   }
 }

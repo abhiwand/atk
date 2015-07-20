@@ -92,8 +92,7 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
       if (arguments.resultFrameName.isDefined) {
         engine.frames.renameFrame(ecdfFrame, FrameName.validate(arguments.resultFrameName.get))
       }
-      val rdd = frame.rdd.toLegacyFrameRdd
-      val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
+      val ecdfRdd = CumulativeDistFunctions.ecdf(frame.rdd.toRowRdd, sampleColumn)
       ecdfFrame.save(FrameRdd.toFrameRdd(ecdfSchema, ecdfRdd))
     }
   }

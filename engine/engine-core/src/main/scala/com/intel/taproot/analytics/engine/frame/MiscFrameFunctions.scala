@@ -17,6 +17,7 @@
 package com.intel.taproot.analytics.engine.frame
 
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
+import com.intel.taproot.analytics.engine.Rows
 import org.apache.spark.engine.Spark
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -132,7 +133,7 @@ object MiscFrameFunctions extends Serializable {
     pairRdd.reduceByKey((x, y) => x).map(x => x._2)
   }
 
-  def removeDuplicatesByColumnNames(rdd: LegacyFrameRdd, schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
+  def removeDuplicatesByColumnNames(rdd: RDD[Rows.Row], schema: Schema, columnNames: List[String]): RDD[Array[Any]] = {
     val columnIndices = schema.columnIndices(columnNames)
 
     // run the operation

@@ -16,6 +16,7 @@
 
 package org.apache.spark.frame
 
+import com.intel.taproot.analytics.engine.Rows
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema._
@@ -65,6 +66,8 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
    * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]].
    *
    * This was added to support some legacy plugin code.
+   *
+   * Prefer toRowRdd() over this method.
    */
   @deprecated("use FrameRdd instead")
   def toLegacyFrameRdd: LegacyFrameRdd = {
@@ -77,7 +80,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
    * This was added to support some legacy plugin code.
    */
   @deprecated("use FrameRdd and sql.Rows instead")
-  def toArrayAnyRdd: RDD[Array[Any]] = {
+  def toRowRdd: RDD[Rows.Row] = {
     mapRows(_.toArray)
   }
 

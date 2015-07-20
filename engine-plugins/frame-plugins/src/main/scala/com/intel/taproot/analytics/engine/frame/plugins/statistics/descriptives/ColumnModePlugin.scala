@@ -117,6 +117,6 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnModeArgs, ColumnModeRetu
       weightsColumnIndexOption,
       weightsDataTypeOption,
       modeCountOption,
-      frame.rdd.toArrayAnyRdd)
+      frame.rdd.toRowRdd)
   }
 }

@@ -81,11 +81,10 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
 
     // run the operation
-    val frameRdd = frame.rdd.toLegacyFrameRdd
     val valueDataType = frame.schema.columnDataType(arguments.columnName)
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
     val useBottomK = arguments.k < 0
-    val topRdd = TopKRddFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
+    val topRdd = TopKRddFunctions.topK(frame.rdd.toRowRdd, columnIndex, Math.abs(arguments.k), useBottomK,
       weightsColumnIndexOption, weightsDataTypeOption)
 
     val newSchema = Schema.fromTuples(List(
