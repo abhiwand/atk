@@ -102,31 +102,30 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: KMeansTrainArgs)(implicit invocation: Invocation): KMeansTrainReturn =
-    {
-      val frame: SparkFrame = arguments.frame
+  override def execute(arguments: KMeansTrainArgs)(implicit invocation: Invocation): KMeansTrainReturn = {
+    val frame: SparkFrame = arguments.frame
 
-      /**
-       * Constructs a KMeans instance with parameters passed or default parameters if not specified
-       */
-      val kMeans = initializeKmeans(arguments)
+    val kMeans = initializeKmeans(arguments)
 
-      val trainFrameRdd = frame.rdd
-      trainFrameRdd.cache()
-      val vectorRDD = trainFrameRdd.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnScalings)
-      val kmeansModel = kMeans.run(vectorRDD)
-      val size = computeClusterSize(kmeansModel, trainFrameRdd, arguments.observationColumns, arguments.columnScalings)
-      val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
-      trainFrameRdd.unpersist()
+    val trainFrameRdd = frame.rdd
+    trainFrameRdd.cache()
+    val vectorRDD = trainFrameRdd.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnScalings)
+    val kmeansModel = kMeans.run(vectorRDD)
+    val size = computeClusterSize(kmeansModel, trainFrameRdd, arguments.observationColumns, arguments.columnScalings)
+    val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
+    trainFrameRdd.unpersist()
 
-      //Writing the kmeansModel as JSON
-      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
-      val model: Model = arguments.model
-      model.data = jsonModel.toJson.asJsObject
+    //Writing the kmeansModel as JSON
+    val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
+    val model: Model = arguments.model
+    model.data = jsonModel.toJson.asJsObject
 
-      KMeansTrainReturn(size, withinSetSumOfSquaredError)
-    }
+    KMeansTrainReturn(size, withinSetSumOfSquaredError)
+  }
 
+  /**
+   * Constructs a KMeans instance with parameters passed or default parameters if not specified
+   */
   private def initializeKmeans(arguments: KMeansTrainArgs): KMeans = {
     val kmeans = new KMeans()
 
