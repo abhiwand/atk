@@ -21,6 +21,7 @@ package org.apache.spark.mllib.ia.plugins.clustering
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
@@ -103,28 +104,25 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
    */
   override def execute(arguments: KMeansTrainArgs)(implicit invocation: Invocation): KMeansTrainReturn =
     {
-      val models = engine.models
-      val frames = engine.frames
-
-      val inputFrame = frames.expectFrame(arguments.frame)
-
-      //create RDD from the frame
-      val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
+      val frame: SparkFrame = arguments.frame
 
       /**
        * Constructs a KMeans instance with parameters passed or default parameters if not specified
        */
       val kMeans = initializeKmeans(arguments)
 
+      val trainFrameRdd = frame.rdd
+      trainFrameRdd.cache()
       val vectorRDD = trainFrameRdd.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnScalings)
       val kmeansModel = kMeans.run(vectorRDD)
       val size = computeClusterSize(kmeansModel, trainFrameRdd, arguments.observationColumns, arguments.columnScalings)
       val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
+      trainFrameRdd.unpersist()
 
       //Writing the kmeansModel as JSON
       val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
       val model: Model = arguments.model
-      models.updateModel(model.toReference, jsonModel.toJson.asJsObject)
+      model.data = jsonModel.toJson.asJsObject
 
       KMeansTrainReturn(size, withinSetSumOfSquaredError)
     }
