@@ -16,20 +16,11 @@
 
 package com.intel.taproot.analytics.engine
 
-import com.intel.taproot.analytics.domain.schema.Schema
-
 object Rows {
 
   /**
    * NOTE: we have both Row and Spark sql.Row in our codebase, it can be confusing.
    */
   type Row = Array[Any]
-
-  //TODO: Can we constrain this better?
-  trait RowSource {
-    def schema: Schema
-
-    def rows: Iterable[Row]
-  }
 
 }
