@@ -72,7 +72,7 @@ object PythonRddStorage {
     val newSchema = if (udfSchema == null) { data.frameSchema } else { udfSchema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
-    val pyRdd = RDDToPyRDD(udf, data.toLegacyFrameRdd, sc)
+    val pyRdd = RDDToPyRDD(udf, data.toRowRdd, sc)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
     FrameRdd.toFrameRdd(newSchema, frameRdd)
   }
