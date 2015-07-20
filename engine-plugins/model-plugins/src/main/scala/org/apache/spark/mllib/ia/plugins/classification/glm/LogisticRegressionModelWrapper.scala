@@ -15,24 +15,14 @@
 */
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-object IaLogisticRegressionModelFactory {
+import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
+import org.apache.spark.mllib.evaluation.HessianMatrix
+import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
+
+trait LogisticRegressionModelWrapper extends HessianMatrix {
 
   /**
-   * Create logistic regression model based on optimizer.
-   *
-   * The optimizers supported are: LBFGS, and SGD
-   *
-   * @param arguments Model training arguments
-   * @return Logistic regression model
+   * Get logistic regression model
    */
-  def createModel(arguments: LogisticRegressionTrainArgs): IaLogisticRegressionModel = {
-    val regressionModel = arguments.optimizer.toUpperCase match {
-      case "LBFGS" => new IaLogisticRegressionModelWithLBFGS()
-      case "SGD" => new IaLogisticRegressionModelWithSGD()
-      case _ => throw new IllegalArgumentException("Only LBFGS or SGD optimizers permitted")
-    }
-    regressionModel.initialize(arguments)
-    regressionModel
-  }
-
+  def getModel: GeneralizedLinearAlgorithmWithFrequency[LogisticRegressionModelWithFrequency]
 }
