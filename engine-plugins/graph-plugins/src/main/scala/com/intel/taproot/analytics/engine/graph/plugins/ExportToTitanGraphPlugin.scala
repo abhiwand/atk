@@ -20,12 +20,12 @@ import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, G
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.graphbuilder.parser.InputSchema
 import com.intel.taproot.analytics.domain.StorageFormats
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.domain.schema.{ EdgeSchema }
-import com.intel.taproot.analytics.engine.graph.{ GraphBuilderConfigFactory }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.domain.schema.EdgeSchema
+import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 
 // Implicits needed for JSON conversion

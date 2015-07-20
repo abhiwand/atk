@@ -20,7 +20,7 @@ import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, G
 import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.taproot.graphbuilder.parser.InputSchema
 import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }

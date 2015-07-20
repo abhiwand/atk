@@ -22,7 +22,7 @@ import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.taproot.graphbuilder.parser.InputSchema
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage }
+import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
 import com.intel.taproot.testutils.{ TestingSparkContextFlatSpec, TestingSparkContextWordSpec }

@@ -17,7 +17,7 @@
 package com.intel.taproot.spark.graphon.graphclustering
 
 import com.intel.taproot.analytics.UnitReturn
-import com.intel.taproot.analytics.domain.graph.{ GraphReference }
+import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
 import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory

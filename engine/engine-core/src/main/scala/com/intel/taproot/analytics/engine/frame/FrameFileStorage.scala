@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame
 
 import com.intel.taproot.analytics.EventLoggingImplicits
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.HdfsFileStorage
 import org.apache.hadoop.fs.Path

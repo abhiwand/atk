@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.frame.{ TallyArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 
 // Implicits needed for JSON conversion

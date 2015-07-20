@@ -25,8 +25,8 @@ import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollectionTemplate, GarbageCollection }
 import com.intel.taproot.analytics.engine.{ EngineExecutionContext, GraphBackendStorage, EngineConfig }
 import com.intel.taproot.analytics.engine.plugin.BackendInvocation
-import com.intel.taproot.analytics.engine.frame.{ FrameFileStorage }
-import com.intel.taproot.analytics.repository.{ MetaStore }
+import com.intel.taproot.analytics.engine.frame.FrameFileStorage
+import com.intel.taproot.analytics.repository.MetaStore
 import org.joda.time.DateTime
 
 /**

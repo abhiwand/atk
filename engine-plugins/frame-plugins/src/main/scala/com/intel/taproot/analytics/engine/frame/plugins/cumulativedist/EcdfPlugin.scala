@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes, Column }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 import com.intel.taproot.analytics.domain.{ DomainJsonProtocol, CreateEntityArgs }
 import org.apache.spark.frame.FrameRdd
