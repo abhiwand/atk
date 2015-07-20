@@ -26,49 +26,9 @@ import org.apache.spark.frame.FrameRdd
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
-/**
- * Parameters
- * ----------
- * column_input : List[Map]
- *   List of Column Input Map
- * Column Input Map: Map
- *   Dictionary must comprise of Column name (str) and any of the 2 optional params top_k (int) and threshold (float)
- */
 @PluginDoc(oneLine = "Compute the categorical summary for specified columns in a frame.",
-  extended = """Compute the categorical summary of the data in a column.
-The returned value is a Map containing categorical summary for each specified column.
-For each column, levels which satisfy the top k and/or threshold cutoffs are displayed along
-with their frequency and percentage occurrence with respect to the total rows in the dataset.
-Missing data is reported when a column value is empty ("") or null. All remaining data is
-grouped together in the Other category and its frequency and percentage are reported as well.
-
-User needs to specify the column name and can specify either/both top_k and threshold cutoff.
-Specifying top_k parameter displays levels which are in the top k most frequently occuring values
-for that column.
-Specifying threshold parameter displays levels which are atleast above the threshold percentage
-with respect to the total row count
-Specifying both of these parameters will do the level pruning first based on top k and next filter
-out levels which satisfy the threshold criterion.
-Specifying none of these parameters will default the top_k to 10 and threshold to 0.0 i.e. show all
-levels which are in Top 10. These defaults can be configured if needed in application.conf.
-
-Examples:
-
-print f.categorical_summary([{'column': 'col1', 'threshold' : 0.5}, {'column' : 'col2', 'top_k' : 1}])
---
-{u'categorical_summary': [{u'column': u'a', u'levels': [{u'percentage': 0.6666666666666666, u'frequency': 2,
-u'level': u'4'}, {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'}, {u'percentage': 0.3333333333333333,
-u'frequency': 1, u'level': u'Other'}]}, {u'column': u'b', u'levels': [{u'percentage': 0.6666666666666666,
-u'frequency': 2, u'level': u'2'}, {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
-{u'percentage': 0.3333333333333333, u'frequency': 1, u'level': u'Other'}]}]}
-
-""",
-  returns = """categorical_summary: Map
-    Dictionary for each column specified in the input dataset
-column : str
-    Name of input column.
-levels : Array of Map
-    A list of dictionary which holds information on level, frequency and percentage.""")
+  extended = "",
+  returns = "")
 class CategoricalSummaryPlugin extends SparkCommandPlugin[CategoricalSummaryArgs, CategoricalSummaryReturn] {
 
   /**
