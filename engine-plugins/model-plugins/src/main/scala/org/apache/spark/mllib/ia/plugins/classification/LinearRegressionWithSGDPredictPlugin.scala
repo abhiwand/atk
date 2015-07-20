@@ -84,34 +84,34 @@ class LinearRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifica
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity = {
-      val frame: SparkFrame = arguments.frame
-      val model: Model = arguments.model
+    val frame: SparkFrame = arguments.frame
+    val model: Model = arguments.model
 
-      //Running MLLib
-      val linRegJsObject = model.dataOption.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
-      val linRegData = linRegJsObject.convertTo[LinearRegressionData]
-      val linRegModel = linRegData.linRegModel
-      if (arguments.observationColumns.isDefined) {
-        require(linRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
-      }
-      val linRegColumns = arguments.observationColumns.getOrElse(linRegData.observationColumns)
-
-      //predicting a label for the observation columns
-      val predictionsRDD = frame.rdd.mapRows(row => {
-        val array = row.valuesAsArray(linRegColumns)
-        val doubles = array.map(i => DataTypes.toDouble(i))
-        val point = Vectors.dense(doubles)
-        val prediction = linRegModel.predict(point)
-        row.addValue(DataTypes.toDouble(prediction))
-      })
-
-      val updatedSchema = frame.schema.addColumn("predicted_value", DataTypes.float64)
-      val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
-
-      engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by LinearRegressionWithSGDs predict operation"))) {
-        newPredictedFrame: FrameEntity =>
-          newPredictedFrame.save(predictFrameRdd)
-      }
+    //Running MLLib
+    val linRegJsObject = model.dataOption.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
+    val linRegData = linRegJsObject.convertTo[LinearRegressionData]
+    val linRegModel = linRegData.linRegModel
+    if (arguments.observationColumns.isDefined) {
+      require(linRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
     }
+    val linRegColumns = arguments.observationColumns.getOrElse(linRegData.observationColumns)
+
+    //predicting a label for the observation columns
+    val predictionsRDD = frame.rdd.mapRows(row => {
+      val array = row.valuesAsArray(linRegColumns)
+      val doubles = array.map(i => DataTypes.toDouble(i))
+      val point = Vectors.dense(doubles)
+      val prediction = linRegModel.predict(point)
+      row.addValue(DataTypes.toDouble(prediction))
+    })
+
+    val updatedSchema = frame.schema.addColumn("predicted_value", DataTypes.float64)
+    val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
+
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by LinearRegressionWithSGDs predict operation"))) {
+      newPredictedFrame: FrameEntity =>
+        newPredictedFrame.save(predictFrameRdd)
+    }
+  }
 
 }
