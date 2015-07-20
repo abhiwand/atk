@@ -3,28 +3,22 @@
 .. index::
        single: connect
 
-Connect
-=======
-
-Before the Python API can be used, the user must "connect" to the server, such
-that the Python client can download the API and configure itself::
-
-    import taprootanalytics as ta
-    ta.connect()
-
-.. autofunction:: taprootanalytics.connect
-
-Connecting to |PACKAGE| server
-==========================
+Connect to the Server
+=====================
 
 .. contents:: Table of Contents
     :local:
     :backlinks: none
 
+Before the Python API can be used, the user must "connect" to the server, such
+that the Python client can download the API and configure itself::
+
+.. autofunction:: taprootanalytics.connect
+
 Basic connecting
 ----------------
 
-To use the default settings provided by the environmental and/or configuration:
+To use the default settings provided by the environment and/or configuration:
 
 .. code::
 
@@ -49,7 +43,7 @@ The user must have a credentials file which holds an OAuth access token and
 a refresh token.
 
 The user can create a credentials file using |PACKAGE| client running in an
-interactive python REPL.
+interactive python session.
 Call ``create_connect_file('filename_of_your_choice')`` and interactively
 provide answers to its prompt.
 
@@ -122,7 +116,7 @@ Client's Server Settings
 To see the client's configuration to find the server, just repr the
 ``ta.server``:
 
-.. only: html
+.. only:: html
 
     .. code::
 
@@ -138,7 +132,7 @@ To see the client's configuration to find the server, just repr the
             "user": "dscientist9"
         }
 
-.. only: latex
+.. only:: latex
 
     .. code::
 
@@ -166,18 +160,6 @@ To see the client's configuration to find the server, just repr the
             "user": "dscientist9"
         }
 
-The settings may be individually modified off the ``ta.server`` object,
+The settings may be individually modified with the ``ta.server`` object,
 before calling connect.
 
-HTTP Logging
-------------
-
-To see http traffic, call ``ta.loggers.set_http()``.
-It can be helpful to turn on the logging before calling connect or
-create_connect_file.
-
-.. code::
-
-    >>> import taprootanalytics as ta
-    >>> ta.loggers.set_http()
-    >>> ta.create_connect_file('supercreds')
