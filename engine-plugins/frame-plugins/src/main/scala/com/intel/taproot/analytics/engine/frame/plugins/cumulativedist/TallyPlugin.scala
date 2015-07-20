@@ -21,6 +21,7 @@ import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import org.apache.spark.frame.FrameRdd
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -68,6 +69,6 @@ class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
     // run the operation
     val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frame.rdd.toLegacyFrameRdd, sampleIndex, arguments.countVal), "_tally")
     val updatedSchema = frame.schema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
-    frame.save(new LegacyFrameRdd(updatedSchema, cumulativeDistRdd))
+    frame.save(FrameRdd.toFrameRdd(updatedSchema, cumulativeDistRdd))
   }
 }

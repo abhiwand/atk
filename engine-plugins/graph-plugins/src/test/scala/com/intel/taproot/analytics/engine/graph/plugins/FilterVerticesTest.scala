@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.engine.graph.plugins
 import com.intel.taproot.analytics.domain.schema._
 import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.scalatest.Matchers
 
@@ -30,7 +31,7 @@ class FilterVerticesTest extends TestingSparkContextFlatSpec with Matchers {
 
     val columns = List(Column(GraphSchema.edgeProperty, DataTypes.int64), Column(GraphSchema.srcVidProperty, DataTypes.int64), Column(GraphSchema.destVidProperty, DataTypes.int64), Column(GraphSchema.labelProperty, DataTypes.string), Column("distance", DataTypes.int32))
     val schema = new EdgeSchema(columns, GraphSchema.labelProperty, "srclabel", "destlabel")
-    val edgeLegacyRdd = new LegacyFrameRdd(schema, edgeRdd)
+    val edgeLegacyRdd = FrameRdd.toFrameRdd(schema, edgeRdd)
 
     val vertexArray = Array(5, 13)
 

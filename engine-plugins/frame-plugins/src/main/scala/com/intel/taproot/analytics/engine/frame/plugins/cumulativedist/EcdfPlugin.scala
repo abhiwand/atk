@@ -23,6 +23,7 @@ import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes, Colum
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
 
 import com.intel.taproot.analytics.domain.{ DomainJsonProtocol, CreateEntityArgs }
+import org.apache.spark.frame.FrameRdd
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -93,7 +94,7 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
       }
       val rdd = frame.rdd.toLegacyFrameRdd
       val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
-      ecdfFrame.save(new LegacyFrameRdd(ecdfSchema, ecdfRdd))
+      ecdfFrame.save(FrameRdd.toFrameRdd(ecdfSchema, ecdfRdd))
     }
   }
 }

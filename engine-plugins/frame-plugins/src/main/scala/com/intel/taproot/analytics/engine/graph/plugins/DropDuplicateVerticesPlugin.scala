@@ -99,7 +99,7 @@ class DropDuplicateVerticesPlugin extends SparkCommandPlugin[DropDuplicatesArgs,
     FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, sc, FrameRdd.toFrameRdd(schema, duplicatesRemoved))
 
     // save results
-    frames.saveLegacyFrame(vertexFrame.toReference, new LegacyFrameRdd(schema, duplicatesRemoved))
+    frames.saveFrameData(vertexFrame.toReference, FrameRdd.toFrameRdd(schema, duplicatesRemoved))
 
   }
 }

@@ -20,6 +20,7 @@ import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntit
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd, MiscFrameFunctions }
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 
 // Implicits needed for JSON conversion
@@ -75,6 +76,6 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameE
     }
     // run operation
     val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, frame.schema, columnNames)
-    frame.save(new LegacyFrameRdd(frame.schema, duplicatesRemoved))
+    frame.save(FrameRdd.toFrameRdd(frame.schema, duplicatesRemoved))
   }
 }

@@ -24,6 +24,7 @@ import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
+import org.apache.spark.frame.FrameRdd
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -99,7 +100,7 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
 
     // save results
     frames.tryNewFrame(CreateEntityArgs(description = Some("created by top k command"))) { newFrame =>
-      frames.saveLegacyFrame(newFrame.toReference, new LegacyFrameRdd(newSchema, topRdd))
+      frames.saveFrameData(newFrame.toReference, FrameRdd.toFrameRdd(newSchema, topRdd))
     }
   }
 
