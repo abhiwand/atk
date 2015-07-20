@@ -329,25 +329,15 @@ function main() {
             pdf_build latex Package_Documentation $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" != "0" ]; then return 1; fi
             if [[ -f build/latex/Package_Documentation.pdf && -d build/html/_downloads ]]; then
-                let Count=6
-                while [ $Count -gt 0 ]
-                do
-                    if [ -s build/latex/Package_Documentation.pdf ]; then
-                        let Count=-1
-                    else
-                        sleep 10s
-                        let Count-=1
-                    fi
-                done
-                if [ $Count -eq 0 ]; then
+                if [ -s build/latex/Package_Documentation.pdf ]; then
+                    RunCommand="cp build/latex/Package_Documentation.pdf build/html/_downloads/"
+                    do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
+                    if [ "$?" != "0" ]; then return 1; fi
+                else
                     Err "PDF too short to copy" $AskThem $DisplayStatus $TempFile $LogFile
                     if [ "$?" != "0" ]; then
                         return 1
                     fi
-                else
-                    RunCommand="cp build/latex/Package_Documentation.pdf build/html/_downloads/"
-                    do_this "$RunCommand" $AskThem $DisplayStatus $TempFile $LogFile
-                    if [ "$?" != "0" ]; then return 1; fi
                 fi
             fi
         fi

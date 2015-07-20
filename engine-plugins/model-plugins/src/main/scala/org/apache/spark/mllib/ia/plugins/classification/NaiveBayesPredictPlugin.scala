@@ -4,14 +4,8 @@ import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.model.ModelReference
 import com.intel.taproot.analytics.domain.schema.DataTypes
-<<<<<<< HEAD
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, PluginDoc, ApiMaturityTag, Invocation }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
-=======
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
->>>>>>> master
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.Vectors
 import spray.json._

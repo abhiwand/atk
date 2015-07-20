@@ -18,12 +18,14 @@ package com.intel.taproot.analytics.libSvmPlugins
 
 import com.intel.taproot.analytics.domain.model.ModelReference
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Command for loading model data into existing model in the model database.
- * @param model Handle to the model to be written to.
- *
  */
-case class LibSvmScoreArgs(model: ModelReference, vector: Vector[Double]) {
+case class LibSvmScoreArgs(
+    @ArgDoc("""Handle to the model to be written to.""") model: ModelReference,
+    @ArgDoc("""A single observation of features.""") vector: Vector[Double]) {
   require(model != null, "model is required")
 }
 
