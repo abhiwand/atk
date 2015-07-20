@@ -17,11 +17,10 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameMeta }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDPredictArgs
 import org.apache.spark.mllib.linalg.Vectors
@@ -106,10 +105,10 @@ class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationW
       val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_label", DataTypes.int32)
       val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-      tryNew(CreateEntityArgs(description = Some("created by LogisticRegression predict operation"))) {
-        newPredictedFrame: FrameMeta =>
-          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
-      }.meta
+      engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by LogisticRegression predict operation"))) {
+        newPredictedFrame: FrameEntity =>
+          newPredictedFrame.save(predictFrameRdd)
+      }
     }
 
 }

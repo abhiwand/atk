@@ -20,9 +20,9 @@ import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
-import com.intel.taproot.analytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import org.apache.spark.rdd.RDD
@@ -92,10 +92,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
     val frames = engine.frames
     val inputFrame = frames.expectFrame(arguments.frame)
 
-    val frame: SparkFrameData = resolve(arguments.frame)
-
-    // load frame as RDD
-    val inputFrameRdd = frame.data
+    val frame: SparkFrame = arguments.frame
 
     //Loading the model
     val svmColumns = arguments.observationColumns
@@ -108,7 +105,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
     }
 
     //predicting a label for the observation column/s
-    val predictionsRdd: RDD[Row] = inputFrameRdd.mapRows(row => {
+    val predictionsRdd: RDD[Row] = frame.rdd.mapRows(row => {
       val array = row.valuesAsArray(arguments.observationColumns.getOrElse(libsvmData.observationColumns))
       val label = row.value(arguments.labelColumn)
       val doubles = array.map(i => DataTypes.toDouble(i))

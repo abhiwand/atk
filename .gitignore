@@ -24,7 +24,6 @@ git
 *.iml
 *.jar
 largegit.sh
-logback.xml
 make.sh
 .metadata*
 *.orig
@@ -38,9 +37,7 @@ pig_*.log
 /python-client/cover/
 /python-client/.coverage
 /python-client/intelanalytics/connections.py*
-/python-client/intelanalytics/core/autoframe.py
-/python-client/intelanalytics/core/autograph.py
-/python-client/intelanalytics/core/docstubs*.py*
+/python-client/taprootanalytics/core/docstubs*.py*
 /python-client/nosetests.xml
 .Rhistory
 scratch.py

@@ -19,8 +19,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._

@@ -206,14 +206,8 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
      */
     public static class LabelPropagationMasterCompute extends DefaultMasterCompute {
 
-        private LabelPropagationConfig config = null;
-        private float convergenceThreshold = 1f;
-
         @Override
         public void initialize() throws InstantiationException, IllegalAccessException {
-            config = new LabelPropagationConfiguration(getConf()).getConfig();
-            convergenceThreshold = config.convergenceThreshold();
-
             registerAggregator(SUM_COST, DoubleSumAggregator.class);
         }
 
@@ -221,15 +215,9 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
         public void compute() {
             if (getSuperstep() > 1) {
 
-                float prevCost = getConf().getFloat(PREV_COST, 0f);
                 DoubleWritable sumCost = getAggregatedValue(SUM_COST);
                 double cost = sumCost.get() / getTotalNumVertices();
                 sumCost.set(cost);
-
-                // evaluate convergence condition           
-                if (Math.abs(prevCost - cost) < convergenceThreshold) {
-                    haltComputation();
-                }
                 
                 getConf().setFloat(PREV_COST, (float) cost);
             }

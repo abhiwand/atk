@@ -834,7 +834,14 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     @arg('n', int, 'The number of rows to print.')
     @arg('offset', int, 'The number of rows to skip before printing.')
     @arg('columns', int, 'Filter columns to be included.  By default, all columns are included')
-    def __inspect(self, n=10, offset=0, columns=None):
+    @arg('wrap', "int or 'stripes'", "If set to 'stripes' then inspect prints rows in stripes; if set to an integer N, "
+                                     "rows will be printed in clumps of N columns, where the columns are wrapped")
+    @arg('truncate', int, 'If set to integer N, all strings will be truncated to length N, including a tagged ellipses')
+    @arg('round', int, 'If set to integer N, all floating point numbers will be rounded and truncated to N digits')
+    @arg('width', int, 'If set to integer N, the print out will try to honor a max line width of N')
+    @arg('margin', int, "('stripes' mode only) If set to integer N, the margin for printing names in a "
+                        "stripe will be limited to N characters")
+    def __inspect(self, n=10, offset=0, columns=None, wrap=None, truncate=None, round=None, width=80, margin=None):
         """
         Prints the frame data in readable format.
 
@@ -858,7 +865,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         # For other examples, see :ref:`example_frame.inspect`.
         """
-        return self._backend.inspect(self, n, offset, columns)
+        return self._backend.inspect(self, n, offset, columns, wrap=wrap, truncate=truncate, round=round, width=width, margin=margin)
 
     @api
     @beta
@@ -872,7 +879,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     @returns('Frame', 'A new frame with the results of the join')
     def __join(self, right, left_on, right_on=None, how='inner', name=None):
         """
-        New frame from current frame and another frame.
+        Join operation on one or two frames, creating a new frame.
 
         Create a new frame from a SQL JOIN operation with another frame.
         The frame on the 'left' is the currently active frame.

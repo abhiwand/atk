@@ -19,12 +19,11 @@ package org.apache.spark.mllib.ia.plugins.classification
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, Naming }
 import com.intel.taproot.analytics.domain.command.CommandDoc
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameMeta }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.regression.LinearRegressionModel
@@ -114,10 +113,10 @@ class LinearRegressionWithSGDPredictPlugin extends SparkCommandPlugin[Classifica
       val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_value", DataTypes.float64)
       val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-      tryNew(CreateEntityArgs(description = Some("created by LinearRegressionWithSGDs predict operation"))) {
-        newPredictedFrame: FrameMeta =>
-          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
-      }.meta
+      engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by LinearRegressionWithSGDs predict operation"))) {
+        newPredictedFrame: FrameEntity =>
+          newPredictedFrame.save(predictFrameRdd)
+      }
     }
 
 }

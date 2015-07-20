@@ -19,7 +19,7 @@ package org.apache.spark.mllib.ia.plugins.clustering
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.model.{ KMeansNewArgs, ModelEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 //Implicits needed for JSON conversion
 import spray.json._

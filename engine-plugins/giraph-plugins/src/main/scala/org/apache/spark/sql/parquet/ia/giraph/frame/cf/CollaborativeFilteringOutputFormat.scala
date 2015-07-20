@@ -26,6 +26,7 @@ import org.apache.spark.mllib.ia.plugins.VectorUtils
 import org.apache.spark.sql.catalyst.expressions.{ GenericRow, Row }
 import org.apache.spark.sql.parquet.RowWriteSupport
 import org.apache.spark.sql.parquet.ia.giraph.frame.MultiOutputCommitter
+import org.apache.spark.sql.types._
 import parquet.hadoop.ParquetOutputFormat
 
 /**
@@ -62,7 +63,11 @@ class CollaborativeFilteringVertexOutputFormat[T <: VertexData4CFWritable] exten
 }
 
 object CollaborativeFilteringOutputFormat {
-  val OutputRowSchema = "StructType(row(StructField(id,StringType,false),StructField(result,ArrayType(DoubleType,true),true)))"
+
+  //Using JSON format for schema due to bug in Spark 1.3.0 which causes failures when reading StructType literal strings
+  val OutputRowSchema = StructType(
+    StructField("id", StringType, false) ::
+      StructField("result", ArrayType(DoubleType), true) :: Nil).json
 }
 
 class CollaborativeFilteringVertexWriter[T <: VertexData4CFWritable](conf: CollaborativeFilteringConfiguration,

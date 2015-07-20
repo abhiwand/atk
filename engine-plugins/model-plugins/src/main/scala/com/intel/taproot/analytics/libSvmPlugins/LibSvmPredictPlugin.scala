@@ -17,12 +17,12 @@
 package com.intel.taproot.analytics.libSvmPlugins
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameMeta }
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
@@ -73,10 +73,7 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
     val models = engine.models
     val modelMeta = models.expectModel(arguments.model)
 
-    val frame: SparkFrameData = resolve(arguments.frame)
-
-    // load frame as RDD
-    val inputFrameRdd = frame.data
+    val frame: SparkFrame = arguments.frame
 
     //Load the libsvm model
     val svmColumns = arguments.observationColumns
@@ -89,7 +86,7 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
     }
 
     //predicting a label for the observation column/s
-    val predictionsRdd = inputFrameRdd.mapRows(row => {
+    val predictionsRdd = frame.rdd.mapRows(row => {
       val array = row.valuesAsArray(arguments.observationColumns.getOrElse(libsvmData.observationColumns))
       val doubles = array.map(i => DataTypes.toDouble(i))
       var vector = Vector.empty[Double]
@@ -102,12 +99,12 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
       row.addValue(predictionLabel.value)
     })
 
-    val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_label", DataTypes.float64)
+    val updatedSchema = frame.schema.addColumn("predicted_label", DataTypes.float64)
     val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRdd)
 
-    tryNew(CreateEntityArgs(description = Some("created by LibSvm's predict operation"))) {
-      newPredictedFrame: FrameMeta =>
-        save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
-    }.meta
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by LibSvm's predict operation"))) {
+      newPredictedFrame: FrameEntity =>
+        newPredictedFrame.save(predictFrameRdd)
+    }
   }
 }
