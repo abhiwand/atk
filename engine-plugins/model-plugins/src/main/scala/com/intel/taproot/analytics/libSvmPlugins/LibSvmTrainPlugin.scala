@@ -20,6 +20,7 @@ import java.util.StringTokenizer
 
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -64,10 +65,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
    */
 
   override def execute(arguments: LibSvmTrainArgs)(implicit invocation: Invocation): UnitReturn = {
-    val models = engine.models
-    val modelRef = arguments.model
-    val model = models.expectModel(modelRef)
-
+    val model: Model = arguments.model
     val frame: SparkFrame = arguments.frame
 
     //Running LibSVM
@@ -81,9 +79,8 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     val mySvmModel = svm.svm_train(prob, param)
 
     val jsonModel = new LibSvmData(mySvmModel, arguments.observationColumns)
+    model.data = jsonModel.toJson.asJsObject
 
-    //TODO: Call save instead once implemented for models
-    models.updateModel(model.toReference, jsonModel.toJson.asJsObject)
     new UnitReturn
 
   }
