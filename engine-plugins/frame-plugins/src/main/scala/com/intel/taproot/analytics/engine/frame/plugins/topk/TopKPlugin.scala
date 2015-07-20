@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.frame.{ TopKArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.{ SparkFrame }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
