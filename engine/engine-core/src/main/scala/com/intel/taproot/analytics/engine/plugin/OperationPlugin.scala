@@ -125,7 +125,7 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
     //apply so that if we ever need to put additional actions before or
     //after the plugin code, we can.
     withMyClassLoader {
-      implicit val invocation = simpleInvocation
+      implicit val invocation = customizeInvocation(simpleInvocation, arguments)
       val result = try {
         debug("Invoking execute method with arguments:\n" + arguments)
         execute(arguments)(invocation)
@@ -141,6 +141,9 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
     }
   })(simpleInvocation)
 
+  def customizeInvocation(invocation: Invocation, arguments: Arguments): Invocation = {
+    invocation
+  }
 
   protected def cleanup(invocation: Invocation) = {}
 
