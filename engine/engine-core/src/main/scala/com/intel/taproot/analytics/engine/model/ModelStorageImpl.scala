@@ -34,7 +34,7 @@ import scala.util.Try
  * @param metaStore Repository for model meta data.
  */
 
-class SparkModelStorage(metaStore: MetaStore)
+class ModelStorageImpl(metaStore: MetaStore)
     extends ModelStorage with EventLogging with EventLoggingImplicits with ClassLoaderAware {
   storage =>
   def updateLastReadDate(model: ModelEntity): Try[ModelEntity] = {
