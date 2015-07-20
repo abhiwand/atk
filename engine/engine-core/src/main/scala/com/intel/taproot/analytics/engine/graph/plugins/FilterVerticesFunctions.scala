@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.domain.schema.{ Schema, EdgeSchema, GraphSche
 import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.frame.{ LegacyFrameRdd, SparkFrameStorage }
-import org.apache.spark.{sql, SparkContext}
+import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
