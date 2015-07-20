@@ -20,6 +20,7 @@ import breeze.numerics._
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
 import com.intel.taproot.analytics.domain.frame.FrameEntity
@@ -64,34 +65,30 @@ class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalCompone
    * @return value of type declared as the Return type
    */
   override def execute(arguments: PrincipalComponentsTrainArgs)(implicit invocation: Invocation): PrincipalComponentsTrainReturn = {
-    val models = engine.models
-    val model = models.expectModel(arguments.model)
+    val model: Model = arguments.model
+    val frame = arguments.frame
 
-    val frames = engine.frames
-    val inputFrame = frames.expectFrame(arguments.frame)
-
-    // load frame as RDD
-    val frameRdd = frames.loadFrameData(sc, inputFrame)
-    val frameSchema = frameRdd.frameSchema
-    validatePrincipalComponentsArgs(frameSchema, arguments)
+    validatePrincipalComponentsArgs(frame.schema, arguments)
 
     // compute covariance
-    val outputColumnDataType = frameSchema.columnDataType(arguments.observationColumns(0))
+    val outputColumnDataType = frame.schema.columnDataType(arguments.observationColumns(0))
     val outputVectorLength: Option[Long] = outputColumnDataType match {
       case vector(length) => Some(length)
       case _ => None
     }
 
     val k = arguments.k.getOrElse(arguments.observationColumns.length)
-    val rowMatrix: RowMatrix = new RowMatrix(frameRdd.toVectorDenseRDD(arguments.observationColumns))
+    val rowMatrix: RowMatrix = new RowMatrix(frame.rdd.toVectorDenseRDD(arguments.observationColumns))
 
     val svd = rowMatrix.computeSVD(k, computeU = true)
 
     val jsonModel = new PrincipalComponentsData(k, arguments.observationColumns, svd.s, svd.V)
-    models.updateModel(model.toReference, jsonModel.toJson.asJsObject)
+    model.data = jsonModel.toJson.asJsObject
 
     new PrincipalComponentsTrainReturn(jsonModel)
   }
+
+  // TODO: this kind of standardized validation belongs in the Schema class
   // Validate input arguments
   private def validatePrincipalComponentsArgs(frameSchema: Schema, arguments: PrincipalComponentsTrainArgs): Unit = {
     val dataColumnNames = arguments.observationColumns
