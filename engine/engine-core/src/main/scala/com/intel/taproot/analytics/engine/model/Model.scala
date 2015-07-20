@@ -18,6 +18,7 @@ package com.intel.taproot.analytics.engine.model
 
 import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
 import com.intel.taproot.analytics.engine.ModelStorage
+import com.intel.taproot.analytics.engine.plugin.Invocation
 import spray.json.JsObject
 
 /**
@@ -54,7 +55,8 @@ object Model {
 
 }
 
-class ModelImpl(modelRef: ModelReference, modelStorage: ModelStorage) extends Model {
+class ModelImpl(modelRef: ModelReference, modelStorage: ModelStorage)(implicit invocation: Invocation)iff
+extends Model {
 
   override def entity: ModelEntity = modelStorage.expectModel(modelRef)
 
