@@ -31,19 +31,26 @@ trait Model {
 
   def name: Option[String]
 
+  /** the type of the model eg: OLS, LogisticRegression */
   def modelType: String
 
+  /** description of the model (a good default might say what frame it came from) */
   def description: Option[String]
 
+  /** lifecycle status. For example, ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete) */
   def statusId: Long
 
   /**
+   * the JsObject containing the trained model.
    * Expects model has been trained and data exists, throws appropriate exception otherwise
    */
   def data: JsObject
 
   def data_=(updatedData: JsObject): Unit
 
+  /**
+   * the JsObject containing the trained model
+   */
   def dataOption: Option[JsObject]
 }
 
