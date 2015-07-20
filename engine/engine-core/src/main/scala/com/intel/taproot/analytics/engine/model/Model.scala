@@ -55,8 +55,7 @@ object Model {
 
 }
 
-class ModelImpl(modelRef: ModelReference, modelStorage: ModelStorage)(implicit invocation: Invocation)iff
-extends Model {
+class ModelImpl(modelRef: ModelReference, modelStorage: ModelStorage)(implicit invocation: Invocation) extends Model {
 
   override def entity: ModelEntity = modelStorage.expectModel(modelRef)
 
