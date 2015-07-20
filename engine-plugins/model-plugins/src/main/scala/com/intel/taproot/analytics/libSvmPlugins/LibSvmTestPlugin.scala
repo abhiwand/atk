@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.libSvmPlugins
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.Rows._
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
@@ -86,18 +87,12 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: LibSvmTestArgs)(implicit invocation: Invocation): ClassificationMetricValue = {
-    val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
-
-    val frames = engine.frames
-    val inputFrame = frames.expectFrame(arguments.frame)
-
+    val model: Model = arguments.model
     val frame: SparkFrame = arguments.frame
 
     //Loading the model
     val svmColumns = arguments.observationColumns
-    val svmJsObject = modelMeta.data.get
-    val libsvmData = svmJsObject.convertTo[LibSvmData]
+    val libsvmData = model.data.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 
     if (arguments.observationColumns.isDefined) {
