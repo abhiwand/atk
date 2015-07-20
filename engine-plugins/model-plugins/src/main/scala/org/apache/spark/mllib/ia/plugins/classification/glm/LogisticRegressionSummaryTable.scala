@@ -58,9 +58,9 @@ case class LogisticRegressionSummaryTable(numFeatures: Int,
  * @param hessianMatrix Optional Hessian matrix for trained model
  */
 case class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency,
-                          observationColumns: List[String],
-                          isAddIntercept: Boolean = true,
-                          hessianMatrix: Option[DenseMatrix[Double]] = None) {
+                               observationColumns: List[String],
+                               isAddIntercept: Boolean = true,
+                               hessianMatrix: Option[DenseMatrix[Double]] = None) {
   require(logRegModel != null, "logistic regression model must not be null")
   require(observationColumns != null && observationColumns.length > 0, "list of observation columns must not be empty")
 
@@ -137,7 +137,7 @@ case class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency
       for {
         i <- 0 until (logRegModel.numFeatures)
         j <- 0 until (logRegModel.numClasses - 1)
-      }  yield s"${observationColumns(i)}_${j}"
+      } yield s"${observationColumns(i)}_${j}"
     }
     else {
       observationColumns
@@ -164,7 +164,7 @@ case class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency
    * Return the standard errors for model coefficients.
    */
   private def getStandardErrors(coefficients: DenseVector[Double],
-                        covarianceMatrix: DenseMatrix[Double]): DenseVector[Double] = {
+                                covarianceMatrix: DenseMatrix[Double]): DenseVector[Double] = {
     sqrt(diag(covarianceMatrix))
   }
 

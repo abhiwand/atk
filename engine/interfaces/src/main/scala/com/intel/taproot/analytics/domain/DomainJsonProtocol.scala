@@ -178,11 +178,10 @@ object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
         json match {
           case JsString(uri) => createReference(uri.substring(uri.lastIndexOf('/') + 1).toLong)
           case JsNumber(n) => createReference(n.toLong)
-          case _ => deserializationError(s"Expected valid URI, but received $json")
         }
       }
       catch {
-        case e: Exception => deserializationError(s"Expected valid URI, but received $json")
+        case e: Exception => deserializationError(s"Expected valid URI, but received $json", e)
       }
     }
 

@@ -5,8 +5,6 @@ import java.io._
 import java.util.StringTokenizer
 
 import _root_.libsvm.{ svm, svm_model, svm_node }
-import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.domain.schema.DataTypes
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.DenseVector
 import scala.concurrent.ExecutionContext.Implicits.global

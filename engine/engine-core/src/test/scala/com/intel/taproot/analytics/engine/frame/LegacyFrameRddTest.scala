@@ -35,17 +35,6 @@ case class TestCase(num: Int, name: String)
 class LegacyFrameRddTest extends TestingSparkContextWordSpec with Matchers {
   "LegacyFrameRdd" should {
 
-    "be convertible into a FrameRdd" in {
-      val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
-      val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
-      val rdd = new LegacyFrameRdd(schema, rows)
-      val frameRdd = rdd.toFrameRdd()
-
-      frameRdd.getClass should be(classOf[FrameRdd])
-      frameRdd.frameSchema should be(schema)
-      frameRdd.first.toSeq.toArray should equal(rdd.first)
-    }
-
     // ignoring because of OutOfMemory errors, these weren't showing up in engine until most of shared was merged in
     "allow a SchemaRDD in its constructor" in {
       val rows = sparkContext.parallelize((1 to 100).map(i => new TestCase(i, i.toString)))

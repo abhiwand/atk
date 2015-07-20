@@ -32,10 +32,6 @@ import com.intel.taproot.analytics.repository.{ Profile, SlickMetaStoreComponent
  * Class Responsible for creating all objects necessary for instantiating an instance of the SparkEngine.
  */
 abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends EngineComponent
-    with FrameComponent
-    with GraphComponent
-    with ModelComponent
-    with CommandComponent
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging

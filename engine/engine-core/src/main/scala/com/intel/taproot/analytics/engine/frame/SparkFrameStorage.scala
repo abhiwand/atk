@@ -137,10 +137,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
         val rows = sqlContext.parquetFile(absPath.toString)
         val frameRdd = new FrameRdd(frame.schema, rows)
         sparkAutoPartitioner.repartitionFromFileSize(absPath.toString, frameRdd)
-      case (Some("file/sequence"), Some(absPath)) =>
-        val rows = sc.objectFile[Row](absPath.toString, sparkAutoPartitioner.partitionsForFile(absPath.toString))
-        val frameRdd = new LegacyFrameRdd(frame.schema, rows).toFrameRdd()
-        sparkAutoPartitioner.repartitionFromFileSize(absPath.toString, frameRdd)
       case (Some(s), _) => illegalArg(s"Cannot load frame with storage '$s'")
     }
   }
@@ -198,7 +194,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
    */
   @deprecated("use FrameRdd and related methods instead")
   def saveLegacyFrame(frame: FrameReference, legacyFrameRdd: LegacyFrameRdd)(implicit invocation: Invocation): FrameEntity = {
-    saveFrameData(frame, legacyFrameRdd.toFrameRdd())
+    saveFrameData(frame, FrameRdd.toFrameRdd(legacyFrameRdd.schema, legacyFrameRdd.rows))
   }
 
   /**

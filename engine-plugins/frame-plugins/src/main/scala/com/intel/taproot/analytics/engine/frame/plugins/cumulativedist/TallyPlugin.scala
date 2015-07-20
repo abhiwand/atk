@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 import com.intel.taproot.analytics.domain.frame.{ TallyArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes }
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
+import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
@@ -62,21 +62,12 @@ class TallyPlugin extends SparkCommandPlugin[TallyArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: TallyArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frameRef = arguments.frame
-    val frameEntity = frames.expectFrame(frameRef)
-    val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
+    val frame: SparkFrame = arguments.frame
+    val sampleIndex = frame.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(sc, frameEntity)
-    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frameRdd, sampleIndex, arguments.countVal), "_tally")
-    val frameSchema = frameEntity.schema
-    val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
-
-    // save results
-    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRdd(updatedSchema, cumulativeDistRdd))
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeCount(frame.rdd.toLegacyFrameRdd, sampleIndex, arguments.countVal), "_tally")
+    val updatedSchema = frame.schema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
+    frame.save(new LegacyFrameRdd(updatedSchema, cumulativeDistRdd))
   }
 }

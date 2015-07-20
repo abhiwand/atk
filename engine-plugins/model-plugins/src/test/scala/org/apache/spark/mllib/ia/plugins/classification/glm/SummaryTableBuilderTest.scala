@@ -15,13 +15,13 @@
 */
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
-import breeze.linalg.{DenseMatrix, inv}
+import breeze.linalg.{ DenseMatrix, inv }
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
 import org.apache.spark.mllib.linalg.DenseVector
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class SummaryTableBuilderTest extends FlatSpec with Matchers with MockitoSugar {
 
@@ -121,7 +121,6 @@ class SummaryTableBuilderTest extends FlatSpec with Matchers with MockitoSugar {
     val summaryTableBuilder = SummaryTableBuilder(model, obsColumns, isAddIntercept = true, Some(hessianMatrix))
     val interceptName = summaryTableBuilder.interceptName
     val summaryTable = summaryTableBuilder.build(Some(covarianceFrame))
-
 
     summaryTable.numClasses shouldBe numClasses
     summaryTable.numFeatures shouldBe obsColumns.size

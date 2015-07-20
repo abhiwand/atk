@@ -93,7 +93,7 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
       }
       val rdd = frame.rdd.toLegacyFrameRdd
       val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
-      ecdfFrame.save(new LegacyFrameRdd(ecdfSchema, ecdfRdd).toFrameRdd())
+      ecdfFrame.save(new LegacyFrameRdd(ecdfSchema, ecdfRdd))
     }
   }
 }

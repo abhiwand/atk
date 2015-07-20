@@ -19,14 +19,11 @@ package com.intel.taproot.analytics.engine.plugin
 import java.nio.file.{ Paths, Files }
 import java.nio.charset.StandardCharsets
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
-import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.frame.{ SparkFrameImpl, SparkFrame }
-import org.apache.spark.frame.FrameRdd
 
 import scala.collection.JavaConversions._
 
 import com.intel.taproot.analytics.component.Archive
-import com.intel.taproot.analytics.engine.plugin.{ CommandInvocation, CommandPlugin, Invocation }
 import com.typesafe.config.{ ConfigList, ConfigValue }
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
