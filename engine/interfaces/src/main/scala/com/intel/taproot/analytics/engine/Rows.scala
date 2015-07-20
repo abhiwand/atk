@@ -16,6 +16,7 @@
 
 package com.intel.taproot.analytics.engine
 
+@deprecated("use Spark's sql.Row instead")
 object Rows {
 
   /**
