@@ -21,6 +21,7 @@ package org.apache.spark.mllib.ia.plugins.clustering
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -122,7 +123,7 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
 
       //Writing the kmeansModel as JSON
       val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
-      val model = models.expectModel(arguments.model)
+      val model: Model = arguments.model
       models.updateModel(model.toReference, jsonModel.toJson.asJsObject)
 
       KMeansTrainReturn(size, withinSetSumOfSquaredError)
