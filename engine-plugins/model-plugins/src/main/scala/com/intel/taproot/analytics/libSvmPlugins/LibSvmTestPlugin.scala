@@ -107,7 +107,11 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
     //predicting a label for the observation column/s
     val predictionsRdd: RDD[Row] = frame.rdd.mapRows(row => {
       val array = row.valuesAsArray(arguments.observationColumns.getOrElse(libsvmData.observationColumns))
-      val label = row.value(arguments.labelColumn)
+      val label = row.value(arguments.labelColumn) match {
+        case x: Int => x.toInt
+        case y: Double => y.toDouble
+        case _ => throw new RuntimeException(s"Only Int and Double are supported as label columns")
+      }
       val doubles = array.map(i => DataTypes.toDouble(i))
       var vector = Vector.empty[Double]
       var i: Int = 0
@@ -116,7 +120,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
         i += 1
       }
       val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
-      Array[Any](label.asInstanceOf[Int], predictionLabel.value)
+      Array[Any](label, predictionLabel.value)
     })
 
     //Run Binary classification metrics
