@@ -43,8 +43,7 @@ class NaiveBayesNewPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelE
   override def name: String = "model:naive_bayes/new"
 
   override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
-    val models = engine.models
-    models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:naive_bayes")))
+    engine.models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:naive_bayes")))
   }
 }
 

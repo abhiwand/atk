@@ -28,7 +28,7 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 @PluginDoc(oneLine = "",
   extended = "",
   returns = "")
-class SVMWithSGDPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {
+class SVMWithSGDNewPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
    * The name of the command.
    *
@@ -39,9 +39,7 @@ class SVMWithSGDPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEnti
 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
-  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity =
-    {
-      val models = engine.models
-      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:svm")))
-    }
+  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
+    engine.models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:svm")))
+  }
 }
