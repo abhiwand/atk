@@ -97,13 +97,6 @@ public class GiraphTitanConstants {
     public static final StrConfOption EDGE_TYPE_PROPERTY_KEY = new StrConfOption(
         "edge.type.property.key", "", "the property key for edge type");
     /**
-     * whether to output bias for each vertex
-     * when bias is enabled, the last property name in the OUTPUT_VERTEX_PROPERTY_KEY_LIST
-     * is for bias
-     */
-    public static final StrConfOption OUTPUT_VERTEX_BIAS = new StrConfOption(
-        "output.vertex.bias", "false", "whether to output vertex bias");
-    /**
      * whether to support a vector for vertex and edge value
      * when it is enabled, one vertex/edge value property value corresponds to
      * a vector as its value
@@ -124,18 +117,6 @@ public class GiraphTitanConstants {
      * failed to open titan graph
      */
     public static final String TITAN_GRAPH_NOT_OPEN = "GIRAPH ERROR: Unable to open Titan graph";
-    /**
-     * opened titan graph
-     */
-    public static final String OPENED_GRAPH = "opened Titan Graph";
-    /**
-     * closed titan graph
-     */
-    public static final String CLOSED_GRAPH = "closed Titan Graph";
-    /**
-     * input data error
-     */
-    public static final String INPUT_DATA_ERROR = "Error in input data: different cardinality!";
     /**
      * vertex property mismatch
      */
