@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.schema._
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
-import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
@@ -61,18 +61,6 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
 
   /** This wrapper provides richer API for working with Rows */
   val rowWrapper = new RowWrapper(frameSchema)
-
-  /**
-   * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]].
-   *
-   * This was added to support some legacy plugin code.
-   *
-   * Prefer toRowRdd() over this method.
-   */
-  @deprecated("use FrameRdd instead")
-  def toLegacyFrameRdd: LegacyFrameRdd = {
-    new LegacyFrameRdd(this.frameSchema, this.toDataFrame)
-  }
 
   /**
    * Convert this FrameRdd into an RDD of type Array[Any].

@@ -17,7 +17,6 @@
 package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD

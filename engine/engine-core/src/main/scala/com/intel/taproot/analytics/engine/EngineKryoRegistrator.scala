@@ -20,7 +20,7 @@ import com.esotericsoftware.kryo.Kryo
 import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
-import com.intel.taproot.analytics.engine.frame.{ LegacyFrameRdd, MiscFrameFunctions }
+import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.serializer.KryoRegistrator
@@ -46,7 +46,6 @@ class EngineKryoRegistrator extends KryoRegistrator {
     // frame related classes
     kryo.register(classOf[Row])
     kryo.register(classOf[Schema])
-    kryo.register(classOf[LegacyFrameRdd])
     kryo.register(classOf[FrameRdd])
     kryo.register(ClassificationMetrics.getClass)
     kryo.register(MiscFrameFunctions.getClass)

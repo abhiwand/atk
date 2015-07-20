@@ -142,59 +142,12 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Create a LegacyFrameRdd or throw an exception if bad frameId is given.
-   *
-   * Please don't write new code against this legacy format:
-   * - This format requires extra maps to read/write Parquet files.
-   * - We'd rather use FrameRdd which extends SchemaRDD and can go direct to/from Parquet.
-   *
-   * @param sc spark context
-   * @param frameRef primary key of the frame record
-   * @return the newly created RDD
-   */
-  @deprecated("use FrameRdd and related methods instead")
-  def loadLegacyFrameRdd(sc: SparkContext, frameRef: FrameReference)(implicit invocation: Invocation): LegacyFrameRdd = {
-    val frame = expectFrame(frameRef)
-    loadLegacyFrameRdd(sc, frame)
-  }
-
-  /**
-   * Create an LegacyFrameRdd from a frame data file
-   *
-   * Please don't write new code against this legacy format:
-   * - This format requires extra maps to read/write Parquet files.
-   * - We'd rather use FrameRdd which extends SchemaRDD and can go direct to/from Parquet.
-   *
-   * @param sc spark context
-   * @param frame the model for the frame
-   * @return the newly created FrameRdd
-   */
-  @deprecated("use FrameRdd and related methods instead")
-  def loadLegacyFrameRdd(sc: SparkContext, frame: FrameEntity)(implicit invocation: Invocation): LegacyFrameRdd =
-    loadFrameData(sc, frame).toLegacyFrameRdd
-
-  /**
    * Determine if a dataFrame is saved as parquet
    * @param frame the data frame to verify
    * @return true if the data frame is saved in the parquet format
    */
   def isParquet(frame: FrameEntity): Boolean = {
     frameFileStorage.isParquet(frame)
-  }
-
-  /**
-   * Save a LegacyFrameRdd to HDFS - this is the only save path that should be used for legacy Frames.
-   *
-   * Please don't write new code against this legacy format:
-   * - This format requires extra maps to read/write Parquet files.
-   * - We'd rather use FrameRdd which extends SchemaRDD and can go direct to/from Parquet.
-   *
-   * @param frame reference to a frame
-   * @param legacyFrameRdd the Rdd
-   */
-  @deprecated("use FrameRdd and related methods instead")
-  def saveLegacyFrame(frame: FrameReference, legacyFrameRdd: LegacyFrameRdd)(implicit invocation: Invocation): FrameEntity = {
-    saveFrameData(frame, FrameRdd.toFrameRdd(legacyFrameRdd.schema, legacyFrameRdd.rows))
   }
 
   /**
@@ -464,7 +417,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
   }
 
   /**
-   * Get the pair of LegacyFrameRdd's that were the result of a parse
+   * Get the pair of FrameRdd's that were the result of a parse
    * @param sc spark context
    * @param frame the model of the frame that was the successfully parsed lines
    * @param errorFrame the model for the frame that was the parse errors
