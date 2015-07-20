@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.assignsample
 import com.intel.taproot.analytics.domain.frame.{ AssignSampleArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.Rows
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -77,27 +78,18 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: AssignSampleArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-
-    val frames = engine.frames
-
-    val frame = frames.expectFrame(arguments.frame)
+    val frame: SparkFrame = arguments.frame
     val samplePercentages = arguments.samplePercentages.toArray
-
-    val outputColumnName = arguments.outputColumnName
-
-    require(!frame.schema.hasColumn(outputColumnName), s"Duplicate column name: $outputColumnName")
 
     // run the operation
     val splitter = new MLDataSplitter(samplePercentages, arguments.splitLabels, arguments.seed)
-    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frames.loadFrameData(sc, frame))
+    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frame.rdd)
 
-    val splitRDD: RDD[Rows.Row] =
-      labeledRDD.map((x: LabeledLine[String, sql.Row]) => (x.entry.toSeq :+ x.label.asInstanceOf[Any]).toArray[Any])
+    val splitRDD: RDD[Array[Any]] = labeledRDD.map((x: LabeledLine[String, sql.Row]) =>
+      (x.entry.toSeq :+ x.label.asInstanceOf[Any]).toArray[Any]
+    )
 
-    val updatedSchema = frame.schema.addColumn(outputColumnName, DataTypes.string)
-
-    // save results
-    frames.saveFrameData(frame.toReference, FrameRdd.toFrameRdd(updatedSchema, splitRDD))
+    val updatedSchema = frame.schema.addColumn(arguments.outputColumnName, DataTypes.string)
+    frame.save(FrameRdd.toFrameRdd(updatedSchema, splitRDD))
   }
 }

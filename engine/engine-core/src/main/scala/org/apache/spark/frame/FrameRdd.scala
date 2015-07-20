@@ -62,11 +62,23 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   val rowWrapper = new RowWrapper(frameSchema)
 
   /**
-   * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]]
+   * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]].
+   *
+   * This was added to support some legacy plugin code.
    */
   @deprecated("use FrameRdd instead")
   def toLegacyFrameRdd: LegacyFrameRdd = {
     new LegacyFrameRdd(this.frameSchema, this.toDataFrame)
+  }
+
+  /**
+   * Convert this FrameRdd into an RDD of type Array[Any].
+   *
+   * This was added to support some legacy plugin code.
+   */
+  @deprecated("use FrameRdd and sql.Rows instead")
+  def toArrayAnyRdd: RDD[Array[Any]] = {
+    mapRows(_.toArray)
   }
 
   /**

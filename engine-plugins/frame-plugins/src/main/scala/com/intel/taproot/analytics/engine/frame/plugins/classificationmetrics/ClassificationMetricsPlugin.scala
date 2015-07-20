@@ -17,6 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics
 
 import com.intel.taproot.analytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
@@ -141,19 +142,11 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ClassificationMetricArgs)(implicit invocation: Invocation): ClassificationMetricValue = {
-    // dependencies (later to be replaced with dependency injection)
-
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frameRef = arguments.frame
-    val frameEntity = frames.expectFrame(arguments.frame)
-    val frameSchema = frameEntity.schema
-    val frameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
+    val frame: SparkFrame = arguments.frame
+    val schema = frame.schema
     val betaValue = arguments.beta.getOrElse(1.0)
-    val labelColumnIndex = frameSchema.columnIndex(arguments.labelColumn)
-    val predColumnIndex = frameSchema.columnIndex(arguments.predColumn)
+    val labelColumnIndex = schema.columnIndex(arguments.labelColumn)
+    val predColumnIndex = schema.columnIndex(arguments.predColumn)
 
     // check if poslabel is an Int, string or None
     val metricsPoslabel: String = arguments.posLabel.isDefined match {
@@ -165,10 +158,10 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
     }
     // run the operation and return the results
     if (metricsPoslabel == null) {
-      ClassificationMetrics.multiclassClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, betaValue)
+      ClassificationMetrics.multiclassClassificationMetrics(frame.rdd.toArrayAnyRdd, labelColumnIndex, predColumnIndex, betaValue)
     }
     else {
-      ClassificationMetrics.binaryClassificationMetrics(frameRdd, labelColumnIndex, predColumnIndex, metricsPoslabel, betaValue)
+      ClassificationMetrics.binaryClassificationMetrics(frame.rdd.toArrayAnyRdd, labelColumnIndex, predColumnIndex, metricsPoslabel, betaValue)
     }
 
   }
