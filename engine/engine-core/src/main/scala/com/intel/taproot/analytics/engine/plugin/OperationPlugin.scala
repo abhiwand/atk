@@ -141,7 +141,11 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
     }
   })(simpleInvocation)
 
-  def customizeInvocation(invocation: Invocation, arguments: Arguments): Invocation = {
+  /**
+   * Can be overridden by subclasses to provide a more specialized Invocation. Called before
+   * calling the execute method.
+   */
+  protected def customizeInvocation(invocation: Invocation, arguments: Arguments): Invocation = {
     invocation
   }
 
