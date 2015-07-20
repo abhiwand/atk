@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.frame.{ TopKArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
+import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
@@ -77,17 +77,12 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: TopKArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frameRef = arguments.frame
-    val frame = frames.expectFrame(frameRef)
+    val frame: SparkFrame = arguments.frame
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
-    val valueDataType = frame.schema.columnTuples(columnIndex)._2
+    val frameRdd = frame.rdd.toLegacyFrameRdd
+    val valueDataType = frame.schema.columnDataType(arguments.columnName)
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
     val useBottomK = arguments.k < 0
     val topRdd = TopKRddFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
@@ -99,8 +94,8 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     ))
 
     // save results
-    frames.tryNewFrame(CreateEntityArgs(description = Some("created by top k command"))) { newFrame =>
-      frames.saveFrameData(newFrame.toReference, FrameRdd.toFrameRdd(newSchema, topRdd))
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by top k command"))) { newFrame =>
+      newFrame.save(FrameRdd.toFrameRdd(newSchema, topRdd))
     }
   }
 
