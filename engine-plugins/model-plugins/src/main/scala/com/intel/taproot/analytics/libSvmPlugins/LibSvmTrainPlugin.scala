@@ -66,7 +66,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
   override def execute(arguments: LibSvmTrainArgs)(implicit invocation: Invocation): UnitReturn = {
     val models = engine.models
     val modelRef = arguments.model
-    val modelMeta = models.expectModel(modelRef)
+    val model = models.expectModel(modelRef)
 
     val frame: SparkFrame = arguments.frame
 
@@ -83,7 +83,7 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
     val jsonModel = new LibSvmData(mySvmModel, arguments.observationColumns)
 
     //TODO: Call save instead once implemented for models
-    models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
+    models.updateModel(model.toReference, jsonModel.toJson.asJsObject)
     new UnitReturn
 
   }

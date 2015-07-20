@@ -71,13 +71,13 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
    */
   override def execute(arguments: LibSvmPredictArgs)(implicit invocation: Invocation): FrameEntity = {
     val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
 
     val frame: SparkFrame = arguments.frame
 
     //Load the libsvm model
     val svmColumns = arguments.observationColumns
-    val svmJsObject = modelMeta.data.get
+    val svmJsObject = model.data.get
     val libsvmData = svmJsObject.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 

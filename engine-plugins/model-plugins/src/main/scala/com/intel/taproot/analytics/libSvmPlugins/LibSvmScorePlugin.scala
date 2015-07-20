@@ -68,9 +68,9 @@ class LibSvmScorePlugin extends CommandPlugin[LibSvmScoreArgs, DoubleValue] {
 
   override def execute(arguments: LibSvmScoreArgs)(implicit invocation: Invocation): DoubleValue = {
     val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
 
-    val svmJsObject = modelMeta.data.get
+    val svmJsObject = model.data.get
     val libsvmData = svmJsObject.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 

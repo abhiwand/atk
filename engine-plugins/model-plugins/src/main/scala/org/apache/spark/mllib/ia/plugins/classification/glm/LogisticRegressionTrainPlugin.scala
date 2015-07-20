@@ -82,7 +82,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
     val frames = engine.frames
 
     val inputFrame = frames.expectFrame(arguments.frame)
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
 
     //create RDD from the frame
     val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
@@ -117,7 +117,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
     // Save model to metastore and return results
     val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns).toJson.asJsObject
     //TODO: Call save instead once implemented for models
-    models.updateModel(modelMeta.toReference, jsonModel)
+    models.updateModel(model.toReference, jsonModel)
     summaryTable.build(covarianceFrame)
   }
 }

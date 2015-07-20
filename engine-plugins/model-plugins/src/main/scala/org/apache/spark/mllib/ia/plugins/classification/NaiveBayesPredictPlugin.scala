@@ -50,10 +50,10 @@ class NaiveBayesPredictPlugin extends SparkCommandPlugin[NaiveBayesPredictArgs, 
     val frames = engine.frames
 
     val inputFrame = frames.expectFrame(arguments.frame)
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
 
     //Running MLLib
-    val naiveBayesJsObject = modelMeta.data.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
+    val naiveBayesJsObject = model.data.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
     val naiveBayesData = naiveBayesJsObject.convertTo[NaiveBayesData]
     val naiveBayesModel = naiveBayesData.naiveBayesModel
     if (arguments.observationColumns.isDefined) {
