@@ -163,7 +163,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
       info(s"saving frame ${targetEntity.toDebugString}")
       try {
         // save the actual data
-        frameRdd.save(targetEntity.storageLocation.get, targetEntity.storageFormat.get)
+        frameRdd.save(targetEntity.getStorageLocation, targetEntity.storageFormat.get)
 
         postSave(Some(frame), targetEntity.toReference, frameRdd.frameSchema)
       }
@@ -362,7 +362,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     withContext("frame.getReader") {
       require(frame != null, "frame is required")
       withMyClassLoader {
-        val absPath: Path = new Path(frame.storageLocation.get)
+        val absPath: Path = new Path(frame.getStorageLocation)
         new ParquetReader(absPath, frameFileStorage.hdfs)
       }
     }
