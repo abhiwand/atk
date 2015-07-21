@@ -30,7 +30,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Get the RDD partition count after loading a frame (useful for debugging purposes)
  */
-@PluginDoc(oneLine = "",
+@PluginDoc(oneLine = "Calls underlying Spark RDD method.",
   extended = "",
   returns = "")
 class PartitionCountPlugin extends SparkCommandPlugin[FrameNoArgs, IntValue] {
@@ -42,13 +42,6 @@ class PartitionCountPlugin extends SparkCommandPlugin[FrameNoArgs, IntValue] {
    * e.g Python client via code generation.
    */
   override def name: String = "frame/_partition_count"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Calls underlying Spark method.", None))
 
   /**
    * Get the RDD partition count after loading a frame (useful for debugging purposes)

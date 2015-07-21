@@ -29,7 +29,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Get the RDD partition count after loading a frame (useful for debugging purposes)
  */
-@PluginDoc(oneLine = "Get the RDD partition count after loading a frame.",
+@PluginDoc(oneLine = "Calculate the size on disk in bytes of a frame.",
   extended = "",
   returns = "")
 class SizeOnDiskPlugin extends CommandPlugin[FrameNoArgs, LongValue] {
@@ -41,13 +41,6 @@ class SizeOnDiskPlugin extends CommandPlugin[FrameNoArgs, LongValue] {
    * e.g Python client via code generation.
    */
   override def name: String = "frame/_size_on_disk"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Calls underlying Spark method.", None))
 
   /**
    * Get the RDD size on disk after loading a frame (useful for debugging/benchmarking purposes)
