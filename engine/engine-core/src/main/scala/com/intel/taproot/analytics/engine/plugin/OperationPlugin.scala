@@ -18,8 +18,10 @@ package com.intel.taproot.analytics.engine.plugin
 
 import com.intel.taproot.analytics.component._
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
 import com.intel.taproot.analytics.engine.frame.{ FrameImpl, Frame }
 import com.intel.taproot.analytics.domain.UserPrincipal
+import com.intel.taproot.analytics.engine.model.{ ModelImpl, Model }
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import spray.json.{ JsObject, _ }
 
@@ -159,9 +161,11 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
 abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag]
     extends OperationPlugin[Arguments, Return] with EventLogging {
 
+  // Implicit conversions for plugin authors
   implicit def frameRefToFrame(frame: FrameReference)(implicit invocation: Invocation): Frame = new FrameImpl(frame, engine.frames)
-
   implicit def frameEntityToFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): Frame = frameRefToFrame(frameEntity.toReference)
+  implicit def modelRefToModel(model: ModelReference)(implicit invocation: Invocation): Model = new ModelImpl(model, engine.models)
+  implicit def modelEntityToModel(modelEntity: ModelEntity)(implicit invocation: Invocation): Model = modelRefToModel(modelEntity.toReference)
 
   def engine(implicit invocation: Invocation) = invocation.asInstanceOf[CommandInvocation].engine
 

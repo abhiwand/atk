@@ -18,8 +18,9 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives
 
 import com.intel.taproot.analytics.domain.frame.{ FrameReference, ColumnSummaryStatisticsArgs, ColumnSummaryStatisticsReturn }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -163,25 +164,20 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ColumnSummaryStatisticsArgs)(implicit invocation: Invocation): ColumnSummaryStatisticsReturn = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frameRef: FrameReference = arguments.frame
-    val frame = frames.expectFrame(frameRef)
+    val frame: SparkFrame = arguments.frame
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
+    val valueDataType: DataType = frame.schema.columnDataType(arguments.dataColumn)
     val usePopulationVariance = arguments.usePopulationVariance.getOrElse(false)
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
+      (Some(weightsColumnIndex), Some(frame.schema.columnDataType(arguments.weightsColumn.get)))
     }
 
     // run the operation and return the results
-    val rdd = frames.loadLegacyFrameRdd(sc, frameRef)
+    val rdd = frame.rdd.toLegacyFrameRdd
     ColumnStatistics.columnSummaryStatistics(columnIndex,
       valueDataType,
       weightsColumnIndexOption,

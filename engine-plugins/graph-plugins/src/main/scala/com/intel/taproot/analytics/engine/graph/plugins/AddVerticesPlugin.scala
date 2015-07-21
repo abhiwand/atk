@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, RowWrapper }
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.storage.StorageLevel

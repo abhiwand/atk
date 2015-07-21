@@ -85,12 +85,12 @@ class LogisticRegressionTestPlugin extends SparkCommandPlugin[ClassificationWith
       val frames = engine.frames
 
       val inputFrame = frames.expectFrame(arguments.frame)
-      val modelMeta = models.expectModel(arguments.model)
+      val model = models.expectModel(arguments.model)
 
       //create RDD from the frame
       val testFrameRdd = frames.loadFrameData(sc, inputFrame)
 
-      val logRegJsObject = modelMeta.data.get
+      val logRegJsObject = model.data.get
       val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
       val logRegModel = logRegData.logRegModel
       if (arguments.observationColumns.isDefined) {

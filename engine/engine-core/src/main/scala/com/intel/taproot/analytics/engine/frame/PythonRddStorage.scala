@@ -20,8 +20,8 @@ import java.io.{ File }
 import java.util
 
 import com.intel.taproot.analytics.component.ClassLoaderAware
-import com.intel.taproot.analytics.domain.frame.{ FrameReference }
-import com.intel.taproot.analytics.domain.frame.{ Udf }
+import com.intel.taproot.analytics.domain.frame.FrameReference
+import com.intel.taproot.analytics.domain.frame.Udf
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.EngineConfig

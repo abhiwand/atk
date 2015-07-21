@@ -65,7 +65,7 @@ class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalCompone
    */
   override def execute(arguments: PrincipalComponentsTrainArgs)(implicit invocation: Invocation): PrincipalComponentsTrainReturn = {
     val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
 
     val frames = engine.frames
     val inputFrame = frames.expectFrame(arguments.frame)
@@ -88,7 +88,7 @@ class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalCompone
     val svd = rowMatrix.computeSVD(k, computeU = true)
 
     val jsonModel = new PrincipalComponentsData(k, arguments.observationColumns, svd.s, svd.V)
-    models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
+    models.updateModel(model.toReference, jsonModel.toJson.asJsObject)
 
     new PrincipalComponentsTrainReturn(jsonModel)
   }

@@ -21,7 +21,7 @@ import com.intel.taproot.analytics.engine.frame.PythonRddStorage
 import com.intel.taproot.analytics.domain.frame.CountWhereArgs
 import org.bson.BSON
 import org.bson.types.BasicBSONList
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.LongValue
 
 // Implicits needed for JSON conversion

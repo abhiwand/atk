@@ -99,13 +99,13 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     val frames = engine.frames
 
     val inputFrame = frames.expectFrame(arguments.frame)
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
 
     //create RDD from the frame
     val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
 
     //Extracting the KMeansModel from the stored JsObject
-    val kmeansJsObject = modelMeta.data.get
+    val kmeansJsObject = model.data.get
     val kmeansData = kmeansJsObject.convertTo[KMeansData]
     val kmeansModel = kmeansData.kMeansModel
     if (arguments.observationColumns.isDefined) {

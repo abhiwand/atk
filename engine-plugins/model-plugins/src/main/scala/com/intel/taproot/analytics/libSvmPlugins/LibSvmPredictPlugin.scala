@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.libSvmPlugins
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
@@ -71,13 +71,13 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
    */
   override def execute(arguments: LibSvmPredictArgs)(implicit invocation: Invocation): FrameEntity = {
     val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
 
     val frame: SparkFrame = arguments.frame
 
     //Load the libsvm model
     val svmColumns = arguments.observationColumns
-    val svmJsObject = modelMeta.data.get
+    val svmJsObject = model.data.get
     val libsvmData = svmJsObject.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 

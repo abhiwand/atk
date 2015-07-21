@@ -17,7 +17,7 @@
 package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
@@ -80,11 +80,11 @@ class SVMWithSGDPredictPlugin extends SparkCommandPlugin[ClassificationWithSGDPr
    */
   override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity = {
     val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
     val frame: SparkFrame = arguments.frame
 
     //Running MLLib
-    val svmJsObject = modelMeta.data.get
+    val svmJsObject = model.data.get
     val svmData = svmJsObject.convertTo[SVMData]
     val svmModel = svmData.svmModel
     if (arguments.observationColumns.isDefined) {

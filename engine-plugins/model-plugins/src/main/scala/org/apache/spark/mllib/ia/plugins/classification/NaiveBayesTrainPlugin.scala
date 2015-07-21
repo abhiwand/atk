@@ -86,7 +86,7 @@ class NaiveBayesTrainPlugin extends SparkCommandPlugin[NaiveBayesTrainArgs, Unit
     val frames = engine.frames
 
     val inputFrame = frames.expectFrame(arguments.frame)
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
 
     //create RDD from the frame
     val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
@@ -100,7 +100,7 @@ class NaiveBayesTrainPlugin extends SparkCommandPlugin[NaiveBayesTrainArgs, Unit
     val jsonModel = new NaiveBayesData(naiveBayesModel, arguments.observationColumns)
 
     //TODO: Call save instead once implemented for models
-    models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
+    models.updateModel(model.toReference, jsonModel.toJson.asJsObject)
     new UnitReturn
   }
 }

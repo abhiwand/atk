@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives.ColumnStatistics
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.engine.frame.plugins.statistics.NumericValidationUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._

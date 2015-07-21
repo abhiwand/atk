@@ -23,10 +23,10 @@ import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, DataTypes, EdgeSchema }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandInvocation, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage }
+import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
-import com.intel.taproot.analytics.engine.frame.{ RowWrapper }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.frame.RowWrapper
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
 import org.apache.spark.SparkContext._

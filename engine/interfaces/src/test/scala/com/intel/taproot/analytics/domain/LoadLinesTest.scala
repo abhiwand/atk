@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.domain
 
 import com.intel.taproot.analytics.domain.frame.load._
-import com.intel.taproot.analytics.domain.schema.{ DataTypes }
+import com.intel.taproot.analytics.domain.schema.DataTypes
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import spray.json._

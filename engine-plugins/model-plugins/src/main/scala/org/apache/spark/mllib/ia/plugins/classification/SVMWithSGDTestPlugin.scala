@@ -83,11 +83,11 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
    */
   override def execute(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation): ClassificationMetricValue = {
     val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
     val frame: SparkFrame = arguments.frame
 
     //Extracting the model and data to run on
-    val svmJsObject = modelMeta.data.get
+    val svmJsObject = model.data.get
     val svmData = svmJsObject.convertTo[SVMData]
     val svmModel = svmData.svmModel
     if (arguments.observationColumns.isDefined) {

@@ -83,7 +83,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
    */
   override def execute(arguments: ClassificationWithSGDTrainArgs)(implicit invocation: Invocation): UnitReturn = {
     val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model = models.expectModel(arguments.model)
 
     val frame: SparkFrame = arguments.frame
     val labeledTrainRDD: RDD[LabeledPoint] = frame.rdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
@@ -95,7 +95,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
     val jsonModel = new SVMData(svmModel, arguments.observationColumns)
 
     //TODO: Call save instead once implemented for models
-    models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
+    models.updateModel(model.toReference, jsonModel.toJson.asJsObject)
     new UnitReturn
   }
 

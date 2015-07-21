@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.domain.schema.{ Schema, EdgeSchema, GraphSche
 import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.frame.{ LegacyFrameRdd, SparkFrameStorage }
-import org.apache.spark.SparkContext
+import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
@@ -72,10 +72,10 @@ object FilterVerticesFunctions {
                                droppedVertexIdsRdd: RDD[Any],
                                edgeFrame: FrameEntity,
                                vertexIdColumn: String)(implicit invocation: Invocation): FrameEntity = {
-    val edgeRdd = frameStorage.loadLegacyFrameRdd(sc, edgeFrame)
+    val edgeRdd = frameStorage.loadFrameData(sc, edgeFrame)
     val remainingEdges = FilterVerticesFunctions.dropDanglingEdgesFromEdgeRdd(edgeRdd,
       edgeFrame.schema.columnIndex(vertexIdColumn), droppedVertexIdsRdd)
-    val frameRdd = FrameRdd.toFrameRdd(edgeFrame.schema: Schema, remainingEdges)
+    val frameRdd = new FrameRdd(edgeFrame.schema: Schema, remainingEdges)
     frameStorage.saveFrameData(edgeFrame.toReference, frameRdd)
   }
 
@@ -86,7 +86,7 @@ object FilterVerticesFunctions {
    * @param droppedVertexIdsRdd rdd of vertex ids
    * @return a edge rdd with dangling edges removed
    */
-  def dropDanglingEdgesFromEdgeRdd(edgeRdd: LegacyFrameRdd, vertexIdColumnIndex: Int, droppedVertexIdsRdd: RDD[Any]): RDD[Row] = {
+  def dropDanglingEdgesFromEdgeRdd(edgeRdd: FrameRdd, vertexIdColumnIndex: Int, droppedVertexIdsRdd: RDD[Any]): RDD[sql.Row] = {
     val keyValueEdgeRdd = edgeRdd.map(row => (row(vertexIdColumnIndex), row))
     val droppedVerticesPairRdd = droppedVertexIdsRdd.map(vid => (vid, null))
     keyValueEdgeRdd.leftOuterJoin(droppedVerticesPairRdd).filter {

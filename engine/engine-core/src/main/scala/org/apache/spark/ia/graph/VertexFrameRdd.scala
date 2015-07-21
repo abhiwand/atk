@@ -16,9 +16,9 @@
 
 package org.apache.spark.ia.graph
 
-import com.intel.taproot.graphbuilder.elements.{ GBVertex }
+import com.intel.taproot.graphbuilder.elements.GBVertex
 import com.intel.taproot.analytics.domain.schema.{ VertexSchema, GraphSchema, Schema }
-import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions }
+import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD

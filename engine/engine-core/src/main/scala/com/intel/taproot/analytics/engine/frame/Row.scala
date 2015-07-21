@@ -286,6 +286,13 @@ trait AbstractRow {
   }
 
   /**
+   * Values of the row as an Array[Any]
+   */
+  def toArray: Array[Any] = {
+    row.toSeq.toArray
+  }
+
+  /**
    * Create a new row matching the supplied schema adding/dropping columns as needed.
    *
    * @param updatedSchema the new schema to match

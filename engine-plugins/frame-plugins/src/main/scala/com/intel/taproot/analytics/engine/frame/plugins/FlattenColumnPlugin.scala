@@ -19,10 +19,11 @@ package com.intel.taproot.analytics.engine.frame.plugins
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
 import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.analytics.domain.schema.{ DataTypes }
+import com.intel.taproot.analytics.domain.schema.DataTypes
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import java.util.regex.Pattern
@@ -85,7 +86,7 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEnt
     val flattenedRDD = flattener(rdd)
 
     // save results
-    frame.save(new LegacyFrameRdd(schema, flattenedRDD))
+    frame.save(FrameRdd.toFrameRdd(schema, flattenedRDD))
   }
 
 }

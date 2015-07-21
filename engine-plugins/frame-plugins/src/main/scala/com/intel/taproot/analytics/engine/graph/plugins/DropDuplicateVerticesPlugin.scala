@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import org.apache.spark.rdd.RDD
 import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, MiscFrameFunctions, LegacyFrameRdd }
@@ -99,7 +99,7 @@ class DropDuplicateVerticesPlugin extends SparkCommandPlugin[DropDuplicatesArgs,
     FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, sc, FrameRdd.toFrameRdd(schema, duplicatesRemoved))
 
     // save results
-    frames.saveLegacyFrame(vertexFrame.toReference, new LegacyFrameRdd(schema, duplicatesRemoved))
+    frames.saveFrameData(vertexFrame.toReference, FrameRdd.toFrameRdd(schema, duplicatesRemoved))
 
   }
 }
