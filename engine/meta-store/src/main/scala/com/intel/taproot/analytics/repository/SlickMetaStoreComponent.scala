@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.repository
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp.BasicDataSource
 import com.github.tototoshi.slick.GenericJodaSupport
 
 import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollection, GarbageCollectionTemplate }
