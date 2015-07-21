@@ -32,7 +32,7 @@ import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
 
 /**
- * Base trait for all operation-based plugins (query and command, for example).
+ * Base trait for command plugins
  *
  * Plugin authors should implement the execute() method
  *
@@ -40,25 +40,28 @@ import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
  *                   the user
  * @tparam Return the type of the data that this plugin will return when invoked.
  */
-abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, Return]
-    extends ((Invocation, Arguments) => Return)
-    with Plugin
+abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag]
+    extends Component
     with EventLogging
     with ClassLoaderAware {
 
-  def withPluginContext[T](context: String)(expr: => T)(implicit invocation: Invocation): T = {
-    withContext(context) {
-      EventContext.getCurrent.put("plugin_name", name)
-      try {
-        val caller = user.user
-        EventContext.getCurrent.put("user", caller.username.getOrElse(caller.id.toString))
-      }
-      catch {
-        case NonFatal(e) => EventContext.getCurrent.put("user-name-error", e.toString)
-      }
-      expr
-    }(invocation.eventContext)
-  }
+  // Implicit conversions for plugin authors
+  implicit def frameRefToFrame(frame: FrameReference)(implicit invocation: Invocation): Frame = new FrameImpl(frame, engine.frames)
+  implicit def frameEntityToFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): Frame = frameRefToFrame(frameEntity.toReference)
+  implicit def modelRefToModel(model: ModelReference)(implicit invocation: Invocation): Model = new ModelImpl(model, engine.models)
+  implicit def modelEntityToModel(modelEntity: ModelEntity)(implicit invocation: Invocation): Model = modelRefToModel(modelEntity.toReference)
+
+  def engine(implicit invocation: Invocation) = invocation.asInstanceOf[CommandInvocation].engine
+
+  implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
+
+  val argumentManifest = implicitly[ClassManifest[Arguments]]
+  val returnManifest = implicitly[ClassManifest[Return]]
+  val argumentTag = implicitly[TypeTag[Arguments]]
+  val returnTag = implicitly[TypeTag[Return]]
+  val thisManifest = implicitly[ClassManifest[this.type]]
+  val thisTag = implicitly[TypeTag[this.type]]
+  val argSeparator = ","
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -80,14 +83,9 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
   def name: String
 
   /**
-   * User documentation exposed in Python.
+   * Optional Tag for the plugin API.
    *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  def doc: Option[CommandDoc] = None
-
-  /**
-   * Optional Tag for the plugin API
+   * This tag gets exposed in user documentation.
    */
   def apiMaturityTag: Option[ApiMaturityTag] = None
 
@@ -99,10 +97,10 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
   }
 
   /**
-   * Convert the given argument to a JsObject
+   * Convert the given object to a JsObject
    */
-  def serializeArguments(arguments: Arguments)(implicit invocation: Invocation): JsObject = withPluginContext("serializeArguments") {
-    arguments.toJson.asJsObject()
+  def serializeReturn(returnValue: Return)(implicit invocation: Invocation): JsObject = withPluginContext("serializeReturn") {
+    returnValue.toJson.asJsObject
   }
 
   /**
@@ -117,7 +115,7 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
    * Invokes the operation, which calls the execute method that each plugin implements.
    * @return the results of calling the execute method
    */
-  final override def apply(simpleInvocation: Invocation, arguments: Arguments): Return = withPluginContext("apply")({
+  final def apply(simpleInvocation: Invocation, arguments: Arguments): Return = withPluginContext("apply")({
     require(simpleInvocation != null, "Invocation required")
     require(arguments != null, "Arguments required")
 
@@ -151,45 +149,6 @@ abstract class OperationPlugin[Arguments <: Product: JsonFormat: ClassManifest, 
 
   protected def cleanup(invocation: Invocation) = {}
 
-  implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
-
-}
-
-/**
- * Base trait for command plugins
- */
-abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: TypeTag, Return <: Product: JsonFormat: ClassManifest: TypeTag]
-    extends OperationPlugin[Arguments, Return] with EventLogging {
-
-  // Implicit conversions for plugin authors
-  implicit def frameRefToFrame(frame: FrameReference)(implicit invocation: Invocation): Frame = new FrameImpl(frame, engine.frames)
-  implicit def frameEntityToFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): Frame = frameRefToFrame(frameEntity.toReference)
-  implicit def modelRefToModel(model: ModelReference)(implicit invocation: Invocation): Model = new ModelImpl(model, engine.models)
-  implicit def modelEntityToModel(modelEntity: ModelEntity)(implicit invocation: Invocation): Model = modelRefToModel(modelEntity.toReference)
-
-  def engine(implicit invocation: Invocation) = invocation.asInstanceOf[CommandInvocation].engine
-
-  val argumentManifest = implicitly[ClassManifest[Arguments]]
-  val returnManifest = implicitly[ClassManifest[Return]]
-  val argumentTag = implicitly[TypeTag[Arguments]]
-  val returnTag = implicitly[TypeTag[Return]]
-  val thisManifest = implicitly[ClassManifest[this.type]]
-  val thisTag = implicitly[TypeTag[this.type]]
-  val argSeparator = ","
-
-  /**
-   * Convert the given object to a JsObject
-   */
-  def serializeReturn(returnValue: Return)(implicit invocation: Invocation): JsObject = withPluginContext("serializeReturn") {
-    returnValue.toJson.asJsObject
-  }
-
-  /**
-   * Convert the given JsObject to an instance of the Return type
-   */
-  def parseReturn(js: JsObject)(implicit invocation: Invocation) = withPluginContext("parseReturn") {
-    js.convertTo[Return]
-  }
 
   /**
    * Number of jobs needs to be known to give a single progress bar
@@ -197,5 +156,19 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * @return number of jobs in this command
    */
   def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
+
+  private def withPluginContext[T](context: String)(expr: => T)(implicit invocation: Invocation): T = {
+    withContext(context) {
+      EventContext.getCurrent.put("plugin_name", name)
+      try {
+        val caller = user.user
+        EventContext.getCurrent.put("user", caller.username.getOrElse(caller.id.toString))
+      }
+      catch {
+        case NonFatal(e) => EventContext.getCurrent.put("user-name-error", e.toString)
+      }
+      expr
+    }(invocation.eventContext)
+  }
 
 }
