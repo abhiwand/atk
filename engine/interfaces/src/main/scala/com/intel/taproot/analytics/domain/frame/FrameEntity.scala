@@ -18,6 +18,7 @@ package com.intel.taproot.analytics.domain.frame
 
 import com.intel.taproot.analytics.domain.{ StorageFormats, Status, HasId }
 import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, VertexSchema, FrameSchema, Schema }
+import org.apache.commons.lang.StringUtils
 import org.joda.time.DateTime
 
 /**
@@ -116,6 +117,10 @@ case class FrameEntity(id: Long,
   /** True if frame is stored in parquet file format */
   def isParquet: Boolean = {
     storageFormat.isDefined && storageFormat.get.equals(StorageFormats.FileParquet)
+  }
+
+  def getStorageLocation: String = {
+    storageLocation.getOrElse(StringUtils.EMPTY)
   }
 
   /**

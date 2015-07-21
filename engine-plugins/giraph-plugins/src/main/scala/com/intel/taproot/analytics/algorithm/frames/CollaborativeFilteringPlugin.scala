@@ -53,8 +53,8 @@ class CollaborativeFilteringPlugin
 
     val userFrame = frames.prepareForSave(CreateEntityArgs(description = Some("Collaborative filtering user frame results")))
     val itemFrame = frames.prepareForSave(CreateEntityArgs(description = Some("Collaborative filtering item frame results")))
-    val inputFormatConfig = new CollaborativeFilteringInputFormatConfig(frame.storageLocation.get, frame.schema)
-    val outputFormatConfig = new CollaborativeFilteringOutputFormatConfig(userFrame.storageLocation.get, itemFrame.storageLocation.get)
+    val inputFormatConfig = new CollaborativeFilteringInputFormatConfig(frame.getStorageLocation, frame.schema)
+    val outputFormatConfig = new CollaborativeFilteringOutputFormatConfig(userFrame.getStorageLocation, itemFrame.getStorageLocation)
     val collaborativeFilteringConfig = new CollaborativeFilteringConfig(inputFormatConfig, outputFormatConfig, arguments)
 
     giraphConf.setConfig(collaborativeFilteringConfig)
