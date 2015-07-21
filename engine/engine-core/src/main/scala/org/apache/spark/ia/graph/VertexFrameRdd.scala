@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  * @param sqlContext a spark SQLContext
  * @param logicalPlan a logical plan describing the SchemaRDD
  */
-class VertexFrameRdd(schema: VertexSchema, prev: RDD[sql.Row]) extends FrameRdd(schema, prev) {
+class VertexFrameRdd(schema: VertexSchema, prev: RDD[Row]) extends FrameRdd(schema, prev) {
 
   def this(frameRdd: FrameRdd) = this(frameRdd.frameSchema.asInstanceOf[VertexSchema], frameRdd)
 
@@ -57,7 +57,7 @@ class VertexFrameRdd(schema: VertexSchema, prev: RDD[sql.Row]) extends FrameRdd(
    */
   def dropDuplicates(): VertexFrameRdd = {
     val pairRdd = map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, schema.columnIndices(Seq(schema.idColumnName.getOrElse(throw new RuntimeException("Cannot drop duplicates is id column has not yet been defined")), schema.label))))
-    val duplicatesRemoved: RDD[sql.Row] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
+    val duplicatesRemoved: RDD[Row] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
     new VertexFrameRdd(schema, duplicatesRemoved)
   }
 

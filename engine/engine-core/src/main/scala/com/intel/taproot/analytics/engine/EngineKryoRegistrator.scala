@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine
 
 import com.esotericsoftware.kryo.Kryo
 import com.intel.taproot.analytics.domain.schema.Schema
-import com.intel.taproot.analytics.engine.Rows.Row
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator

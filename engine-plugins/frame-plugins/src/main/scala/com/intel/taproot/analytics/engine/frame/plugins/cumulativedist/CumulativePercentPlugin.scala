@@ -75,10 +75,10 @@ class CumulativePercentPlugin extends SparkCommandPlugin[CumulativePercentArgs, 
     val sampleIndex = frame.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frame.rdd.toRowRdd, sampleIndex), "_cumulative_percent")
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativePercentSum(frame.rdd, sampleIndex), "_cumulative_percent")
     val updatedSchema = frame.schema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frame.save(FrameRdd.toFrameRdd(updatedSchema, cumulativeDistRdd))
+    frame.save(new FrameRdd(updatedSchema, cumulativeDistRdd))
   }
 }

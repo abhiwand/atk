@@ -21,7 +21,7 @@ import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema.{ Column, VertexSchema, _ }
 import com.intel.taproot.analytics.engine.{ FrameStorage, GraphStorage }
-import com.intel.taproot.analytics.engine.Rows.Row
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage

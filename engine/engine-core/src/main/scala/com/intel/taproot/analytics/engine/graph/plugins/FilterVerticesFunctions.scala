@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.graph.plugins
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta
 import com.intel.taproot.analytics.domain.schema.{ Schema, EdgeSchema, GraphSchema }
-import com.intel.taproot.analytics.engine.Rows._
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import org.apache.spark.{ sql, SparkContext }
@@ -86,7 +86,7 @@ object FilterVerticesFunctions {
    * @param droppedVertexIdsRdd rdd of vertex ids
    * @return a edge rdd with dangling edges removed
    */
-  def dropDanglingEdgesFromEdgeRdd(edgeRdd: FrameRdd, vertexIdColumnIndex: Int, droppedVertexIdsRdd: RDD[Any]): RDD[sql.Row] = {
+  def dropDanglingEdgesFromEdgeRdd(edgeRdd: FrameRdd, vertexIdColumnIndex: Int, droppedVertexIdsRdd: RDD[Any]): RDD[Row] = {
     val keyValueEdgeRdd = edgeRdd.map(row => (row(vertexIdColumnIndex), row))
     val droppedVerticesPairRdd = droppedVertexIdsRdd.map(vid => (vid, null))
     keyValueEdgeRdd.leftOuterJoin(droppedVerticesPairRdd).filter {

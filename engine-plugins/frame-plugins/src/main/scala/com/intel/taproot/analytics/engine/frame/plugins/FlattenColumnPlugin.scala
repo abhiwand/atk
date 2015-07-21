@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
-import com.intel.taproot.analytics.engine.Rows._
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -82,10 +82,10 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEnt
     }
 
     // run the operation
-    val flattenedRDD = flattener(frame.rdd.toRowRdd)
+    val flattenedRDD = flattener(frame.rdd)
 
     // save results
-    frame.save(FrameRdd.toFrameRdd(schema, flattenedRDD))
+    frame.save(new FrameRdd(schema, flattenedRDD))
   }
 
 }
@@ -128,11 +128,11 @@ object FlattenColumnFunctions extends Serializable {
    * @param row row data
    * @return flattened out row/rows
    */
-  private[frame] def flattenRowByVectorColumnIndex(index: Int, vectorLength: Long)(row: Array[Any]): Array[Array[Any]] = {
+  private[frame] def flattenRowByVectorColumnIndex(index: Int, vectorLength: Long)(row: Row): Array[Row] = {
     DataTypes.toVector(vectorLength)(row(index)).toArray.map(s => {
-      val r = row.clone()
+      val r = row.toSeq.toArray
       r(index) = s
-      r
+      Row.fromSeq(r)
     })
   }
 
@@ -144,12 +144,12 @@ object FlattenColumnFunctions extends Serializable {
    * @param delimiter separator for splitting
    * @return flattened out row/rows
    */
-  private[frame] def flattenRowByStringColumnIndex(index: Int, delimiter: String)(row: Array[Any]): Array[Array[Any]] = {
+  private[frame] def flattenRowByStringColumnIndex(index: Int, delimiter: String)(row: Row): Array[Row] = {
     val splitted = row(index).asInstanceOf[String].split(Pattern.quote(delimiter))
     splitted.map(s => {
-      val r = row.clone()
+      val r = row.toSeq.toArray
       r(index) = s
-      r
+      Row.fromSeq(r)
     })
   }
 }

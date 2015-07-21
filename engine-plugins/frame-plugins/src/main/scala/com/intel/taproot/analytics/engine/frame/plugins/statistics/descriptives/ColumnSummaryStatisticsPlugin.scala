@@ -181,7 +181,7 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
       valueDataType,
       weightsColumnIndexOption,
       weightsDataTypeOption,
-      frame.rdd.toRowRdd,
+      frame.rdd,
       usePopulationVariance)
   }
 }

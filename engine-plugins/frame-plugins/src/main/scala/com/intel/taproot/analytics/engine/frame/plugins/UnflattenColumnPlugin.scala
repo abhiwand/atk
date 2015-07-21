@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
@@ -91,16 +91,16 @@ object UnflattenColumnFunctions extends Serializable {
   }
 
   def unflattenRddByCompositeKey(compositeKeyIndex: List[Int],
-                                 initialRdd: RDD[(List[Any], Iterable[sql.Row])],
+                                 initialRdd: RDD[(List[Any], Iterable[Row])],
                                  targetSchema: Schema,
-                                 delimiter: String): RDD[sql.Row] = {
+                                 delimiter: String): RDD[Row] = {
     val rowWrapper = new RowWrapper(targetSchema)
     val unflattenRdd = initialRdd.map { case (key, row) => key.toArray ++ unflattenRowsForKey(compositeKeyIndex, row, delimiter) }
 
     unflattenRdd.map(row => rowWrapper.create(row))
   }
 
-  private def unflattenRowsForKey(compositeKeyIndex: List[Int], groupedByRows: Iterable[sql.Row], delimiter: String): Array[Any] = {
+  private def unflattenRowsForKey(compositeKeyIndex: List[Int], groupedByRows: Iterable[Row], delimiter: String): Array[Any] = {
 
     val rows = groupedByRows.toList
     val rowCount = rows.length
@@ -122,7 +122,7 @@ object UnflattenColumnFunctions extends Serializable {
     result.filter(_ != null)
   }
 
-  private def addRowToResults(row: sql.Row, compositeKeyIndex: List[Int], results: Array[Any], delimiter: String): Unit = {
+  private def addRowToResults(row: Row, compositeKeyIndex: List[Int], results: Array[Any], delimiter: String): Unit = {
 
     for (j <- 0 until row.length) {
       if (!compositeKeyIndex.contains(j)) {

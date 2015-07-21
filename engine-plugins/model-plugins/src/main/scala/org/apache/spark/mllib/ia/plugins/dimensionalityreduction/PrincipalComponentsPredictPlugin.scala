@@ -31,7 +31,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.linalg.Vector
 
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-import org.apache.spark.sql
 import org.apache.spark.sql.Row
 
 import scala.collection.mutable.ListBuffer

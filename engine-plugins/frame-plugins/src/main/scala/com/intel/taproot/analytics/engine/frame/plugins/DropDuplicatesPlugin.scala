@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.engine.frame.{ SparkFrame, MiscFrameFunctions
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -75,7 +75,7 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameE
       case None => frame.schema.columnNames
     }
     // run operation
-    val duplicatesRemoved: RDD[sql.Row] = MiscFrameFunctions.removeDuplicatesByColumnNames(frame.rdd, frame.schema, columnNames)
+    val duplicatesRemoved: RDD[Row] = MiscFrameFunctions.removeDuplicatesByColumnNames(frame.rdd, frame.schema, columnNames)
     frame.save(new FrameRdd(frame.schema, duplicatesRemoved))
   }
 }

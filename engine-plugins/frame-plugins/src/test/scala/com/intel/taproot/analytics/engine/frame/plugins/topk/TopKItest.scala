@@ -19,19 +19,20 @@ package com.intel.taproot.analytics.engine.frame.plugins.topk
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.frame.plugins.topk.TopKRddFunctions.CountPair
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.sql.Row
 import org.scalatest.Matchers
 
 class TopKItest extends TestingSparkContextFlatSpec with Matchers {
   val inputList = List(
-    Array[Any](-1, "a", 0, 2d, 0d),
-    Array[Any](0, "c", 0, 1d, 0d),
-    Array[Any](0, "b", 0, 0.5d, 0d),
-    Array[Any](5, "b", 0, 0.25d, 0d),
-    Array[Any](5, "b", 0, 0.2d, 0d),
-    Array[Any](5, "a", 0, 0.1d, 0d)
+    Row(-1, "a", 0, 2d, 0d),
+    Row(0, "c", 0, 1d, 0d),
+    Row(0, "b", 0, 0.5d, 0d),
+    Row(5, "b", 0, 0.25d, 0d),
+    Row(5, "b", 0, 0.2d, 0d),
+    Row(5, "a", 0, 0.1d, 0d)
   )
 
-  val emptyList = List.empty[Array[Any]]
+  val emptyList = List.empty[Row]
 
   val keyCountList = List[(Any, Double)](
     ("key1", 2),
@@ -47,7 +48,7 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
     val top1Column0 = TopKRddFunctions.topK(frameRdd, 0, 1, false).collect()
 
     top1Column0.size should equal(1)
-    top1Column0(0) should equal(Array[Any](5, 3))
+    top1Column0(0) should equal(Row(5, 3))
   }
 
   "topK" should "return all top K distinct values sorted by count if K exceeds input size" in {
@@ -55,9 +56,9 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
     val topKColumn1 = TopKRddFunctions.topK(frameRdd, 1, 100, false).collect()
 
     topKColumn1.size should equal(3)
-    topKColumn1(0) should equal(Array[Any]("b", 3))
-    topKColumn1(1) should equal(Array[Any]("a", 2))
-    topKColumn1(2) should equal(Array[Any]("c", 1))
+    topKColumn1(0) should equal(Row("b", 3))
+    topKColumn1(1) should equal(Row("a", 2))
+    topKColumn1(2) should equal(Row("c", 1))
   }
 
   "topK" should "return the weighted top K distinct values sorted by count" in {
@@ -65,9 +66,9 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
     val topKColumn1 = TopKRddFunctions.topK(frameRdd, 1, 3, false, Some(3), Some(DataTypes.float64)).collect()
 
     topKColumn1.size should equal(3)
-    topKColumn1(0) should equal(Array[Any]("a", 2.1))
-    topKColumn1(1) should equal(Array[Any]("c", 1))
-    topKColumn1(2) should equal(Array[Any]("b", 0.95))
+    topKColumn1(0) should equal(Row("a", 2.1))
+    topKColumn1(1) should equal(Row("c", 1))
+    topKColumn1(2) should equal(Row("b", 0.95))
   }
 
   "topK" should "return the bottom K distinct values sorted by count" in {
@@ -75,8 +76,8 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
     val bottom2Column1 = TopKRddFunctions.topK(frameRdd, 1, 2, true).collect()
 
     bottom2Column1.size should equal(2)
-    bottom2Column1(0) should equal(Array[Any]("c", 1))
-    bottom2Column1(1) should equal(Array[Any]("a", 2))
+    bottom2Column1(0) should equal(Row("c", 1))
+    bottom2Column1(1) should equal(Row("a", 2))
   }
 
   "topK" should "return the weighted bottom K distinct values sorted by count" in {
@@ -84,9 +85,9 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
     val topKColumn1 = TopKRddFunctions.topK(frameRdd, 1, 3, true, Some(3), Some(DataTypes.float64)).collect()
 
     topKColumn1.size should equal(3)
-    topKColumn1(0) should equal(Array[Any]("b", 0.95))
-    topKColumn1(1) should equal(Array[Any]("c", 1))
-    topKColumn1(2) should equal(Array[Any]("a", 2.1))
+    topKColumn1(0) should equal(Row("b", 0.95))
+    topKColumn1(1) should equal(Row("c", 1))
+    topKColumn1(2) should equal(Row("a", 2.1))
   }
 
   "topK" should "return an empty sequence if the input data frame is empty" in {

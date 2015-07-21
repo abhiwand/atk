@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.frame.{ QuantileComposingElement, Quan
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 import scala.collection.mutable
@@ -60,7 +60,7 @@ object QuantilesFunctions extends Serializable {
    * @param columnIndex the index of column to calculate quantile
    * @param rowCount number of records found in RDD. If set to none this will perform an rdd.count to determine
    */
-  def quantiles(rdd: RDD[sql.Row], quantiles: Seq[Double], columnIndex: Int, rowCount: Long): RDD[sql.Row] = {
+  def quantiles(rdd: RDD[Row], quantiles: Seq[Double], columnIndex: Int, rowCount: Long): RDD[Row] = {
     val singleColumn = rdd.map(row => DataTypes.toDouble(row(columnIndex)))
     val sorted = singleColumn.sortBy(x => x)
 

@@ -30,15 +30,11 @@ import com.intel.taproot.analytics.engine.frame
 import com.intel.taproot.analytics.engine.frame.parquet.ParquetReader
 import com.intel.taproot.analytics.engine.graph
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
-import com.intel.taproot.analytics.engine.plugin.SparkInvocation
 import com.intel.taproot.analytics.repository.SlickMetaStoreComponent
 import com.intel.taproot.analytics.{ EventLoggingImplicits, DuplicateNameException, NotFoundException }
 import org.apache.hadoop.fs.Path
 import org.apache.spark.frame.FrameRdd
-//import org.apache.spark.frame.FrameRdd.OrderedParquetInputFormat
-import org.apache.spark.sql
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import org.joda.time.DateTime
@@ -112,7 +108,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     }
   }
 
-  import com.intel.taproot.analytics.engine.Rows.Row
+  import org.apache.spark.sql.Row
 
   override def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): FrameEntity = {
     lookup(frameRef.frameId).getOrElse(throw new NotFoundException("frame", frameRef.frameId.toString))
@@ -131,7 +127,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     (frame.storageFormat, frame.storageLocation) match {
       case (_, None) | (None, _) =>
         //  nothing has been saved to disk yet)
-        new FrameRdd(frame.schema, sc.parallelize[sql.Row](Nil, EngineConfig.minPartitions))
+        new FrameRdd(frame.schema, sc.parallelize[Row](Nil, EngineConfig.minPartitions))
       case (Some("file/parquet"), Some(absPath)) =>
         val sqlContext = new SQLContext(sc)
         val rows = sqlContext.parquetFile(absPath.toString)
@@ -310,7 +306,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
    * @param count number of records to retrieve
    * @return records in the dataframe starting from offset with a length of count
    */
-  override def getRows(frame: FrameEntity, offset: Long, count: Long)(implicit invocation: Invocation): Iterable[Row] =
+  override def getRows(frame: FrameEntity, offset: Long, count: Long)(implicit invocation: Invocation): Iterable[Array[Any]] =
     withContext("frame.getRows") {
       require(frame != null, "frame is required")
       require(offset >= 0, "offset must be zero or greater")

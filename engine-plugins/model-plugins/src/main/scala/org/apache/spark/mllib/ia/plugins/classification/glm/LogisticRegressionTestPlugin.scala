@@ -17,7 +17,7 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
-import com.intel.taproot.analytics.engine.Rows.Row
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
@@ -96,7 +96,7 @@ class LogisticRegressionTestPlugin extends SparkCommandPlugin[ClassificationWith
     //predicting and testing
     val scoreAndLabelRdd: RDD[Row] = labeledTestRdd.map { point =>
       val prediction = logRegModel.predict(point.features)
-      Array[Any](point.label, prediction)
+      Row(point.label, prediction)
     }
 
     //Run Binary classification metrics

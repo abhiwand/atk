@@ -17,12 +17,12 @@
 package com.intel.taproot.analytics.engine.frame.plugins.join
 
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
 
 class JoinBroadcastVariableITest extends TestingSparkContextFlatSpec with Matchers {
-  val idCountryNames: List[(Any, sql.Row)] = List(
+  val idCountryNames: List[(Any, Row)] = List(
     (1.asInstanceOf[Any], new GenericRow(Array[Any](1, "Iceland"))),
     (1.asInstanceOf[Any], new GenericRow(Array[Any](1, "Ice-land"))),
     (2.asInstanceOf[Any], new GenericRow(Array[Any](2, "India"))),
@@ -65,7 +65,7 @@ class JoinBroadcastVariableITest extends TestingSparkContextFlatSpec with Matche
     broadcastVariable.get(8).isDefined should equal(false)
   }
   "JoinBroadcastVariable" should "create an empty broadcast variable" in {
-    val countryNames = sparkContext.parallelize(List.empty[(Any, sql.Row)])
+    val countryNames = sparkContext.parallelize(List.empty[(Any, Row)])
 
     val joinParam = RddJoinParam(countryNames, 2, Some(3L * 1024 * 1024 * 1024))
 

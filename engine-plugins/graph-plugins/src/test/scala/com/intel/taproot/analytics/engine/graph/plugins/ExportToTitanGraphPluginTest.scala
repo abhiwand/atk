@@ -22,20 +22,17 @@ import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.taproot.graphbuilder.parser.InputSchema
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
-import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
 import com.intel.taproot.testutils.{ TestingSparkContextFlatSpec, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.joda.time.DateTime
 import org.scalatest.Matchers
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import org.scalatest.mock.MockitoSugar
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import scala.collection.JavaConversions._
 
 class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Matchers with MockitoSugar {
@@ -62,12 +59,12 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
       val employees = List(
         new GenericRow(Array(1L, "employee", "Bob", 100L)),
         new GenericRow(Array(2L, "employee", "Joe", 101L)))
-      val employeeRdd = sparkContext.parallelize[sql.Row](employees)
+      val employeeRdd = sparkContext.parallelize[Row](employees)
 
       val employeeFrameRdd = new VertexFrameRdd(employeeSchema, employeeRdd)
 
       val divisions = List(new GenericRow(Array(3L, "division", "development", 200L)))
-      val divisionRdd = sparkContext.parallelize[sql.Row](divisions)
+      val divisionRdd = sparkContext.parallelize[Row](divisions)
       val divisionFrameRdd = new VertexFrameRdd(employeeSchema, divisionRdd)
 
       val vertexFrame = employeeFrameRdd.toGbVertexRDD union divisionFrameRdd.toGbVertexRDD
@@ -75,7 +72,7 @@ class ExportToTitanGraphPluginTest extends TestingTitanWithSparkWordSpec with Ma
         new GenericRow(Array(4L, 1L, 3L, "worksIn", "10/15/2012")),
         new GenericRow(Array(5L, 2L, 3L, "worksIn", "9/01/2014")))
 
-      val edgeRDD = sparkContext.parallelize[sql.Row](works)
+      val edgeRDD = sparkContext.parallelize[Row](works)
       val edgeFrameRdd = new EdgeFrameRdd(edgeSchema, edgeRDD)
 
       val edgeFrame = edgeFrameRdd.toGbEdgeRdd

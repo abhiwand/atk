@@ -17,6 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics
 
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.sql.Row
 import org.scalatest.Matchers
 
 class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers {
@@ -27,49 +28,49 @@ class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers
   // fp = 0
   // fn = 1
   val inputListBinary = List(
-    Array[Any](0, 0),
-    Array[Any](1, 1),
-    Array[Any](0, 0),
-    Array[Any](1, 0))
+    Row(0, 0),
+    Row(1, 1),
+    Row(0, 0),
+    Row(1, 0))
 
   val inputListBinaryChar = List(
-    Array[Any]("no", "no"),
-    Array[Any]("yes", "yes"),
-    Array[Any]("no", "no"),
-    Array[Any]("yes", "no"))
+    Row("no", "no"),
+    Row("yes", "yes"),
+    Row("no", "no"),
+    Row("yes", "no"))
 
   val inputListBinary2 = List(
-    Array[Any](0, 0),
-    Array[Any](1, 1),
-    Array[Any](0, 1),
-    Array[Any](1, 1),
-    Array[Any](0, 0),
-    Array[Any](0, 1),
-    Array[Any](0, 0),
-    Array[Any](1, 1),
-    Array[Any](1, 1),
-    Array[Any](0, 0),
-    Array[Any](1, 0),
-    Array[Any](0, 1),
-    Array[Any](1, 1),
-    Array[Any](0, 1))
+    Row(0, 0),
+    Row(1, 1),
+    Row(0, 1),
+    Row(1, 1),
+    Row(0, 0),
+    Row(0, 1),
+    Row(0, 0),
+    Row(1, 1),
+    Row(1, 1),
+    Row(0, 0),
+    Row(1, 0),
+    Row(0, 1),
+    Row(1, 1),
+    Row(0, 1))
 
   // tp + tn = 2
   val inputListMulti = List(
-    Array[Any](0, 0),
-    Array[Any](1, 2),
-    Array[Any](2, 1),
-    Array[Any](0, 0),
-    Array[Any](1, 0),
-    Array[Any](2, 1))
+    Row(0, 0),
+    Row(1, 2),
+    Row(2, 1),
+    Row(0, 0),
+    Row(1, 0),
+    Row(2, 1))
 
   val inputListMultiChar = List(
-    Array[Any]("red", "red"),
-    Array[Any]("green", "blue"),
-    Array[Any]("blue", "green"),
-    Array[Any]("red", "red"),
-    Array[Any]("green", "red"),
-    Array[Any]("blue", "green"))
+    Row("red", "red"),
+    Row("green", "blue"),
+    Row("blue", "green"),
+    Row("red", "red"),
+    Row("green", "red"),
+    Row("blue", "green"))
 
   "accuracy measure" should "compute correct value for binary classifier" in {
     val rdd = sparkContext.parallelize(inputListBinary)

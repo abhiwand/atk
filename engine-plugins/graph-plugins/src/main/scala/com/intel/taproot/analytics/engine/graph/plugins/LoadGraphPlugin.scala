@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.taproot.analytics.domain.graph.{ LoadGraphArgs, GraphEntity }
-import com.intel.taproot.analytics.engine.Rows
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
