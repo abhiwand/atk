@@ -784,14 +784,17 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Optional parameters:
 
-            top_k                Displays levels which are in the top k most frequently occurring values for that column.
+            top_k
+                Displays levels which are in the top k most frequently occurring values for that column.
 
-            threshold            Displays levels which are above the threshold percentage with respect to the total row count.
+            threshold
+                Displays levels which are above the threshold percentage with respect to the total row count.
 
-            top_k and threshold  Performs level pruning first based on top k and then filters out levels which satisfy
-                                 the threshold criterion.
+            top_k and threshold
+                Performs level pruning first based on top k and then filters out levels which satisfy the threshold criterion.
 
-            defaults             Displays all levels which are in Top 10.
+            defaults
+                Displays all levels which are in Top 10.
 
 
         Examples
