@@ -1,16 +1,11 @@
 
-package com.intel.taproot.analytics.scoring
+package com.intel.taproot.analytics.scoring.models
 
 import java.io._
 
-import com.intel.taproot.analytics.scoring.JsonReadersWriters.KMeansModelFormat
-import org.apache.commons.math3.geometry.VectorFormat
-import org.apache.spark.mllib.clustering.KMeansModel
-import spray.json._
-import scala.concurrent._
+import com.intel.taproot.analytics.scoring.interfaces.{Model, ModelLoader}
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
-import ExecutionContext.Implicits.global
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import spray.json._
 
 object JsonReadersWriters {
 

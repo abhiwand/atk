@@ -26,6 +26,7 @@ import com.intel.taproot.event.{ EventLogging, EventLogger }
 import com.intel.taproot.analytics.component.{ ArchiveDefinition, Archive }
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.reflect.ClassTag
+import com.intel.taproot.analytics.scoring.interfaces.{ Model, ModelLoader }
 
 /**
  * Scoring Service Application - a REST application used by client layer to communicate with the Model.

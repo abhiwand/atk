@@ -1,10 +1,9 @@
 
-package com.intel.taproot.analytics.scoring
+package com.intel.taproot.analytics.scoring.models
 
-import java.io._
 import java.util.StringTokenizer
 
-import _root_.libsvm.{ svm, svm_model, svm_node }
+import com.intel.taproot.analytics.scoring.interfaces.Model
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.DenseVector
 import scala.concurrent.ExecutionContext.Implicits.global
