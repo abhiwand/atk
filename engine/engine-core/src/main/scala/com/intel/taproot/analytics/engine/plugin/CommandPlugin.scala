@@ -53,8 +53,6 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
 
   def engine(implicit invocation: Invocation) = invocation.asInstanceOf[CommandInvocation].engine
 
-  implicit def user(implicit invocation: Invocation): UserPrincipal = invocation.user
-
   val argumentManifest = implicitly[ClassManifest[Arguments]]
   val returnManifest = implicitly[ClassManifest[Return]]
   val argumentTag = implicitly[TypeTag[Arguments]]
@@ -62,6 +60,35 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   val thisManifest = implicitly[ClassManifest[this.type]]
   val thisTag = implicitly[TypeTag[this.type]]
   val argSeparator = ","
+
+  /**
+   * Runs setup, execute(), and cleanup()
+   *
+   * @return the results of calling the execute method
+   */
+  final def apply(simpleInvocation: Invocation, arguments: Arguments): Return = withPluginContext("apply")({
+    require(simpleInvocation != null, "Invocation required")
+    require(arguments != null, "Arguments required")
+
+    //We call execute rather than letting plugin authors directly implement
+    //apply so that if we ever need to put additional actions before or
+    //after the plugin code, we can.
+    withMyClassLoader {
+      implicit val invocation = customizeInvocation(simpleInvocation, arguments)
+      val result = try {
+        debug("Invoking execute method with arguments:\n" + arguments)
+        execute(arguments)(invocation)
+      }
+      finally {
+        cleanup(invocation)
+      }
+      if (result == null) {
+        throw new Exception(s"Plugin ${this.getClass.getName} returned null")
+      }
+      debug("Result was:\n" + result)
+      result
+    }
+  })(simpleInvocation)
 
   /**
    * The name of the command, e.g. graphs/ml/loopy_belief_propagation
@@ -95,35 +122,6 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
    * @return number of jobs in this command
    */
   def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
-
-  /**
-   * Runs setup, execute(), and cleanup()
-   *
-   * @return the results of calling the execute method
-   */
-  final def apply(simpleInvocation: Invocation, arguments: Arguments): Return = withPluginContext("apply")({
-    require(simpleInvocation != null, "Invocation required")
-    require(arguments != null, "Arguments required")
-
-    //We call execute rather than letting plugin authors directly implement
-    //apply so that if we ever need to put additional actions before or
-    //after the plugin code, we can.
-    withMyClassLoader {
-      implicit val invocation = customizeInvocation(simpleInvocation, arguments)
-      val result = try {
-        debug("Invoking execute method with arguments:\n" + arguments)
-        execute(arguments)(invocation)
-      }
-      finally {
-        cleanup(invocation)
-      }
-      if (result == null) {
-        throw new Exception(s"Plugin ${this.getClass.getName} returned null")
-      }
-      debug("Result was:\n" + result)
-      result
-    }
-  })(simpleInvocation)
 
   /**
    * Plugin authors should implement the execute() method.
@@ -164,7 +162,7 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
     withContext(context) {
       EventContext.getCurrent.put("plugin_name", name)
       try {
-        val caller = user.user
+        val caller = invocation.user.user
         EventContext.getCurrent.put("user", caller.username.getOrElse(caller.id.toString))
       }
       catch {
