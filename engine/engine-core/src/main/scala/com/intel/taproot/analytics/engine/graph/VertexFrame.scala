@@ -26,8 +26,14 @@ import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.ia.graph.VertexFrameRdd
 
+/**
+ * Interface for working with VertexFrames for plugin authors
+ */
 trait VertexFrame extends Frame {
 
+  /**
+   * A frame Schema with the extra info needed for a VertexFrame
+   */
   override def schema: VertexSchema
 
   def graph: SeamlessGraphMeta
@@ -40,6 +46,9 @@ object VertexFrame {
   implicit def vertexFrameToFrameEntity(vertexFrame: VertexFrame): FrameEntity = vertexFrame.entity
 }
 
+/**
+ * Interface for working with VertexFrames for plugin authors, including Spark related methods
+ */
 trait SparkVertexFrame extends VertexFrame {
 
   /** Load the frame's data as an RDD */
@@ -54,14 +63,19 @@ class VertexFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGr
     extends FrameImpl(frame, frameStorage)(invocation)
     with VertexFrame {
 
+  @deprecated("use other methods in interface, we want to move away from exposing entities to plugin authors")
   override def entity: FrameEntity = {
     val e = super.entity
     require(e.isVertexFrame, s"VertexFrame is required but found other frame type: $e")
     e
   }
 
+  /**
+   * A frame Schema with the extra info needed for a VertexFrame
+   */
   override def schema: VertexSchema = super.schema.asInstanceOf[VertexSchema]
 
+  /** The graph this VertexFrame is a part of */
   override def graph: SeamlessGraphMeta = {
     sparkGraphStorage.expectSeamless(entity.graphId.getOrElse(throw new RuntimeException("VertxFrame is required to have a graphId but this one didn't")))
   }
