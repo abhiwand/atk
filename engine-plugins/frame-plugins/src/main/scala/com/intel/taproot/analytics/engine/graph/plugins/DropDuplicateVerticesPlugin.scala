@@ -27,6 +27,7 @@ import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema }
 
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.sql
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -88,12 +89,12 @@ class DropDuplicateVerticesPlugin extends SparkCommandPlugin[DropDuplicatesArgs,
         // _vid is always unique so don't include it
         schema.columnNames.dropWhile(s => s == GraphSchema.vidProperty)
     }
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(vertexFrame.rdd.toRowRdd, schema, columnNames)
+    val duplicatesRemoved: RDD[sql.Row] = MiscFrameFunctions.removeDuplicatesByColumnNames(vertexFrame.rdd, schema, columnNames)
 
     val label = schema.asInstanceOf[VertexSchema].label
-    FilterVerticesFunctions.removeDanglingEdges(label, engine.frames, seamlessGraph, sc, FrameRdd.toFrameRdd(schema, duplicatesRemoved))
+    FilterVerticesFunctions.removeDanglingEdges(label, engine.frames, seamlessGraph, sc, new FrameRdd(schema, duplicatesRemoved))
 
-    vertexFrame.save(new VertexFrameRdd(schema, FrameRdd.toRowRDD(schema, duplicatesRemoved)))
+    vertexFrame.save(new VertexFrameRdd(schema, duplicatesRemoved))
 
   }
 }

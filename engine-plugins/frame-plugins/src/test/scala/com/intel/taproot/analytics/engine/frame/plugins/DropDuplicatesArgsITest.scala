@@ -20,13 +20,14 @@ import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql
 import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Matchers }
 
 class DropDuplicatesArgsITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContextFlatSpec {
   "removeDuplicatesByKey" should "keep only 1 rows per key" in {
 
     //setup test data
-    val favoriteMovies = List(Array[Any]("John", 1, "Titanic"), Array[Any]("Kathy", 2, "Jurassic Park"), Array[Any]("John", 1, "The kite runner"), Array[Any]("Kathy", 2, "Toy Story 3"), Array[Any]("Peter", 3, "Star War"))
+    val favoriteMovies = List(sql.Row("John", 1, "Titanic"), sql.Row("Kathy", 2, "Jurassic Park"), sql.Row("John", 1, "The kite runner"), sql.Row("Kathy", 2, "Toy Story 3"), sql.Row("Peter", 3, "Star War"))
     val rdd = sparkContext.parallelize(favoriteMovies)
 
     rdd.count() shouldBe 5
@@ -39,15 +40,15 @@ class DropDuplicatesArgsITest extends FlatSpec with Matchers with BeforeAndAfter
     duplicatesRemoved.count() shouldBe 3 // original data contain 5 rows, now drop to 3
 
     //transform output to a sortable format
-    val sortable = duplicatesRemoved.map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, Seq(1))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Array[Any])]]
+    val sortable = duplicatesRemoved.map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, Seq(1))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, sql.Row)]]
 
     //sort output to validate result
     val sorted = sortable.sortByKey(true)
 
     //matching the result
     val data = sorted.take(4)
-    data(0)._2 shouldBe Array[Any]("John", 1, "Titanic")
-    data(1)._2 shouldBe Array[Any]("Kathy", 2, "Jurassic Park")
-    data(2)._2 shouldBe Array[Any]("Peter", 3, "Star War")
+    data(0)._2 shouldBe sql.Row("John", 1, "Titanic")
+    data(1)._2 shouldBe sql.Row("Kathy", 2, "Jurassic Park")
+    data(2)._2 shouldBe sql.Row("Peter", 3, "Star War")
   }
 }

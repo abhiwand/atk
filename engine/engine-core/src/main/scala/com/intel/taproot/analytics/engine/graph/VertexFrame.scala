@@ -51,8 +51,8 @@ trait SparkVertexFrame extends VertexFrame {
 }
 
 class VertexFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)
-  extends FrameImpl(frame, frameStorage)(invocation)
-  with VertexFrame {
+    extends FrameImpl(frame, frameStorage)(invocation)
+    with VertexFrame {
 
   override def entity: FrameEntity = {
     val e = super.entity
