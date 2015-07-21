@@ -90,29 +90,15 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   def apiMaturityTag: Option[ApiMaturityTag] = None
 
   /**
-   * Convert the given JsObject to an instance of the Argument type
+   * Number of jobs needs to be known to give a single progress bar
+   * @param arguments command arguments: used if a command can produce variable number of jobs
+   * @return number of jobs in this command
    */
-  def parseArguments(arguments: JsObject)(implicit invocation: Invocation): Arguments = withPluginContext("parseArguments") {
-    arguments.convertTo[Arguments]
-  }
+  def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
 
   /**
-   * Convert the given object to a JsObject
-   */
-  def serializeReturn(returnValue: Return)(implicit invocation: Invocation): JsObject = withPluginContext("serializeReturn") {
-    returnValue.toJson.asJsObject
-  }
-
-  /**
-   * Operation plugins must implement this method to do the work requested by the user.
-   * @param context information about the user and the circumstances at the time of the call
-   * @param arguments the arguments supplied by the caller
-   * @return a value of type declared as the Return type.
-   */
-  def execute(arguments: Arguments)(implicit context: Invocation): Return
-
-  /**
-   * Invokes the operation, which calls the execute method that each plugin implements.
+   * Runs setup, execute(), and cleanup()
+   *
    * @return the results of calling the execute method
    */
   final def apply(simpleInvocation: Invocation, arguments: Arguments): Return = withPluginContext("apply")({
@@ -140,6 +126,17 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   })(simpleInvocation)
 
   /**
+   * Plugin authors should implement the execute() method.
+   *
+   * This is the main extension point for plugin authors.
+   *
+   * @param context information about the user and the circumstances at the time of the call
+   * @param arguments the arguments supplied by the caller
+   * @return a value of type declared as the Return type.
+   */
+  def execute(arguments: Arguments)(implicit context: Invocation): Return
+
+  /**
    * Can be overridden by subclasses to provide a more specialized Invocation. Called before
    * calling the execute method.
    */
@@ -149,13 +146,19 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
 
   protected def cleanup(invocation: Invocation) = {}
 
+  /**
+   * Convert the given JsObject to an instance of the Argument type
+   */
+  def parseArguments(arguments: JsObject)(implicit invocation: Invocation): Arguments = withPluginContext("parseArguments") {
+    arguments.convertTo[Arguments]
+  }
 
   /**
-   * Number of jobs needs to be known to give a single progress bar
-   * @param arguments command arguments: used if a command can produce variable number of jobs
-   * @return number of jobs in this command
+   * Convert the given object to a JsObject
    */
-  def numberOfJobs(arguments: Arguments)(implicit invocation: Invocation): Int = 1
+  def serializeReturn(returnValue: Return)(implicit invocation: Invocation): JsObject = withPluginContext("serializeReturn") {
+    returnValue.toJson.asJsObject
+  }
 
   private def withPluginContext[T](context: String)(expr: => T)(implicit invocation: Invocation): T = {
     withContext(context) {
