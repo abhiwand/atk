@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.frame.Udf
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.EngineConfig
+import com.intel.taproot.analytics.engine.{ Rows, EngineConfig }
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.commons.codec.binary.Base64.decodeBase64
@@ -72,7 +72,7 @@ object PythonRddStorage {
     val newSchema = if (udfSchema == null) { data.frameSchema } else { udfSchema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
-    val pyRdd = RDDToPyRDD(udf, data.toLegacyFrameRdd, sc)
+    val pyRdd = RDDToPyRDD(udf, data.toRowRdd, sc)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
     FrameRdd.toFrameRdd(newSchema, frameRdd)
   }
@@ -102,7 +102,7 @@ object PythonRddStorage {
     bsonList
   }
 
-  def RDDToPyRDD(udf: Udf, rdd: LegacyFrameRdd, sc: SparkContext): EnginePythonRdd[Array[Byte]] = {
+  def RDDToPyRDD(udf: Udf, rdd: RDD[Rows.Row], sc: SparkContext): EnginePythonRdd[Array[Byte]] = {
     val predicateInBytes = decodePythonBase64EncodedStrToBytes(udf.function)
 
     // Create an RDD of byte arrays representing bson objects
@@ -185,9 +185,8 @@ class PythonRddStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
    */
   def createPythonRDD(frameRef: FrameReference, py_expression: String, sc: SparkContext)(implicit invocation: Invocation): EnginePythonRdd[Array[Byte]] = {
     withMyClassLoader {
-
-      val rdd: LegacyFrameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
-
+      val frameEntity = frames.expectFrame(frameRef)
+      val rdd = frames.loadFrameData(sc, frameEntity).toRowRdd
       PythonRddStorage.RDDToPyRDD(new Udf(py_expression, null), rdd, sc)
     }
   }

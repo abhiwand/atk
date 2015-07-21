@@ -18,6 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives
 
 import com.intel.taproot.analytics.domain.frame.{ ColumnModeArgs, ColumnModeReturn }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
@@ -98,31 +99,24 @@ class ColumnModePlugin extends SparkCommandPlugin[ColumnModeArgs, ColumnModeRetu
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ColumnModeArgs)(implicit invocation: Invocation): ColumnModeReturn = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frameRef = arguments.frame
-    val frame = frames.expectFrame(frameRef)
+    val frame: SparkFrame = arguments.frame
 
     // run the operation and return results
-    val rdd = frames.loadLegacyFrameRdd(sc, frameRef)
-    val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
+    val dataColumn = frame.schema.column(arguments.dataColumn)
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
     else {
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
-      (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
+      (Some(weightsColumnIndex), Some(frame.schema.columnDataType(arguments.weightsColumn.get)))
     }
     val modeCountOption = arguments.maxModesReturned
 
-    ColumnStatistics.columnMode(columnIndex,
-      valueDataType,
+    ColumnStatistics.columnMode(dataColumn.index,
+      dataColumn.dataType,
       weightsColumnIndexOption,
       weightsDataTypeOption,
       modeCountOption,
-      rdd)
+      frame.rdd.toRowRdd)
   }
 }

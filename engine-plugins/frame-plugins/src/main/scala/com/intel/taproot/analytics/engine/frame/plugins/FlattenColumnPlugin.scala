@@ -82,8 +82,7 @@ class FlattenColumnPlugin extends SparkCommandPlugin[FlattenColumnArgs, FrameEnt
     }
 
     // run the operation
-    val rdd = frame.rdd.toLegacyFrameRdd
-    val flattenedRDD = flattener(rdd)
+    val flattenedRDD = flattener(frame.rdd.toRowRdd)
 
     // save results
     frame.save(FrameRdd.toFrameRdd(schema, flattenedRDD))

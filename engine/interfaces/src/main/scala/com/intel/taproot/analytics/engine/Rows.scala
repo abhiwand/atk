@@ -16,11 +16,13 @@
 
 package com.intel.taproot.analytics.engine
 
+@deprecated("use Spark's sql.Row instead")
 object Rows {
 
   /**
    * NOTE: we have both Row and Spark sql.Row in our codebase, it can be confusing.
    */
+  @deprecated("use Spark's sql.Row instead")
   type Row = Array[Any]
 
 }

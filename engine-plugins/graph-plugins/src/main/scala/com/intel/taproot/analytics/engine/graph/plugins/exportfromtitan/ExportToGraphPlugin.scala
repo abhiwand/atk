@@ -23,10 +23,9 @@ import com.intel.taproot.analytics.domain.schema.{ Column, VertexSchema, _ }
 import com.intel.taproot.analytics.engine.{ FrameStorage, GraphStorage }
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.{ LegacyFrameRdd, SparkFrameStorage }
+import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.Vertex
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd

@@ -21,7 +21,7 @@ import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta
 import com.intel.taproot.analytics.domain.schema.{ Schema, EdgeSchema, GraphSchema }
 import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.frame.{ LegacyFrameRdd, SparkFrameStorage }
+import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD

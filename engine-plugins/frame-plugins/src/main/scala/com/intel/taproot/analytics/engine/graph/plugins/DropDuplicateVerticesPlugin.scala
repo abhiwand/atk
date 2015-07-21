@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, MiscFrameFunctions, LegacyFrameRdd }
+import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, MiscFrameFunctions }
 import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema }
 
@@ -85,7 +85,7 @@ class DropDuplicateVerticesPlugin extends SparkCommandPlugin[DropDuplicatesArgs,
 
     val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.graphId.get)
     val schema = vertexFrame.schema
-    val rdd = frames.loadLegacyFrameRdd(sc, arguments.frame)
+    val rdd = frames.loadFrameData(sc, vertexFrame).toRowRdd
     val columnNames = arguments.unique_columns match {
       case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
       case None =>

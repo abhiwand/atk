@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.frame.{ TopKArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
@@ -81,11 +81,10 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     val columnIndex = frame.schema.columnIndex(arguments.columnName)
 
     // run the operation
-    val frameRdd = frame.rdd.toLegacyFrameRdd
     val valueDataType = frame.schema.columnDataType(arguments.columnName)
     val (weightsColumnIndexOption, weightsDataTypeOption) = getColumnIndexAndType(frame, arguments.weightsColumn)
     val useBottomK = arguments.k < 0
-    val topRdd = TopKRddFunctions.topK(frameRdd, columnIndex, Math.abs(arguments.k), useBottomK,
+    val topRdd = TopKRddFunctions.topK(frame.rdd.toRowRdd, columnIndex, Math.abs(arguments.k), useBottomK,
       weightsColumnIndexOption, weightsDataTypeOption)
 
     val newSchema = Schema.fromTuples(List(

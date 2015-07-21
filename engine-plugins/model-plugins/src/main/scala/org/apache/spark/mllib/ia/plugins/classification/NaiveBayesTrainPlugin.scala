@@ -27,6 +27,8 @@ import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
 
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -82,15 +84,11 @@ class NaiveBayesTrainPlugin extends SparkCommandPlugin[NaiveBayesTrainArgs, Unit
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: NaiveBayesTrainArgs)(implicit invocation: Invocation): UnitReturn = {
-    val models = engine.models
-    val frames = engine.frames
-
-    val inputFrame = frames.expectFrame(arguments.frame)
-    val model = models.expectModel(arguments.model)
+    val frame: SparkFrame = arguments.frame
+    val model: Model = arguments.model
 
     //create RDD from the frame
-    val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
-    val labeledTrainRdd: RDD[LabeledPoint] = trainFrameRdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
+    val labeledTrainRdd: RDD[LabeledPoint] = frame.rdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
 
     //Running MLLib
     val naiveBayes = new NaiveBayes()
@@ -99,8 +97,7 @@ class NaiveBayesTrainPlugin extends SparkCommandPlugin[NaiveBayesTrainArgs, Unit
     val naiveBayesModel = naiveBayes.run(labeledTrainRdd)
     val jsonModel = new NaiveBayesData(naiveBayesModel, arguments.observationColumns)
 
-    //TODO: Call save instead once implemented for models
-    models.updateModel(model.toReference, jsonModel.toJson.asJsObject)
+    model.data = jsonModel.toJson.asJsObject
     new UnitReturn
   }
 }

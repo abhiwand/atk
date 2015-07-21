@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins
 import com.intel.taproot.analytics.domain.LongValue
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.FrameNoArgs
+import com.intel.taproot.analytics.engine.frame.Frame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 
 // Implicits needed for JSON conversion
@@ -58,13 +59,8 @@ class SizeOnDiskPlugin extends CommandPlugin[FrameNoArgs, LongValue] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FrameNoArgs)(implicit invocation: Invocation): LongValue = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frame = frames.expectFrame(arguments.frame)
-
-    frames.getSizeInBytes(frame) match {
+    val frame: Frame = arguments.frame
+    frame.sizeInBytes match {
       case Some(size) => LongValue(size)
       case _ => throw new RuntimeException(s"Unable to calculate size of frame! Frame is empty or has not been materialized.")
     }

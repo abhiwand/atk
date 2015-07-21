@@ -21,6 +21,8 @@ import com.intel.taproot.analytics.domain.model.ModelReference
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.PluginDocAnnotation
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ PluginDoc, Invocation, ApiMaturityTag }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -66,14 +68,11 @@ class PrincipalComponentsPredictPlugin extends SparkCommandPlugin[PrincipalCompo
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: PrincipalComponentsPredictArgs)(implicit invocation: Invocation): PrincipalComponentsPredictReturn = {
-    val models = engine.models
-    val frames = engine.frames
-
-    val inputFrame = frames.expectFrame(arguments.frame)
-    val model = models.expectModel(arguments.model)
+    val frame: SparkFrame = arguments.frame
+    val model: Model = arguments.model
 
     //Running MLLib
-    val principalComponentJsObject = model.data.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
+    val principalComponentJsObject = model.dataOption.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
     val principalComponentData = principalComponentJsObject.convertTo[PrincipalComponentsData]
 
     if (arguments.observationColumns.isDefined) {
@@ -88,9 +87,9 @@ class PrincipalComponentsPredictPlugin extends SparkCommandPlugin[PrincipalCompo
     val predictColumns = arguments.observationColumns.getOrElse(principalComponentData.observationColumns)
 
     //create RDD from the frame
-    val indexedFrameRdd = frames.loadFrameData(sc, inputFrame).zipWithIndex().map { case (row, index) => (index, row) }
+    val indexedFrameRdd = frame.rdd.zipWithIndex().map { case (row, index) => (index, row) }
 
-    val indexedRowMatrix: IndexedRowMatrix = new IndexedRowMatrix(FrameRdd.toIndexedRowRdd(indexedFrameRdd, inputFrame.schema, predictColumns))
+    val indexedRowMatrix: IndexedRowMatrix = new IndexedRowMatrix(FrameRdd.toIndexedRowRdd(indexedFrameRdd, frame.schema, predictColumns))
 
     val eigenVectors = principalComponentData.vFactor
     val y = indexedRowMatrix.multiply(eigenVectors)
@@ -112,11 +111,11 @@ class PrincipalComponentsPredictPlugin extends SparkCommandPlugin[PrincipalCompo
     }
 
     val newColumns = columnNames.toList.zip(columnTypes.toList.map(x => x: DataType))
-    val updatedSchema = inputFrame.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
+    val updatedSchema = frame.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
     val resultFrame = new FrameRdd(updatedSchema, resultFrameRdd)
 
-    val resultFrameEntity = frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created from join operation"))) {
-      newFrame => frames.saveFrameData(newFrame.toReference, resultFrame)
+    val resultFrameEntity = engine.frames.tryNewFrame(CreateEntityArgs(name = arguments.name, description = Some("created from principal components predict"))) {
+      newFrame => newFrame.save(resultFrame)
     }
     PrincipalComponentsPredictReturn(resultFrameEntity, t)
   }

@@ -28,7 +28,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import org.apache.spark.rdd.RDD
 
-// TODO: all plugins should move out of engine-core into plugin modules
 /*
 Parameters
 ----------

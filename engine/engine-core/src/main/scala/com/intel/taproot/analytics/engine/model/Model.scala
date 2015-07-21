@@ -29,6 +29,7 @@ trait Model {
   @deprecated("it is better if plugin authors do not have direct access to entity")
   def entity: ModelEntity
 
+  /** name assigned by user for this model instance */
   def name: Option[String]
 
   /** the type of the model eg: OLS, LogisticRegression */
@@ -66,12 +67,16 @@ class ModelImpl(modelRef: ModelReference, modelStorage: ModelStorage)(implicit i
 
   override def entity: ModelEntity = modelStorage.expectModel(modelRef)
 
+  /** name assigned by user for this model instance */
   override def name: Option[String] = entity.name
 
+  /** the type of the model eg: OLS, LogisticRegression */
   override def modelType: String = entity.modelType
 
+  /** description of the model (a good default might say what frame it came from) */
   override def description: Option[String] = entity.description
 
+  /** lifecycle status. For example, ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete) */
   override def statusId: Long = entity.statusId
 
   /**

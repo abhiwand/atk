@@ -77,8 +77,8 @@ class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
     val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
 
     // setup data in Spark
-    val inputRowsRdd: RDD[Rows.Row] = frames.loadLegacyFrameRdd(sc, theOnlySourceFrameID)
-    val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
+    val inputRowsRdd = frames.loadFrameData(sc, frameEntity)
+    val inputRdd: RDD[Seq[_]] = inputRowsRdd.mapRows(x => x.toSeq)
     graphBuilder.build(inputRdd)
     graphs.updateStatus(graphEntity, Status.Active)
 

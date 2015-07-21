@@ -16,13 +16,14 @@
 
 package org.apache.spark.frame
 
+import com.intel.taproot.analytics.engine.Rows
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema._
 import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
-import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
@@ -62,11 +63,13 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   val rowWrapper = new RowWrapper(frameSchema)
 
   /**
-   * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]]
+   * Convert this FrameRdd into an RDD of type Array[Any].
+   *
+   * This was added to support some legacy plugin code.
    */
-  @deprecated("use FrameRdd instead")
-  def toLegacyFrameRdd: LegacyFrameRdd = {
-    new LegacyFrameRdd(this.frameSchema, this.toDataFrame)
+  @deprecated("use FrameRdd and sql.Rows instead")
+  def toRowRdd: RDD[Rows.Row] = {
+    mapRows(_.toArray)
   }
 
   /**

@@ -83,7 +83,7 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
 
     // run the operation and return results
     val weightsColumnOption = frame.schema.column(arguments.weightsColumn)
-    val entropy = EntropyRddFunctions.shannonEntropy(frame.rdd.toLegacyFrameRdd, columnIndex, weightsColumnOption)
+    val entropy = EntropyRddFunctions.shannonEntropy(frame.rdd.toRowRdd, columnIndex, weightsColumnOption)
     DoubleValue(entropy)
   }
 }

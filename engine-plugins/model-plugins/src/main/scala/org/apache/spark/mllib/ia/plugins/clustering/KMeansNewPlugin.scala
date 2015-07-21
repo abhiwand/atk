@@ -31,9 +31,7 @@ class KMeansNewPlugin extends SparkCommandPlugin[KMeansNewArgs, ModelEntity] {
 
   override def name: String = "model:k_means/new"
 
-  override def execute(arguments: KMeansNewArgs)(implicit invocation: Invocation): ModelEntity =
-    {
-      val models = engine.models
-      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:k_means")))
-    }
+  override def execute(arguments: KMeansNewArgs)(implicit invocation: Invocation): ModelEntity = {
+    engine.models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:k_means")))
+  }
 }

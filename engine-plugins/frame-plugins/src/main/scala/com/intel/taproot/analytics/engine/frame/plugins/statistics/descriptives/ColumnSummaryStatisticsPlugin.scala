@@ -177,12 +177,11 @@ class ColumnSummaryStatisticsPlugin extends SparkCommandPlugin[ColumnSummaryStat
     }
 
     // run the operation and return the results
-    val rdd = frame.rdd.toLegacyFrameRdd
     ColumnStatistics.columnSummaryStatistics(columnIndex,
       valueDataType,
       weightsColumnIndexOption,
       weightsDataTypeOption,
-      rdd,
+      frame.rdd.toRowRdd,
       usePopulationVariance)
   }
 }
