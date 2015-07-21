@@ -130,7 +130,7 @@ object FlattenColumnFunctions extends Serializable {
    */
   private[frame] def flattenRowByVectorColumnIndex(index: Int, vectorLength: Long)(row: Row): Array[Row] = {
     DataTypes.toVector(vectorLength)(row(index)).toArray.map(s => {
-      val r = row.toSeq.toArray
+      val r = row.toSeq.toArray.clone()
       r(index) = s
       Row.fromSeq(r)
     })
@@ -147,7 +147,7 @@ object FlattenColumnFunctions extends Serializable {
   private[frame] def flattenRowByStringColumnIndex(index: Int, delimiter: String)(row: Row): Array[Row] = {
     val splitted = row(index).asInstanceOf[String].split(Pattern.quote(delimiter))
     splitted.map(s => {
-      val r = row.toSeq.toArray
+      val r = row.toSeq.toArray.clone()
       r(index) = s
       Row.fromSeq(r)
     })
