@@ -111,7 +111,7 @@ object PythonRddStorage {
       x => {
 
         val obj = new BasicBSONObject()
-        obj.put("array", x.toSeq.map(value => value match {
+        obj.put("array", x.toSeq.toArray.map(value => value match {
           case y: ArrayBuffer[_] => iterableToBsonList(y)
           case y: Vector[_] => iterableToBsonList(y)
           case _ => value
