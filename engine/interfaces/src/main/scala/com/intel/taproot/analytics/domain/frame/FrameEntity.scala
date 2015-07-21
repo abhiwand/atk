@@ -120,7 +120,7 @@ case class FrameEntity(id: Long,
   }
 
   def getStorageLocation: String = {
-    storageLocation.getOrElse(StringUtils.EMPTY)
+    storageLocation.getOrElse(throw new RuntimeException(s"Storage location was not defined for $this"))
   }
 
   /**
