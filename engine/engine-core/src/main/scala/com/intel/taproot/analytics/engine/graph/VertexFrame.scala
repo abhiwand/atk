@@ -40,9 +40,19 @@ object VertexFrame {
   implicit def vertexFrameToFrameEntity(vertexFrame: VertexFrame): FrameEntity = vertexFrame.entity
 }
 
+trait SparkVertexFrame extends VertexFrame {
+
+  /** Load the frame's data as an RDD */
+  def rdd: VertexFrameRdd
+
+  /** Update the data for this frame */
+  def save(rdd: VertexFrameRdd): SparkVertexFrame
+
+}
+
 class VertexFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)
-    extends FrameImpl(frame, frameStorage)(invocation)
-    with VertexFrame {
+  extends FrameImpl(frame, frameStorage)(invocation)
+  with VertexFrame {
 
   override def entity: FrameEntity = {
     val e = super.entity
@@ -55,16 +65,6 @@ class VertexFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGr
   override def graph: SeamlessGraphMeta = {
     sparkGraphStorage.expectSeamless(entity.graphId.getOrElse(throw new RuntimeException("VertxFrame is required to have a graphId but this one didn't")))
   }
-
-}
-
-trait SparkVertexFrame extends VertexFrame {
-
-  /** Load the frame's data as an RDD */
-  def rdd: VertexFrameRdd
-
-  /** Update the data for this frame */
-  def save(rdd: VertexFrameRdd): SparkVertexFrame
 
 }
 
