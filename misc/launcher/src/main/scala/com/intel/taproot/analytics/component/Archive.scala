@@ -234,37 +234,9 @@ object Archive extends ClassLoaderAware {
     new URL(lead + url + tail)
   }
 
-  var _system: SystemState = null
+  var _system: SystemState = new SystemState()
 
-  def system: SystemState = {
-    if (_system == null) {
-      //Bootstrap process
-      //First, construct a bare-bones configuration based on nothing but commandline and the launcher
-      //We need this to know basic configs needed to load the first archive
-      val tempSystem = new SystemState()
-      val defaultParentArchiveName = tempSystem.systemConfig.defaultParentArchiveName
-      //Now we can construct a throwaway class loader we use to load the real configuration
-      val configDirectory = System.getProperty("launcher.configDirectory", (Directory.Current.get / "conf").toString)
-      val defaultParentArchiveClassLoader =
-        attempt(buildClassLoader(defaultParentArchiveName,
-          getClass.getClassLoader,
-          tempSystem.systemConfig.sourceRoots,
-          tempSystem.systemConfig.jarFolders,
-          Array.empty,
-          Array(configDirectory)),
-          s"Failed to build default parent class loader '$defaultParentArchiveName'")
-      //Install this system configuration that's really close to the final config
-      _system = attempt(new SystemState(
-        new SystemConfig(ConfigFactory.load(defaultParentArchiveClassLoader))),
-        s"Failed to load default configuration")
-      //Now we've got enough to actually load our first archive
-      //getArchive has the side effect of updating _system also, but it needs _system to work
-      buildArchive(_system.systemConfig.defaultParentArchiveName)
-      //At this point, the system config is fully initialized and new archives can be loaded.
-      logger(s"System configuration installed")
-    }
-    _system
-  }
+  def system: SystemState = _system
 
   /**
    * Initializes an archive instance
