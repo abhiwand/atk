@@ -20,6 +20,7 @@ import breeze.numerics._
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
@@ -66,12 +67,12 @@ class PrincipalComponentsTrainPlugin extends SparkCommandPlugin[PrincipalCompone
    */
   override def execute(arguments: PrincipalComponentsTrainArgs)(implicit invocation: Invocation): PrincipalComponentsTrainReturn = {
     val model: Model = arguments.model
-    val frame = arguments.frame
+    val frame: SparkFrame = arguments.frame
 
     validatePrincipalComponentsArgs(frame.schema, arguments)
 
     // compute covariance
-    val outputColumnDataType = frame.schema.columnDataType(arguments.observationColumns(0))
+    val outputColumnDataType = frame.schema.columnDataType(arguments.observationColumns.head)
     val outputVectorLength: Option[Long] = outputColumnDataType match {
       case vector(length) => Some(length)
       case _ => None
