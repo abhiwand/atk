@@ -51,8 +51,8 @@ class LoopyBeliefPropagationPlugin
     val giraphConf = new LoopyBeliefPropagationConfiguration(hadoopConf)
 
     val outputFrame = frames.prepareForSave(CreateEntityArgs(description = Some("Loopy belief propagation results")))
-    val inputFormatConfig = new LoopyBeliefPropagationInputFormatConfig(frame.storageLocation.get, frame.schema)
-    val outputFormatConfig = new LoopyBeliefPropagationOutputFormatConfig(outputFrame.storageLocation.get)
+    val inputFormatConfig = new LoopyBeliefPropagationInputFormatConfig(frame.getStorageLocation, frame.schema)
+    val outputFormatConfig = new LoopyBeliefPropagationOutputFormatConfig(outputFrame.getStorageLocation)
     val loopyBeliefPropagationConfig = new LoopyBeliefPropagationConfig(inputFormatConfig, outputFormatConfig, arguments)
 
     giraphConf.setConfig(loopyBeliefPropagationConfig)
