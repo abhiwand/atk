@@ -210,8 +210,8 @@ class TwoNodeTest extends FlatSpec with Matchers with TestingSparkContextFlatSpe
     val unnormalizedBeliefsFirstNode: Vector[Double] = firstNodePriors.zip(messageSecondToFirst).map({ case (p, m) => p * m })
     val unnormalizedBeliefsSecondNode: Vector[Double] = secondNodePriors.zip(messageFirstToSecond).map({ case (p, m) => p * m })
 
-    val expectedFirstNodePosteriors = unnormalizedBeliefsFirstNode.map(x => x / unnormalizedBeliefsFirstNode.reduce(_ + _))
-    val expectedSecondNodePosteriors = unnormalizedBeliefsSecondNode.map(x => x / unnormalizedBeliefsSecondNode.reduce(_ + _))
+    val expectedFirstNodePosteriors = unnormalizedBeliefsFirstNode.map(x => x / unnormalizedBeliefsFirstNode.sum)
+    val expectedSecondNodePosteriors = unnormalizedBeliefsSecondNode.map(x => x / unnormalizedBeliefsSecondNode.sum)
 
     val priors: Map[Long, Vector[Double]] = Map(1.toLong -> firstNodePriors,
       2.toLong -> secondNodePriors)
