@@ -276,7 +276,7 @@ trait EngineConfig extends EventLogging {
     val maxResultSize = config.getBytes("intel.taproot.analytics.engine.spark.conf.properties.spark.driver.maxResultSize")
     if (joinThreshold > maxResultSize) {
       throw new RuntimeException(
-        s"Broadcast join threshold: ${joinThreshold} shouldn't be larger than spark.driver.maxResultSize: ${maxResultSize}")
+        s"Broadcast join threshold: $joinThreshold shouldn't be larger than spark.driver.maxResultSize: $maxResultSize")
     }
     joinThreshold
   }
