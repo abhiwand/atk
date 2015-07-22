@@ -93,23 +93,17 @@ class AnnotateDegreesPlugin extends SparkCommandPlugin[AnnotateDegreesArgs, Anno
   override def execute(arguments: AnnotateDegreesArgs)(implicit invocation: Invocation): AnnotateDegreesReturn = {
 
     val degreeMethod: String = arguments.degreeMethod
-    // Get the graph
-    import scala.concurrent.duration._
-
-    val graph = engine.graphs.expectGraph(arguments.graph)
-
-    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
-
-    val inputEdgeSet = arguments.inputEdgeSet
+    val graph: SparkGraph = arguments.graph
+    val (gbVertices, gbEdges) = graph.gbRdds
 
     val vertexDegreePairs: RDD[(GBVertex, Long)] = if (arguments.useUndirected()) {
-      UnweightedDegrees.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
+      UnweightedDegrees.undirectedDegreesByEdgeLabel(gbVertices, gbEdges, arguments.inputEdgeSet)
     }
     else if (arguments.useInDegree()) {
-      UnweightedDegrees.inDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
+      UnweightedDegrees.inDegreesByEdgeLabel(gbVertices, gbEdges, arguments.inputEdgeSet)
     }
     else {
-      UnweightedDegrees.outDegreesByEdgeLabel(gbVertices, gbEdges, inputEdgeSet)
+      UnweightedDegrees.outDegreesByEdgeLabel(gbVertices, gbEdges, arguments.inputEdgeSet)
     }
 
     val outVertices = vertexDegreePairs.map({
