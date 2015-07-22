@@ -76,6 +76,11 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
 
   override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
+  override def numberOfJobs(arguments: HistogramArgs)(implicit invocation: Invocation): Int = arguments.binType match {
+    case Some("equaldepth") => 8
+    case _ => 7
+  }
+
   /**
    * Compute histogram for a column in a frame.
    * @param arguments histogram arguments, frame, column, column of weights, and number of bins
@@ -93,7 +98,7 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
     val weightColumnIndex: Option[Int] = arguments.weightColumnName match {
       case Some(n) => {
         val columnType = schema.columnDataType(n)
-        require(columnType.isNumerical, s"Invalid column ${n} for bin column.  Expected a numerical data type, but got ${columnType}.")
+        require(columnType.isNumerical, s"Invalid column $n for bin column.  Expected a numerical data type, but got $columnType.")
         Some(schema.columnIndex(n))
       }
       case None => None
@@ -104,16 +109,7 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
     computeHistogram(frame.rdd, columnIndex, weightColumnIndex, numBins, arguments.binType.getOrElse("equalwidth") == "equalwidth")
   }
 
-  /**
-   *
-   * @param arguments command arguments: used if a command can produce variable number of jobs
-   * @param invocation
-   * @return number of jobs in this command
-   */
-  override def numberOfJobs(arguments: HistogramArgs)(implicit invocation: Invocation): Int = arguments.binType match {
-    case Some("equaldepth") => 8
-    case _ => 7
-  }
+
 
   /**
    * compute histogram information from column in a dataFrame
