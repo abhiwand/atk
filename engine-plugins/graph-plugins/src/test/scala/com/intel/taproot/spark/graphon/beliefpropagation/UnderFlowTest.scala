@@ -76,7 +76,7 @@ class UnderFlowTest extends FlatSpec with Matchers with TestingSparkContextFlatS
 
     val testVertices = verticesOut.collect().toSet
 
-    def vectorStrictlyPositive(v: Vector[Double]) = (v.forall(x => x >= 0d)) && (v.exists(x => x > 0d))
+    def vectorStrictlyPositive(v: Vector[Double]) = v.forall(x => x >= 0d) && v.exists(x => x > 0d)
 
     val test = testVertices.forall(v => vectorStrictlyPositive(v.getProperty(propertyForLBPOutput).get.value.asInstanceOf[Vector[Double]]))
 
