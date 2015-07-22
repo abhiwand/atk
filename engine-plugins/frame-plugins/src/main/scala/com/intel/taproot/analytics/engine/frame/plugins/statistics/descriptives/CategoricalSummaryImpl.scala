@@ -117,7 +117,7 @@ object CategoricalSummaryImpl {
 
   // Get the total count for all summary levels which satisfy the user criterion
   def getTotalCountForSummaryLevels(categoricalSummaryLevels: List[LevelData]): Int =
-    categoricalSummaryLevels.map(elem => elem.frequency).fold(0)(_ + _)
+    categoricalSummaryLevels.map(elem => elem.frequency).sum
 
   // Get the "Other" Category Level summary
   def getOtherCategoryLevel(categoricalSummaryLevels: List[LevelData], missingValueCount: Int)(implicit rowCount: Double) = {
