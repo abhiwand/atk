@@ -107,12 +107,12 @@ object EdgeManager extends Serializable {
         edge.getTotalNodeCount,
         edge.src,
         edge.srcNodeCount,
-        GraphClusteringConstants.DefaultNodeCount, true)
+        GraphClusteringConstants.DefaultNodeCount, isInternal = true)
       edges = edges :+ GraphClusteringEdge(metaNodeVertexId,
         edge.getTotalNodeCount,
         edge.dest,
         edge.destNodeCount,
-        GraphClusteringConstants.DefaultNodeCount, true)
+        GraphClusteringConstants.DefaultNodeCount, isInternal = true)
 
       (metaNodeVertexId, edge.getTotalNodeCount, edges)
     }
@@ -140,6 +140,6 @@ object EdgeManager extends Serializable {
         count,
         e.dest,
         e.destNodeCount,
-        e.distance, false))).toList
+        e.distance, isInternal = false))).toList
   }
 }

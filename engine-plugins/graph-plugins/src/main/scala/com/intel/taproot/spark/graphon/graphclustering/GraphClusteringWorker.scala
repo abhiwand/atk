@@ -49,7 +49,7 @@ class GraphClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) e
           GraphClusteringConstants.DefaultNodeCount,
           edge.tailPhysicalId.asInstanceOf[Number].longValue,
           GraphClusteringConstants.DefaultNodeCount,
-          1 - edgeDistProperty.value.asInstanceOf[Float], false)
+          1 - edgeDistProperty.value.asInstanceOf[Float], isInternal = false)
     }.distinct()
 
     configStorage(clusteringFactory)
@@ -166,7 +166,7 @@ class GraphClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) e
 
       //remove collapsed edges from the active graph - by dest node
       val newGraphReducedBySrcAndDest = newGraphReducedBySrc.map((e: GraphClusteringEdge) => (e.dest, e)).subtractByKey(collapsedEdgesAsKVPair).values
-      val newGraphWithoutInternalEdges = activeEdgesBothDirections.union(newGraphReducedBySrcAndDest).coalesce(activeEdgesBothDirections.partitions.length, true)
+      val newGraphWithoutInternalEdges = activeEdgesBothDirections.union(newGraphReducedBySrcAndDest).coalesce(activeEdgesBothDirections.partitions.length, shuffle = true)
       val distinctNewGraphWithoutInternalEdges = newGraphWithoutInternalEdges.filter(e => (e.src != e.dest))
 
       collapsableEdges.unpersist()
@@ -209,10 +209,10 @@ class GraphClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) e
           tempEdgeForMetaNode.srcNodeCount,
           destNode,
           destNodeCount,
-          EdgeDistance.weightedAvg(newEdges), false)
+          EdgeDistance.weightedAvg(newEdges), isInternal = false)
     }.distinct()
 
-    val newEdges = (internalEdges union activeEdgesWithWeightedAvgDistance).coalesce(internalEdges.partitions.length, true).map(
+    val newEdges = (internalEdges union activeEdgesWithWeightedAvgDistance).coalesce(internalEdges.partitions.length, shuffle = true).map(
       (e: GraphClusteringEdge) => (e.dest, e)
     ).groupByKey()
 
@@ -227,13 +227,13 @@ class GraphClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) e
 
     // recalculate the edge distance if several outgoing edges go into the same meta-node
     val newEdgesWithMetaNodesAndDistUpdated = newEdgesWithMetaNodeGrouped.map {
-      case ((src, dest), edges) => EdgeDistance.simpleAvg(edges, true)
+      case ((src, dest), edges) => EdgeDistance.simpleAvg(edges, swapInfo = true)
     }.map {
       (e: GraphClusteringEdge) => ((e.src, e.dest), e)
     }.groupByKey()
 
     newEdgesWithMetaNodesAndDistUpdated.map {
-      case ((src, dest), edges) => EdgeDistance.simpleAvg(edges, false)
+      case ((src, dest), edges) => EdgeDistance.simpleAvg(edges, swapInfo = false)
     }
   }
 
