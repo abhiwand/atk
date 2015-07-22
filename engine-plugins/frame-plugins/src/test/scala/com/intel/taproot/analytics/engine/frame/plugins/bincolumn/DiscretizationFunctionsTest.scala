@@ -14,7 +14,6 @@
 // limitations under the License.
 */
 
-
 package com.intel.taproot.analytics.engine.frame.plugins.bincolumn
 
 import org.scalatest.WordSpec
@@ -43,8 +42,8 @@ class DiscretizationFunctionsTest extends WordSpec {
         maxAdjustment <- 1 to 20
         numBins <- 1 to 10
       } {
-        val min = 1 + (1/minAdjustment.toDouble)
-        val max = 10 + (1/maxAdjustment.toDouble)
+        val min = 1 + (1 / minAdjustment.toDouble)
+        val max = 10 + (1 / maxAdjustment.toDouble)
         val cutoffsArray = getBinEqualWidthCutoffs(numBins, min, max)
         //println(s"For numbBins:$numBins, Min:$min, Max:$max, Cutoffs array was:${cutoffsArray.toList}")
         assert(cutoffsArray.length === numBins + 1, s"For numbBins:$numBins, Min:$min, Max:$max, Cutoffs array was:${cutoffsArray.toList}")

@@ -109,8 +109,6 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
     computeHistogram(frame.rdd, columnIndex, weightColumnIndex, numBins, arguments.binType.getOrElse("equalwidth") == "equalwidth")
   }
 
-
-
   /**
    * compute histogram information from column in a dataFrame
    * @param dataFrame rdd containing the required information
