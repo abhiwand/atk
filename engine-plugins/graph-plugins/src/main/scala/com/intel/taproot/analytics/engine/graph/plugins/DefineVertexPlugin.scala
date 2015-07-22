@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.graph.plugins
 
-import com.intel.taproot.analytics.domain.graph.{ DefineVertexArgs }
+import com.intel.taproot.analytics.domain.graph.DefineVertexArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.taproot.analytics.UnitReturn

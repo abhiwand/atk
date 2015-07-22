@@ -99,7 +99,7 @@ class CommandPluginRegistry(loader: CommandLoader) {
     val examples: Option[Map[String, String]] = CommandDocLoader.getCommandDocExamples(p.name)
     JsonSchemaExtractor.getPluginDocAnnotation(p.thisManifest) match {
       case Some(pluginDoc) => Some(CommandDoc(pluginDoc.oneLine, Some(pluginDoc.extended), examples))
-      case None => p.doc
+      case None => None
     }
   }
 }

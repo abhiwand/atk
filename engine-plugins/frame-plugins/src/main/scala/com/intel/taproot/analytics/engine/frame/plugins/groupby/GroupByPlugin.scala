@@ -17,8 +17,9 @@
 package com.intel.taproot.analytics.engine.frame.plugins.groupby
 
 import com.intel.taproot.analytics.domain.frame.{ GroupByArgs, FrameEntity }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 
 // Implicits needed for JSON conversion
@@ -53,19 +54,14 @@ class GroupByPlugin extends SparkCommandPlugin[GroupByArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: GroupByArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val originalFrame = frames.loadFrameData(sc, frames.expectFrame(arguments.frame))
-    val frameSchema = originalFrame.frameSchema
-    val groupByColumns = arguments.groupByColumns.map(columnName => frameSchema.column(columnName))
+    val frame: SparkFrame = arguments.frame
+    val groupByColumns = frame.schema.columns(arguments.groupByColumns)
 
     // run the operation and save results
-    val groupByRdd = GroupByAggregationFunctions.aggregation(originalFrame, groupByColumns, arguments.aggregations)
+    val groupByRdd = GroupByAggregationFunctions.aggregation(frame.rdd, groupByColumns, arguments.aggregations)
 
-    frames.tryNewFrame(CreateEntityArgs(description = Some("created by group_by command"))) {
-      newFrame => frames.saveFrameData(newFrame.toReference, groupByRdd)
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by group_by command"))) {
+      newFrame => newFrame.save(groupByRdd)
     }
   }
 }

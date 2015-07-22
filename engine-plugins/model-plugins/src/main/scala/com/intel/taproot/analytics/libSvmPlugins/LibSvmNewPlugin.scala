@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 @PluginDoc(oneLine = "model:libsvm/new",
   extended = "")
-class LibSvmPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {
+class LibSvmNewPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
    * The name of the command.
    *
@@ -36,7 +36,6 @@ class LibSvmPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] 
   override def apiMaturityTag = Some(ApiMaturityTag.Alpha)
 
   override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
-    val models = engine.models
-    models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:libsvm")))
+    engine.models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:libsvm")))
   }
 }

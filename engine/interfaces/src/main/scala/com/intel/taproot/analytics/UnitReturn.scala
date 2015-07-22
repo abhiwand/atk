@@ -18,5 +18,7 @@ package com.intel.taproot.analytics
 
 /**
  * Unit return type for plugin.
+ *
+ * Currently, we have to give some value, so this is how we are representing Unit
  */
 case class UnitReturn()

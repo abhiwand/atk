@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.libSvmPlugins
 
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.Rows._
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
@@ -26,8 +26,7 @@ import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import org.apache.spark.rdd.RDD
-
-// TODO: all plugins should move out of engine-core into plugin modules
+import org.apache.spark.sql.Row
 
 @PluginDoc(oneLine = "Predict test frame labels and return metrics.",
   extended = """Predict the labels for a test frame and run classification
@@ -76,18 +75,12 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: LibSvmTestArgs)(implicit invocation: Invocation): ClassificationMetricValue = {
-    val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
-
-    val frames = engine.frames
-    val inputFrame = frames.expectFrame(arguments.frame)
-
+    val model: Model = arguments.model
     val frame: SparkFrame = arguments.frame
 
     //Loading the model
     val svmColumns = arguments.observationColumns
-    val svmJsObject = modelMeta.data.get
-    val libsvmData = svmJsObject.convertTo[LibSvmData]
+    val libsvmData = model.data.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 
     if (arguments.observationColumns.isDefined) {
@@ -97,7 +90,11 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
     //predicting a label for the observation column/s
     val predictionsRdd: RDD[Row] = frame.rdd.mapRows(row => {
       val array = row.valuesAsArray(arguments.observationColumns.getOrElse(libsvmData.observationColumns))
-      val label = row.value(arguments.labelColumn)
+      val label = row.value(arguments.labelColumn) match {
+        case x: Int => x.toInt
+        case y: Double => y.toDouble
+        case _ => throw new RuntimeException(s"Only Int and Double are supported as label columns")
+      }
       val doubles = array.map(i => DataTypes.toDouble(i))
       var vector = Vector.empty[Double]
       var i: Int = 0
@@ -106,7 +103,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
         i += 1
       }
       val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
-      Array[Any](label.asInstanceOf[Int], predictionLabel.value)
+      Row(label, predictionLabel.value)
     })
 
     //Run Binary classification metrics

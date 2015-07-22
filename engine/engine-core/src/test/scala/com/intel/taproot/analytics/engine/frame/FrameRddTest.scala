@@ -45,16 +45,6 @@ class FrameRddTest extends TestingSparkContextWordSpec with Matchers {
       rdd.first.toSeq.toArray should equal(rows.first)
     }
 
-    "be convertible into a LegacyFrameRdd" in {
-      val rows = sparkContext.parallelize((1 to 100).map(i => Array(i, i.toString)))
-      val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
-      val rdd = FrameRdd.toFrameRdd(schema, rows)
-      val legacy = rdd.toLegacyFrameRdd
-      legacy.getClass should be(classOf[LegacyFrameRdd])
-      legacy.schema should equal(schema)
-      legacy.first should equal(rdd.first.toSeq.toArray)
-    }
-
     "create unique ids in a new column" in {
       val rows = sparkContext.parallelize((1 to 100).map(i => Array(i.toLong, i.toString))).repartition(7)
       val schema = Schema.fromTuples(List(("num", DataTypes.int64), ("name", DataTypes.string)))

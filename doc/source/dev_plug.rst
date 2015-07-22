@@ -85,13 +85,6 @@ Each invocation resulting from a user action or other source will provide an
 execution context object that encapsulates the arguments
 passed by the user as well as other relevant metadata.
 
-Pagination
-==========
-
-Query plugins (plugins that are subclasses of QueryPlugin) that need to return
-large amounts of data to the user will be automatically
-paged in the same way that other |PACKAGE| components handle pagination.
-
 Logging and Error Handling
 ==========================
 

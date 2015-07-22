@@ -20,14 +20,14 @@ import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchem
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.testutils.MatcherUtils._
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
 
 class DotProductFunctionsTest extends TestingSparkContextFlatSpec with Matchers {
   val epsilon = 0.000000001
 
-  val inputRows: Array[sql.Row] = Array(
+  val inputRows: Array[Row] = Array(
     new GenericRow(Array[Any](1d, 0.2d, -2, 5, Vector(1d, 2d).asInstanceOf[Any], Vector(3d, 4d).asInstanceOf[Any])),
     new GenericRow(Array[Any](2d, 0.4d, -1, 6, Vector(5d, 6d).asInstanceOf[Any], Vector(7d, 8d).asInstanceOf[Any])),
     new GenericRow(Array[Any](3d, 0.6d, 0, 7, Vector(9d, 10d).asInstanceOf[Any], Vector(11d, 12d).asInstanceOf[Any])),

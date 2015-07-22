@@ -17,11 +17,8 @@
 package com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics
 
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
+import org.apache.spark.sql.Row
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.analytics.engine.Rows.Row
-import org.apache.spark.rdd.RDD
-
-import scala.math
 
 //implicit conversion for PairRDD
 import org.apache.spark.SparkContext._

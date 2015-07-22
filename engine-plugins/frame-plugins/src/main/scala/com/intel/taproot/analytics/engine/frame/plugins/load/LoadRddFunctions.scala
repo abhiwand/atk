@@ -24,10 +24,9 @@ import org.apache.hadoop.io.LongWritable
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.{ sql, SparkContext }
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SchemaRDD
+import org.apache.spark.sql.{ types => SparkType, Row, SchemaRDD }
 import org.apache.spark.sql.catalyst.expressions.{ GenericMutableRow, GenericRow }
 import org.apache.hadoop.io.Text
-import org.apache.spark.sql.{ types => SparkType }
 import SparkType.{ DateType, StructField, TimestampType, ByteType, BooleanType, ShortType, DecimalType }
 
 import scala.collection.mutable.ListBuffer
@@ -76,7 +75,7 @@ object LoadRddFunctions extends Serializable {
     }
     else {
       val listColumn = List(Column("data_lines", DataTypes.str))
-      val rows = fileContentRdd.map(s => new GenericRow(Array[Any](s)).asInstanceOf[sql.Row])
+      val rows = fileContentRdd.map(s => Row(s))
       ParseResultRddWrapper(new FrameRdd(new FrameSchema(listColumn), rows), null)
     }
 

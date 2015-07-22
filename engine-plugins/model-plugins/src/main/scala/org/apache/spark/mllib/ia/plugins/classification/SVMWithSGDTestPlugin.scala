@@ -18,7 +18,8 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
-import com.intel.taproot.analytics.engine.Rows.Row
+import org.apache.spark.sql.Row
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
@@ -82,13 +83,11 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation): ClassificationMetricValue = {
-    val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model: Model = arguments.model
     val frame: SparkFrame = arguments.frame
 
     //Extracting the model and data to run on
-    val svmJsObject = modelMeta.data.get
-    val svmData = svmJsObject.convertTo[SVMData]
+    val svmData = model.data.convertTo[SVMData]
     val svmModel = svmData.svmModel
     if (arguments.observationColumns.isDefined) {
       require(svmData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
@@ -100,7 +99,7 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
     //predicting and testing
     val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>
       val prediction = svmModel.predict(point.features)
-      Array[Any](point.label, prediction)
+      Row(point.label, prediction)
     }
 
     //Run Binary classification metrics

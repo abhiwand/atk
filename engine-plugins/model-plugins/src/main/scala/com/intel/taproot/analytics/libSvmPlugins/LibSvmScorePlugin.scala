@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.libSvmPlugins
 import java.util.StringTokenizer
 
 import com.intel.taproot.analytics.domain.DoubleValue
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, CommandPlugin, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
@@ -61,11 +62,9 @@ class LibSvmScorePlugin extends CommandPlugin[LibSvmScoreArgs, DoubleValue] {
    */
 
   override def execute(arguments: LibSvmScoreArgs)(implicit invocation: Invocation): DoubleValue = {
-    val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model: Model = arguments.model
 
-    val svmJsObject = modelMeta.data.get
-    val libsvmData = svmJsObject.convertTo[LibSvmData]
+    val libsvmData = model.data.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 
     LibSvmPluginFunctions.score(libsvmModel, arguments.vector)

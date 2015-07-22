@@ -17,10 +17,11 @@
 package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 
 import com.intel.taproot.analytics.domain.frame.{ CumulativeSumArgs, FrameEntity }
-import com.intel.taproot.analytics.domain.schema.{ DataTypes }
+import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.LegacyFrameRdd
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRdd
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -63,21 +64,14 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSumArgs, FrameEnt
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: CumulativeSumArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frameRef = arguments.frame
-    val frameEntity = frames.expectFrame(frameRef)
-    val sampleIndex = frameEntity.schema.columnIndex(arguments.sampleCol)
+    val frame: SparkFrame = arguments.frame
+    val sampleIndex = frame.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val frameRdd = frames.loadLegacyFrameRdd(sc, frameRef)
-    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frameRdd, sampleIndex), "_cumulative_sum")
-    val frameSchema = frameEntity.schema
-    val updatedSchema = frameSchema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frame.rdd, sampleIndex), "_cumulative_sum")
+    val updatedSchema = frame.schema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frames.saveLegacyFrame(frameEntity.toReference, new LegacyFrameRdd(updatedSchema, cumulativeDistRdd))
+    frame.save(new FrameRdd(updatedSchema, cumulativeDistRdd))
   }
 }

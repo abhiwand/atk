@@ -18,9 +18,11 @@ package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
-import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd, MiscFrameFunctions }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.frame.{ SparkFrame, MiscFrameFunctions }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -68,13 +70,12 @@ class DropDuplicatesPlugin extends SparkCommandPlugin[DropDuplicatesArgs, FrameE
   override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
     // validate arguments
     val frame: SparkFrame = arguments.frame
-    val rdd = frame.rdd.toLegacyFrameRdd
     val columnNames = arguments.unique_columns match {
       case Some(columns) => frame.schema.validateColumnsExist(columns.value).toList
       case None => frame.schema.columnNames
     }
     // run operation
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, frame.schema, columnNames)
-    frame.save(new LegacyFrameRdd(frame.schema, duplicatesRemoved))
+    val duplicatesRemoved: RDD[Row] = MiscFrameFunctions.removeDuplicatesByColumnNames(frame.rdd, frame.schema, columnNames)
+    frame.save(new FrameRdd(frame.schema, duplicatesRemoved))
   }
 }

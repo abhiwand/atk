@@ -16,10 +16,10 @@
 
 package com.intel.taproot.analytics.engine.graph.plugins
 
-import com.intel.taproot.analytics.domain.graph.{ DefineEdgeArgs }
+import com.intel.taproot.analytics.domain.graph.DefineEdgeArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import com.intel.taproot.analytics.UnitReturn
-import com.intel.taproot.analytics.engine.plugin.{ PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.PluginDoc
 
 // Implicits needed for JSON conversion
 import spray.json._

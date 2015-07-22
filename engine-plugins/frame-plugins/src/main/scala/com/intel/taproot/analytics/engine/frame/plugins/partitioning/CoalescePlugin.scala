@@ -31,7 +31,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Runs RDD#coalesce (useful for debugging)
  */
-@PluginDoc(oneLine = "",
+@PluginDoc(oneLine = "Calls underlying Spark RDD method.",
   extended = "",
   returns = "")
 class CoalescePlugin extends SparkCommandPlugin[CoalesceArgs, FrameEntity] {
@@ -43,13 +43,6 @@ class CoalescePlugin extends SparkCommandPlugin[CoalesceArgs, FrameEntity] {
    * e.g Python client via code generation.
    */
   override def name: String = "frame/_coalesce"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Calls underlying Spark method.", None))
 
   /**
    * Runs RDD#coalesce (useful for debugging)

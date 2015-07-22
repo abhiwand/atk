@@ -166,10 +166,6 @@ trait AbstractRow {
     setValuesIgnoreType(values)
   }
 
-  def setValues(values: List[Writable]): Row = {
-    setValues(values.map(value => WritableRowConversions.writableToValue(value)).toArray)
-  }
-
   /**
    * Validate the supplied value matches the schema for the supplied columnName.
    * @param name column name
@@ -289,17 +285,18 @@ trait AbstractRow {
     arrayBuf.toArray
   }
 
-  def valueAsWritable(name: String): Writable = {
-    WritableRowConversions.valueToWritable(value(name))
+  /**
+   * Values of the row as a Seq[Any]
+   */
+  def toSeq: Seq[Any] = {
+    row.toSeq
   }
 
-  def valueAsWritableComparable(name: String): WritableComparable[_] = {
-    WritableRowConversions.valueToWritableComparable(value(name))
-  }
-
-  def valuesAsWritable(names: Seq[String] = schema.columnNames): List[Writable] = {
-    val indices = schema.columnIndices(names).toList
-    indices.map(i => WritableRowConversions.valueToWritable(row(i)))
+  /**
+   * Values of the row as an Array[Any]
+   */
+  def toArray: Array[Any] = {
+    row.toSeq.toArray
   }
 
   /**

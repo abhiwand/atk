@@ -17,7 +17,9 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
-import com.intel.taproot.analytics.engine.Rows.Row
+import org.apache.spark.sql.Row
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -78,37 +80,27 @@ class LogisticRegressionTestPlugin extends SparkCommandPlugin[ClassificationWith
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation): ClassificationMetricValue =
-    {
+  override def execute(arguments: ClassificationWithSGDTestArgs)(implicit invocation: Invocation): ClassificationMetricValue = {
+    val frame: SparkFrame = arguments.frame
+    val model: Model = arguments.model
 
-      val models = engine.models
-      val frames = engine.frames
-
-      val inputFrame = frames.expectFrame(arguments.frame)
-      val modelMeta = models.expectModel(arguments.model)
-
-      //create RDD from the frame
-      val testFrameRdd = frames.loadFrameData(sc, inputFrame)
-
-      val logRegJsObject = modelMeta.data.get
-      val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
-      val logRegModel = logRegData.logRegModel
-      if (arguments.observationColumns.isDefined) {
-        require(logRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
-      }
-      val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
-
-      val labeledTestRdd: RDD[LabeledPoint] = testFrameRdd.toLabeledPointRDD(arguments.labelColumn, logRegColumns)
-
-      //predicting and testing
-      val scoreAndLabelRdd: RDD[Row] = labeledTestRdd.map { point =>
-        val prediction = logRegModel.predict(point.features)
-        Array[Any](point.label, prediction)
-      }
-
-      //Run Binary classification metrics
-      val posLabel: String = "1.0"
-      ClassificationMetrics.binaryClassificationMetrics(scoreAndLabelRdd, 0, 1, posLabel, 1)
-
+    val logRegData = model.data.convertTo[LogisticRegressionData]
+    val logRegModel = logRegData.logRegModel
+    if (arguments.observationColumns.isDefined) {
+      require(logRegData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and test should be same")
     }
+    val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
+
+    val labeledTestRdd: RDD[LabeledPoint] = frame.rdd.toLabeledPointRDD(arguments.labelColumn, logRegColumns)
+
+    //predicting and testing
+    val scoreAndLabelRdd: RDD[Row] = labeledTestRdd.map { point =>
+      val prediction = logRegModel.predict(point.features)
+      Row(point.label, prediction)
+    }
+
+    //Run Binary classification metrics
+    val posLabel: String = "1.0"
+    ClassificationMetrics.binaryClassificationMetrics(scoreAndLabelRdd, 0, 1, posLabel, 1)
+  }
 }

@@ -20,7 +20,7 @@ import com.intel.taproot.graphbuilder.elements.GBEdge
 import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, GraphSchema, Schema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 
 import scala.reflect.ClassTag
 
@@ -30,11 +30,11 @@ import scala.reflect.ClassTag
  * @param schema  the schema describing the columns of this edge frame
  * @param prev the underlying rdd which represents this edge frame
  */
-class EdgeFrameRdd(schema: EdgeSchema, prev: RDD[sql.Row]) extends FrameRdd(schema, prev) {
+class EdgeFrameRdd(schema: EdgeSchema, prev: RDD[Row]) extends FrameRdd(schema, prev) {
 
   def this(frameRdd: FrameRdd) = this(frameRdd.frameSchema.asInstanceOf[EdgeSchema], frameRdd)
 
-  def this(schema: Schema, rowRDD: RDD[sql.Row]) = this(schema.asInstanceOf[EdgeSchema], rowRDD)
+  def this(schema: Schema, rowRDD: RDD[Row]) = this(schema.asInstanceOf[EdgeSchema], rowRDD)
 
   /** Edge wrapper provides richer API for working with Vertices */
   val edge = new EdgeWrapper(schema)

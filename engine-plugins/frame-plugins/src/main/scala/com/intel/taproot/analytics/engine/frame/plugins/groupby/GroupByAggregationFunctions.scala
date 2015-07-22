@@ -61,7 +61,7 @@ private object GroupByAggregationFunctions extends Serializable {
     val newColumns = groupByColumns ++ columnAggregators.map(_.column)
     val newSchema = FrameSchema(newColumns)
 
-    FrameRdd.toFrameRdd(newSchema, aggregationRDD)
+    new FrameRdd(newSchema, aggregationRDD)
   }
 
   /**

@@ -18,11 +18,11 @@ package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilder
 import com.intel.taproot.analytics.domain.graph.{ LoadGraphArgs, GraphEntity }
-import com.intel.taproot.analytics.engine.Rows
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 
 import com.intel.taproot.analytics.domain.Status
@@ -77,8 +77,8 @@ class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
     val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
 
     // setup data in Spark
-    val inputRowsRdd: RDD[Rows.Row] = frames.loadLegacyFrameRdd(sc, theOnlySourceFrameID)
-    val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
+    val inputRowsRdd = frames.loadFrameData(sc, frameEntity)
+    val inputRdd: RDD[Seq[_]] = inputRowsRdd.mapRows(x => x.toSeq)
     graphBuilder.build(inputRdd)
     graphs.updateStatus(graphEntity, Status.Active)
 

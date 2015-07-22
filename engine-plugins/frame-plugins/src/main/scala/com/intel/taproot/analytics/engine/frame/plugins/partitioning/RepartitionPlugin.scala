@@ -31,7 +31,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Template to follow when writing plugins
  */
-@PluginDoc(oneLine = "",
+@PluginDoc(oneLine = "Calls underlying Spark RDD method.",
   extended = "",
   returns = "")
 class RepartitionPlugin extends SparkCommandPlugin[RepartitionArgs, FrameEntity] {
@@ -43,13 +43,6 @@ class RepartitionPlugin extends SparkCommandPlugin[RepartitionArgs, FrameEntity]
    * e.g Python client via code generation.
    */
   override def name: String = "frame/_repartition"
-
-  /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Calls underlying Spark method.", None))
 
   /**
    * Runs RDD#repartition (useful for debugging)

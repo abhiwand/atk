@@ -17,7 +17,7 @@
 package com.intel.taproot.spark.graphon.graphclustering
 
 import com.intel.taproot.analytics.UnitReturn
-import com.intel.taproot.analytics.domain.graph.{ GraphReference }
+import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
 import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
@@ -51,9 +51,6 @@ class GraphClusteringPlugin extends SparkCommandPlugin[GraphClusteringArgs, Unit
   override def kryoRegistrator: Option[String] = None
 
   override def execute(arguments: GraphClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
-
-    if (!EngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)

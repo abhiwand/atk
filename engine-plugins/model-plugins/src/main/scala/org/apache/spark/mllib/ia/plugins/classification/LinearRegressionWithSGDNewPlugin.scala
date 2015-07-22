@@ -41,9 +41,7 @@ class LinearRegressionWithSGDNewPlugin extends SparkCommandPlugin[GenericNewMode
    */
   override def name: String = "model:linear_regression/new"
 
-  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity =
-    {
-      val models = engine.models
-      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:linear_regression")))
-    }
+  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
+    engine.models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:linear_regression")))
+  }
 }

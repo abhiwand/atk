@@ -17,13 +17,13 @@
 package com.intel.taproot.analytics.engine.frame.plugins.join
 
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
 
 class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
   // Test data has duplicate keys, matching and non-matching keys
-  val idCountryCodes: List[(Any, sql.Row)] = List(
+  val idCountryCodes: List[(Any, Row)] = List(
     (1.asInstanceOf[Any], new GenericRow(Array[Any](1, 354))),
     (2.asInstanceOf[Any], new GenericRow(Array[Any](2, 91))),
     (2.asInstanceOf[Any], new GenericRow(Array[Any](2, 100))),
@@ -31,7 +31,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
     (4.asInstanceOf[Any], new GenericRow(Array[Any](4, 968))),
     (5.asInstanceOf[Any], new GenericRow(Array[Any](5, 50))))
 
-  val idCountryNames: List[(Any, sql.Row)] = List(
+  val idCountryNames: List[(Any, Row)] = List(
     (1.asInstanceOf[Any], new GenericRow(Array[Any](1, "Iceland"))),
     (1.asInstanceOf[Any], new GenericRow(Array[Any](1, "Ice-land"))),
     (2.asInstanceOf[Any], new GenericRow(Array[Any](2, "India"))),
@@ -186,7 +186,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
   }
 
   "outer join with empty left RDD" should "preserve the result from the right RDD" in {
-    val emptyIdCountryCodes = List.empty[(Any, sql.Row)]
+    val emptyIdCountryCodes = List.empty[(Any, Row)]
     val countryCode = sparkContext.parallelize(emptyIdCountryCodes)
     val countryNames = sparkContext.parallelize(idCountryNames)
 
@@ -205,7 +205,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
   }
 
   "outer join with empty right RDD" should "preserve the result from the left RDD" in {
-    val emptyIdCountryNames = List.empty[(Any, sql.Row)]
+    val emptyIdCountryNames = List.empty[(Any, Row)]
     val countryCode = sparkContext.parallelize(idCountryCodes)
     val countryNames = sparkContext.parallelize(emptyIdCountryNames)
 
@@ -224,11 +224,11 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
   }
 
   "outer join large RDD" should "generate RDD contains all element from both RDD" in {
-    val oneToOneHundredThousand: List[(Any, sql.Row)] = (1 to 100000).map(i => {
+    val oneToOneHundredThousand: List[(Any, Row)] = (1 to 100000).map(i => {
       (i.asInstanceOf[Any], new GenericRow(Array[Any](i)))
     }).toList
 
-    val fiftyThousandToOneFiftyThousands: List[(Any, sql.Row)] = (50001 to 150000).map(i => {
+    val fiftyThousandToOneFiftyThousands: List[(Any, Row)] = (50001 to 150000).map(i => {
       (i.asInstanceOf[Any], new GenericRow(Array[Any](i)))
     }).toList
 

@@ -17,6 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics
 
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.sql.Row
 import org.scalatest.Matchers
 
 class ConfusionMatrixTest extends TestingSparkContextFlatSpec with Matchers {
@@ -27,24 +28,24 @@ class ConfusionMatrixTest extends TestingSparkContextFlatSpec with Matchers {
   // fp = 0
   // fn = 1
   val inputListBinary = List(
-    Array[Any](0, 0),
-    Array[Any](1, 1),
-    Array[Any](0, 0),
-    Array[Any](1, 0))
+    Row(0, 0),
+    Row(1, 1),
+    Row(0, 0),
+    Row(1, 0))
 
   val inputListBinaryChar = List(
-    Array[Any]("no", "no"),
-    Array[Any]("yes", "yes"),
-    Array[Any]("no", "no"),
-    Array[Any]("yes", "no"))
+    Row("no", "no"),
+    Row("yes", "yes"),
+    Row("no", "no"),
+    Row("yes", "no"))
 
   val inputListMulti = List(
-    Array[Any](0, 0),
-    Array[Any](1, 2),
-    Array[Any](2, 1),
-    Array[Any](0, 0),
-    Array[Any](1, 0),
-    Array[Any](2, 1))
+    Row(0, 0),
+    Row(1, 2),
+    Row(2, 1),
+    Row(0, 0),
+    Row(1, 0),
+    Row(2, 1))
 
   "confusion matrix" should "compute correct TP, TN, FP, FN values" in {
     val rdd = sparkContext.parallelize(inputListBinary)

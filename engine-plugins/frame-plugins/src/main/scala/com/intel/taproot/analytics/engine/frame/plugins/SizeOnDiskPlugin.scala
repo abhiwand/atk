@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins
 import com.intel.taproot.analytics.domain.LongValue
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.FrameNoArgs
+import com.intel.taproot.analytics.engine.frame.Frame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 
 // Implicits needed for JSON conversion
@@ -28,7 +29,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Get the RDD partition count after loading a frame (useful for debugging purposes)
  */
-@PluginDoc(oneLine = "Get the RDD partition count after loading a frame.",
+@PluginDoc(oneLine = "Calculate the size on disk in bytes of a frame.",
   extended = "",
   returns = "")
 class SizeOnDiskPlugin extends CommandPlugin[FrameNoArgs, LongValue] {
@@ -42,13 +43,6 @@ class SizeOnDiskPlugin extends CommandPlugin[FrameNoArgs, LongValue] {
   override def name: String = "frame/_size_on_disk"
 
   /**
-   * User documentation exposed in Python.
-   *
-   * [[http://docutils.sourceforge.net/rst.html ReStructuredText]]
-   */
-  override def doc: Option[CommandDoc] = Some(CommandDoc("Calls underlying Spark method.", None))
-
-  /**
    * Get the RDD size on disk after loading a frame (useful for debugging/benchmarking purposes)
    *
    * @param invocation information about the user and the circumstances at the time of the call,
@@ -58,13 +52,8 @@ class SizeOnDiskPlugin extends CommandPlugin[FrameNoArgs, LongValue] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: FrameNoArgs)(implicit invocation: Invocation): LongValue = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frame = frames.expectFrame(arguments.frame)
-
-    frames.getSizeInBytes(frame) match {
+    val frame: Frame = arguments.frame
+    frame.sizeInBytes match {
       case Some(size) => LongValue(size)
       case _ => throw new RuntimeException(s"Unable to calculate size of frame! Frame is empty or has not been materialized.")
     }

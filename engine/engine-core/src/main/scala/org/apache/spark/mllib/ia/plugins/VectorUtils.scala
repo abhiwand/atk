@@ -19,12 +19,14 @@ package org.apache.spark.mllib.ia.plugins
 import org.apache.spark.mllib.linalg.Vector
 import scala.collection.JavaConversions._
 
+/**
+ * Utility methods for converting between different kinds of vectors
+ */
 object VectorUtils {
 
   def toMahoutVector(mllibVector: Vector): org.apache.mahout.math.DenseVector = {
     val mllibArray = mllibVector.toArray
     new org.apache.mahout.math.DenseVector(mllibArray)
-
   }
 
   def toScalaVector(mahoutVector: org.apache.mahout.math.Vector): scala.collection.immutable.Vector[Double] = {

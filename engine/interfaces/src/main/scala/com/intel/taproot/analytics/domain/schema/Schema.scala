@@ -376,6 +376,15 @@ trait Schema {
   }
 
   /**
+   * Select a subset of columns.
+   *
+   * List can be empty.
+   */
+  def columns(columnNames: List[String]): List[Column] = {
+    columnNames.map(column)
+  }
+
+  /**
    * Validates a Map argument used for renaming schema, throwing exceptions for violations
    *
    * @param names victimName -> newName
