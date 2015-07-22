@@ -64,7 +64,7 @@ object MiscFrameFunctions extends Serializable {
         val start = Math.max(offset - thisPartStart, 0)
         val numToTake = Math.min((capped + offset) - thisPartStart, ct) - start
         //println(s"partition $i: starting at $start and taking $numToTake")
-        rows.drop(start.toInt).take(numToTake.toInt)
+        rows.slice(start.toInt, start.toInt + numToTake.toInt)
       }
     })
 
