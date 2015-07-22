@@ -16,7 +16,7 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame.lp
 
-import com.intel.taproot.giraph.io.{ VertexData4LPWritable }
+import com.intel.taproot.giraph.io.VertexData4LPWritable
 import com.intel.taproot.giraph.lp.LabelPropagationConfiguration
 import com.intel.taproot.analytics.engine.frame.RowWrapper
 import org.apache.giraph.io.{ VertexValueReader, VertexValueInputFormat }
