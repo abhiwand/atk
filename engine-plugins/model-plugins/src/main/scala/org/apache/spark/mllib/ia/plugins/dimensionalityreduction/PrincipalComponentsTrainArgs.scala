@@ -28,6 +28,6 @@ case class PrincipalComponentsTrainArgs(@ArgDoc("""Handle to the model to be use
                                         @ArgDoc("""List of column(s) containing the observations.""") observationColumns: List[String],
                                         @ArgDoc("""Principal component count. Default is the number of observation columns""") k: Option[Int] = None) {
   require(frame != null, "frame is required")
-  require(observationColumns.forall(_ != null), "data columns names cannot be null")
+  require(!observationColumns.contains(null), "data columns names cannot be null")
   require(observationColumns.forall(!_.equals("")), "data columns names cannot be empty")
 }
