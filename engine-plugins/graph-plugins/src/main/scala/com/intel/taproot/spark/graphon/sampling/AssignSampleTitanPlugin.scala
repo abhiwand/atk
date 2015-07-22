@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.domain.graph.{ AssignSampleTitanArgs, GraphEn
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
 import com.intel.taproot.analytics.engine.frame.plugins.assignsample.MLDataSplitter
-import com.intel.taproot.analytics.engine.graph.SparkGraphHBaseBackend
+import com.intel.taproot.analytics.engine.graph.{ SparkGraph, SparkGraphHBaseBackend }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.rdd.RDD
 /**
@@ -86,13 +86,10 @@ class AssignSampleTitanPlugin extends SparkCommandPlugin[AssignSampleTitanArgs, 
    */
   override def execute(arguments: AssignSampleTitanArgs)(implicit invocation: Invocation): UnitReturn = {
 
-    val graph = engine.graphs.expectGraph(arguments.graph)
+    val graph: SparkGraph = arguments.graph
     require(graph.isTitan, "assign sample is currently only implemented for Titan Graphs")
 
-    //convert graph into vertex and edge RDDs
-    val gbVertices = engine.graphs.loadGbVertices(sc, graph)
-
-    val splitRDD: RDD[GBVertex] = splitVertexRDD(gbVertices,
+    val splitRDD: RDD[GBVertex] = splitVertexRDD(graph.gbVertexRdd,
       arguments.samplePercentages,
       arguments.getSampleLabels,
       arguments.getOutputProperty,

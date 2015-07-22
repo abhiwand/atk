@@ -51,9 +51,6 @@ class GraphClusteringPlugin extends SparkCommandPlugin[GraphClusteringArgs, Unit
   override def kryoRegistrator: Option[String] = None
 
   override def execute(arguments: GraphClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
-
-    if (!EngineConfig.isSparkOnYarn)
-      sc.addJar(SparkContextFactory.jarPath("graph-plugins"))
     val graph = engine.graphs.expectGraph(arguments.graph)
     val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)

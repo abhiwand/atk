@@ -18,6 +18,7 @@ package com.intel.taproot.spark.graphon.pagerank
 
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.graph.GraphReference
+import com.intel.taproot.analytics.engine.graph.SparkGraph
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
@@ -79,9 +80,9 @@ class PageRankPlugin extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
     val config = configuration
 
     // Get the graph
-    val graph = engine.graphs.expectGraph(arguments.graph)
+    val graph: SparkGraph = arguments.graph
 
-    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
+    val (gbVertices, gbEdges) = graph.gbRdds
 
     val prRunnerArgs = PageRankRunnerArgs(arguments.output_property,
       arguments.input_edge_labels,
