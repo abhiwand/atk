@@ -162,7 +162,7 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
   "items with negative weights" should "not affect mode or total weight" in new FrequencyStatisticsTest {
 
     val dataWeightPairs: RDD[(String, Double)] =
-      sparkContext.parallelize((strings :+ "haha").zip(fractionalFrequencies :+ ((-10.0))))
+      sparkContext.parallelize((strings :+ "haha").zip(fractionalFrequencies :+ -10.0))
 
     val frequencyStats = new FrequencyStatistics[String](dataWeightPairs, maxReturnCount)
 

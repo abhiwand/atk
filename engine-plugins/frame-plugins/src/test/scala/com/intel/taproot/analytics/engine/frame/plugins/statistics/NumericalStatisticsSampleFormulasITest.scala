@@ -39,7 +39,7 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     require(data.length == frequencies.length, "Test Data in Error: Data length and frequencies length are mismatched")
     val netFrequencies = frequencies.sum
 
-    val inverseProbabilityWeights = frequencies.map(x => (netFrequencies.toDouble / x))
+    val inverseProbabilityWeights = frequencies.map(x => netFrequencies.toDouble / x)
     val netIPWeights = inverseProbabilityWeights.sum
 
     val dataFrequencyPairs: List[(Double, Double)] = data.zip(frequencies)

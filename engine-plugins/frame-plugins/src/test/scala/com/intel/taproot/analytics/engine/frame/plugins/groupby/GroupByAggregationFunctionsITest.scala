@@ -68,7 +68,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
       Row("c", 1, 1d, 5)
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
   "COUNT" should "count the number of values by key" in {
     val rdd = sparkContext.parallelize(inputRows)
@@ -86,7 +86,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     )
 
     results.size shouldBe 3
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "COUNT_DISTINCT" should "count the number of distinct values by key" in {
@@ -104,7 +104,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
       Row("c", 1)
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "MIN" should "return the minimum values by key" in {
@@ -122,7 +122,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
       Row("c", 5)
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "MAX" should "return the maximum values by key" in {
@@ -140,7 +140,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
       Row("c", 5)
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "SUM" should "return the sum of values by key" in {
@@ -158,7 +158,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
       Row("c", 5)
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "AVG" should "return the arithmetic mean of values by key" in {
@@ -178,7 +178,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
       Row("c", BigDecimal(1d).setScale(9, RoundingMode.HALF_UP))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "VAR" should "return the variance of values by key" in {
@@ -199,7 +199,7 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
       Row("c", null)
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "HISTOGRAM" should "return the histogram of values by key" in {
