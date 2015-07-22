@@ -37,7 +37,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
   extended = """Notes
 -----
 This method applies only to columns containing numerical data.""",
-  returns = "Correlation of the two columns.")
+  returns = "CorrelationFunctions of the two columns.")
 class CorrelationPlugin extends SparkCommandPlugin[CorrelationArgs, DoubleValue] {
 
   /**
@@ -63,7 +63,7 @@ class CorrelationPlugin extends SparkCommandPlugin[CorrelationArgs, DoubleValue]
 
     val frame: SparkFrame = arguments.frame
     frame.schema.validateColumnsExist(arguments.dataColumnNames)
-    Correlation.correlation(frame.rdd, arguments.dataColumnNames)
+    CorrelationFunctions.correlation(frame.rdd, arguments.dataColumnNames)
   }
 
 }

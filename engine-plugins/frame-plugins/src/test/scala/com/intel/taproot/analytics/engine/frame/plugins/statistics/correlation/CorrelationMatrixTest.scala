@@ -38,7 +38,7 @@ class CorrelationMatrixTest extends TestingSparkContextFlatSpec with Matchers {
     val inputDataColumnNamesAndTypes: List[Column] = columnsList.map({ name => Column(name, DataTypes.float64) }).toList
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
     val frameRdd = new FrameRdd(schema, rdd)
-    val result = Correlation.correlationMatrix(frameRdd, columnsList).collect()
+    val result = CorrelationFunctions.correlationMatrix(frameRdd, columnsList).collect()
     result.size shouldBe 3
 
     result(0) shouldBe Row(1.0, 0.8451542547285167, 0.2988071523335984)
