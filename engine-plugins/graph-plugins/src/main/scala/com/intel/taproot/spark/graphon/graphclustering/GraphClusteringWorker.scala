@@ -43,7 +43,7 @@ class GraphClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) e
     val hcRdd: RDD[GraphClusteringEdge] = edges.map {
       case edge =>
         val edgeDistProperty = edge.getProperty(edgeDistanceProperty)
-          .getOrElse(throw new Exception(s"Edge does not have ${edgeDistanceProperty} property"))
+          .getOrElse(throw new Exception(s"Edge does not have $edgeDistanceProperty property"))
 
         GraphClusteringEdge(edge.headPhysicalId.asInstanceOf[Number].longValue,
           GraphClusteringConstants.DefaultNodeCount,
