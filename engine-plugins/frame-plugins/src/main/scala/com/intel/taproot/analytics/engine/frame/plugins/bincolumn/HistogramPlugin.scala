@@ -93,7 +93,7 @@ class HistogramPlugin extends SparkCommandPlugin[HistogramArgs, Histogram] {
     val weightColumnIndex: Option[Int] = arguments.weightColumnName match {
       case Some(n) => {
         val columnType = schema.columnDataType(n)
-        require(columnType.isNumerical, s"Invalid column ${n} for bin column.  Expected a numerical data type, but got ${columnType}.")
+        require(columnType.isNumerical, s"Invalid column $n for bin column.  Expected a numerical data type, but got $columnType.")
         Some(schema.columnIndex(n))
       }
       case None => None

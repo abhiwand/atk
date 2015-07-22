@@ -301,7 +301,7 @@ object DiscretizationFunctions extends Serializable {
     val rankedBinRdd = binnedElementRdd.map {
       case (element, bin) =>
         val binNumber = broadcastSortedBins.value
-          .getOrElse(bin, throw new RuntimeException(s"Unable to find ranking for bin${bin}"))
+          .getOrElse(bin, throw new RuntimeException(s"Unable to find ranking for bin$bin"))
         (element, (binNumber + 1).toInt)
     }
     binnedElementRdd.unpersist()
