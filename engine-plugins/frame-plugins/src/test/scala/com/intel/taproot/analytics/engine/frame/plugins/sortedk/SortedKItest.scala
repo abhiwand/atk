@@ -19,12 +19,12 @@ package com.intel.taproot.analytics.engine.frame.plugins.sortedk
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
 
 class SortedKITest extends TestingSparkContextFlatSpec with Matchers {
-  val inputRows: Array[sql.Row] = Array(
+  val inputRows: Array[Row] = Array(
     new GenericRow(Array[Any]("a", 1, 1d, "w")),
     new GenericRow(Array[Any]("c", 5, 1d, "5")),
     new GenericRow(Array[Any]("a", 5, 3d, "z")),

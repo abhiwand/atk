@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins.topk
 
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
-import com.intel.taproot.analytics.engine.Rows._
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.frame.plugins.statistics.NumericValidationUtils
 import com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives.ColumnStatistics
 import org.apache.spark.SparkContext._
@@ -75,7 +75,7 @@ private object TopKRddFunctions extends Serializable {
 
     // Get the overall top (or bottom) K entries from partitions
     // Works when K*num_partitions fits in memory of single machine.
-    val topRows = topKByPartition.map(f => Array(f.key, f.value))
+    val topRows = topKByPartition.map(f => Row(f.key, f.value))
     frameRdd.sparkContext.parallelize(topRows)
   }
 

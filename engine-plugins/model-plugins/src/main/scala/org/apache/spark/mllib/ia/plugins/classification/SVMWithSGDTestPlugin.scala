@@ -18,7 +18,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
-import com.intel.taproot.analytics.engine.Rows.Row
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
@@ -99,7 +99,7 @@ class SVMWithSGDTestPlugin extends SparkCommandPlugin[ClassificationWithSGDTestA
     //predicting and testing
     val scoreAndLabelRDD: RDD[Row] = labeledTestRDD.map { point =>
       val prediction = svmModel.predict(point.features)
-      Array[Any](point.label, prediction)
+      Row(point.label, prediction)
     }
 
     //Run Binary classification metrics

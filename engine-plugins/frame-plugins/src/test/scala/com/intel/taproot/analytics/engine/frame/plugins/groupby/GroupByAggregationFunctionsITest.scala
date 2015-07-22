@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.frame.GroupByAggregationArgs
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
 import com.intel.taproot.testutils.MatcherUtils._
@@ -30,17 +30,17 @@ import scala.math.BigDecimal.RoundingMode
 class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with Matchers {
   val epsilon = 0.000001
 
-  val inputRows: Array[sql.Row] = Array(
-    new GenericRow(Array[Any]("a", 1, 1d, "w")),
-    new GenericRow(Array[Any]("a", 2, 1d, "x")),
-    new GenericRow(Array[Any]("a", 3, 2d, "x")),
-    new GenericRow(Array[Any]("a", 4, 2d, "y")),
-    new GenericRow(Array[Any]("a", 5, 3d, "z")),
-    new GenericRow(Array[Any]("b", -1, 1d, "1")),
-    new GenericRow(Array[Any]("b", 0, 1d, "2")),
-    new GenericRow(Array[Any]("b", 1, 2d, "3")),
-    new GenericRow(Array[Any]("b", 2, null, "4")),
-    new GenericRow(Array[Any]("c", 5, 1d, "5"))
+  val inputRows: Array[Row] = Array(
+    Row("a", 1, 1d, "w"),
+    Row("a", 2, 1d, "x"),
+    Row("a", 3, 2d, "x"),
+    Row("a", 4, 2d, "y"),
+    Row("a", 5, 3d, "z"),
+    Row("b", -1, 1d, "1"),
+    Row("b", 0, 1d, "2"),
+    Row("b", 1, 2d, "3"),
+    Row("b", 2, null, "4"),
+    Row("c", 5, 1d, "5")
   )
 
   val inputSchema = FrameSchema(List(
@@ -63,9 +63,9 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val results = resultRDD.collect()
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", 5, 9d, 15)),
-      new GenericRow(Array[Any]("b", 4, 4d, 2)),
-      new GenericRow(Array[Any]("c", 1, 1d, 5))
+      Row("a", 5, 9d, 15),
+      Row("b", 4, 4d, 2),
+      Row("c", 1, 1d, 5)
     )
 
     results should contain theSameElementsAs (expectedResults)
@@ -80,9 +80,9 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val results = resultRDD.collect()
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", 5)),
-      new GenericRow(Array[Any]("b", 4)),
-      new GenericRow(Array[Any]("c", 1))
+      Row("a", 5),
+      Row("b", 4),
+      Row("c", 1)
     )
 
     results.size shouldBe 3
@@ -99,9 +99,9 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val results = resultRDD.collect()
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", 3)),
-      new GenericRow(Array[Any]("b", 3)),
-      new GenericRow(Array[Any]("c", 1))
+      Row("a", 3),
+      Row("b", 3),
+      Row("c", 1)
     )
 
     results should contain theSameElementsAs (expectedResults)
@@ -117,9 +117,9 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val results = resultRDD.collect()
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", 1)),
-      new GenericRow(Array[Any]("b", -1)),
-      new GenericRow(Array[Any]("c", 5))
+      Row("a", 1),
+      Row("b", -1),
+      Row("c", 5)
     )
 
     results should contain theSameElementsAs (expectedResults)
@@ -135,9 +135,9 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val results = resultRDD.collect()
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", 5)),
-      new GenericRow(Array[Any]("b", 2)),
-      new GenericRow(Array[Any]("c", 5))
+      Row("a", 5),
+      Row("b", 2),
+      Row("c", 5)
     )
 
     results should contain theSameElementsAs (expectedResults)
@@ -153,9 +153,9 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val results = resultRDD.collect()
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", 15)),
-      new GenericRow(Array[Any]("b", 2)),
-      new GenericRow(Array[Any]("c", 5))
+      Row("a", 15),
+      Row("b", 2),
+      Row("c", 5)
     )
 
     results should contain theSameElementsAs (expectedResults)
@@ -169,13 +169,13 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect().map(row => {
-      new GenericRow(Array[Any](row(0), BigDecimal(row.getDouble(1)).setScale(9, RoundingMode.HALF_UP)))
+      Row(row(0), BigDecimal(row.getDouble(1)).setScale(9, RoundingMode.HALF_UP))
     })
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", BigDecimal(1.8d).setScale(9, RoundingMode.HALF_UP))),
-      new GenericRow(Array[Any]("b", BigDecimal(4 / 3d).setScale(9, RoundingMode.HALF_UP))),
-      new GenericRow(Array[Any]("c", BigDecimal(1d).setScale(9, RoundingMode.HALF_UP)))
+      Row("a", BigDecimal(1.8d).setScale(9, RoundingMode.HALF_UP)),
+      Row("b", BigDecimal(4 / 3d).setScale(9, RoundingMode.HALF_UP)),
+      Row("c", BigDecimal(1d).setScale(9, RoundingMode.HALF_UP))
     )
 
     results should contain theSameElementsAs (expectedResults)
@@ -190,18 +190,18 @@ class GroupByAggregationFunctionsITest extends TestingSparkContextFlatSpec with 
     val resultRDD = GroupByAggregationFunctions.aggregation(frameRdd, groupByColumns, groupByArguments)
     val results = resultRDD.collect().map(row => {
       val variance = if (row(1) == null) null else BigDecimal(row.getDouble(1)).setScale(9, RoundingMode.HALF_UP)
-      new GenericRow(Array[Any](row(0), variance))
+      Row(row(0), variance)
     })
 
     val expectedResults = List(
-      new GenericRow(Array[Any]("a", BigDecimal(0.7d).setScale(9, RoundingMode.HALF_UP))),
-      new GenericRow(Array[Any]("b", BigDecimal(1 / 3d).setScale(9, RoundingMode.HALF_UP))),
-      new GenericRow(Array[Any]("c", null))
+      Row("a", BigDecimal(0.7d).setScale(9, RoundingMode.HALF_UP)),
+      Row("b", BigDecimal(1 / 3d).setScale(9, RoundingMode.HALF_UP)),
+      Row("c", null)
     )
 
     results should contain theSameElementsAs (expectedResults)
-
   }
+
   "HISTOGRAM" should "return the histogram of values by key" in {
     val rdd = sparkContext.parallelize(inputRows, 3)
     val frameRdd = new FrameRdd(inputSchema, rdd)

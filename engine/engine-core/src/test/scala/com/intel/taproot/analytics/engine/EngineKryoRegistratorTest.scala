@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine
 
 import com.esotericsoftware.kryo.Kryo
-import com.intel.taproot.analytics.engine.Rows.Row
+import org.apache.spark.sql.Row
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ Matchers, WordSpec }

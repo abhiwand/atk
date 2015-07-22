@@ -17,11 +17,8 @@
 package com.intel.taproot.analytics.engine.frame
 
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
-import com.intel.taproot.analytics.engine.Rows
-import org.apache.spark.engine.Spark
+import org.apache.spark.sql.Row
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
-import org.apache.spark.sql._
 
 import scala.reflect.ClassTag
 import scala.util.Try
@@ -117,7 +114,7 @@ object MiscFrameFunctions extends Serializable {
    * @param data row data
    * @param keyIndex index of the key column
    */
-  def createKeyValuePairFromRow(data: sql.Row, keyIndex: Seq[Int]): (Seq[Any], sql.Row) = {
+  def createKeyValuePairFromRow(data: Row, keyIndex: Seq[Int]): (Seq[Any], Row) = {
     var key: Seq[Any] = Seq()
     for (i <- keyIndex)
       key = key :+ data(i)
@@ -129,11 +126,11 @@ object MiscFrameFunctions extends Serializable {
    * Remove duplicate rows identified by the key
    * @param pairRdd rdd which has (key, value) structure in each row
    */
-  def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], sql.Row)]): RDD[sql.Row] = {
+  def removeDuplicatesByKey(pairRdd: RDD[(Seq[Any], Row)]): RDD[Row] = {
     pairRdd.reduceByKey((x, y) => x).map(x => x._2)
   }
 
-  def removeDuplicatesByColumnNames(rdd: RDD[sql.Row], schema: Schema, columnNames: List[String]): RDD[sql.Row] = {
+  def removeDuplicatesByColumnNames(rdd: RDD[Row], schema: Schema, columnNames: List[String]): RDD[Row] = {
     val columnIndices = schema.columnIndices(columnNames)
 
     // run the operation

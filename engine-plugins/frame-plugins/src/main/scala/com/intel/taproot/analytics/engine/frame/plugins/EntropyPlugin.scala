@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins
 import com.intel.taproot.analytics.domain.DoubleValue
 import com.intel.taproot.analytics.domain.frame.EntropyArgs
 import com.intel.taproot.analytics.domain.schema.Column
-import com.intel.taproot.analytics.engine.Rows._
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives.ColumnStatistics
@@ -83,7 +83,7 @@ class EntropyPlugin extends SparkCommandPlugin[EntropyArgs, DoubleValue] {
 
     // run the operation and return results
     val weightsColumnOption = frame.schema.column(arguments.weightsColumn)
-    val entropy = EntropyRddFunctions.shannonEntropy(frame.rdd.toRowRdd, columnIndex, weightsColumnOption)
+    val entropy = EntropyRddFunctions.shannonEntropy(frame.rdd, columnIndex, weightsColumnOption)
     DoubleValue(entropy)
   }
 }

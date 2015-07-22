@@ -18,7 +18,6 @@ package com.intel.taproot.analytics.libSvmPlugins
 
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
@@ -27,6 +26,7 @@ import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 
 /*
 Parameters
@@ -114,7 +114,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
         i += 1
       }
       val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
-      Array[Any](label, predictionLabel.value)
+      Row(label, predictionLabel.value)
     })
 
     //Run Binary classification metrics

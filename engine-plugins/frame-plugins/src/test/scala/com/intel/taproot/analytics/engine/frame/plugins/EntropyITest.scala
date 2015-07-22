@@ -18,6 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.sql.Row
 import org.scalatest.Matchers
 
 /**
@@ -28,22 +29,22 @@ import org.scalatest.Matchers
  */
 class EntropyITest extends TestingSparkContextFlatSpec with Matchers {
   val unweightedInput = List(
-    Array[Any](-1, "a", 0),
-    Array[Any](0, "a", 0),
-    Array[Any](0, "b", 0),
-    Array[Any](1, "b", 0),
-    Array[Any](1, "b", 0),
-    Array[Any](2, "c", 0))
+    Row(-1, "a", 0),
+    Row(0, "a", 0),
+    Row(0, "b", 0),
+    Row(1, "b", 0),
+    Row(1, "b", 0),
+    Row(2, "c", 0))
 
   val weightedInput = List(
-    Array[Any]("a", 1.0),
-    Array[Any]("a", 1.0),
-    Array[Any]("b", 0.8),
-    Array[Any]("b", 0.3),
-    Array[Any]("c", 0.2),
-    Array[Any]("c", 0.1))
+    Row("a", 1.0),
+    Row("a", 1.0),
+    Row("b", 0.8),
+    Row("b", 0.3),
+    Row("c", 0.2),
+    Row("c", 0.1))
 
-  val emptyList = List.empty[Array[Any]]
+  val emptyList = List.empty[Row]
 
   val epsilon = 0.000001
   "shannonEntropy" should "compute the correct shannon entropy for unweighted data" in {

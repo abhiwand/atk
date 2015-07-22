@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.frame.RowWrapper
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 /**
@@ -44,7 +44,7 @@ object DotProductFunctions extends Serializable {
    */
   def dotProduct(frameRdd: FrameRdd, leftColumnNames: List[String], rightColumnNames: List[String],
                  defaultLeftValues: Option[List[Double]] = None,
-                 defaultRightValues: Option[List[Double]] = None): RDD[sql.Row] = {
+                 defaultRightValues: Option[List[Double]] = None): RDD[Row] = {
 
     frameRdd.frameSchema.requireColumnsAreVectorizable(leftColumnNames)
     frameRdd.frameSchema.requireColumnsAreVectorizable(rightColumnNames)

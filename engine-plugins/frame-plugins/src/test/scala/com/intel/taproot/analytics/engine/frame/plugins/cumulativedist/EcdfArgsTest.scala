@@ -17,6 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import org.apache.spark.sql.Row
 import org.scalatest.Matchers
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Column }
 
@@ -24,33 +25,33 @@ class EcdfArgsTest extends TestingSparkContextFlatSpec with Matchers {
 
   // Input data
   val sampleOneList = List(
-    Array[Any](0),
-    Array[Any](1),
-    Array[Any](2),
-    Array[Any](3),
-    Array[Any](4),
-    Array[Any](5),
-    Array[Any](6),
-    Array[Any](7),
-    Array[Any](8),
-    Array[Any](9))
+    Row(0),
+    Row(1),
+    Row(2),
+    Row(3),
+    Row(4),
+    Row(5),
+    Row(6),
+    Row(7),
+    Row(8),
+    Row(9))
 
   val sampleTwoList = List(
-    Array[Any](0),
-    Array[Any](0),
-    Array[Any](0),
-    Array[Any](0),
-    Array[Any](4),
-    Array[Any](5),
-    Array[Any](6),
-    Array[Any](7))
+    Row(0),
+    Row(0),
+    Row(0),
+    Row(0),
+    Row(4),
+    Row(5),
+    Row(6),
+    Row(7))
 
   val sampleThreeList = List(
-    Array[Any](-2),
-    Array[Any](-1),
-    Array[Any](0),
-    Array[Any](1),
-    Array[Any](2))
+    Row(-2),
+    Row(-1),
+    Row(0),
+    Row(1),
+    Row(2))
 
   "ecdf" should "compute correct ecdf" in {
 
@@ -69,28 +70,28 @@ class EcdfArgsTest extends TestingSparkContextFlatSpec with Matchers {
     val resultThree = sampleThreeECDF.take(5)
 
     // Validate
-    resultOne.apply(0) shouldBe Array[Any](0, 0.1)
-    resultOne.apply(1) shouldBe Array[Any](1, 0.2)
-    resultOne.apply(2) shouldBe Array[Any](2, 0.3)
-    resultOne.apply(3) shouldBe Array[Any](3, 0.4)
-    resultOne.apply(4) shouldBe Array[Any](4, 0.5)
-    resultOne.apply(5) shouldBe Array[Any](5, 0.6)
-    resultOne.apply(6) shouldBe Array[Any](6, 0.7)
-    resultOne.apply(7) shouldBe Array[Any](7, 0.8)
-    resultOne.apply(8) shouldBe Array[Any](8, 0.9)
-    resultOne.apply(9) shouldBe Array[Any](9, 1.0)
+    resultOne.apply(0) shouldBe Row(0, 0.1)
+    resultOne.apply(1) shouldBe Row(1, 0.2)
+    resultOne.apply(2) shouldBe Row(2, 0.3)
+    resultOne.apply(3) shouldBe Row(3, 0.4)
+    resultOne.apply(4) shouldBe Row(4, 0.5)
+    resultOne.apply(5) shouldBe Row(5, 0.6)
+    resultOne.apply(6) shouldBe Row(6, 0.7)
+    resultOne.apply(7) shouldBe Row(7, 0.8)
+    resultOne.apply(8) shouldBe Row(8, 0.9)
+    resultOne.apply(9) shouldBe Row(9, 1.0)
 
-    resultTwo.apply(0) shouldBe Array[Any](0, 0.5)
-    resultTwo.apply(1) shouldBe Array[Any](4, 0.625)
-    resultTwo.apply(2) shouldBe Array[Any](5, 0.75)
-    resultTwo.apply(3) shouldBe Array[Any](6, 0.875)
-    resultTwo.apply(4) shouldBe Array[Any](7, 1.0)
+    resultTwo.apply(0) shouldBe Row(0, 0.5)
+    resultTwo.apply(1) shouldBe Row(4, 0.625)
+    resultTwo.apply(2) shouldBe Row(5, 0.75)
+    resultTwo.apply(3) shouldBe Row(6, 0.875)
+    resultTwo.apply(4) shouldBe Row(7, 1.0)
 
-    resultThree.apply(0) shouldBe Array[Any](-2, 0.2)
-    resultThree.apply(1) shouldBe Array[Any](-1, 0.4)
-    resultThree.apply(2) shouldBe Array[Any](0, 0.6)
-    resultThree.apply(3) shouldBe Array[Any](1, 0.8)
-    resultThree.apply(4) shouldBe Array[Any](2, 1.0)
+    resultThree.apply(0) shouldBe Row(-2, 0.2)
+    resultThree.apply(1) shouldBe Row(-1, 0.4)
+    resultThree.apply(2) shouldBe Row(0, 0.6)
+    resultThree.apply(3) shouldBe Row(1, 0.8)
+    resultThree.apply(4) shouldBe Row(2, 1.0)
   }
 
 }

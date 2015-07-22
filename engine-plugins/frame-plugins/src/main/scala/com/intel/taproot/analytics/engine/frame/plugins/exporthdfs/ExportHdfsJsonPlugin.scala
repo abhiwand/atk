@@ -27,7 +27,7 @@ import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.analytics.engine.Rows._
+import org.apache.spark.sql.Row
 
 // Implicits needed for JSON conversion
 import spray.json._

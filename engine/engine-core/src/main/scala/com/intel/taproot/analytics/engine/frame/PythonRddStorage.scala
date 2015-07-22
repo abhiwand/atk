@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame
 
-import java.io.{ File }
+import java.io.File
 import java.util
 
 import com.intel.taproot.analytics.component.ClassLoaderAware
@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.frame.Udf
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.{ Rows, EngineConfig }
+import com.intel.taproot.analytics.engine.EngineConfig
 import org.apache.spark.SparkContext
 import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.commons.codec.binary.Base64.decodeBase64
@@ -33,6 +33,7 @@ import java.util.{ ArrayList => JArrayList, List => JList }
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 import org.bson.types.BasicBSONList
 import org.bson.{ BSON, BasicBSONObject }
 import spray.json._
@@ -72,7 +73,7 @@ object PythonRddStorage {
     val newSchema = if (udfSchema == null) { data.frameSchema } else { udfSchema }
     val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
 
-    val pyRdd = RDDToPyRDD(udf, data.toRowRdd, sc)
+    val pyRdd = RDDToPyRDD(udf, data, sc)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
     FrameRdd.toFrameRdd(newSchema, frameRdd)
   }
@@ -102,7 +103,7 @@ object PythonRddStorage {
     bsonList
   }
 
-  def RDDToPyRDD(udf: Udf, rdd: RDD[Rows.Row], sc: SparkContext): EnginePythonRdd[Array[Byte]] = {
+  def RDDToPyRDD(udf: Udf, rdd: RDD[Row], sc: SparkContext): EnginePythonRdd[Array[Byte]] = {
     val predicateInBytes = decodePythonBase64EncodedStrToBytes(udf.function)
 
     // Create an RDD of byte arrays representing bson objects
@@ -110,7 +111,7 @@ object PythonRddStorage {
       x => {
 
         val obj = new BasicBSONObject()
-        obj.put("array", x.map(value => value match {
+        obj.put("array", x.toSeq.toArray.map(value => value match {
           case y: ArrayBuffer[_] => iterableToBsonList(y)
           case y: Vector[_] => iterableToBsonList(y)
           case _ => value
@@ -186,7 +187,7 @@ class PythonRddStorage(frames: SparkFrameStorage) extends ClassLoaderAware {
   def createPythonRDD(frameRef: FrameReference, py_expression: String, sc: SparkContext)(implicit invocation: Invocation): EnginePythonRdd[Array[Byte]] = {
     withMyClassLoader {
       val frameEntity = frames.expectFrame(frameRef)
-      val rdd = frames.loadFrameData(sc, frameEntity).toRowRdd
+      val rdd = frames.loadFrameData(sc, frameEntity)
       PythonRddStorage.RDDToPyRDD(new Udf(py_expression, null), rdd, sc)
     }
   }

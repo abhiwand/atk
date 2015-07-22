@@ -25,7 +25,7 @@ import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.giraph.job.{ DefaultJobObserver, GiraphJob }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ Path, FileSystem }
-import org.apache.hadoop.mapreduce.{ Job }
+import org.apache.hadoop.mapreduce.Job
 import com.typesafe.config.Config
 import scala.collection.mutable.HashMap
 

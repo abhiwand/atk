@@ -25,11 +25,7 @@ import com.intel.taproot.analytics.engine.frame.SparkFrame
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
-import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
-import org.apache.spark.sql.catalyst.expressions.GenericRow
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._

@@ -18,17 +18,18 @@ package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.SparkException
+import org.apache.spark.sql.Row
 import org.scalatest.Matchers
 
 class CumulativeDistTest extends TestingSparkContextFlatSpec with Matchers {
 
   val inputList = List(
-    Array[Any](0, "a", 0),
-    Array[Any](1, "b", 0),
-    Array[Any](2, "c", 0),
-    Array[Any](0, "a", 0),
-    Array[Any](1, "b", 0),
-    Array[Any](2, "c", 0))
+    Row(0, "a", 0),
+    Row(1, "b", 0),
+    Row(2, "c", 0),
+    Row(0, "a", 0),
+    Row(1, "b", 0),
+    Row(2, "c", 0))
 
   "cumulative sum" should "compute correct distribution" in {
     val rdd = sparkContext.parallelize(inputList)
@@ -36,12 +37,12 @@ class CumulativeDistTest extends TestingSparkContextFlatSpec with Matchers {
     val resultRdd = CumulativeDistFunctions.cumulativeSum(rdd, 0)
     val result = resultRdd.take(6)
 
-    result.apply(0) shouldBe Array[Any](0, "a", 0, 0)
-    result.apply(1) shouldBe Array[Any](1, "b", 0, 1)
-    result.apply(2) shouldBe Array[Any](2, "c", 0, 3)
-    result.apply(3) shouldBe Array[Any](0, "a", 0, 3)
-    result.apply(4) shouldBe Array[Any](1, "b", 0, 4)
-    result.apply(5) shouldBe Array[Any](2, "c", 0, 6)
+    result.apply(0) shouldBe Row(0, "a", 0, 0)
+    result.apply(1) shouldBe Row(1, "b", 0, 1)
+    result.apply(2) shouldBe Row(2, "c", 0, 3)
+    result.apply(3) shouldBe Row(0, "a", 0, 3)
+    result.apply(4) shouldBe Row(1, "b", 0, 4)
+    result.apply(5) shouldBe Row(2, "c", 0, 6)
   }
 
   "cumulative sum" should "throw error for non-numeric columns" in {
@@ -56,12 +57,12 @@ class CumulativeDistTest extends TestingSparkContextFlatSpec with Matchers {
     val resultRdd = CumulativeDistFunctions.cumulativeSum(rdd, 2)
     val result = resultRdd.take(6)
 
-    result.apply(0) shouldBe Array[Any](0, "a", 0, 0)
-    result.apply(1) shouldBe Array[Any](1, "b", 0, 0)
-    result.apply(2) shouldBe Array[Any](2, "c", 0, 0)
-    result.apply(3) shouldBe Array[Any](0, "a", 0, 0)
-    result.apply(4) shouldBe Array[Any](1, "b", 0, 0)
-    result.apply(5) shouldBe Array[Any](2, "c", 0, 0)
+    result.apply(0) shouldBe Row(0, "a", 0, 0)
+    result.apply(1) shouldBe Row(1, "b", 0, 0)
+    result.apply(2) shouldBe Row(2, "c", 0, 0)
+    result.apply(3) shouldBe Row(0, "a", 0, 0)
+    result.apply(4) shouldBe Row(1, "b", 0, 0)
+    result.apply(5) shouldBe Row(2, "c", 0, 0)
   }
 
   "cumulative count" should "compute correct distribution" in {
@@ -70,12 +71,12 @@ class CumulativeDistTest extends TestingSparkContextFlatSpec with Matchers {
     val resultRdd = CumulativeDistFunctions.cumulativeCount(rdd, 0, "1")
     val result = resultRdd.take(6)
 
-    result.apply(0) shouldBe Array[Any](0, "a", 0, 0)
-    result.apply(1) shouldBe Array[Any](1, "b", 0, 1)
-    result.apply(2) shouldBe Array[Any](2, "c", 0, 1)
-    result.apply(3) shouldBe Array[Any](0, "a", 0, 1)
-    result.apply(4) shouldBe Array[Any](1, "b", 0, 2)
-    result.apply(5) shouldBe Array[Any](2, "c", 0, 2)
+    result.apply(0) shouldBe Row(0, "a", 0, 0)
+    result.apply(1) shouldBe Row(1, "b", 0, 1)
+    result.apply(2) shouldBe Row(2, "c", 0, 1)
+    result.apply(3) shouldBe Row(0, "a", 0, 1)
+    result.apply(4) shouldBe Row(1, "b", 0, 2)
+    result.apply(5) shouldBe Row(2, "c", 0, 2)
   }
 
   "cumulative count" should "compute correct distribution for column of all zero" in {
@@ -84,12 +85,12 @@ class CumulativeDistTest extends TestingSparkContextFlatSpec with Matchers {
     val resultRdd = CumulativeDistFunctions.cumulativeCount(rdd, 2, "0")
     val result = resultRdd.take(6)
 
-    result.apply(0) shouldBe Array[Any](0, "a", 0, 1)
-    result.apply(1) shouldBe Array[Any](1, "b", 0, 2)
-    result.apply(2) shouldBe Array[Any](2, "c", 0, 3)
-    result.apply(3) shouldBe Array[Any](0, "a", 0, 4)
-    result.apply(4) shouldBe Array[Any](1, "b", 0, 5)
-    result.apply(5) shouldBe Array[Any](2, "c", 0, 6)
+    result.apply(0) shouldBe Row(0, "a", 0, 1)
+    result.apply(1) shouldBe Row(1, "b", 0, 2)
+    result.apply(2) shouldBe Row(2, "c", 0, 3)
+    result.apply(3) shouldBe Row(0, "a", 0, 4)
+    result.apply(4) shouldBe Row(1, "b", 0, 5)
+    result.apply(5) shouldBe Row(2, "c", 0, 6)
   }
 
   "cumulative count" should "compute correct distribution for column of strings" in {
@@ -98,12 +99,12 @@ class CumulativeDistTest extends TestingSparkContextFlatSpec with Matchers {
     val resultRdd = CumulativeDistFunctions.cumulativeCount(rdd, 1, "b")
     val result = resultRdd.take(6)
 
-    result.apply(0) shouldBe Array[Any](0, "a", 0, 0)
-    result.apply(1) shouldBe Array[Any](1, "b", 0, 1)
-    result.apply(2) shouldBe Array[Any](2, "c", 0, 1)
-    result.apply(3) shouldBe Array[Any](0, "a", 0, 1)
-    result.apply(4) shouldBe Array[Any](1, "b", 0, 2)
-    result.apply(5) shouldBe Array[Any](2, "c", 0, 2)
+    result.apply(0) shouldBe Row(0, "a", 0, 0)
+    result.apply(1) shouldBe Row(1, "b", 0, 1)
+    result.apply(2) shouldBe Row(2, "c", 0, 1)
+    result.apply(3) shouldBe Row(0, "a", 0, 1)
+    result.apply(4) shouldBe Row(1, "b", 0, 2)
+    result.apply(5) shouldBe Row(2, "c", 0, 2)
   }
 
   "cumulative percent sum" should "compute correct distribution" in {

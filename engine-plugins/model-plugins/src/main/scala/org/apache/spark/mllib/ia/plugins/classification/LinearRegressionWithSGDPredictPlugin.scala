@@ -16,24 +16,16 @@
 
 package org.apache.spark.mllib.ia.plugins.classification
 
-import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.Rows.Row
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext._
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.mllib.regression.LinearRegressionModel
-import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
-import org.apache.spark.sql.catalyst.expressions.GenericRow
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._

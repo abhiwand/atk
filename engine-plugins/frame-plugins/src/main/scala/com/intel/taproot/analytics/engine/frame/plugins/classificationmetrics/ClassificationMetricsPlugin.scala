@@ -158,10 +158,10 @@ class ClassificationMetricsPlugin extends SparkCommandPlugin[ClassificationMetri
     }
     // run the operation and return the results
     if (metricsPoslabel == null) {
-      ClassificationMetrics.multiclassClassificationMetrics(frame.rdd.toRowRdd, labelColumnIndex, predColumnIndex, betaValue)
+      ClassificationMetrics.multiclassClassificationMetrics(frame.rdd, labelColumnIndex, predColumnIndex, betaValue)
     }
     else {
-      ClassificationMetrics.binaryClassificationMetrics(frame.rdd.toRowRdd, labelColumnIndex, predColumnIndex, metricsPoslabel, betaValue)
+      ClassificationMetrics.binaryClassificationMetrics(frame.rdd, labelColumnIndex, predColumnIndex, metricsPoslabel, betaValue)
     }
 
   }

@@ -16,11 +16,8 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.statistics.quantiles
 
-import com.intel.taproot.analytics.domain.frame.Quantile
-import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
@@ -37,11 +34,11 @@ class QuantileITest extends TestingSparkContextFlatSpec with Matchers {
     val rdd: RDD[Row] = sparkContext.parallelize(numbers.map(a => new GenericRow(a)), 3)
     val result = QuantilesFunctions.quantiles(rdd, Seq(0, 3, 5, 40, 100), 0, numbers.size.toLong).collect()
     result.size shouldBe 5
-    result(0) shouldBe sql.Row(0.0, 1.0)
-    result(1) shouldBe sql.Row(3.0, 1.0)
-    result(2) shouldBe sql.Row(5.0, 1.25)
-    result(3) shouldBe sql.Row(40.0, 10.0)
-    result(4) shouldBe sql.Row(100.0, 25.0)
+    result(0) shouldBe Row(0.0, 1.0)
+    result(1) shouldBe Row(3.0, 1.0)
+    result(2) shouldBe Row(5.0, 1.25)
+    result(3) shouldBe Row(40.0, 10.0)
+    result(4) shouldBe Row(100.0, 25.0)
   }
 
   //   Large scale test takes longer time. uncomment it when needed.

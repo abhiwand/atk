@@ -18,13 +18,13 @@ package com.intel.taproot.analytics.engine.frame.plugins.assignsample
 
 import com.intel.taproot.analytics.domain.frame.{ AssignSampleArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.Rows
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -83,9 +83,9 @@ class AssignSamplePlugin extends SparkCommandPlugin[AssignSampleArgs, FrameEntit
 
     // run the operation
     val splitter = new MLDataSplitter(samplePercentages, arguments.splitLabels, arguments.seed)
-    val labeledRDD: RDD[LabeledLine[String, sql.Row]] = splitter.randomlyLabelRDD(frame.rdd)
+    val labeledRDD: RDD[LabeledLine[String, Row]] = splitter.randomlyLabelRDD(frame.rdd)
 
-    val splitRDD: RDD[Array[Any]] = labeledRDD.map((x: LabeledLine[String, sql.Row]) =>
+    val splitRDD: RDD[Array[Any]] = labeledRDD.map((x: LabeledLine[String, Row]) =>
       (x.entry.toSeq :+ x.label.asInstanceOf[Any]).toArray[Any]
     )
 
