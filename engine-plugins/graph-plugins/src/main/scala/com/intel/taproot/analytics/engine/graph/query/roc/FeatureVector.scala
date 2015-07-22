@@ -137,7 +137,7 @@ object FeatureVector {
         (f.splitType, RocCounts.updateRocCounts(f.priorArray(i), f.posteriorArray(i), rocParams))
       ).reduceByKey((a1, a2) => a1.merge(a2))
 
-      val rocRdd = rocCountsRDD.map(r => (RocCurve(r._1, RocCounts.calcRoc(r._2, rocParams))))
+      val rocRdd = rocCountsRDD.map(r => RocCurve(r._1, RocCounts.calcRoc(r._2, rocParams)))
       rocCurves += rocRdd.collect().toList
     }
     rocCurves.toList

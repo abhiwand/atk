@@ -167,7 +167,7 @@ class GraphClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) e
       //remove collapsed edges from the active graph - by dest node
       val newGraphReducedBySrcAndDest = newGraphReducedBySrc.map((e: GraphClusteringEdge) => (e.dest, e)).subtractByKey(collapsedEdgesAsKVPair).values
       val newGraphWithoutInternalEdges = activeEdgesBothDirections.union(newGraphReducedBySrcAndDest).coalesce(activeEdgesBothDirections.partitions.length, shuffle = true)
-      val distinctNewGraphWithoutInternalEdges = newGraphWithoutInternalEdges.filter(e => (e.src != e.dest))
+      val distinctNewGraphWithoutInternalEdges = newGraphWithoutInternalEdges.filter(e => e.src != e.dest)
 
       collapsableEdges.unpersist()
 
@@ -286,7 +286,7 @@ class GraphClusteringWorker(dbConnectionConfig: SerializableBaseConfiguration) e
       case (minEdge, pairedEdgeList: Iterable[VertexOutEdges]) =>
         EdgeManager.createOutgoingEdgesForMetaNode(pairedEdgeList)
     }.filter {
-      case (collapsableEdge, outgoingEdgeList) => (collapsableEdge != null)
+      case (collapsableEdge, outgoingEdgeList) => collapsableEdge != null
     }
   }
 }
