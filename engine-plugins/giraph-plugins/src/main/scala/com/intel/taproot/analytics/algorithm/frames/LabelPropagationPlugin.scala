@@ -51,8 +51,8 @@ class LabelPropagationPlugin
     val giraphConf = new LabelPropagationConfiguration(hadoopConf)
 
     val outputFrame = frames.prepareForSave(CreateEntityArgs(description = Some("Label propagation results")))
-    val inputFormatConfig = new LabelPropagationInputFormatConfig(frame.storageLocation.get, frame.schema)
-    val outputFormatConfig = new LabelPropagationOutputFormatConfig(outputFrame.storageLocation.get)
+    val inputFormatConfig = new LabelPropagationInputFormatConfig(frame.getStorageLocation, frame.schema)
+    val outputFormatConfig = new LabelPropagationOutputFormatConfig(outputFrame.getStorageLocation)
     val labelPropagationConfig = new LabelPropagationConfig(inputFormatConfig, outputFormatConfig, arguments)
 
     giraphConf.setConfig(labelPropagationConfig)
