@@ -37,10 +37,10 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1, 9).map(x => x.toDouble)
 
     require(data.length == frequencies.length, "Test Data in Error: Data length and frequencies length are mismatched")
-    val netFrequencies = frequencies.reduce(_ + _)
+    val netFrequencies = frequencies.sum
 
     val inverseProbabilityWeights = frequencies.map(x => (netFrequencies.toDouble / x))
-    val netIPWeights = inverseProbabilityWeights.reduce(_ + _)
+    val netIPWeights = inverseProbabilityWeights.sum
 
     val dataFrequencyPairs: List[(Double, Double)] = data.zip(frequencies)
     val dataFrequencyPairsAsOptionValues: List[(Option[Double], Option[Double])] = dataFrequencyPairs.map {
@@ -58,23 +58,23 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
 
     val numericalStatisticsWeights = new NumericalStatistics(dataIPWRDD, false)
 
-    val expectedMeanFrequencies: Double = dataFrequencyPairs.map({ case (x, w) => x * w }).reduce(_ + _) / netFrequencies
-    val expectedMeanIPW: Double = dataIPWPairs.map({ case (x, w) => x * w }).reduce(_ + _) / netIPWeights
-    val expectedMax: Double = data.reduce(Math.max(_, _))
-    val expectedMin: Double = data.reduce(Math.min(_, _))
+    val expectedMeanFrequencies: Double = dataFrequencyPairs.map({ case (x, w) => x * w }).sum / netFrequencies
+    val expectedMeanIPW: Double = dataIPWPairs.map({ case (x, w) => x * w }).sum / netIPWeights
+    val expectedMax: Double = data.max
+    val expectedMin: Double = data.min
     val dataCount: Double = data.length
 
     val expectedGeometricMeanIPW =
-      Math.pow(dataIPWPairs.map({ case (x, w) => Math.pow(x, w) }).reduce(_ * _), 1 / netIPWeights)
+      Math.pow(dataIPWPairs.map({ case (x, w) => Math.pow(x, w) }).product, 1 / netIPWeights)
     val expectedGeometricMeanFrequencies =
-      Math.pow(dataFrequencyPairs.map({ case (x, w) => Math.pow(x, w) }).reduce(_ * _), 1 / netFrequencies)
+      Math.pow(dataFrequencyPairs.map({ case (x, w) => Math.pow(x, w) }).product, 1 / netFrequencies)
 
     val expectedVariancesFrequencies =
       (1.toDouble / (netFrequencies - 1).toDouble) * dataFrequencyPairs
-        .map({ case (x, w) => w * (x - expectedMeanFrequencies) * (x - expectedMeanFrequencies) }).reduce(_ + _)
+        .map({ case (x, w) => w * (x - expectedMeanFrequencies) * (x - expectedMeanFrequencies) }).sum
 
     val expectedVarianceWeights = (1.toDouble / (netIPWeights - 1).toDouble) *
-      dataIPWPairs.map({ case (x, w) => w * (x - expectedMeanIPW) * (x - expectedMeanIPW) }).reduce(_ + _)
+      dataIPWPairs.map({ case (x, w) => w * (x - expectedMeanIPW) * (x - expectedMeanIPW) }).sum
 
     val expectedStandardDeviationFrequencies = Math.sqrt(expectedVariancesFrequencies)
     val expectedStandardDeviationWeights = Math.sqrt(expectedVarianceWeights)

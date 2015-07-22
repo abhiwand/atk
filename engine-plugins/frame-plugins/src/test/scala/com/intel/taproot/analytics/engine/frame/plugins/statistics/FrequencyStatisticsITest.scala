@@ -37,7 +37,7 @@ class FrequencyStatisticsITest extends TestingSparkContextFlatSpec with Matchers
     val integerFrequencies = List(1, 1, 5, 1, 7, 2, 2, 3, 2).map(_.toDouble)
 
     val modeFrequency = 7.toDouble
-    val totalFrequencies = integerFrequencies.reduce(_ + _)
+    val totalFrequencies = integerFrequencies.sum
 
     val fractionalFrequencies: List[Double] = integerFrequencies.map(x => x / totalFrequencies)
 
