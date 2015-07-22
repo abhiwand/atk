@@ -41,7 +41,7 @@ object FeatureVector {
     val priorArray = parseDoubleArray(graphElement, priorPropertyName, " ")
     val splitType = parseSplitType(graphElement, splitPropertyName)
 
-    val posteriorArray = if (posteriorPropertyName != None) {
+    val posteriorArray = if (posteriorPropertyName.isDefined) {
       parseDoubleArray(graphElement, posteriorPropertyName.get, ",")
     }
     else Array.empty[Double]
@@ -82,7 +82,7 @@ object FeatureVector {
    */
   def parseDoubleArray(graphElement: GraphElement, propertyName: String, sep: String = " "): Array[Double] = {
     val property = graphElement.getProperty(propertyName)
-    if (property != None) {
+    if (property.isDefined) {
       property.get.value.toString.split(sep).map(p => {
         Try { p.toDouble }.getOrElse(0d)
       })

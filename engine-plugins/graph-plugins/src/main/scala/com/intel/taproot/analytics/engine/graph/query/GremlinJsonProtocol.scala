@@ -121,8 +121,8 @@ object GremlinJsonProtocol extends IADefaultJsonProtocol with EventLogging {
       case e if isEdge(e) => {
         val inId = getJsonFieldValue[Long](e, GraphSONTokens._IN_V)
         val outId = getJsonFieldValue[Long](e, GraphSONTokens._OUT_V)
-        val inVertex = if (inId != None) graph.getVertex(inId.get) else null
-        val outVertex = if (outId != None) graph.getVertex(outId.get) else null
+        val inVertex = if (inId.isDefined) graph.getVertex(inId.get) else null
+        val outVertex = if (outId.isDefined) graph.getVertex(outId.get) else null
 
         if (inVertex != null && outVertex != null) {
           GraphSONUtility.edgeFromJson(e.toString, outVertex, inVertex, factory, mode, null)

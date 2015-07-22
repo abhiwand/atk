@@ -72,7 +72,7 @@ object EdgeManager extends Serializable {
     var outgoingEdges: List[GraphClusteringEdge] = List[GraphClusteringEdge]()
     var edge: GraphClusteringEdge = null
 
-    if ((null != list) && (!list.isEmpty)) {
+    if ((null != list) && list.nonEmpty) {
       for (edgeList <- list) {
         if ((null != edgeList) && (null != edgeList.higherDistanceEdgeList)) {
           outgoingEdges = outgoingEdges ++ edgeList.higherDistanceEdgeList.toList

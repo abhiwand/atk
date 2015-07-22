@@ -124,7 +124,7 @@ class ExportToTitanGraphPlugin extends SparkCommandPlugin[ExportGraph, GraphEnti
       else
         ""
     })).filter(s => !s.isEmpty)
-    require(invalidColumnNames.size == 0,
+    require(invalidColumnNames.isEmpty,
       s"Titan does not allow properties with the same key as an edge label. Please rename the following columns:\n\t${invalidColumnNames.mkString("\n\t")}")
   }
 }
