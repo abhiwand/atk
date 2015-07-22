@@ -65,7 +65,7 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
       None,
       None,
       rowRDD,
-      false)
+      usePopulationVariance = false)
 
     Math.abs(stats.mean - 2.0) should be < epsilon
   }
@@ -73,7 +73,7 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
   "weighted summary statistics" should "work" in new ColumnStatisticsTest() {
 
     val stats: ColumnSummaryStatisticsReturn =
-      ColumnStatistics.columnSummaryStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD, false)
+      ColumnStatistics.columnSummaryStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD, usePopulationVariance = false)
 
     Math.abs(stats.mean - 1.2) should be < epsilon
   }

@@ -155,7 +155,7 @@ class MultiLineTaggedInputFormatTest extends TestingSparkContextWordSpec with Ma
     }
 
     "ignore end tags in attribute values and respect escaped quotes" in {
-      val rows: RDD[String] = executeXmlInputFormat(jsonFile, List("{"), List("}"), false)
+      val rows: RDD[String] = executeXmlInputFormat(jsonFile, List("{"), List("}"), isXml = false)
       val taken = rows.take(100)
       taken.length should be(2)
       taken(0) should include("1")
