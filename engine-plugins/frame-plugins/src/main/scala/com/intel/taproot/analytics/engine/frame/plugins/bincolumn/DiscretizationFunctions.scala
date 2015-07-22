@@ -236,7 +236,7 @@ object DiscretizationFunctions extends Serializable {
     columnRdd.cache()
 
     // assign a rank to each distinct element
-    val numElements = columnRdd.values.sum
+    val numElements = columnRdd.values.sum()
     val rankedElementRdd = assignElementRanks(columnRdd)
 
     // compute the bin number
