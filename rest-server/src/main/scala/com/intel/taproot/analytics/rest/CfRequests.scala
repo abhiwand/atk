@@ -142,8 +142,8 @@ object CfRequests extends EventLogging with EventLoggingImplicits {
   private def httpsGetQuery(host: String, queryString: String, headers: List[(String, String)]): JsValue = withContext("httpsGetQuery") {
 
     // TODO: This method uses Apache HttpComponents HttpClient as spray-http library does not support proxy over https
-    val scheme = if (RestServerConfig.useHttp == true) new String(HttpURL.DEFAULT_SCHEME) else new String(HttpsURL.DEFAULT_SCHEME)
-    val port = if (RestServerConfig.useHttp == true) HttpURL.DEFAULT_PORT else HttpsURL.DEFAULT_PORT
+    val scheme = if (RestServerConfig.useHttp) new String(HttpURL.DEFAULT_SCHEME) else new String(HttpsURL.DEFAULT_SCHEME)
+    val port = if (RestServerConfig.useHttp) HttpURL.DEFAULT_PORT else HttpsURL.DEFAULT_PORT
     //val (uri, port, scheme) = (host, port, httpScheme)
     val (proxyHostConfigString, proxyPortConfigString) = ("https.proxyHost", "https.proxyPort")
     val httpClient = HttpClients.createDefault()
