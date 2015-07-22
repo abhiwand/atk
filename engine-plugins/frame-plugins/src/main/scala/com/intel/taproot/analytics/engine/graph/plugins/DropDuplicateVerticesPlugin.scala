@@ -16,15 +16,18 @@
 
 package com.intel.taproot.analytics.engine.graph.plugins
 
+import com.intel.taproot.analytics.engine.graph.{ SparkVertexFrame, VertexFrame }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
+import org.apache.spark.ia.graph.VertexFrameRdd
 import org.apache.spark.rdd.RDD
 import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, MiscFrameFunctions }
 import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema }
 
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.sql
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -77,29 +80,21 @@ class DropDuplicateVerticesPlugin extends SparkCommandPlugin[DropDuplicatesArgs,
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
-    val frames = engine.frames.asInstanceOf[SparkFrameStorage]
-    val graphStorage = engine.graphs
-    val vertexFrame = frames.expectFrame(arguments.frame)
-
-    require(vertexFrame.isVertexFrame, "vertex frame is required")
-
-    val seamlessGraph: SeamlessGraphMeta = graphStorage.expectSeamless(vertexFrame.graphId.get)
+    val vertexFrame: SparkVertexFrame = arguments.frame
+    val seamlessGraph = vertexFrame.graph
     val schema = vertexFrame.schema
-    val rdd = frames.loadFrameData(sc, vertexFrame).toRowRdd
     val columnNames = arguments.unique_columns match {
-      case Some(columns) => vertexFrame.schema.validateColumnsExist(columns.value).toList
+      case Some(columns) => schema.validateColumnsExist(columns.value).toList
       case None =>
         // _vid is always unique so don't include it
-        vertexFrame.schema.columnNames.dropWhile(s => s == GraphSchema.vidProperty)
+        schema.columnNames.dropWhile(s => s == GraphSchema.vidProperty)
     }
-    schema.validateColumnsExist(columnNames)
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByColumnNames(rdd, schema, columnNames)
+    val duplicatesRemoved: RDD[sql.Row] = MiscFrameFunctions.removeDuplicatesByColumnNames(vertexFrame.rdd, schema, columnNames)
 
     val label = schema.asInstanceOf[VertexSchema].label
-    FilterVerticesFunctions.removeDanglingEdges(label, frames, seamlessGraph, sc, FrameRdd.toFrameRdd(schema, duplicatesRemoved))
+    FilterVerticesFunctions.removeDanglingEdges(label, engine.frames, seamlessGraph, sc, new FrameRdd(schema, duplicatesRemoved))
 
-    // save results
-    frames.saveFrameData(vertexFrame.toReference, FrameRdd.toFrameRdd(schema, duplicatesRemoved))
+    vertexFrame.save(new VertexFrameRdd(schema, duplicatesRemoved))
 
   }
 }

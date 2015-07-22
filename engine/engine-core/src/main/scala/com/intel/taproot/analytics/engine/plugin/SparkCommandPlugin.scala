@@ -20,6 +20,7 @@ import java.nio.file.{ Paths, Files }
 import java.nio.charset.StandardCharsets
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrameImpl, SparkFrame }
+import com.intel.taproot.analytics.engine.graph.{ SparkVertexFrameImpl, SparkVertexFrame }
 
 import scala.collection.JavaConversions._
 
@@ -50,8 +51,9 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
   def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
   implicit def frameRefToSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkFrame = new SparkFrameImpl(frame, sc, engine.frames)
-
   implicit def frameEntityToSparkFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): SparkFrame = frameRefToSparkFrame(frameEntity.toReference)
+  implicit def frameRefToVertexSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkVertexFrame = new SparkVertexFrameImpl(frame, sc, engine.frames, engine.graphs)
+  implicit def frameEntityToVertexSparkFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): SparkVertexFrame = frameRefToVertexSparkFrame(frameEntity.toReference)
 
   /**
    * Can be overridden by subclasses to provide a more specialized Invocation. Called before

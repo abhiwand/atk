@@ -56,9 +56,9 @@ class VertexFrameRdd(schema: VertexSchema, prev: RDD[sql.Row]) extends FrameRdd(
    * Drop duplicates based on user defined id
    */
   def dropDuplicates(): VertexFrameRdd = {
-    val pairRdd = map(row => MiscFrameFunctions.createKeyValuePairFromRow(row.toSeq.toArray, schema.columnIndices(Seq(schema.idColumnName.getOrElse(throw new RuntimeException("Cannot drop duplicates is id column has not yet been defined")), schema.label))))
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
-    new VertexFrameRdd(FrameRdd.toFrameRdd(schema, duplicatesRemoved))
+    val pairRdd = map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, schema.columnIndices(Seq(schema.idColumnName.getOrElse(throw new RuntimeException("Cannot drop duplicates is id column has not yet been defined")), schema.label))))
+    val duplicatesRemoved: RDD[sql.Row] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
+    new VertexFrameRdd(schema, duplicatesRemoved)
   }
 
   def groupVerticesById() = {
