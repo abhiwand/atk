@@ -16,6 +16,7 @@
 
 package com.intel.taproot.spark.graphon.graphstatistics
 
+import com.intel.taproot.analytics.engine.graph.SparkGraph
 import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property }
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
@@ -93,12 +94,8 @@ class AnnotateWeightedDegreesPlugin extends SparkCommandPlugin[AnnotateWeightedD
 
   override def execute(arguments: AnnotateWeightedDegreesArgs)(implicit invocation: Invocation): AnnotateWeightedDegreesReturn = {
 
-    val degreeMethod: String = arguments.degreeMethod
-    // Get the graph
-
-    val graph = engine.graphs.expectGraph(arguments.graph)
-
-    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
+    val graph: SparkGraph = arguments.graph
+    val (gbVertices, gbEdges) = graph.gbRdds
 
     val inputEdgeSet = arguments.inputEdgeSet
     val weightPropertyOPtion = arguments.edgeWeightProperty

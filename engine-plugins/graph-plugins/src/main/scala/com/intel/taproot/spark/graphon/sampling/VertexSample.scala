@@ -20,9 +20,8 @@ import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.taproot.analytics.component.Boot
 import com.intel.taproot.analytics.domain.frame.FrameName
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.graph.GraphBackendName
+import com.intel.taproot.analytics.engine.graph.{ SparkGraph, GraphBackendName, GraphBuilderConfigFactory }
 import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
-import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
 import com.intel.taproot.analytics.engine.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.taproot.analytics.domain.{ UserPrincipal, StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphReference }
@@ -88,11 +87,8 @@ class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampl
 
   override def execute(arguments: VertexSampleArguments)(implicit invocation: Invocation): VertexSampleResult = {
 
-    // get the input graph object
-    val graph = engine.graphs.expectGraph(arguments.graph)
-
-    // convert graph name and get the graph vertex and edge RDDs
-    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
+    val graph: SparkGraph = arguments.graph
+    val (gbVertices, gbEdges) = graph.gbRdds
 
     val vertexSample = arguments.sampleType match {
       case "uniform" => sampleVerticesUniform(gbVertices, arguments.size, arguments.seed)
