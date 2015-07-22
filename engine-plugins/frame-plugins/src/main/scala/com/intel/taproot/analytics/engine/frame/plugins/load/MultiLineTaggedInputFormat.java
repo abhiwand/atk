@@ -324,7 +324,7 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
             }
 
             /**
-             * Check if you have reencountered the start tag. if you have you are a level deeper into the nested structure.
+             * Check if you have re-encountered the start tag. if you have you are a level deeper into the nested structure.
              */
             private void checkStartTagForDepth(int[] startTagIndices, int b) {
                 int matchIndex;
@@ -355,7 +355,7 @@ public class MultiLineTaggedInputFormat extends TextInputFormat {
                             initIntArray(xmlCommentStartIndices);
                         }
                     }else if(this.parseState == ParseState.IN_COMMENT){
-                        //if this is inside of acomment check for the end
+                        //if this is inside of a comment check for the end
                         if(checkMatches(b, xmlCommentEndIndices, commentEndChars) != -1){
                             this.parseState = ParseState.NORMAL;
                             initIntArray(xmlCommentEndIndices);
