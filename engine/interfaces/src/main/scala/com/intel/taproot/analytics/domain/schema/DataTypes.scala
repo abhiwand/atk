@@ -497,7 +497,7 @@ object DataTypes extends EventLogging {
 
   def dataTypeOfValue(value: Any): DataType = {
     val matchesPrimatives = supportedPrimativeTypes.filter { case (name: String, dataType: DataType) => dataType.isType(value) }.toList
-    if (!matchesPrimatives.isEmpty) {
+    if (matchesPrimatives.nonEmpty) {
       if (matchesPrimatives.length > 1) {
         // this would happen with null
         warn(s"$value matched more than one type: $matchesPrimatives")

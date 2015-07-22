@@ -47,13 +47,13 @@ case class LoadSource(sourceType: String, uri: String, parser: Option[LineParser
   require(uri != null, "uri cannot be null")
   require(parser != null, "parser cannot be null")
   if (sourceType == "frame" || sourceType == "file" || sourceType == "linefile" || sourceType == "multilinefile") {
-    require(data == None, "if this is not a strings file the data must be None")
+    require(data.isEmpty, "if this is not a strings file the data must be None")
   }
   if (sourceType == "strings") {
-    require(data != None, "if the sourceType is strings data must not be None")
+    require(data.isDefined, "if the sourceType is strings data must not be None")
   }
   if (sourceType == "multilinefile" || sourceType == "xmlfile") {
-    require(startTag != None && endTag != None, "if this is a multiline file the start and end tags must be set")
+    require(startTag.isDefined && endTag.isDefined, "if this is a multiline file the start and end tags must be set")
   }
 
   /**
