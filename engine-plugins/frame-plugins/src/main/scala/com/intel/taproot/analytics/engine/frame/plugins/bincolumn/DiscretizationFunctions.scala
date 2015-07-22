@@ -48,6 +48,7 @@ object DiscretizationFunctions extends Serializable {
    * @return new RDD with binned column appended
    */
   def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RddWithCutoffs = {
+    require(numBins >= 1, "number of bins must be 1 or greater")
     val cutoffs: Array[Double] = getBinEqualWidthCutoffs(index, numBins, rdd)
 
     // map each data element to its bin id, using cutoffs index as bin id
@@ -190,6 +191,7 @@ object DiscretizationFunctions extends Serializable {
    * @return cut-offs
    */
   def getBinEqualWidthCutoffs(numBins: Int, minValue: Double, maxValue: Double): Array[Double] = {
+    require(numBins >= 1, "number of bins must be 1 or greater")
     // determine bin width and cutoffs
     val binWidth = (maxValue - minValue) / numBins.toDouble
 
