@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
-import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
+import com.intel.taproot.analytics.engine.graph.{ SparkGraph, GraphBuilderConfigFactory }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol
 
@@ -51,8 +51,8 @@ class GraphClusteringPlugin extends SparkCommandPlugin[GraphClusteringArgs, Unit
   override def kryoRegistrator: Option[String] = None
 
   override def execute(arguments: GraphClusteringArgs)(implicit invocation: Invocation): UnitReturn = {
-    val graph = engine.graphs.expectGraph(arguments.graph)
-    val (vertices, edges) = engine.graphs.loadGbElements(sc, graph)
+    val graph: SparkGraph = arguments.graph
+    val (vertices, edges) = graph.gbRdds
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
     new GraphClusteringWorker(titanConfig).execute(vertices, edges, arguments.edgeDistance)
