@@ -172,7 +172,7 @@ object ClassificationMetrics extends Serializable {
         case _ => labelCount * (correctPredict / labelCount.toDouble)
       }
 
-      ((math.pow(beta, 2) * precision) + recall) match {
+      (math.pow(beta, 2) * precision) + recall match {
         case 0 => 0
         case _ => (1 + math.pow(beta, 2)) * ((precision * recall) / ((math.pow(beta, 2) * precision) + recall))
       }
