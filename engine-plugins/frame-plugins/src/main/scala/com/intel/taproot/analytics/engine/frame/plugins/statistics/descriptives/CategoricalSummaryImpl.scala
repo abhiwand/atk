@@ -44,7 +44,7 @@ object CategoricalSummaryImpl {
                            default_top_k: Int,
                            default_threshold: Double): CategoricalSummaryOutput = {
 
-    val mappedRdd = rdd.mapRows(elem => (elem.values()(0), 1)).persist(StorageLevel.MEMORY_AND_DISK)
+    val mappedRdd = rdd.mapRows(elem => (elem.values().head, 1)).persist(StorageLevel.MEMORY_AND_DISK)
     val filteredRdd = mappedRdd.filter(!matchMissingValues(_))
       .map { case (s, c) => (s.toString, c) }
       .reduceByKey(_ + _)
@@ -69,7 +69,7 @@ object CategoricalSummaryImpl {
 
     mappedRdd.unpersist()
 
-    CategoricalSummaryOutput(rdd.frameSchema.columnNames(0), finalResultWithAdditionalLevels)
+    CategoricalSummaryOutput(rdd.frameSchema.columnNames.head, finalResultWithAdditionalLevels)
   }
 
   /**

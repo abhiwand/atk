@@ -91,7 +91,7 @@ object DiscretizationFunctions extends Serializable {
     //if lower than first cutoff
     val binIndex: Int =
       // if lower than first cutoff
-      if (element < cutoffs(0))
+      if (element < cutoffs.head)
         if (strictBinning) -1 else min
       // if larger than last cutoff
       else if (cutoffs.last < element)
@@ -103,7 +103,7 @@ object DiscretizationFunctions extends Serializable {
           bSearchRangeLowerInclusive(element, cutoffs, min, max)
       }
       else {
-        if ((element - cutoffs(0)).abs < 0.00001d)
+        if ((element - cutoffs.head).abs < 0.00001d)
           min
         else
           bSearchRangeUpperInclusive(element, cutoffs, min, max)

@@ -38,6 +38,6 @@ case class DotProductArgs(frame: FrameReference,
                           defaultLeftValues: Option[List[Double]] = None,
                           defaultRightValues: Option[List[Double]] = None) {
   require(frame != null, "frame is required")
-  require(leftColumnNames.size > 0, "number of left columns cannot be zero")
+  require(leftColumnNames.nonEmpty, "number of left columns cannot be zero")
   require(dotProductColumnName != null, "dot product column name cannot be null")
 }

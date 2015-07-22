@@ -106,7 +106,7 @@ object UnflattenColumnFunctions extends Serializable {
     val rowCount = rows.length
 
     val keySize = compositeKeyIndex.length
-    val colsInRow = rows(0).length
+    val colsInRow = rows.head.length
     val result = new Array[Any](colsInRow)
 
     //all but the last line + with delimiter
