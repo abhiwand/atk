@@ -65,7 +65,7 @@ trait EngineConfig extends EventLogging {
     (sparkMaster.startsWith("local[") && sparkMaster.endsWith("]")) || sparkMaster.equals("local")
   }
 
-  val isSparkOnYarn: Boolean = (sparkMaster == "yarn-cluster" || sparkMaster == "yarn-client")
+  val isSparkOnYarn: Boolean = sparkMaster == "yarn-cluster" || sparkMaster == "yarn-client"
 
   /** Spark home directory, e.g. "/opt/cloudera/parcels/CDH/lib/spark", "/usr/lib/spark", etc. */
   val sparkHome: String = config.getString("intel.taproot.analytics.engine.spark.home")

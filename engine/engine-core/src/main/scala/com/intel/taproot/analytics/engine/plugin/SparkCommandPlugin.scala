@@ -132,7 +132,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     def getParentForArchive(archive: String, configMap: Map[String, ConfigValue]): Option[String] = {
       val parent = for {
         (k, v) <- configMap
-        if (k.contains(s"$archive.parent"))
+        if k.contains(s"$archive.parent")
       } yield v
       if (parent.iterator.hasNext)
         Some(parent.head.render.replace("\"", ""))
@@ -155,7 +155,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
       configPathKey = s"intel.taproot.analytics.component.archives.$i.config-path"
       configPath = allEntries.get(configPathKey).get.unwrapped().toString
       extraClassPathKey = s"$configPath.extra-classpath"
-      if (allEntries.contains(extraClassPathKey))
+      if allEntries.contains(extraClassPathKey)
     } extraClassPath ++= allEntries.get(extraClassPathKey).get.asInstanceOf[ConfigList].unwrapped().map(_.toString)
 
     /* Convert all configs to strings; override the archives entry with current plugin's archive name */
