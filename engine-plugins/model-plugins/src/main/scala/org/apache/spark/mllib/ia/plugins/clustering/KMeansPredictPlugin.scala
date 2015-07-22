@@ -129,7 +129,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     //Updating the frame schema
     var columnNames = new ListBuffer[String]()
     var columnTypes = new ListBuffer[DataTypes.DataType]()
-    for (i <- 1 to (kmeansModel.clusterCenters.length)) {
+    for (i <- 1 to kmeansModel.clusterCenters.length) {
       val colName = "distance_from_cluster_" + i.toString
       columnNames += colName
       columnTypes += DataTypes.float64
