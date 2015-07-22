@@ -117,7 +117,7 @@ data to persist between restarts).
 
     *   Run *psql*
     *   create user metastore with createdb with encrypted password
-        'Tribeca123' (you can change it later)
+        'Taproot123' (you can change it later)
     *   create database metastore with owner metastore
     *   It is also good to create a user for yourself so you don't have to
         ``sudo`` all of the time
