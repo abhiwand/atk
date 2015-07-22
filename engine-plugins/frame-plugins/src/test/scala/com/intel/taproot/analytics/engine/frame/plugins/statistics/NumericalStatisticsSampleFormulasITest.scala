@@ -70,10 +70,10 @@ class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec
       Math.pow(dataFrequencyPairs.map({ case (x, w) => Math.pow(x, w) }).product, 1 / netFrequencies)
 
     val expectedVariancesFrequencies =
-      (1.toDouble / (netFrequencies - 1).toDouble) * dataFrequencyPairs
+      (1.toDouble / (netFrequencies - 1)) * dataFrequencyPairs
         .map({ case (x, w) => w * (x - expectedMeanFrequencies) * (x - expectedMeanFrequencies) }).sum
 
-    val expectedVarianceWeights = (1.toDouble / (netIPWeights - 1).toDouble) *
+    val expectedVarianceWeights = (1.toDouble / (netIPWeights - 1)) *
       dataIPWPairs.map({ case (x, w) => w * (x - expectedMeanIPW) * (x - expectedMeanIPW) }).sum
 
     val expectedStandardDeviationFrequencies = Math.sqrt(expectedVariancesFrequencies)
