@@ -59,7 +59,7 @@ object EdgeManager extends Serializable {
       }
     }
 
-    edgeList.filter(e => e.isInternal == false)
+    edgeList.filter(e => !e.isInternal)
   }
 
   /**
