@@ -30,7 +30,8 @@ import org.apache.spark.rdd.RDD
 // TODO: all plugins should move out of engine-core into plugin modules
 
 @PluginDoc(oneLine = "Predict test frame labels and return metrics.",
-  extended = "Predict the labels for a test frame and run classification metrics on predicted and target labels.",
+  extended = """Predict the labels for a test frame and run classification
+metrics on predicted and target labels.""",
   returns = """Object
     Object with binary classification metrics.
     The data returned is composed of multiple components:

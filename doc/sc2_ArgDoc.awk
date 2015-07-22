@@ -21,11 +21,13 @@ BEGIN {
             } else {
                 # There is no brace so there is only one method now, presumably Invocation
                 # Need to create a set of braces with the methods inside.
-                FLine = substr( FLine, 1, index( FLine, EngineLine ) + length( EngineLine ) - 1 ) "{ ArgDoc, " substr( FLine, index( FLine, EngineLine ) + length( EngineLine ));
-                if ( FLine ~ /\n/ ) {
-                    FLine = substr( FLine, 1, index( FLine, "\n" ) - 1 ) " }" substr( FLine, index( FLine, "\n" ));
-                } else {
-                    FLine = FLine " }"
+                if ( FLine !~ /ArgDoc/) {
+                    FLine = substr( FLine, 1, index( FLine, EngineLine ) + length( EngineLine ) - 1 ) "{ ArgDoc, " substr( FLine, index( FLine, EngineLine ) + length( EngineLine ));
+                    if ( FLine ~ /\n/ ) {
+                        FLine = substr( FLine, 1, index( FLine, "\n" ) - 1 ) " }" substr( FLine, index( FLine, "\n" ));
+                    } else {
+                        FLine = FLine " }"
+                    }
                 }
             }
         }

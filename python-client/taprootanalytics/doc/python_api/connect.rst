@@ -11,7 +11,7 @@ Connect to the Server
     :backlinks: none
 
 Before the Python API can be used, the user must "connect" to the server, such
-that the Python client can download the API and configure itself::
+that the Python client can download the API and configure itself:
 
 .. autofunction:: taprootanalytics.connect
 
@@ -36,7 +36,7 @@ To connect to a specific server:
 Connections requiring OAuth
 ---------------------------
 
-To connect to a Analytics PaaS instance of |PACKAGE|, the python client must have an OAuth
+To connect to an Analytics PaaS instance of |PACKAGE|, the python client must have an OAuth
 access token (see
 `oauth tokens <http://self-issued.info/docs/draft-ietf-oauth-v2-bearer.html>`).
 The user must have a credentials file which holds an OAuth access token and

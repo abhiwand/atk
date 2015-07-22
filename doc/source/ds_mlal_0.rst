@@ -14,7 +14,9 @@ The graph machine learning algorithms currently supported fall into these
 categories:
 *Collaborative Filtering*, *Graphical Models*, and *Topic Modeling*.
 
-* `Collaborative_Filtering`_
+-----------------------
+Collaborative Filtering
+-----------------------
     * `ALS`_
     * `CGD`_
 
@@ -25,9 +27,6 @@ categories:
 * `Topic_Modeling`_
     * `LDA`_
 
-
-.. _Collaborative_Filtering:
-.. include:: ds_mlal_cf.inc
 
 .. _ALS:
 .. include:: ds_mlal_als.inc
