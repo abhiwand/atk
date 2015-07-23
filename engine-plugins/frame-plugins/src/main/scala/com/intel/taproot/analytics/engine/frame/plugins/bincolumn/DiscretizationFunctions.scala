@@ -48,6 +48,7 @@ object DiscretizationFunctions extends Serializable {
    * @return new RDD with binned column appended
    */
   def binEqualWidth(index: Int, numBins: Int, rdd: RDD[Row]): RddWithCutoffs = {
+    require(numBins >= 1, "number of bins must be 1 or greater")
     val cutoffs: Array[Double] = getBinEqualWidthCutoffs(index, numBins, rdd)
 
     // map each data element to its bin id, using cutoffs index as bin id
@@ -182,20 +183,34 @@ object DiscretizationFunctions extends Serializable {
     val min: Double = pairedRdd.sortByKey().first()._1
     val max: Double = pairedRdd.sortByKey(ascending = false).first()._1
 
+    getBinEqualWidthCutoffs(numBins, min, max)
+  }
+
+  /**
+   * Calculate the cuf-offs
+   * @return cut-offs
+   */
+  def getBinEqualWidthCutoffs(numBins: Int, minValue: Double, maxValue: Double): Array[Double] = {
+    require(numBins >= 1, "number of bins must be 1 or greater")
     // determine bin width and cutoffs
-    val binWidth = (max - min) / numBins.toDouble
+    val binWidth = (maxValue - minValue) / numBins.toDouble
 
     if (binWidth != 0) {
-      val cutoffs = (min to max by binWidth).toArray
-      // if the bin width is rounded in such a way that max < min + (binWidth * numBins)
-      // than the max value will not be included in the cutoffs list
-      if (cutoffs.last < max)
-        cutoffs :+ max
-      else
-        cutoffs
+      // TODO: I tried Scala's Range.Double.inclusive(...) but it seemed to have bugs
+      // Converting to BigDecimal because it does better with the imprecision
+      val cutoffs = new Array[BigDecimal](numBins + 1)
+      var currentValue = BigDecimal.valueOf(minValue)
+      for {
+        i <- 0 to numBins - 1
+      } {
+        cutoffs(i) = currentValue
+        currentValue += binWidth
+      }
+      cutoffs(numBins) = maxValue
+      cutoffs.map(_.doubleValue())
     }
     else {
-      List(min, min).toArray
+      List(minValue, minValue).toArray
     }
   }
 
