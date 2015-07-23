@@ -45,7 +45,7 @@ object ClusteringCoefficient {
       g.collectNeighborIds(EdgeDirection.Either).mapValues { (vid, nbrs) =>
         val set = new VertexSet(4)
         var i = 0
-        while (i < nbrs.size) {
+        while (i < nbrs.length) {
           // prevent self cycle
           if (nbrs(i) != vid) {
             set.add(nbrs(i))
