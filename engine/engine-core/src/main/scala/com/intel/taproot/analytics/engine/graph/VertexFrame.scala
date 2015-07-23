@@ -36,7 +36,9 @@ trait VertexFrame extends Frame {
    */
   override def schema: VertexSchema
 
-  def graph: SeamlessGraphMeta
+  def graphMeta: SeamlessGraphMeta
+
+  def graph: Graph
 }
 
 object VertexFrame {
@@ -57,6 +59,8 @@ trait SparkVertexFrame extends VertexFrame {
   /** Update the data for this frame */
   def save(rdd: VertexFrameRdd): SparkVertexFrame
 
+  def graph: SparkGraph
+
 }
 
 class VertexFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)
@@ -76,10 +80,13 @@ class VertexFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGr
   override def schema: VertexSchema = super.schema.asInstanceOf[VertexSchema]
 
   /** The graph this VertexFrame is a part of */
-  override def graph: SeamlessGraphMeta = {
+  override def graphMeta: SeamlessGraphMeta = {
     sparkGraphStorage.expectSeamless(entity.graphId.getOrElse(throw new RuntimeException("VertxFrame is required to have a graphId but this one didn't")))
   }
 
+  override def graph: Graph = {
+    new GraphImpl(graphMeta.toReference, sparkGraphStorage)
+  }
 }
 
 class SparkVertexFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)
@@ -93,6 +100,10 @@ class SparkVertexFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameSt
   override def save(rdd: VertexFrameRdd): SparkVertexFrame = {
     val result = sparkGraphStorage.saveVertexRdd(frame, rdd)
     new SparkVertexFrameImpl(result, sc, sparkFrameStorage, sparkGraphStorage)
+  }
+
+  override def graph: SparkGraph = {
+    new SparkGraphImpl(graphMeta.toReference, sc, sparkGraphStorage)
   }
 
 }

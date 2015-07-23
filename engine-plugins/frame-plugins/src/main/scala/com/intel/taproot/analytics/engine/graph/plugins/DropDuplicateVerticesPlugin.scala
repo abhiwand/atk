@@ -81,7 +81,7 @@ class DropDuplicateVerticesPlugin extends SparkCommandPlugin[DropDuplicatesArgs,
    */
   override def execute(arguments: DropDuplicatesArgs)(implicit invocation: Invocation): FrameEntity = {
     val vertexFrame: SparkVertexFrame = arguments.frame
-    val seamlessGraph = vertexFrame.graph
+    val seamlessGraph = vertexFrame.graphMeta
     val schema = vertexFrame.schema
     val columnNames = arguments.unique_columns match {
       case Some(columns) => schema.validateColumnsExist(columns.value).toList

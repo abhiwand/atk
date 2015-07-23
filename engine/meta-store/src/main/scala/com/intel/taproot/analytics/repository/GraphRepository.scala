@@ -30,7 +30,7 @@ trait GraphRepository[Session] extends Repository[Session, GraphTemplate, GraphE
    */
   def scanAll()(implicit session: Session): Seq[GraphEntity]
 
-  def updateIdCounter(id: Long, idCounter: Long)(implicit session: Session): Unit
+  def incrementIdCounter(id: Long, idCounter: Long)(implicit session: Session): Unit
 
   /**
    * Returns the liveness of the graph. If it is named or has named frames then it is a live graph.

@@ -845,9 +845,11 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       updatedGraph
     }
 
-    override def updateIdCounter(id: Long, idCounter: Long)(implicit session: Session): Unit = {
+    override def incrementIdCounter(id: Long, increment: Long)(implicit session: Session): Unit = {
+      val graph = graphs.where(_.id === id).firstOption.getOrElse(throw new RuntimeException(s"Graph with id $id not found"))
+      val newValue = graph.idCounter.getOrElse(0L) + increment
       val idCounterCol = for (g <- graphs if g.id === id) yield g.idCounter
-      idCounterCol.update(Some(idCounter))
+      idCounterCol.update(Some(newValue))
     }
 
     override def scan(offset: Int = 0, count: Int = defaultScanCount)(implicit session: Session): Seq[GraphEntity] = {

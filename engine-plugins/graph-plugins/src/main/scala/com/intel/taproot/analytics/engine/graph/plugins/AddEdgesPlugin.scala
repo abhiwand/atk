@@ -112,7 +112,7 @@ class AddEdgesPlugin extends SparkCommandPlugin[AddEdgesArgs, UnitReturn] {
     // assign unique ids to source data
     val edgeDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames).assignUniqueIds(GraphSchema.edgeProperty, startId = graph.nextId())
     edgeDataToAdd.cache()
-    graphs.updateIdCounter(graphRef, edgeDataToAdd.count())
+    graphs.incrementIdCounter(graphRef, edgeDataToAdd.count())
 
     // convert to appropriate schema, adding edge system columns
     val edgesWithoutVids = edgeDataToAdd.convertToNewSchema(edgeDataToAdd.frameSchema.addColumn(GraphSchema.srcVidProperty, DataTypes.int64).addColumn(GraphSchema.destVidProperty, DataTypes.int64))
@@ -127,11 +127,11 @@ class AddEdgesPlugin extends SparkCommandPlugin[AddEdgesArgs, UnitReturn] {
       val sourceVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForSourceVertexId))
       val destVertexData = edgesWithoutVids.selectColumns(List(arguments.columnNameForDestVertexId))
       val addVerticesPlugin = new AddVerticesPlugin
-      addVerticesPlugin.addVertices(sc, frames, graphs, AddVerticesArgs(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(AddVerticesArgs(graph.vertexMeta(srcLabel).toReference, null, arguments.columnNameForSourceVertexId), sourceVertexData, preferNewVertexData = false)
 
       // refresh graph from DB for building self-to-self graph edge
       graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
-      addVerticesPlugin.addVertices(sc, frames, graphs, AddVerticesArgs(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
+      addVerticesPlugin.addVertices(AddVerticesArgs(graph.vertexMeta(destLabel).toReference, null, arguments.columnNameForDestVertexId), destVertexData, preferNewVertexData = false)
     }
 
     // load src and dest vertex ids

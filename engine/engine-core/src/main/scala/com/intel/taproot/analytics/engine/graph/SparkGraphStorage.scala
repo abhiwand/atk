@@ -234,11 +234,11 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  def updateIdCounter(graph: GraphReference, idCounter: Long)(implicit invocation: Invocation): Unit = {
+  def incrementIdCounter(graph: GraphReference, idCounter: Long)(implicit invocation: Invocation): Unit = {
     metaStore.withSession("spark.graphstorage.updateIdCounter") {
       implicit session =>
         {
-          metaStore.graphRepo.updateIdCounter(graph.id, idCounter)
+          metaStore.graphRepo.incrementIdCounter(graph.id, idCounter)
         }
     }
   }
