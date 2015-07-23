@@ -48,9 +48,9 @@ class GBVertexRddBuilder(gbVertices: RDD[GBVertex], vertexCommunitySet: RDD[(Lon
     // the complete list of vertices
     val gbVertexIdCombinedWithEmptyCommunity: RDD[(Long, Set[Long])] =
       gbVertexIDEmptySetPairs.union(vertexCommunitySet).combineByKey(
-        (x => x),
-        ({ case (x, y) => y.union(x) }),
-        ({ case (x, y) => y.union(x) }))
+        x => x,
+        { case (x, y) => y.union(x) },
+        { case (x, y) => y.union(x) })
 
     // Convert the pair of vertex and community set into a GB Vertex
     val newGBVertices: RDD[GBVertex] = gbVertexIdCombinedWithEmptyCommunity.map({

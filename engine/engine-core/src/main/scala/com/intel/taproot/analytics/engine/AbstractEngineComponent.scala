@@ -39,7 +39,7 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
 
   implicit lazy val startupCall = Call(null, EngineExecutionContext.global)
 
-  lazy val commandPluginRegistry: CommandPluginRegistry = new CommandPluginRegistry(commandLoader);
+  lazy val commandPluginRegistry: CommandPluginRegistry = new CommandPluginRegistry(commandLoader)
 
   val sparkContextFactory = SparkContextFactory
 

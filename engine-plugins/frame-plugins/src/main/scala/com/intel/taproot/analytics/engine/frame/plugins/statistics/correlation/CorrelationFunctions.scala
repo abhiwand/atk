@@ -29,7 +29,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
  * Object for calculating correlation and the correlation matrix
  */
 
-object Correlation extends Serializable {
+object CorrelationFunctions extends Serializable {
 
   /**
    * Compute correlation for exactly two columns

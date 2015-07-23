@@ -111,11 +111,11 @@ object PythonRddStorage {
       x => {
 
         val obj = new BasicBSONObject()
-        obj.put("array", x.toSeq.toArray.map(value => value match {
+        obj.put("array", x.toSeq.toArray.map {
           case y: ArrayBuffer[_] => iterableToBsonList(y)
           case y: Vector[_] => iterableToBsonList(y)
-          case _ => value
-        }))
+          case value => value
+        })
         BSON.encode(obj)
       }
     )
@@ -162,10 +162,10 @@ object PythonRddStorage {
       val asList = bson.get("array").asInstanceOf[BasicBSONList]
       asList.map(innerList => {
         val asBsonList = innerList.asInstanceOf[BasicBSONList]
-        asBsonList.map(value => value match {
+        asBsonList.map {
           case x: BasicBSONList => x.toArray
-          case _ => value
-        }).toArray.asInstanceOf[Array[Any]]
+          case value => value
+        }.toArray.asInstanceOf[Array[Any]]
       })
     }).map(converter)
 

@@ -127,7 +127,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Option[Double], Option[Double])]
   lazy val meanConfidenceLower: Double =
 
     if (positiveWeightCount > 1 && weightedStandardDeviation != Double.NaN)
-      weightedMean - (1.96) * (weightedStandardDeviation / Math.sqrt(totalWeight))
+      weightedMean - 1.96 * (weightedStandardDeviation / Math.sqrt(totalWeight))
     else
       Double.NaN
 
@@ -137,7 +137,7 @@ class NumericalStatistics(dataWeightPairs: RDD[(Option[Double], Option[Double])]
    */
   lazy val meanConfidenceUpper: Double =
     if (totalWeight > 0 && weightedStandardDeviation != Double.NaN)
-      weightedMean + (1.96) * (weightedStandardDeviation / Math.sqrt(totalWeight))
+      weightedMean + 1.96 * (weightedStandardDeviation / Math.sqrt(totalWeight))
     else
       Double.NaN
 

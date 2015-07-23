@@ -34,7 +34,7 @@ class EdgeManagerInternalEdgeTest extends FlatSpec with Matchers with MockitoSug
 
     assert(GraphClusteringConstants.DefaultVertextId == metanode)
     assert(GraphClusteringConstants.DefaultNodeCount == metanodeCount)
-    assert(metaEdges.size == 0)
+    assert(metaEdges.isEmpty)
   }
 
   "edgeManager::createInternalEdgesForMetaNode" should "return valid internal edge list" in {

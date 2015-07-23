@@ -217,7 +217,7 @@ object GradientDescentWithFrequency extends Logging {
       val bcWeights = data.context.broadcast(weights)
       // Sample a subset (fraction miniBatchFraction) of the total data
       // compute and sum up the subgradients on this subset (this is one map-reduce)
-      val (gradientSum, lossSum, miniBatchSize) = data.sample(false, miniBatchFraction, 42 + i)
+      val (gradientSum, lossSum, miniBatchSize) = data.sample(withReplacement = false, miniBatchFraction, 42 + i)
         .treeAggregate((BDV.zeros[Double](n), 0.0, 0L))(
           seqOp = (c, v) => {
             // c: (grad, loss, count), v: (label, features)

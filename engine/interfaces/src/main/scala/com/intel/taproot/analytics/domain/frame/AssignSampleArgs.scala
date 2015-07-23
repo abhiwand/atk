@@ -32,7 +32,7 @@ Defaults to 0.""") randomSeed: Option[Int] = None) {
   require(frame != null, "AssignSample requires a non-null dataframe.")
 
   require(samplePercentages != null, "AssignSample requires that the percentages vector be non-null.")
-  require(samplePercentages.length > 0, "AssignSample  requires that the percentages vector contain at least one value.")
+  require(samplePercentages.nonEmpty, "AssignSample  requires that the percentages vector contain at least one value.")
 
   require(samplePercentages.forall(_ >= 0.0d), "AssignSample requires that all percentages be non-negative.")
   require(samplePercentages.forall(_ <= 1.0d), "AssignSample requires that all percentages be no more than 1.")

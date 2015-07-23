@@ -16,6 +16,7 @@
 
 package com.intel.taproot.spark.graphon.connectedcomponents
 
+import com.intel.taproot.analytics.engine.graph.SparkGraph
 import com.intel.taproot.graphbuilder.elements.Property
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.graph.GraphReference
@@ -62,11 +63,8 @@ class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsAr
 
   override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): ConnectedComponentsReturn = {
 
-    // Get the graph
-    val graph = engine.graphs.expectGraph(arguments.graph)
-
-    // Read the graph from Titan
-    val (gbVertices, gbEdges) = engine.graphs.loadGbElements(sc, graph)
+    val graph: SparkGraph = arguments.graph
+    val (gbVertices, gbEdges) = graph.gbRdds
 
     val inputVertices: RDD[Long] = gbVertices.map(gbvertex => gbvertex.physicalId.asInstanceOf[Long])
     val inputEdges = gbEdges.map(gbedge => (gbedge.tailPhysicalId.asInstanceOf[Long], gbedge.headPhysicalId.asInstanceOf[Long]))

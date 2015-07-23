@@ -19,6 +19,7 @@ package com.intel.taproot.spark.graphon.clusteringcoefficient
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphEntity, GraphReference }
+import com.intel.taproot.analytics.engine.graph.SparkGraph
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -76,18 +77,12 @@ class ClusteringCoefficientPlugin extends SparkCommandPlugin[ClusteringCoefficie
   override def kryoRegistrator: Option[String] = None
 
   override def execute(arguments: ClusteringCoefficientArgs)(implicit invocation: Invocation): ClusteringCoefficientResult = {
-
-    val frames = engine.frames
-    val graphs = engine.graphs
-
-    // Get the graph
-    val graph = graphs.expectGraph(arguments.graph)
-    val (gbVertices, gbEdges) = graphs.loadGbElements(sc, graph)
+    val graph: SparkGraph = arguments.graph
+    val (gbVertices, gbEdges) = graph.gbRdds
     val ccOutput = ClusteringCoefficientRunner.run(gbVertices, gbEdges, arguments.outputPropertyName, arguments.inputEdgeSet)
-
     if (ccOutput.vertexOutput.isDefined) {
       val newFrame = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("clustering coefficient results"))) {
-        newFrame => frames.saveFrameData(newFrame.toReference, ccOutput.vertexOutput.get)
+        newFrame => newFrame.save(ccOutput.vertexOutput.get)
       }
       ClusteringCoefficientResult(ccOutput.globalClusteringCoefficient, Some(newFrame))
     }

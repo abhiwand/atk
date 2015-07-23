@@ -24,6 +24,6 @@ case class CorrelationMatrixArgs(frame: FrameReference,
                                  matrixName: Option[String] = None) {
   require(frame != null, "frame is required")
   require(dataColumnNames.size >= 2, "two or more data columns are required")
-  require(dataColumnNames.forall(_ != null), "data columns names cannot be null")
+  require(!dataColumnNames.contains(null), "data columns names cannot be null")
   require(dataColumnNames.forall(!_.equals("")), "data columns names cannot be empty")
 }

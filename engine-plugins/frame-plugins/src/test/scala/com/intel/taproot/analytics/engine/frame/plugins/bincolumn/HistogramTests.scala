@@ -79,7 +79,7 @@ class HistogramTests extends TestingSparkContextWordSpec with Matchers {
         Array[Any]("D", 7),
         Array[Any]("E", 9))
       val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
-      val hist = plugin.computeHistogram(rdd, 1, None, 2, false)
+      val hist = plugin.computeHistogram(rdd, 1, None, 2, equalWidth = false)
       hist.cutoffs should be(Array(1, 5, 9))
       hist.hist should be(Array(2, 3))
       hist.density should be(Array(2 / 5.0, 3 / 5.0))
@@ -103,7 +103,7 @@ class HistogramTests extends TestingSparkContextWordSpec with Matchers {
         Array[Any]("E", 9, 5),
         Array[Any]("E", 9, 5))
       val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
-      val hist = plugin.computeHistogram(rdd, 1, None, 2, false)
+      val hist = plugin.computeHistogram(rdd, 1, None, 2, equalWidth = false)
       hist.cutoffs should be(Array(1.0, 7.0, 9.0))
       hist.hist should be(Array(6, 8))
       hist.density should be(Array(6 / 14.0, 8 / 14.0))
@@ -118,7 +118,7 @@ class HistogramTests extends TestingSparkContextWordSpec with Matchers {
         Array[Any]("D", 7, 3),
         Array[Any]("E", 9, 5))
       val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
-      val hist = plugin.computeHistogram(rdd, 1, Some(2), 2, false)
+      val hist = plugin.computeHistogram(rdd, 1, Some(2), 2, equalWidth = false)
       hist.cutoffs should be(Array(1.0, 7.0, 9.0))
       hist.hist should be(Array(6, 8))
       hist.density should be(Array(6 / 14.0, 8 / 14.0))
@@ -133,7 +133,7 @@ class HistogramTests extends TestingSparkContextWordSpec with Matchers {
         Array[Any]("D", 7, 0),
         Array[Any]("E", 9, 5))
       val rdd: RDD[Row] = sparkContext.parallelize(inputList, 2).map(row => new GenericRow(row))
-      val hist = plugin.computeHistogram(rdd, 1, Some(2), 2, false)
+      val hist = plugin.computeHistogram(rdd, 1, Some(2), 2, equalWidth = false)
       hist.cutoffs should be(Array(1.0, 7.0, 9.0))
       hist.hist should be(Array(3, 5))
       hist.density should be(Array(3 / 8.0, 5 / 8.0))

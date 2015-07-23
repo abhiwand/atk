@@ -47,7 +47,7 @@ class JsonSchemaTest extends FlatSpec with Matchers {
   }
   it should "make Options not required" in {
     schema.properties.get("option") should equal(reference.properties.get("option"))
-    schema.required.get should not contain ("option")
+    schema.required.get should not contain "option"
   }
   it should "make non-Option types required" in {
     schema.properties.get("string") should equal(reference.properties.get("string"))

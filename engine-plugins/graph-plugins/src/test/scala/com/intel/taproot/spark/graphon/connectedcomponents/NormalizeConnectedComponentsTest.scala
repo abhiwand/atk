@@ -42,7 +42,7 @@ class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with Testi
 
     val normalizeOutComponents = normalizeOut._2.map(x => x._2).distinct()
 
-    normalizeOutComponents.map(_.toLong).collect().toSet shouldEqual (1.toLong to (normalizeOutComponents.count().toLong)).toSet
+    normalizeOutComponents.map(_.toLong).collect().toSet shouldEqual (1.toLong to normalizeOutComponents.count().toLong).toSet
   }
 
   "normalize connected components" should "create correct equivalence classes" in new ConnectedComponentsTest {

@@ -44,7 +44,7 @@ object CategoricalSummaryImpl {
                            default_top_k: Int,
                            default_threshold: Double): CategoricalSummaryOutput = {
 
-    val mappedRdd = rdd.mapRows(elem => (elem.values()(0), 1)).persist(StorageLevel.MEMORY_AND_DISK)
+    val mappedRdd = rdd.mapRows(elem => (elem.values().head, 1)).persist(StorageLevel.MEMORY_AND_DISK)
     val filteredRdd = mappedRdd.filter(!matchMissingValues(_))
       .map { case (s, c) => (s.toString, c) }
       .reduceByKey(_ + _)
@@ -69,7 +69,7 @@ object CategoricalSummaryImpl {
 
     mappedRdd.unpersist()
 
-    CategoricalSummaryOutput(rdd.frameSchema.columnNames(0), finalResultWithAdditionalLevels)
+    CategoricalSummaryOutput(rdd.frameSchema.columnNames.head, finalResultWithAdditionalLevels)
   }
 
   /**
@@ -117,7 +117,7 @@ object CategoricalSummaryImpl {
 
   // Get the total count for all summary levels which satisfy the user criterion
   def getTotalCountForSummaryLevels(categoricalSummaryLevels: List[LevelData]): Int =
-    categoricalSummaryLevels.map(elem => elem.frequency).fold(0)(_ + _)
+    categoricalSummaryLevels.map(elem => elem.frequency).sum
 
   // Get the "Other" Category Level summary
   def getOtherCategoryLevel(categoricalSummaryLevels: List[LevelData], missingValueCount: Int)(implicit rowCount: Double) = {
