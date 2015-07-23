@@ -47,14 +47,8 @@ import org.joda.time.DateTime
 class SparkGraphStorage(metaStore: MetaStore,
                         backendStorage: GraphBackendStorage,
                         frameStorage: SparkFrameStorage)
-    extends GraphStorage with EventLogging {
-  storage =>
-  def updateLastReadDate(graph: GraphEntity): Option[GraphEntity] = {
-    metaStore.withSession("graph.updateLastReadDate") {
-      implicit session =>
-        metaStore.graphRepo.updateLastReadDate(graph).toOption
-    }
-  }
+    extends GraphStorage
+    with EventLogging {
 
   /** Lookup a Graph, throw an Exception if not found */
   override def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity = {
