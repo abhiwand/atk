@@ -75,13 +75,9 @@ class AddVerticesPlugin extends SparkCommandPlugin[AddVerticesArgs, UnitReturn] 
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: AddVerticesArgs)(implicit invocation: Invocation): UnitReturn = {
-
     val sourceFrame: SparkFrame = arguments.sourceFrame
     sourceFrame.schema.validateColumnsExist(arguments.allColumnNames)
-
     addVertices(arguments, sourceFrame.rdd)
-
-    new UnitReturn
   }
 
   /**

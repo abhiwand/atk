@@ -17,19 +17,15 @@
 package org.apache.spark.mllib.ia.plugins.dimensionalityreduction
 
 import breeze.numerics._
-import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.DataTypes.vector
 import org.apache.spark.mllib.linalg.Matrix
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
-import com.intel.taproot.analytics.domain.frame.FrameReference
-import com.intel.taproot.analytics.domain.model.ModelReference
 
 // Implicits needed for JSON conversion
 import spray.json._

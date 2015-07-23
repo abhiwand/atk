@@ -22,3 +22,10 @@ package com.intel.taproot.analytics
  * Currently, we have to give some value, so this is how we are representing Unit
  */
 case class UnitReturn()
+
+object UnitReturn {
+
+  // Implicit conversion so plugin authors can mark their execute methods as having UnitReturn type,
+  // without explicitly creating an instance of UnitReturn
+  implicit def unitReturn(any: Any): UnitReturn = UnitReturn()
+}

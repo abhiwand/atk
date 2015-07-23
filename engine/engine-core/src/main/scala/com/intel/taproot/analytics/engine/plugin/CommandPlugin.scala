@@ -52,10 +52,6 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   implicit def modelRefToModel(model: ModelReference)(implicit invocation: Invocation): Model = new ModelImpl(model, engine.models)
   implicit def modelEntityToModel(modelEntity: ModelEntity)(implicit invocation: Invocation): Model = modelRefToModel(modelEntity.toReference)
 
-  // Implicit conversion so plugin authors can mark their execute methods as having UnitReturn type,
-  // without explicitly creating an instance of UnitReturn
-  implicit def unitReturn(any: Any): UnitReturn = UnitReturn()
-
   def engine(implicit invocation: Invocation) = invocation.asInstanceOf[CommandInvocation].engine
 
   val argumentManifest = implicitly[ClassManifest[Arguments]]

@@ -67,6 +67,5 @@ class ExportHdfsHivePlugin extends SparkCommandPlugin[ExportHdfsHiveArgs, UnitRe
   override def execute(arguments: ExportHdfsHiveArgs)(implicit invocation: Invocation): UnitReturn = {
     val frame: SparkFrame = arguments.frame
     FrameExportHdfs.exportToHdfsHive(sc, frame.rdd, arguments.tableName)
-    new UnitReturn
   }
 }

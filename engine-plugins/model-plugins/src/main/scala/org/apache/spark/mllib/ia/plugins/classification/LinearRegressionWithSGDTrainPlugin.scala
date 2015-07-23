@@ -101,8 +101,6 @@ class LinearRegressionWithSGDTrainPlugin extends SparkCommandPlugin[Classificati
     val jsonModel = new LinearRegressionData(linRegModel, arguments.observationColumns)
 
     model.data = jsonModel.toJson.asJsObject
-
-    new UnitReturn
   }
 
   private def initializeLinearRegressionModel(arguments: ClassificationWithSGDTrainArgs): LinearRegressionWithSGD = {
