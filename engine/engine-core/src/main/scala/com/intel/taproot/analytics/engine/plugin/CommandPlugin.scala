@@ -16,6 +16,7 @@
 
 package com.intel.taproot.analytics.engine.plugin
 
+import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.component._
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
@@ -50,6 +51,10 @@ abstract class CommandPlugin[Arguments <: Product: JsonFormat: ClassManifest: Ty
   implicit def frameEntityToFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): Frame = frameRefToFrame(frameEntity.toReference)
   implicit def modelRefToModel(model: ModelReference)(implicit invocation: Invocation): Model = new ModelImpl(model, engine.models)
   implicit def modelEntityToModel(modelEntity: ModelEntity)(implicit invocation: Invocation): Model = modelRefToModel(modelEntity.toReference)
+
+  // Implicit conversion so plugin authors can mark their execute methods as having UnitReturn type,
+  // without explicitly creating an instance of UnitReturn
+  implicit def unitReturn(any: Any): UnitReturn = UnitReturn()
 
   def engine(implicit invocation: Invocation) = invocation.asInstanceOf[CommandInvocation].engine
 
