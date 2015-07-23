@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.libSvmPlugins
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Command for predicting labels on the given dataset using a libsvm model

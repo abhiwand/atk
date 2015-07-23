@@ -26,8 +26,8 @@ Configuration Script
 
         What is the hostname of the database server? defaults to "localhost" if nothing is entered:
         What is the port of the database server? defaults to "5432" if nothing is entered:
-        What is the name of the database? defaults to "ia_metastore" if nothing is entered:
-        What is the database user name? defaults to "iauser" if nothing is entered:
+        What is the name of the database? defaults to "ta_metastore" if nothing is entered:
+        What is the database user name? defaults to "taproot" if nothing is entered:
 
         #The dollar sign($) is not allowed in the password.
         What is the database password? The default password was randomly generated.
@@ -36,8 +36,8 @@ Configuration Script
         Creating application.conf file from application.conf.tpl
         Reading application.conf.tpl
         Updating configuration
-        Configuration created for TapRoot Analytics
-        Configuring postgres access for  "iauser"
+        Configuration created for TAProot Analytics
+        Configuring postgres access for  "taproot"
         Initializing database:                                     [  OK  ]
         Stopping postgresql service:                               [  OK  ]
         Starting postgresql service:                               [  OK  ]
@@ -52,13 +52,13 @@ Configuration Script
         initctl: Unknown instance:
         taprootanalytics-rest-server start/running, process 17484
         0
-        Waiting for TapRoot Analytics server to restart
+        Waiting for TAProot Analytics server to restart
          .   .   .   .
-        You are now connected to database "ia_metastore".
+        You are now connected to database "ta_metastore".
         INSERT 0 1
         0
         postgres is configured
-        TapRoot Analytics is ready for use.
+        TAProot Analytics is ready for use.
 
 .. only:: latex
 
@@ -92,9 +92,9 @@ Configuration Script
         What is the port of the database server?
             defaults to "5432" if nothing is entered:
         What is the name of the database?
-            defaults to "ia_metastore" if nothing is entered:
+            defaults to "ta_metastore" if nothing is entered:
         What is the database user name?
-            defaults to "iauser" if nothing is entered:
+            defaults to "taproot" if nothing is entered:
 
         #The dollar sign($) is not allowed in the password.
         What is the database password?
@@ -104,8 +104,8 @@ Configuration Script
         Creating application.conf file from application.conf.tpl
         Reading application.conf.tpl
         Updating configuration
-        Configuration created for TapRoot Analytics
-        Configuring postgres access for  "iauser"
+        Configuration created for TAProot Analytics
+        Configuring postgres access for  "taproot"
         Initializing database:                                     [  OK  ]
         Stopping postgresql service:                               [  OK  ]
         Starting postgresql service:                               [  OK  ]
@@ -120,12 +120,12 @@ Configuration Script
         initctl: Unknown instance:
         taprootanalytics-rest-server start/running, process 17484
         0
-        Waiting for TapRoot Analytics server to restart
+        Waiting for TAProot Analytics server to restart
          .   .   .   .
-        You are now connected to database "ia_metastore".
+        You are now connected to database "ta_metastore".
         INSERT 0 1
         0
         postgres is configured
-        TapRoot Analytics is ready for use.
+        TAProot Analytics is ready for use.
 
 

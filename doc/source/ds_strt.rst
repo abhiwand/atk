@@ -12,7 +12,7 @@ Before You Start
 
 You'll want to know about `Apache Hadoop <http://hadoop.apache.org/>`__ and its
 various components.
-The |IAT| uses standards and open-source routines such as |HDFS|,
+The |PACKAGE| uses standards and open-source routines such as |HDFS|,
 :term:`MapReduce`, YARN, as well as
 `Apache Giraph <http://giraph.apache.org/>`__ for graph-based machine learning
 and graph analytics.
@@ -34,7 +34,7 @@ Features
 Built-in Databases
 ------------------
 
-The |IAT| stores data in either a traditional table-based format,
+The |PACKAGE| stores data in either a traditional table-based format,
 or in a graph format.
 It provides the tools to allow to easily manipulate data in either of these
 data formats.
@@ -43,43 +43,43 @@ data formats.
 Script Examples
 ---------------
 
-The |IAT| ships with example Python scripts and data sets that exercise the
+The |PACKAGE| ships with example Python scripts and data sets that exercise the
 various features of the platform.
-The default location for the example scripts is *iauser*'s home directory
-'/home/iauser'.
+The default location for the example scripts is *taproot*'s home directory
+'/home/taproot'.
 
-The examples are located in '/home/iauser/examples'::
+The examples are located in '/home/taproot/examples'::
 
-    -rwxr-xr-- 1 iauser iauser  904 Jul 30 04:20 als.py
-    -rwxr-xr-- 1 iauser iauser  921 Jul 30 04:20 cgd.py
-    -rwxr-xr-- 1 iauser iauser 1078 Jul 30 04:20 lbp.py
-    -rwxr-xr-- 1 iauser iauser  707 Aug  7 18:21 lda.py
-    -rwxr-xr-- 1 iauser iauser  930 Jul 30 04:20 lp.py
-    -rwxr-xr-- 1 iauser iauser  859 Jul 30 04:20 movie_graph_5mb.py
-    -rwxr-xr-- 1 iauser iauser  861 Jul 30 04:20 movie_graph_small.py
-    -rwxr-xr-- 1 iauser iauser  563 Jul 30 04:20 pr.py
+    -rwxr-xr-- 1 taproot taproot  904 Jul 30 04:20 als.py
+    -rwxr-xr-- 1 taproot taproot  921 Jul 30 04:20 cgd.py
+    -rwxr-xr-- 1 taproot taproot 1078 Jul 30 04:20 lbp.py
+    -rwxr-xr-- 1 taproot taproot  707 Aug  7 18:21 lda.py
+    -rwxr-xr-- 1 taproot taproot  930 Jul 30 04:20 lp.py
+    -rwxr-xr-- 1 taproot taproot  859 Jul 30 04:20 movie_graph_5mb.py
+    -rwxr-xr-- 1 taproot taproot  861 Jul 30 04:20 movie_graph_small.py
+    -rwxr-xr-- 1 taproot taproot  563 Jul 30 04:20 pr.py
 
-The datasets are located in '/home/iauser/examples/datasets' and
-'hdfs://user/iauser/datasets/'::
+The datasets are located in '/home/taproot/examples/datasets' and
+'hdfs://user/taproot/datasets/'::
 
-    -rw-r--r--  ...  /user/iauser/datasets/README
-    -rw-r--r--  ...  /user/iauser/datasets/apl.csv
-    -rw-r--r--  ...  /user/iauser/datasets/lbp_edge.csv
-    -rw-r--r--  ...  /user/iauser/datasets/lp_edge.csv
-    -rw-r--r--  ...  /user/iauser/datasets/movie_sample_data_5mb.csv
-    -rw-r--r--  ...  /user/iauser/datasets/movie_sample_data_small.csv
-    -rw-r--r--  ...  /user/iauser/datasets/recommendation_raw_input.csv
-    -rw-r--r--  ...  /user/iauser/datasets/test_lda.csv
+    -rw-r--r--  ...  /user/taproot/datasets/README
+    -rw-r--r--  ...  /user/taproot/datasets/apl.csv
+    -rw-r--r--  ...  /user/taproot/datasets/lbp_edge.csv
+    -rw-r--r--  ...  /user/taproot/datasets/lp_edge.csv
+    -rw-r--r--  ...  /user/taproot/datasets/movie_sample_data_5mb.csv
+    -rw-r--r--  ...  /user/taproot/datasets/movie_sample_data_small.csv
+    -rw-r--r--  ...  /user/taproot/datasets/recommendation_raw_input.csv
+    -rw-r--r--  ...  /user/taproot/datasets/test_lda.csv
 
-The datasets in '/home/iauser/examples/datasets' are for reference.
-The actual data that is being used by the Python examples and the |IAT| server
+The datasets in '/home/taproot/examples/datasets' are for reference.
+The actual data that is being used by the Python examples and the |PACKAGE| server
 is in the |HDFS| system.
 
-To get access to the scripts, login as *iauser* and go to the example scripts
+To get access to the scripts, login as *taproot* and go to the example scripts
 directory::
 
-    $ sudo su iauser
-    $ cd /home/iauser/examples
+    $ sudo su taproot
+    $ cd /home/taproot/examples
 
 To run any of the Python example scripts type::
 

@@ -13,7 +13,7 @@ Package Installation
 Introduction
 ------------
 
-This guide covers the |IAT| installation and configuration.
+This guide covers the |PACKAGE| installation and configuration.
 
 Cloudera installation documentation can be found at:
 http://www.cloudera.com/content/cloudera-content/cloudera-docs/CM5/latest/Cloudera-Manager-Installation-Guide/cm5ig_install_cm_cdh.html .
@@ -27,7 +27,7 @@ Operating System Requirements
 
 These instructions are oriented towards `Red Hat Enterprise Linux
 <http://redhat.com/>`__ or `CentOS <http://centos.org/>`__ version 6.6.
-|IAT| uses 'yum' for installation, 'sudo' for proper authority.
+|PACKAGE| uses 'yum' for installation, 'sudo' for proper authority.
 
 .. index::
     single: cluster
@@ -43,10 +43,10 @@ Cloudera cluster 5.3.x with following services:
 #.  Yarn(MR2)
 #.  Zookeeper
 
-The |IAT| Python client supports Python 2.7.
+The |PACKAGE| Python client supports Python 2.7.
 
 ---------------------------
-|IAT| Packages Installation
+|PACKAGE| Packages Installation
 ---------------------------
 
 .. index::
@@ -55,10 +55,10 @@ The |IAT| Python client supports Python 2.7.
 Adding Extra Repositories
 =========================
 
-The EPEL and |IAT| repositories must be installed on the REST server node and
+The EPEL and |PACKAGE| repositories must be installed on the REST server node and
 all spark nodes (master and worker).
-The |IAT| Dependency repository and the yum-s3 package must be installed before
-the |IAT| private repository.
+The |PACKAGE| Dependency repository and the yum-s3 package must be installed before
+the |PACKAGE| private repository.
 
 EPEL Repository
 ---------------
@@ -113,11 +113,11 @@ If the "epel" repository is not listed, do this to install it:
 .. index::
     single: repository
 
-|IAT| Dependency Repository
+|PACKAGE| Dependency Repository
 ---------------------------
 
 Some open source libraries are included to aid with the installation of the
-|IAT|.
+|PACKAGE|.
 Some of these libraries are newer versions than what is available in RHEL,
 EPEL or CentOS repositories.
 
@@ -127,16 +127,16 @@ To add the dependency repository, do this:
 
     .. code::
 
-        $ wget https://taproot-analytics-dependencies.s3-us-west-2.amazonaws.com/ia-deps.repo
-        $ sudo cp ia-deps.repo /etc/yum.repos.d/
+        $ wget https://taproot-analytics-dependencies.s3-us-west-2.amazonaws.com/ta-deps.repo
+        $ sudo cp ta-deps.repo /etc/yum.repos.d/
 
 .. only:: latex
 
     .. code::
 
         $ wget https://taproot-analytics-dependencies.s3-us-west-2.amazonaws.com/
-            ia-deps.repo
-        $ sudo cp ia-deps.repo /etc/yum.repos.d/
+            ta-deps.repo
+        $ sudo cp ta-deps.repo /etc/yum.repos.d/
 
 Alternatively, do this to build the dependency repository information file
 directly:
@@ -147,11 +147,11 @@ directly:
     > name=taproot-analytics-deps
     > baseurl=https://taproot-analytics-dependencies.s3-us-west-2.amazonaws.com/yum
     > gpgcheck=0
-    > priority=1 enabled=1"  | sudo tee -a /etc/yum.repos.d/ia-deps.repo
+    > priority=1 enabled=1"  | sudo tee -a /etc/yum.repos.d/ta-deps.repo
 
 .. only:: html
 
-    This code is :download:`downloadable <ia-deps.sh>` (open, copy, and paste).
+    This code is :download:`downloadable <_downloads/ta-deps.sh>` (open, copy, and paste).
 
 Test the installation of the dependencies repository:
 
@@ -180,15 +180,15 @@ To install the *yum-s3* package, do this:
     $ sudo yum -y install yum-s3
 
 
-.. _add_IA_private_repository:
+.. _add_tA_private_repository:
 
 .. index::
     single: repository
 
-|IAT| Private Repository
+|PACKAGE| Private Repository
 ------------------------
 
-Create '/etc/yum.repos.d/ia.repo':
+Create '/etc/yum.repos.d/ta.repo':
 
 .. only:: html
 
@@ -201,10 +201,10 @@ Create '/etc/yum.repos.d/ia.repo':
         > priority=1
         > s3_enabled=1
         > key_id=ACCESS_TOKEN
-        > secret_key=SECRET_TOKEN" | sudo tee -a /etc/yum.repos.d/ia.repo
+        > secret_key=SECRET_TOKEN" | sudo tee -a /etc/yum.repos.d/ta.repo
 
 
-    This code is :download:`downloadable <ia-repo.sh>` (open, copy, and paste).
+    This code is :download:`downloadable <_downloads/ta-repo.sh>` (open, copy, and paste).
 
 .. only:: latex
 
@@ -218,7 +218,7 @@ Create '/etc/yum.repos.d/ia.repo':
         > priority=1
         > s3_enabled=1
         > key_id=ACCESS_TOKEN
-        > secret_key=SECRET_TOKEN" | sudo tee -a /etc/yum.repos.d/ia.repo
+        > secret_key=SECRET_TOKEN" | sudo tee -a /etc/yum.repos.d/ta.repo
 
     Note: baseurl line above is broken for readability.
     It should be entered as a single line.
@@ -227,7 +227,7 @@ Create '/etc/yum.repos.d/ia.repo':
 
     Replace "ACCESS_TOKEN" and "SECRET_TOKEN" with appropriate tokens.
 
-To verify the installation of the |IAT| repository, do this:
+To verify the installation of the |PACKAGE| repository, do this:
 
 .. code::
 
@@ -254,7 +254,7 @@ Troubleshooting Private Repository
     *   Incorect secret token/key
     *   The server time is out of sync with the world
 
-*   Double check the access and secret keys in the ia.repo file.
+*   Double check the access and secret keys in the ta.repo file.
 *   AWS S3 will fail with access denied errors if the system time is out of
     sync with the website.
     To keep the system time in sync with the website run:
@@ -264,8 +264,8 @@ Troubleshooting Private Repository
         $ sudo service ntpd start
 
 
-*   The |IAT| Dependency repository and the yum-s3 package must be installed
-    before the |IAT| private repository.
+*   The |PACKAGE| Dependency repository and the yum-s3 package must be installed
+    before the |PACKAGE| private repository.
 *   To use the yum command inside a corporate proxy make sure the
     *http_proxy* and *https_proxy* environment variables are set.
 *   The sudo command may need the -E option to maintain environment variables:
@@ -274,15 +274,15 @@ Troubleshooting Private Repository
 
         $ sudo -E yum command
 
-.. _installing_IA_packages:
+.. _installing_tA_packages:
 
-Installing |IAT| Packages
+Installing |PACKAGE| Packages
 =========================
 
 Installing On The Master Node
 -----------------------------
 
-Install the |IAT| Python REST server and its dependencies.
+Install the |PACKAGE| Python REST server and its dependencies.
 Only one instance of the REST server needs to be installed.
 Installation location is flexible, but it is usually installed
 with the HDFS name node.
@@ -294,7 +294,7 @@ with the HDFS name node.
 Installing On A Worker Node
 ---------------------------
 
-The |IAT| spark dependencies package needs to be installed on every node
+The |PACKAGE| spark dependencies package needs to be installed on every node
 running the spark worker role.
 
 .. only:: html
@@ -317,7 +317,7 @@ REST Server Configuration
 -------------------------
 
 From the postgresql client, create a new database and user in postgresql.
-See the section on :ref:`postgresql <ad_inst_ia1_postgresql>`.
+See the section on :ref:`postgresql <ad_inst_ta1_postgresql>`.
 
 Configuration Script
 ====================
@@ -327,9 +327,9 @@ The server configuration is semi-automated via the use of a Python script
 It will query Cloudera Manager for the necessary configuration values and
 create a new 'application.conf' file based on the 'application.conf.tpl' file.
 The script will also fully configure the local PostgreSQL installation to
-work with the |IAT| server.
+work with the |PACKAGE| server.
 
-To configure the |IAT| installation, do this:
+To configure the |PACKAGE| installation, do this:
 
 .. code::
 
@@ -337,9 +337,9 @@ To configure the |IAT| installation, do this:
     $ sudo ./config
 
 Answer the prompts to configure the cluster.
-To see an example of the prompts see :doc:`/ad_inst_ia3`.
+To see an example of the prompts see :doc:`/ad_inst_ta3`.
 
-The script goes through all the necessary configurations to get the |IAT|
+The script goes through all the necessary configurations to get the |PACKAGE|
 service running.
 The script can be run multiple times but there is a danger that configuring the
 database multiple times can wipe out a users data frames and graphs.
@@ -381,7 +381,7 @@ Open the file with a text editor:
 All of the changes that need to be made are located at the top of the file.
 See :doc:`/appendix_application_conf` for an example 'application.conf' file.
 
-.. _ad_inst_IA_configure_file_system_root:
+.. _ad_inst_tA_configure_file_system_root:
 
 Configure File System Root
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -393,20 +393,20 @@ Example:
 
 .. code::
 
-    fs.root = "hdfs://invalid-fsroot-host/user/iauser"
+    fs.root = "hdfs://invalid-fsroot-host/user/taproot"
 
 Becomes:
 
 .. code::
 
-    fs.root = "hdfs://localhost.localdomain/user/iauser"
+    fs.root = "hdfs://localhost.localdomain/user/taproot"
 
 If the HDFS Name Node port does not use the standard port, specify it
 after the host name with a colon:
 
 .. code::
 
-    fs.root = "hdfs://localhost.localdomain:8020/user/iauser"
+    fs.root = "hdfs://localhost.localdomain:8020/user/taproot"
 
 Configure Zookeeper Hosts
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -478,7 +478,7 @@ See :ref:`Fig. 12.1 <fig_12_01>`.
 
 .. only:: html
 
-    .. figure:: ad_inst_ia1_spark_executor_memory.*
+    .. figure:: ad_inst_ta1_spark_executor_memory.*
         :align: center
 
         Fig. 12.1
@@ -486,7 +486,7 @@ See :ref:`Fig. 12.1 <fig_12_01>`.
 
 .. only:: latex
 
-    .. figure:: ad_inst_ia1_spark_executor_memory.*
+    .. figure:: ad_inst_ta1_spark_executor_memory.*
         :align: center
 
         Spark Executor Memory
@@ -494,7 +494,7 @@ See :ref:`Fig. 12.1 <fig_12_01>`.
 Set the Bind IP Address (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The |IAT| server can bind to all IP addresses, as opposed to just a single
+The |PACKAGE| server can bind to all IP addresses, as opposed to just a single
 address, by updating the following lines and follow the commented instructions.
 This configuration section is also near the top of the file.
 
@@ -520,7 +520,7 @@ If it isn't already set, add:
 
 .. only:: html
 
-    .. figure:: ad_inst_ia1_spark_class_path.*
+    .. figure:: ad_inst_ta1_spark_class_path.*
         :align: center
 
         Fig. 12.2
@@ -528,7 +528,7 @@ If it isn't already set, add:
 
 .. only:: latex
 
-    .. figure:: ad_inst_ia1_spark_class_path.*
+    .. figure:: ad_inst_ta1_spark_class_path.*
         :align: center
 
         Spark Class Path
@@ -544,7 +544,7 @@ See :ref:`Fig. 13.3 <fig_13_03>`.
 
 .. only:: html
 
-    .. figure:: ad_inst_ia1_restart_spark.*
+    .. figure:: ad_inst_ta1_restart_spark.*
         :align: center
 
         Fig. 13.3
@@ -552,7 +552,7 @@ See :ref:`Fig. 13.3 <fig_13_03>`.
 
 .. only:: latex
 
-    .. figure:: ad_inst_ia1_restart_spark.*
+    .. figure:: ad_inst_ta1_restart_spark.*
         :align: center
 
         Restart Spark
@@ -560,7 +560,7 @@ See :ref:`Fig. 13.3 <fig_13_03>`.
 Database Configuration
 ======================
 
-The |IAT| service can use two different databases H2 and PostgreSQL.
+The |PACKAGE| service can use two different databases H2 and PostgreSQL.
 The configuration script configures postgresql automatically.
 
 .. index::
@@ -587,8 +587,8 @@ The following lines need to be commented:
 
         metastore.connection-postgresql.host = "invalid-postgresql-host"
         metastore.connection-postgresql.port = 5432
-        metastore.connection-postgresql.database = "ia-metastore"
-        metastore.connection-postgresql.username = "iauser"
+        metastore.connection-postgresql.database = "ta-metastore"
+        metastore.connection-postgresql.username = "taproot"
         metastore.connection-postgresql.password = "myPassword"
         metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.database}
         metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
@@ -599,8 +599,8 @@ The following lines need to be commented:
 
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
         //metastore.connection-postgresql.port = 5432
-        //metastore.connection-postgresql.database = "ia-metastore"
-        //metastore.connection-postgresql.username = "iauser"
+        //metastore.connection-postgresql.database = "ta-metastore"
+        //metastore.connection-postgresql.username = "taproot"
         //metastore.connection-postgresql.password = "myPassword"
         //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.database}
         //metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
@@ -613,8 +613,8 @@ The following lines need to be commented:
 
         metastore.connection-postgresql.host = "invalid-postgresql-host"
         metastore.connection-postgresql.port = 5432
-        metastore.connection-postgresql.database = "ia-metastore"
-        metastore.connection-postgresql.username = "iauser"
+        metastore.connection-postgresql.database = "ta-metastore"
+        metastore.connection-postgresql.username = "taproot"
         metastore.connection-postgresql.password = "myPassword"
         metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.
             metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.
@@ -628,8 +628,8 @@ The following lines need to be commented:
 
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
         //metastore.connection-postgresql.port = 5432
-        //metastore.connection-postgresql.database = "ia-metastore"
-        //metastore.connection-postgresql.username = "iauser"
+        //metastore.connection-postgresql.database = "ta-metastore"
+        //metastore.connection-postgresql.username = "taproot"
         //metastore.connection-postgresql.password = "myPassword"
         //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.
             metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.
@@ -651,7 +651,7 @@ After:
 
     metastore.connection = ${intel.taproot.analytics.metastore.connection-h2}
 
-.. _ad_inst_ia1_postgresql:
+.. _ad_inst_ta1_postgresql:
 
 .. index::
     single: PostgreSQL
@@ -717,8 +717,8 @@ Now that the database is created, uncomment all the postgres lines in
 
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
         //metastore.connection-postgresql.port = 5432
-        //metastore.connection-postgresql.database = "ia-metastore"
-        //metastore.connection-postgresql.username = "iauser"
+        //metastore.connection-postgresql.database = "ta-metastore"
+        //metastore.connection-postgresql.username = "taproot"
         //metastore.connection-postgresql.password = "myPassword"
         //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.database}
         //metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
@@ -743,8 +743,8 @@ Now that the database is created, uncomment all the postgres lines in
 
         //metastore.connection-postgresql.host = "invalid-postgresql-host"
         //metastore.connection-postgresql.port = 5432
-        //metastore.connection-postgresql.database = "ia-metastore"
-        //metastore.connection-postgresql.username = "iauser"
+        //metastore.connection-postgresql.database = "ta-metastore"
+        //metastore.connection-postgresql.username = "taproot"
         //metastore.connection-postgresql.password = "myPassword"
         //metastore.connection-postgresql.url = "jdbc:postgresql://"
             ${intel.taproot.analytics.metastore.connection-postgresql.host}":"
@@ -769,13 +769,13 @@ Now that the database is created, uncomment all the postgres lines in
         #comment any h2 configuration lines with a # or //::
          //metastore.connection = ${intel.taproot.analytics.metastore.connection-h2}
 
-Restart the |IAT| service:
+Restart the |PACKAGE| service:
 
 .. code::
 
-    $ sudo service taprootanalytics restart
+    $ sudo service taproot-analytics restart
 
-After restarting the service, the |IAT| will create all the database tables.
+After restarting the service, the |PACKAGE| will create all the database tables.
 Now insert a meta user to enable Python client requests.
 
 Login to the postgres linux user:
@@ -843,7 +843,7 @@ sent.
 .. index::
     single: REST server
 
-Starting The |IAT| REST Server
+Starting The |PACKAGE| REST Server
 ==============================
 
 Starting the REST server is very easy.
@@ -851,12 +851,12 @@ It can be started like any other Linux service.
 
 .. code::
 
-    $ sudo service taprootanalytics start
+    $ sudo service taproot-analytics start
 
 After starting the REST server, browse to the host on port 9099
 (<master node ip address>:9099) to see if the server started successfully.
 
-Troubleshooting |IAT| REST Server
+Troubleshooting |PACKAGE| REST Server
 =================================
 
 A log gets written to '/var/log/taprootanalytics/rest-server/output.log or
@@ -886,5 +886,5 @@ old software prior to installation of new software.
 .. toctree::
     :hidden:
 
-    ad_inst_ia3
+    ad_inst_ta3
 

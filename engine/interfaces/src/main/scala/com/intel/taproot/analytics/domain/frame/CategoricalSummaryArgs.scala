@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.domain.frame
 
-import com.intel.taproot.analytics.engine.plugin.ArgDoc
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
 case class CategoricalSummaryArgs(@ArgDoc("Frame in reference to fetch categorical summary") frame: FrameReference,
                                   @ArgDoc("List of Categorical Column Input consisting of column, topk and/or threshold") columnInput: List[CategoricalColumnInput]) {

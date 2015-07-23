@@ -6,7 +6,7 @@ import com.intel.taproot.analytics.domain.model.ModelReference
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.model.Model
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.Vectors
@@ -14,7 +14,15 @@ import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-case class NaiveBayesPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: Option[List[String]]) {
+case class NaiveBayesPredictArgs(@ArgDoc(""" """) model: ModelReference,
+                                 @ArgDoc("""A frame whose labels are
+to be predicted.
+By default, predict is run on the same columns over which the model is
+trained.""") frame: FrameReference,
+                                 @ArgDoc("""Column(s) containing the
+observations whose labels are to be predicted.
+By default, we predict the labels over columns the NaiveBayesModel
+was trained on.""") observationColumns: Option[List[String]]) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
 

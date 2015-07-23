@@ -31,8 +31,8 @@ REST server:
 
 .. code::
 
-    >>> import taprootanalytics as ia
-    >>> ia.connect()
+    >>> import taprootanalytics as ta
+    >>> ta.connect()
 
 .. index::
     pair: data; type
@@ -57,8 +57,8 @@ Connect to the server:
 
 .. code::
 
-    >>> import taprootanalytics as ia
-    >>> ia.connect()
+    >>> import taprootanalytics as ta
+    >>> ta.connect()
 
 .. note::
 
@@ -69,13 +69,13 @@ Connect to the server:
 
     .. code::
 
-        >>> ia.errors.show_details = True
+        >>> ta.errors.show_details = True
 
 To see the data types supported:
 
 .. code::
 
-    >>> print ia.valid_data_types
+    >>> print ta.valid_data_types
 
 You should see a list of variable types similar to this:
 
@@ -86,7 +86,7 @@ You should see a list of variable types similar to this:
 
 .. note::
 
-    Although the |IAT| utilizes the Numpy package, numpy values of positive
+    Although the |PACKAGE| utilizes the Numpy package, numpy values of positive
     infinity (np.inf), negative infinity (-np.inf) or nan (np.nan) are treated
     as None.
     Results of any user-defined functions which deal with such values are
@@ -147,14 +147,14 @@ Create the schema *my_schema* with two columns: *id* (int32), and *title*
 
 .. code::
 
-    >>> my_schema = [('id', ia.int32), ('title', str)]
+    >>> my_schema = [('id', ta.int32), ('title', str)]
 
 The schema and file name are used in the CsvFile() command to describe the file
 format:
 
 .. code::
 
-    >>> my_csv_description = ia.CsvFile(my_data_file, my_schema)
+    >>> my_csv_description = ta.CsvFile(my_data_file, my_schema)
 
 The data fields are separated by a character delimiter.
 The default delimiter to separate column data is a comma.
@@ -162,7 +162,7 @@ It can be changed with the parameter *delimiter*:
 
 .. code::
 
-    >>> my_csv_description = ia.CsvFile(my_data_file, my_schema, delimiter = ",")
+    >>> my_csv_description = ta.CsvFile(my_data_file, my_schema, delimiter = ",")
 
 This can be helpful if the delimiter is something other than a comma, for
 example, ``\t`` for tab-delimited records.
@@ -176,7 +176,7 @@ parameter:
 
 .. code::
 
-    >>> csv_description = ia.CsvFile(my_data_file, my_schema, skip_header_lines = 5)
+    >>> csv_description = ta.CsvFile(my_data_file, my_schema, skip_header_lines = 5)
 
 Now we use the schema and the file name to create CsvFile classes, which define
 the data layouts:
@@ -185,26 +185,26 @@ the data layouts:
 
     .. code::
 
-        >>> my_csv = ia.CsvFile(my_data_file, my_schema)
-        >>> csv1 = ia.CsvFile(file_name="data1.csv", schema=schema_ab)
-        >>> csv2 = ia.CsvFile(file_name="more_data.txt", schema=schema_ab)
+        >>> my_csv = ta.CsvFile(my_data_file, my_schema)
+        >>> csv1 = ta.CsvFile(file_name="data1.csv", schema=schema_ab)
+        >>> csv2 = ta.CsvFile(file_name="more_data.txt", schema=schema_ab)
 
         >>> raw_csv_data_file = "datasets/my_data.csv"
-        >>> column_schema_list = [("x", ia.float64), ("y", ia.float64), ("z", str)]
-        >>> csv4 = ia.CsvFile(file_name=raw_csv_data_file, schema=column_schema_list, delimiter='|', skip_header_lines=2)
+        >>> column_schema_list = [("x", ta.float64), ("y", ta.float64), ("z", str)]
+        >>> csv4 = ta.CsvFile(file_name=raw_csv_data_file, schema=column_schema_list, delimiter='|', skip_header_lines=2)
 
 
 .. only:: latex
 
     .. code::
 
-        >>> my_csv = ia.CsvFile(my_data_file, my_schema)
-        >>> csv1 = ia.CsvFile(file_name="data1.csv", schema=schema_ab)
-        >>> csv2 = ia.CsvFile(file_name="more_data.txt", schema=schema_ab)
+        >>> my_csv = ta.CsvFile(my_data_file, my_schema)
+        >>> csv1 = ta.CsvFile(file_name="data1.csv", schema=schema_ab)
+        >>> csv2 = ta.CsvFile(file_name="more_data.txt", schema=schema_ab)
 
         >>> raw_csv_data_file = "datasets/my_data.csv"
-        >>> column_schema_list = [("x", ia.float64), ("y", ia.float64), ("z", str)]
-        >>> csv4 = ia.CsvFile(file_name=raw_csv_data_file,
+        >>> column_schema_list = [("x", ta.float64), ("y", ta.float64), ("z", str)]
+        >>> csv4 = ta.CsvFile(file_name=raw_csv_data_file,
         ... schema=column_schema_list, delimiter='|', skip_header_lines=2)
 
 
@@ -226,7 +226,7 @@ A :term:`Frame (capital F)` is a class of objects capable of accessing and
 controlling a :term:`frame (lower case f)` containing "big data".
 The frame is visualized as a two-dimensional table structure of rows and
 columns.
-The |IAT| can handle frames with large volumes of data, because it is
+The |PACKAGE| can handle frames with large volumes of data, because it is
 designed to work with data spread over multiple machines.
 
 Create A Frame
@@ -244,7 +244,7 @@ Create an empty frame:
 
 .. code::
 
-    >>> my_frame = ia.Frame()
+    >>> my_frame = ta.Frame()
 
 The Frame *my_frame* is now a Python object which references an empty frame
 that has been created on the server.
@@ -255,7 +255,7 @@ For an example, to create a frame defined by the schema *my_csv* (see
 
 .. code::
 
-    >>> my_frame = ia.Frame(source=my_csv, name='myframe')
+    >>> my_frame = ta.Frame(source=my_csv, name='myframe')
 
 To copy the frame *myframe*, create a Frame *my_frame2* to access it, and give
 it a new name, because the name must always be unique:
@@ -291,7 +291,7 @@ Let's create a Frame and check it out:
 
 .. code::
 
-    >>> small_songs = ia.Frame(my_csv, name = "small_songs")
+    >>> small_songs = ta.Frame(my_csv, name = "small_songs")
     >>> small_songs.inspect()
     >>> small_songs.get_error_frame().inspect()
 
@@ -318,7 +318,7 @@ We can look at the data and structure of the database by using the
 
     >>> my_frame1.inspect()
 
-      a:str   b:ia.int64
+      a:str   b:ta.int64
     /--------------------/
       apple          182
       bear            71
@@ -348,7 +348,7 @@ It would still be accessed by Frame *my_frame1*:
 
     >>> my_frame1.inspect()
 
-      a:str     b:ia.int64     c:str
+      a:str     b:ta.int64     c:str
     /--------------------------------/
       apple        182         None
       bear          71         None
@@ -360,8 +360,8 @@ It would still be accessed by Frame *my_frame1*:
 
     Try this example with data files *objects1.csv* and *objects2.csv*::
 
-        >>> objects1 = ia.Frame(ia.CsvFile("datasets/objects1.csv", schema=[('Object', str), ('Count', ia.int64)], skip_header_lines=1), 'objects1')
-        >>> objects2 = ia.Frame(ia.CsvFile("datasets/objects2.csv", schema=[('Thing', str)], skip_header_lines=1), 'objects2')
+        >>> objects1 = ta.Frame(ta.CsvFile("datasets/objects1.csv", schema=[('Object', str), ('Count', ta.int64)], skip_header_lines=1), 'objects1')
+        >>> objects2 = ta.Frame(ta.CsvFile("datasets/objects2.csv", schema=[('Thing', str)], skip_header_lines=1), 'objects2')
 
         >>> objects1.inspect()
         >>> objects2.inspect()
@@ -373,10 +373,10 @@ It would still be accessed by Frame *my_frame1*:
 
     Try this example with data files *objects1.csv* and *objects2.csv*::
 
-        >>> objects1 = ia.Frame(ia.CsvFile("datasets/objects1.csv",
-        ... schema=[('Object', str), ('Count', ia.int64)],
+        >>> objects1 = ta.Frame(ta.CsvFile("datasets/objects1.csv",
+        ... schema=[('Object', str), ('Count', ta.int64)],
         ... skip_header_lines=1), 'objects1')
-        >>> objects2 = ia.Frame(ia.CsvFile("datasets/objects2.csv",
+        >>> objects2 = ta.Frame(ta.CsvFile("datasets/objects2.csv",
         ... schema=[('Thing', str)], skip_header_lines=1), 'objects2')
 
         >>> objects1.inspect()
@@ -391,7 +391,7 @@ See also the :code:`join` method in the :doc:`API </python_api/index>` section.
 
 Inspect The Data
 ================
-|IAT| provides several methods that allow you to inspect your data,
+|PACKAGE| provides several methods that allow you to inspect your data,
 including :code:`inspect()` and :code:`take()`.
 The Frame class also contains frame information like *row_count*.
 
@@ -425,7 +425,7 @@ Gives you something like this:
 
 .. code::
 
-      a:ia.float64  b:ia.int64
+      a:ta.float64  b:ta.int64
     /--------------------------/
         12.3000            500
        195.1230         183954
@@ -458,7 +458,7 @@ Gives you something like this:
 
     .. code::
 
-        >>> animals = ia.Frame(ia.CsvFile("datasets/animals.csv", schema=[('User', ia.int32), ('animals', str), ('int1', ia.int64), ('int2', ia.int64), ('Float1', ia.float64), ('Float2', ia.float64)], skip_header_lines=1), 'animals')
+        >>> animals = ta.Frame(ta.CsvFile("datasets/animals.csv", schema=[('User', ta.int32), ('animals', str), ('int1', ta.int64), ('int2', ta.int64), ('Float1', ta.float64), ('Float2', ta.float64)], skip_header_lines=1), 'animals')
         >>> animals.inspect()
         >>> freq = animals.top_k('animals', animals.row_count)
         >>> freq.inspect(freq.row_count)
@@ -475,10 +475,10 @@ Gives you something like this:
 
     .. code::
 
-        >>> animals = ia.Frame(ia.CsvFile("datasets/animals.csv",
-        ... schema=[('User', ia.int32), ('animals', str), ('int1', ia.int64),
-        ... ('int2', ia.int64), ('Float1', ia.float64), ('Float2',
-        ... ia.float64)], skip_header_lines=1), 'animals')
+        >>> animals = ta.Frame(ta.CsvFile("datasets/animals.csv",
+        ... schema=[('User', ta.int32), ('animals', str), ('int1', ta.int64),
+        ... ('int2', ta.int64), ('Float1', ta.float64), ('Float2',
+        ... ta.float64)], skip_header_lines=1), 'animals')
         >>> animals.inspect()
         >>> freq = animals.top_k('animals', animals.row_count)
         >>> freq.inspect(freq.row_count)
@@ -495,7 +495,7 @@ Clean The Data
 
 The process of "data cleaning" encompasses the identification and removal or
 repair of incomplete, incorrect, or malformed information in a data set.
-The |IAT|'s Python API provides much of the functionality necessary for these
+The |PACKAGE|'s Python API provides much of the functionality necessary for these
 tasks.
 It is important to keep in mind that it was designed for data scalability.
 Thus, using external Python packages for these tasks, while possible, may
@@ -683,28 +683,28 @@ value.
 
 .. only:: html
 
-    Add a column *int1_times_int2* as an ia.float64 and fill it with the contents
+    Add a column *int1_times_int2* as an ta.float64 and fill it with the contents
     of column *int1* and column *int2* multiplied together:
 
     .. code::
 
-        >>> animals.add_columns(lambda row: row.int1*row.int2, ('int1xint2', ia.float64))
+        >>> animals.add_columns(lambda row: row.int1*row.int2, ('int1xint2', ta.float64))
 
 .. only:: latex
 
-    Add a column *int1_times_int2* as an ia.float64 and fill it with the contents
+    Add a column *int1_times_int2* as an ta.float64 and fill it with the contents
     of column *int1* and column *int2* multiplied together:
 
     .. code::
 
         >>> animals.add_columns(lambda row: row.int1*row.int2, ('int1xint2',
-        ... ia.float64))
+        ... ta.float64))
 
 Add a new column *all_ones* and fill the entire column with the value 1:
 
 .. code::
 
-    >>> animals.add_columns(lambda row: 1, ('all_ones', ia.int64))
+    >>> animals.add_columns(lambda row: 1, ('all_ones', ta.int64))
 
 .. only:: html
 
@@ -714,7 +714,7 @@ Add a new column *all_ones* and fill the entire column with the value 1:
 
     .. code::
 
-        >>> animals.add_columns(lambda row: row.Float1 + row.Float2, ('Float1PlusFloat2', ia.float64))
+        >>> animals.add_columns(lambda row: row.Float1 + row.Float2, ('Float1PlusFloat2', ta.float64))
         >>> summary['Float1PlusFloat2'] = animals.column_summary_statistics('Float1PlusFloat2')
 
 .. only:: latex
@@ -724,11 +724,11 @@ Add a new column *all_ones* and fill the entire column with the value 1:
     the frame statistics::
 
         >>> animals.add_columns(lambda row: row.Float1 + row.Float2,
-        ... ('Float1PlusFloat2', ia.float64))
+        ... ('Float1PlusFloat2', ta.float64))
         >>> summary['Float1PlusFloat2'] =
         ... animals.column_summary_statistics('Float1PlusFloat2')
 
-Add a new column *pwl*, type ia.float64, and fill the value according to
+Add a new column *pwl*, type ta.float64, and fill the value according to
 this table:
 
 +---------------------------------------+--------------------------+
@@ -766,7 +766,7 @@ An example of Piecewise Linear Transformation:
     ...        return None
     ...    return m * x + c
 
-    >>> animals.add_columns(piecewise_linear_transformation, ('pwl', ia.float64))
+    >>> animals.add_columns(piecewise_linear_transformation, ('pwl', ta.float64))
 
 .. only:: html
 
@@ -775,7 +775,7 @@ An example of Piecewise Linear Transformation:
 
     .. code::
 
-        >>> animals.add_columns(lambda row: [abs(row.int1), abs(row.int2)], [('abs_int1', ia.int64), ('abs_int2', ia.int64)])
+        >>> animals.add_columns(lambda row: [abs(row.int1), abs(row.int2)], [('abs_int1', ta.int64), ('abs_int2', ta.int64)])
 
 .. only:: latex
 
@@ -785,7 +785,7 @@ An example of Piecewise Linear Transformation:
     .. code::
 
         >>> animals.add_columns(lambda row: [abs(row.int1), abs(row.int2)],
-        ... [('abs_int1', ia.int64), ('abs_int2', ia.int64)])
+        ... [('abs_int1', ta.int64), ('abs_int2', ta.int64)])
 
 .. _ds_dflw_frame_examine:
 
@@ -834,15 +834,15 @@ Example process of using aggregation based on columns:
 
     .. code::
 
-        >>> grouped_animals = animals.group_by('animals', {'int1': [ia.agg.avg, ia.agg.sum, ia.agg.stdev], 'int2': [ia.agg.avg, ia.agg.sum]})
+        >>> grouped_animals = animals.group_by('animals', {'int1': [ta.agg.avg, ta.agg.sum, ta.agg.stdev], 'int2': [ta.agg.avg, ta.agg.sum]})
         >>> grouped_animals.inspect()
 
 .. only:: latex
 
     .. code::
 
-        >>> grouped_animals = animals.group_by('animals', {'int1': [ia.agg.avg,
-        ... ia.agg.sum, ia.agg.stdev], 'int2': [ia.agg.avg, ia.agg.sum]})
+        >>> grouped_animals = animals.group_by('animals', {'int1': [ta.agg.avg,
+        ... ta.agg.sum, ta.agg.stdev], 'int2': [ta.agg.avg, ta.agg.sum]})
         >>> grouped_animals.inspect()
 
 .. note::
@@ -868,15 +868,15 @@ Example process of using aggregation based on both column and row together:
 
     .. code::
 
-        >>> grouped_animals2 = animals.group_by(['animals', 'int1'], {'Float1': [ia.agg.avg, ia.agg.stdev, ia.agg.var, ia.agg.min, ia.agg.max], 'int2': [ia.agg.count, ia.agg.count_distinct]})
+        >>> grouped_animals2 = animals.group_by(['animals', 'int1'], {'Float1': [ta.agg.avg, ta.agg.stdev, ta.agg.var, ta.agg.min, ta.agg.max], 'int2': [ta.agg.count, ta.agg.count_distinct]})
 
 .. only:: latex
 
     .. code::
 
         >>> grouped_animals2 = animals.group_by(['animals', 'int1'], {'Float1':
-        ... [ia.agg.avg, ia.agg.stdev, ia.agg.var, ia.agg.min, ia.agg.max],
-        ... 'int2': [ia.agg.count, ia.agg.count_distinct]})
+        ... [ta.agg.avg, ta.agg.stdev, ta.agg.var, ta.agg.min, ta.agg.max],
+        ... 'int2': [ta.agg.count, ta.agg.count_distinct]})
 
 Example process of using aggregation based on row:
 
@@ -890,14 +890,14 @@ Example process of using aggregation based on row:
 
     .. code::
 
-        >>> grouped_animals2 = animals.group_by(['animals', 'int1'], ia.agg.count)
+        >>> grouped_animals2 = animals.group_by(['animals', 'int1'], ta.agg.count)
 
 .. only:: latex
 
     .. code::
 
         >>> grouped_animals2 = animals.group_by(['animals', 'int1'],
-        ... ia.agg.count)
+        ... ta.agg.count)
 
 .. _aggregation_functions:
 
@@ -949,7 +949,7 @@ the Frames by the same name, unless needed for clarity:
 
     >>> your_frame.inspect()
 
-      b:str       c:ia.int64     d:str
+      b:str       c:ta.int64     d:str
     /----------------------------------/
       bus             871        dog
       berry          5218        frog
@@ -971,7 +971,7 @@ The result is *our_frame*:
 
     >>> our_frame.inspect()
 
-      a:str       b:str       c_L:str      c_R:ia.int64   d:str
+      a:str       b:str       c_L:str      c_R:ta.int64   d:str
     /-----------------------------------------------------------/
       alligator   bear        cat          None           None
       auto        bus         car           871           dog
@@ -997,7 +997,7 @@ Result is *inner_frame*:
 
     >>> inner_frame.inspect()
 
-      a:str       b:str       c_L:str      c_R:ia.int64   d:str
+      a:str       b:str       c_L:str      c_R:ta.int64   d:str
     /-----------------------------------------------------------/
       auto        bus         car             871         dog
       apple       berry       cantelope      5218         frog
@@ -1015,7 +1015,7 @@ Result is *outer_frame*:
 
     >>> outer_frame.inspect()
 
-      a:str       b:str       c_L:str      c_R:ia.int64   d:str
+      a:str       b:str       c_L:str      c_R:ta.int64   d:str
     /-----------------------------------------------------------/
       auto        bus         car            None         None
       apple       berry       cantelope      None         None
@@ -1049,7 +1049,7 @@ Result is *right_frame*:
 
     >>> right_frame.inspect()
 
-      a:str      b_L:str      c:str      b_R:str    c:ia.int64   d:str
+      a:str      b_L:str      c:str      b_R:str    c:ta.int64   d:str
     /---------------------------------------------------------------------/
       None       None         None       bus         871         dog
       mirror     frog         ball       berry      5218         frog
@@ -1084,16 +1084,16 @@ Bring the data in where it can by worked on:
 
     .. code::
 
-        >>> my_csv = ia.CsvFile("original_data.csv", schema=[('a', ia.int64), ('b', str)], delimiter='-')
-        >>> my_frame = ia.Frame(source=my_csv)
+        >>> my_csv = ta.CsvFile("original_data.csv", schema=[('a', ta.int64), ('b', str)], delimiter='-')
+        >>> my_frame = ta.Frame(source=my_csv)
 
 .. only:: latex
 
     .. code::
 
-        >>> my_csv = ia.CsvFile("original_data.csv", schema=[('a', ia.int64),
+        >>> my_csv = ta.CsvFile("original_data.csv", schema=[('a', ta.int64),
         ... ('b', str)], delimiter='-')
-        >>> my_frame = ia.Frame(source=my_csv)
+        >>> my_frame = ta.Frame(source=my_csv)
 
 Check the data:
 
@@ -1101,7 +1101,7 @@ Check the data:
 
     >>> my_frame.inspect()
 
-      a:ia.int64   b:string
+      a:ta.int64   b:string
     /---------------------------------/
           1        solo, mono, single
           2        duo, double
@@ -1118,7 +1118,7 @@ Now check again and the result is:
 
     >>> your_frame.inspect()
 
-      a:ia.int64   b:str
+      a:ta.int64   b:str
     /-----------------------/
         1          solo
         1          mono
@@ -1163,7 +1163,7 @@ Make an empty graph and give it a name:
 
 .. code::
 
-    >>> my_graph = ia.graph()
+    >>> my_graph = ta.graph()
     >>> my_graph.name = "personnel"
 
 Define the vertex types:
@@ -1291,17 +1291,17 @@ be associated to vertices and edges:
 
     .. code::
 
-        >>> employee_vertex = ia.VertexRule(id_key = "employee", id_value = my_frame.employee, properties = {'vertex_type': 'L', title:my_frame.title})
-        >>> manager_vertex = ia.VertexRule(id_key = "managers", id_value = my_frame.manager, properties = {'vertex_type": "R"})
+        >>> employee_vertex = ta.VertexRule(id_key = "employee", id_value = my_frame.employee, properties = {'vertex_type': 'L', title:my_frame.title})
+        >>> manager_vertex = ta.VertexRule(id_key = "managers", id_value = my_frame.manager, properties = {'vertex_type": "R"})
 
 .. only:: latex
 
     .. code::
 
-        >>> employee_vertex = ia.VertexRule(id_key = "employee",
+        >>> employee_vertex = ta.VertexRule(id_key = "employee",
         ... id_value = my_frame.employee,
         ... properties = {'vertex_type': 'L', title:my_frame.title})
-        >>> manager_vertex = ia.VertexRule(id_key = "managers",
+        >>> manager_vertex = ta.VertexRule(id_key = "managers",
         ... id_value = my_frame.manager,
         ... properties = {'vertex_type": "R"})
 
@@ -1311,13 +1311,13 @@ Define the edge rule:
 
     .. code::
 
-        >>> worksunder_edge = ia.EdgeRule("worksunder", my_frame.employee, my_frame.manager, properties = {"years":my_frame.years})
+        >>> worksunder_edge = ta.EdgeRule("worksunder", my_frame.employee, my_frame.manager, properties = {"years":my_frame.years})
 
 .. only:: latex
 
     .. code::
 
-        >>> worksunder_edge = ia.EdgeRule("worksunder",
+        >>> worksunder_edge = ta.EdgeRule("worksunder",
         ... my_frame.employee, my_frame.manager,
         ... properties = {"years":my_frame.years})
 
@@ -1330,13 +1330,13 @@ Build the graph:
 
     .. code::
 
-        >>> my_graph = ia.TitanGraph(rules=[employee_vertex, manager_vertex, worksunder_edge], name = "personnel")
+        >>> my_graph = ta.TitanGraph(rules=[employee_vertex, manager_vertex, worksunder_edge], name = "personnel")
 
 .. only:: latex
 
     .. code::
 
-        >>> my_graph = ia.TitanGraph(rules=[employee_vertex, manager_vertex,
+        >>> my_graph = ta.TitanGraph(rules=[employee_vertex, manager_vertex,
         ... worksunder_edge], name = "personnel")
 
 For futher information, as well as Titan graph attributes and methods, see the

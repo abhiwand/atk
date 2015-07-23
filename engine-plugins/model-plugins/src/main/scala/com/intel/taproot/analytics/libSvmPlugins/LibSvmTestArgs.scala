@@ -19,16 +19,22 @@ package com.intel.taproot.analytics.libSvmPlugins
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Command for testing a lib svm model with the provided dataset
  * @param model Handle to the model to be used.
  * @param frame Handle to the data frame
  * @param observationColumns Handle to the observation column/s of the data frame
  */
-case class LibSvmTestArgs(model: ModelReference,
-                          frame: FrameReference,
-                          labelColumn: String,
-                          observationColumns: Option[List[String]]) {
+case class LibSvmTestArgs(@ArgDoc("""Handle to the model to be used.""") model: ModelReference,
+                          @ArgDoc("""A frame whose labels are to be predicted.""") frame: FrameReference,
+                          @ArgDoc("""Column containing the actual label for each
+observation.""") labelColumn: String,
+                          @ArgDoc("""Column(s) containing the observations whose
+labels are to be predicted and tested.
+Default is to test over the columns the LibsvmModel
+was trained on.""") observationColumns: Option[List[String]]) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
   require(labelColumn != null && !labelColumn.isEmpty, "label column name is required")
