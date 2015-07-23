@@ -72,7 +72,7 @@ case class JoinBroadcastVariable(joinParam: RddJoinParam) {
     val broadcastList = joinParam.rdd.groupByKey().collect().toList
 
     val rddSizeInBytes = joinParam.estimatedSizeInBytes.getOrElse(Long.MaxValue)
-    val numBroadcastVars = if (!broadcastList.isEmpty && rddSizeInBytes < Long.MaxValue && rddSizeInBytes > 0) {
+    val numBroadcastVars = if (broadcastList.nonEmpty && rddSizeInBytes < Long.MaxValue && rddSizeInBytes > 0) {
       Math.ceil(rddSizeInBytes.toDouble / Int.MaxValue).toInt // Limit size of each broadcast var to 2G (MaxInt)
     }
     else 1

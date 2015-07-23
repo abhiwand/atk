@@ -133,14 +133,6 @@ public class TitanGraphWriter {
     // Returns connection to Titan graph
     private static TitanGraph getTitanGraph(BaseConfiguration baseConfig) {
         GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(new CommonsConfiguration(baseConfig));
-
-        TitanGraph graph = new StandardTitanGraph(titanConfig);
-
-        if (null != graph) {
-            return graph;
-        } else {
-            LOG.fatal(TITAN_GRAPH_NOT_OPEN);
-            throw new RuntimeException(TITAN_GRAPH_NOT_OPEN);
-        }
+        return new StandardTitanGraph(titanConfig);
     }
 }

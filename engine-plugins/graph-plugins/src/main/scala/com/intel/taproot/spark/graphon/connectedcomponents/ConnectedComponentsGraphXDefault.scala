@@ -36,7 +36,7 @@ object ConnectedComponentsGraphXDefault {
   def run(vertexList: RDD[Long], edgeList: RDD[(Long, Long)]): RDD[(Long, Long)] = {
 
     val graphXVertices: RDD[(Long, Null)] = vertexList.map((vid: Long) => (vid, null))
-    val graphXEdges: RDD[GraphXEdge[Null]] = edgeList.map(edge => (new GraphXEdge[Null](edge._1, edge._2, null)))
+    val graphXEdges: RDD[GraphXEdge[Null]] = edgeList.map(edge => new GraphXEdge[Null](edge._1, edge._2, null))
 
     val graph: Graph[Null, Null] = Graph(graphXVertices, graphXEdges)
       .partitionBy(PartitionStrategy.RandomVertexCut)

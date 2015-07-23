@@ -59,7 +59,7 @@ object EdgeManager extends Serializable {
       }
     }
 
-    edgeList.filter(e => e.isInternal == false)
+    edgeList.filter(e => !e.isInternal)
   }
 
   /**
@@ -72,7 +72,7 @@ object EdgeManager extends Serializable {
     var outgoingEdges: List[GraphClusteringEdge] = List[GraphClusteringEdge]()
     var edge: GraphClusteringEdge = null
 
-    if ((null != list) && (!list.isEmpty)) {
+    if ((null != list) && list.nonEmpty) {
       for (edgeList <- list) {
         if ((null != edgeList) && (null != edgeList.higherDistanceEdgeList)) {
           outgoingEdges = outgoingEdges ++ edgeList.higherDistanceEdgeList.toList
@@ -107,12 +107,12 @@ object EdgeManager extends Serializable {
         edge.getTotalNodeCount,
         edge.src,
         edge.srcNodeCount,
-        GraphClusteringConstants.DefaultNodeCount, true)
+        GraphClusteringConstants.DefaultNodeCount, isInternal = true)
       edges = edges :+ GraphClusteringEdge(metaNodeVertexId,
         edge.getTotalNodeCount,
         edge.dest,
         edge.destNodeCount,
-        GraphClusteringConstants.DefaultNodeCount, true)
+        GraphClusteringConstants.DefaultNodeCount, isInternal = true)
 
       (metaNodeVertexId, edge.getTotalNodeCount, edges)
     }
@@ -140,6 +140,6 @@ object EdgeManager extends Serializable {
         count,
         e.dest,
         e.destNodeCount,
-        e.distance, false))).toList
+        e.distance, isInternal = false))).toList
   }
 }

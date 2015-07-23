@@ -21,7 +21,7 @@ case class ClassificationMetricArgs(frame: FrameReference, labelColumn: String, 
   require(labelColumn != null && !labelColumn.equals(""), "label column is required")
   require(predColumn != null && !predColumn.equals(""), "predict column is required")
   beta match {
-    case Some(x) => require((x >= 0), "invalid beta value for f measure. Should be greater than or equal to 0")
+    case Some(x) => require(x >= 0, "invalid beta value for f measure. Should be greater than or equal to 0")
     case _ => null
   }
 }

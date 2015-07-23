@@ -64,7 +64,7 @@ class ClusteringCoefficientPluginTest extends FlatSpec with Matchers with Testin
 
   "clustering coefficient" should "give every vertex a CC 1.0d when analyzing a complete graph" in {
 
-    val edges = sparkContext.parallelize(Array[(Long, Long)]((1L -> 2L), (1L -> 3L), (1L -> 4L), (2L -> 3L), (2L -> 4L), (3L -> 4L)), defaultParallelism)
+    val edges = sparkContext.parallelize(Array[(Long, Long)](1L -> 2L, 1L -> 3L, 1L -> 4L, 2L -> 3L, 2L -> 4L, 3L -> 4L), defaultParallelism)
     val graph = Graph.fromEdgeTuples(edges, true).partitionBy(PartitionStrategy.RandomVertexCut).cache()
     val (testGraph, testGCC) = ClusteringCoefficient.run(graph)
     val testVertices = testGraph.vertices.collect()
@@ -92,7 +92,7 @@ class ClusteringCoefficientPluginTest extends FlatSpec with Matchers with Testin
      * vertex 3 has CC 1.0d
      * vertex 4 has CC 1.0d
      */
-    val edges = sparkContext.parallelize(Array[(Long, Long)]((1L -> 2L), (1L -> 3L), (1L -> 4L), (3L -> 4L)), defaultParallelism)
+    val edges = sparkContext.parallelize(Array[(Long, Long)](1L -> 2L, 1L -> 3L, 1L -> 4L, 3L -> 4L), defaultParallelism)
     val graph = Graph.fromEdgeTuples(edges, true).partitionBy(PartitionStrategy.RandomVertexCut).cache()
     val (testGraph, testGCC) = ClusteringCoefficient.run(graph)
     val testVertices = testGraph.vertices.collect()

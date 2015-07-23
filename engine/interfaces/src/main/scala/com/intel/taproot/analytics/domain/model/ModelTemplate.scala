@@ -23,7 +23,7 @@ package com.intel.taproot.analytics.domain.model
  */
 case class ModelTemplate(name: Option[String], modelType: String) {
   require(name != null, "name must not be null")
-  if (name != None) {
+  if (name.isDefined) {
     require(name.get.trim.length > 0, "if name is set it must not be empty or whitespace")
     ModelName.validate(name.get)
   }

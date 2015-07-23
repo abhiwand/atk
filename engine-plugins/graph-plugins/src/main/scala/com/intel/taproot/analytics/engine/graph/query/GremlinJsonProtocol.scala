@@ -121,15 +121,15 @@ object GremlinJsonProtocol extends IADefaultJsonProtocol with EventLogging {
       case e if isEdge(e) => {
         val inId = getJsonFieldValue[Long](e, GraphSONTokens._IN_V)
         val outId = getJsonFieldValue[Long](e, GraphSONTokens._OUT_V)
-        val inVertex = if (inId != None) graph.getVertex(inId.get) else null
-        val outVertex = if (outId != None) graph.getVertex(outId.get) else null
+        val inVertex = if (inId.isDefined) graph.getVertex(inId.get) else null
+        val outVertex = if (outId.isDefined) graph.getVertex(outId.get) else null
 
         if (inVertex != null && outVertex != null) {
           GraphSONUtility.edgeFromJson(e.toString, outVertex, inVertex, factory, mode, null)
         }
-        else throw new RuntimeException(s"Unable to convert JSON to Blueprint's edge: ${e}")
+        else throw new RuntimeException(s"Unable to convert JSON to Blueprint's edge: $e")
       }
-      case x => throw new RuntimeException(s"Unable to convert JSON to Blueprint's graph element: ${x}")
+      case x => throw new RuntimeException(s"Unable to convert JSON to Blueprint's graph element: $x")
     }
   }
 
@@ -145,7 +145,7 @@ object GremlinJsonProtocol extends IADefaultJsonProtocol with EventLogging {
       val value = obj.fields.get(key)
       value match {
         case Some(x) => Try { Some(x.convertTo[T]) }
-          .getOrElse(throw new RuntimeException(s"Could not convert ${key} to type T from JSON string: ${json}"))
+          .getOrElse(throw new RuntimeException(s"Could not convert $key to type T from JSON string: $json"))
         case None => None
       }
     }

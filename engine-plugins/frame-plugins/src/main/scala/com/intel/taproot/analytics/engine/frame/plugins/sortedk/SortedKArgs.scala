@@ -33,6 +33,6 @@ case class SortedKArgs(frame: FrameReference,
                        reduceTreeDepth: Option[Int] = None) {
   require(frame != null, "frame is required")
   require(k > 0, "k should be greater than zero") //TODO: Should we add an upper bound for K
-  require(columnNamesAndAscending != null && columnNamesAndAscending.length > 0, "one or more columnNames is required")
+  require(columnNamesAndAscending != null && columnNamesAndAscending.nonEmpty, "one or more columnNames is required")
   require(reduceTreeDepth.getOrElse(1) >= 1, s"Depth of reduce tree must be greater than or equal to 1")
 }

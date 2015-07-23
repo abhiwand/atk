@@ -38,7 +38,7 @@ object SortedKFunctions extends Serializable {
                   columnNamesAndAscending: List[(String, Boolean)],
                   reduceTreeDepth: Option[Int] = None): FrameRdd = {
     require(k > 0, "k should be greater than zero") //TODO: Should we add an upper bound for K
-    require(columnNamesAndAscending != null && columnNamesAndAscending.length > 0, "one or more columnNames is required")
+    require(columnNamesAndAscending != null && columnNamesAndAscending.nonEmpty, "one or more columnNames is required")
 
     val columnNames = columnNamesAndAscending.map(_._1)
     val ascendingPerColumn = columnNamesAndAscending.map(_._2)

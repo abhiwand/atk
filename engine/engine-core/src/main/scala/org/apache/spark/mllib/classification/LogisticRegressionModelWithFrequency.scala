@@ -172,7 +172,7 @@ class LogisticRegressionModelWithFrequency(
   override protected def formatVersion: String = "1.0"
 
   override def toString: String = {
-    s"${super.toString}, numClasses = ${numClasses}, threshold = ${threshold.getOrElse("None")}"
+    s"${super.toString}, numClasses = $numClasses, threshold = ${threshold.getOrElse("None")}"
   }
 }
 

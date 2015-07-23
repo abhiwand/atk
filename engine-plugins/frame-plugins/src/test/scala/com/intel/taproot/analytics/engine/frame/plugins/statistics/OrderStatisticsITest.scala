@@ -45,7 +45,7 @@ class OrderStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
   "one data element" should "work" in {
 
     val oneThing: List[Int] = List(8)
-    val oneFrequency: List[Double] = List(0.1).map(x => x.toDouble)
+    val oneFrequency: List[Double] = List(0.1)
     val medianOfOne: Int = 8
 
     val numPartitions = 3
@@ -60,7 +60,7 @@ class OrderStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
   "input is two uniformly weighted items" should "result in lesser of the two values" in {
 
     val twoThings: List[Int] = List(8, 9)
-    val frequencies: List[Double] = List(0.2, 0.2).map(x => x.toDouble)
+    val frequencies: List[Double] = List(0.2, 0.2)
     val expectedMedian: Int = 8
 
     val numPartitions = 3

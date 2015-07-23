@@ -44,7 +44,7 @@ class DropDuplicatesArgsITest extends FlatSpec with Matchers with BeforeAndAfter
     val sortable = duplicatesRemoved.map(t => MiscFrameFunctions.createKeyValuePairFromRow(t, Seq(1))).map { case (keyColumns, data) => (keyColumns(0), data) }.asInstanceOf[RDD[(Int, Row)]]
 
     //sort output to validate result
-    val sorted = sortable.sortByKey(true)
+    val sorted = sortable.sortByKey(ascending = true)
 
     //matching the result
     val data = sorted.take(4)

@@ -92,7 +92,7 @@ object DiscretizationFunctions extends Serializable {
     //if lower than first cutoff
     val binIndex: Int =
       // if lower than first cutoff
-      if (element < cutoffs(0))
+      if (element < cutoffs.head)
         if (strictBinning) -1 else min
       // if larger than last cutoff
       else if (cutoffs.last < element)
@@ -104,7 +104,7 @@ object DiscretizationFunctions extends Serializable {
           bSearchRangeLowerInclusive(element, cutoffs, min, max)
       }
       else {
-        if ((element - cutoffs(0)).abs < 0.00001d)
+        if ((element - cutoffs.head).abs < 0.00001d)
           min
         else
           bSearchRangeUpperInclusive(element, cutoffs, min, max)
@@ -251,7 +251,7 @@ object DiscretizationFunctions extends Serializable {
     columnRdd.cache()
 
     // assign a rank to each distinct element
-    val numElements = columnRdd.values.sum
+    val numElements = columnRdd.values.sum()
     val rankedElementRdd = assignElementRanks(columnRdd)
 
     // compute the bin number
@@ -316,7 +316,7 @@ object DiscretizationFunctions extends Serializable {
     val rankedBinRdd = binnedElementRdd.map {
       case (element, bin) =>
         val binNumber = broadcastSortedBins.value
-          .getOrElse(bin, throw new RuntimeException(s"Unable to find ranking for bin${bin}"))
+          .getOrElse(bin, throw new RuntimeException(s"Unable to find ranking for bin$bin"))
         (element, (binNumber + 1).toInt)
     }
     binnedElementRdd.unpersist()

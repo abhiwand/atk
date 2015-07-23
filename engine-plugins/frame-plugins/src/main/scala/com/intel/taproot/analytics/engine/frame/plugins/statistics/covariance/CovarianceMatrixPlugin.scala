@@ -93,8 +93,8 @@ class CovarianceMatrixPlugin extends SparkCommandPlugin[CovarianceMatrixArgs, Fr
   // Get output schema for covariance matrix
   private def getOutputSchema(dataColumnNames: List[String], outputVectorLength: Option[Long] = None): FrameSchema = {
     val outputColumns = outputVectorLength match {
-      case Some(length) => List(Column(dataColumnNames(0), DataTypes.vector(length)))
-      case _ => dataColumnNames.map(name => Column(name, DataTypes.float64)).toList
+      case Some(length) => List(Column(dataColumnNames.head, DataTypes.vector(length)))
+      case _ => dataColumnNames.map(name => Column(name, DataTypes.float64))
     }
     FrameSchema(outputColumns)
   }

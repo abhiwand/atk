@@ -29,6 +29,7 @@ class MeanAggregatorTest extends FlatSpec with Matchers {
     aggregator.mapFunction(10L, DataTypes.int64) should be(10d +- epsilon)
     aggregator.mapFunction(45d, DataTypes.float64) should be(45d +- epsilon)
     aggregator.mapFunction(0, DataTypes.int64) should be(0d +- epsilon)
+    //noinspection NameBooleanParameters,NameBooleanParameters
     aggregator.mapFunction(null, DataTypes.int64).isNaN() should be(true)
   }
   "MeanAggregator" should "throw an IllegalArgumentException if column value is not numeric" in {

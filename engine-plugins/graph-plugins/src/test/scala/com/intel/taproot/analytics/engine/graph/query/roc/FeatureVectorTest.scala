@@ -34,7 +34,7 @@ class FeatureVectorTest extends FlatSpec with Matchers {
 
     featureVector.priorArray should equalWithTolerance(Array(0.1, 0.2), tolerance)
     featureVector.posteriorArray should equalWithTolerance(Array(0.4, 0.6), tolerance)
-    featureVector.splitType shouldEqual ("TR")
+    featureVector.splitType shouldEqual "TR"
 
   }
 

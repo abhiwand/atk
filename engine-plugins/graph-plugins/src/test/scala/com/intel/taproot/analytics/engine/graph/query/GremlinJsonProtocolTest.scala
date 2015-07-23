@@ -105,8 +105,8 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
     val json = row.toJson
     val jsonFields = json.asJsObject.fields
 
-    jsonFields.keySet should contain theSameElementsAs (rowMap.keySet)
-    jsonFields.values.toList should contain theSameElementsAs (List(JsString("val1"), JsString("val2")))
+    jsonFields.keySet should contain theSameElementsAs rowMap.keySet
+    jsonFields.values.toList should contain theSameElementsAs List(JsString("val1"), JsString("val2"))
 
   }
 
@@ -117,8 +117,8 @@ class GremlinJsonProtocolTest extends FlatSpec with Matchers with TestingTitan w
 
     val row = json.convertTo[Row[Int]]
 
-    row.getColumnNames should contain theSameElementsAs (jsonFields.keySet)
-    row.getColumnNames.map(row.getColumn(_)) should contain theSameElementsAs (List(1, 2))
+    row.getColumnNames should contain theSameElementsAs jsonFields.keySet
+    row.getColumnNames.map(row.getColumn(_)) should contain theSameElementsAs List(1, 2)
   }
 
   "BlueprintsRowFormat" should "throw a deserialization exception when JSON is not a valid JSON map" in {

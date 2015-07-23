@@ -56,7 +56,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
       new GenericRow(Array[Any](4, 968, 4, "Oman"))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "joinRDDs" should "join two RDD with inner join using broadcast variable" in {
@@ -78,7 +78,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
       new GenericRow(Array[Any](4, 968, 4, "Oman"))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "joinRDDs" should "join two RDD with left join" in {
@@ -97,7 +97,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
       new GenericRow(Array[Any](5, 50, null, null))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "joinRDDs" should "join two RDD with left join using broadcast variable" in {
@@ -121,7 +121,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
       new GenericRow(Array[Any](5, 50, null, null))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
   "joinRDDs" should "join two RDD with right join" in {
     val countryCode = sparkContext.parallelize(idCountryCodes)
@@ -139,7 +139,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
       new GenericRow(Array[Any](null, null, 6, "Germany"))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "joinRDDs" should "join two RDD with right join using broadcast variable" in {
@@ -162,7 +162,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
       new GenericRow(Array[Any](null, null, 6, "Germany"))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "joinRDDs" should "join two RDD with outer join" in {
@@ -182,7 +182,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
       new GenericRow(Array[Any](null, null, 6, "Germany"))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "outer join with empty left RDD" should "preserve the result from the right RDD" in {
@@ -201,7 +201,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
       new GenericRow(Array[Any](null, null, 6, "Germany"))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "outer join with empty right RDD" should "preserve the result from the left RDD" in {
@@ -220,7 +220,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
       new GenericRow(Array[Any](5, 50, null, null))
     )
 
-    results should contain theSameElementsAs (expectedResults)
+    results should contain theSameElementsAs expectedResults
   }
 
   "outer join large RDD" should "generate RDD contains all element from both RDD" in {

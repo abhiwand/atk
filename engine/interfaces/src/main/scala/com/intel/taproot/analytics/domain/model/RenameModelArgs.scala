@@ -24,6 +24,6 @@ package com.intel.taproot.analytics.domain.model
 
 case class RenameModelArgs(model: ModelReference, newName: String) {
   require(model != null, "model is required")
-  require(newName != null && newName.size > 0, "newName is required")
+  require(newName != null && newName.nonEmpty, "newName is required")
   ModelName.validate(newName)
 }

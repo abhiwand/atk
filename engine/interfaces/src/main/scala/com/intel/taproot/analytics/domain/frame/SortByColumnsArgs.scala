@@ -23,5 +23,5 @@ package com.intel.taproot.analytics.domain.frame
  */
 case class SortByColumnsArgs(frame: FrameReference, columnNamesAndAscending: List[(String, Boolean)]) {
   require(frame != null, "frame is required")
-  require(columnNamesAndAscending != null && columnNamesAndAscending.length > 0, "one or more columnNames is required")
+  require(columnNamesAndAscending != null && columnNamesAndAscending.nonEmpty, "one or more columnNames is required")
 }

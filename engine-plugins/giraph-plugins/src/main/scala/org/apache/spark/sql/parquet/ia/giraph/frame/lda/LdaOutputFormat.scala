@@ -63,8 +63,8 @@ object LdaOutputFormat {
 
   //Using JSON format for schema due to bug in Spark 1.3.0 which causes failures when reading StructType literal strings
   val OutputRowSchema = StructType(
-    StructField("id", StringType, false) ::
-      StructField("result", ArrayType(DoubleType), true) :: Nil).json
+    StructField("id", StringType, nullable = false) ::
+      StructField("result", ArrayType(DoubleType), nullable = true) :: Nil).json
 }
 
 class LdaParquetFrameVertexWriter(conf: LdaConfiguration, docResultsOutputFormat: ParquetOutputFormat[Row], wordResultsOutputFormat: ParquetOutputFormat[Row]) extends VertexWriter[LdaVertexId, LdaVertexData, Nothing] {

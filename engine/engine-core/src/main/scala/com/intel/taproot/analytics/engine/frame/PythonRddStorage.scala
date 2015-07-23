@@ -162,10 +162,10 @@ object PythonRddStorage {
       val asList = bson.get("array").asInstanceOf[BasicBSONList]
       asList.map(innerList => {
         val asBsonList = innerList.asInstanceOf[BasicBSONList]
-        asBsonList.map(value => value match {
+        asBsonList.map {
           case x: BasicBSONList => x.toArray
-          case _ => value
-        }).toArray.asInstanceOf[Array[Any]]
+          case value => value
+        }.toArray.asInstanceOf[Array[Any]]
       })
     }).map(converter)
 
