@@ -78,7 +78,7 @@ class EdgeManagerTest extends FlatSpec with Matchers {
       {
         assert(item.dest == metaNodeId)
         assert(item.destNodeCount == metaNodeCount)
-        assert(item.isInternal == false)
+        assert(!item.isInternal)
       })
   }
 
@@ -87,6 +87,6 @@ class EdgeManagerTest extends FlatSpec with Matchers {
   }
 
   "edgeManager::canEdgeCollapse" should "return false" in {
-    assert(EdgeManager.canEdgeCollapse(nonCollapsableEdgeList) == false)
+    assert(!EdgeManager.canEdgeCollapse(nonCollapsableEdgeList))
   }
 }
