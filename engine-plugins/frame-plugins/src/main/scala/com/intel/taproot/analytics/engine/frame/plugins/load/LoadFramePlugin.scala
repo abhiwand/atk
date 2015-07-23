@@ -70,7 +70,7 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     // run the operation
     if (arguments.source.isFrame) {
       // load data from an existing frame and add its data onto the target frame
-      val additionalData = (FrameReference(arguments.source.uri.toInt):SparkFrame).rdd
+      val additionalData = (FrameReference(arguments.source.uri.toInt): SparkFrame).rdd
       unionAndSave(destinationFrame, additionalData)
     }
     else if (arguments.source.isFile || arguments.source.isMultilineFile) {
