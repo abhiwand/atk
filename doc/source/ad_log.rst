@@ -1,8 +1,8 @@
 .. index:: ! log
 
-=============
-|IAT| Logging
-=============
+============
+|PACKAGE| Logging
+============
 
 .. contents:: Table of Contents
     :local:
@@ -12,33 +12,33 @@
 Introduction
 ------------
 
-Logging, in |IAT| service, is done with the help of LOGback.
+Logging, in |PACKAGE| service, is done with the help of LOGback.
 Full documentation for LOGback can be found at http://logback.qos.ch/.
 
 ---------
 Log Files
 ---------
 
-The |IAT| service writes two log files to the system, both of which are located
+The |PACKAGE| service writes two log files to the system, both of which are located
 in 'var/log/taprootanalytics/rest-server/'.
 
 output.log
 ==========
 
 Contains all log messages sent to the console.
-This will contain messages from many of the services |IAT| uses, like spark,
-yarn, and hdfs, as well as the |IAT| service.
+This will contain messages from many of the services |PACKAGE| uses, like spark,
+yarn, and hdfs, as well as the |PACKAGE| service.
 
 application.log
 ===============
 
-Contains log messages from the |IAT| service only.
+Contains log messages from the |PACKAGE| service only.
 
 ----------
 Log Levels
 ----------
 
-The possible log levels for |IAT| are the same as those that are available for
+The possible log levels for |PACKAGE| are the same as those that are available for
 LOGback.
 
 *   TRACE
@@ -50,7 +50,7 @@ LOGback.
 Updating The Log Level
 ======================
 
-Changing the log level for the |IAT| service is easy.
+Changing the log level for the |PACKAGE| service is easy.
 
 Open The Configuration File
 ---------------------------
@@ -103,12 +103,12 @@ Update the "level" attribute for the "root" xml tag::
         </root>
     ...
 
-After updating the level attribute, save the file and either restart the |IAT|
+After updating the level attribute, save the file and either restart the |PACKAGE|
 service or wait one minute for the configuration to be reloaded.
 
 .. warning::
 
     Be careful while changing the LOGback configuration.
-    It is possible to cause undue strain on the server or the |IAT| service by
+    It is possible to cause undue strain on the server or the |PACKAGE| service by
     setting the DEBUG logging level in a production environment.
 

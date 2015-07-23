@@ -20,11 +20,11 @@ that are more likely to interact amongst each
 other – for example, a community of friends in a social network or the
 “community” of highly interacting proteins of a cellular process.
 
-The |IAT| version |version| provides community detection using the k-Clique
+The |PACKAGE| version |version| provides community detection using the k-Clique
 percolation method first proposed by Palla et. al. [K1]_ that has been widely
 used in many contexts.
 Other community detection algorithms may be offered in future releases of the
-|IAT|.
+|PACKAGE|.
 
 .. index::
     pair: algorithm; k-clique percolation
@@ -55,7 +55,7 @@ belongs to two distinct (but overlapping) communities.
 Distributed Implementation of K-Clique Community Detection
 ==========================================================
 
-The implementation of k-clique community detection in |IAT| is a fully
+The implementation of k-clique community detection in |PACKAGE| is a fully
 distributed Apache Spark based implementation that follows the map-reduce
 algorithm proposed in Varamesh et. al. [K2]_ .
 

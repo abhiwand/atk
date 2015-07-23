@@ -15,8 +15,8 @@ Appendix A |EM| Sample Application Configuration File
     # The host name for the Postgresql database in which the metadata will be stored
     metastore.connection-postgresql.host = "localhost"
     metastore.connection-postgresql.port = "5432"
-    metastore.connection-postgresql.database = "ia_metastore"
-    metastore.connection-postgresql.username = "iauser"
+    metastore.connection-postgresql.database = "ta_metastore"
+    metastore.connection-postgresql.username = "taproot"
     metastore.connection-postgresql.password = "MyPassword"
     metastore.connection-postgresql.url = 
         "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":
@@ -36,7 +36,7 @@ Appendix A |EM| Sample Application Configuration File
 
         # The hdfs URL where the taprootanalytics folder will be created
         # and which will be used as the starting point for any relative URLs
-        fs.root = "hdfs://master.silvern.gao.cluster:8020/user/iauser"
+        fs.root = "hdfs://master.silvern.gao.cluster:8020/user/taproot"
 
         # The (comma separated, no spaces) Zookeeper hosts that
         # Comma separated list of host names with zookeeper role assigned
@@ -92,11 +92,11 @@ Appendix A |EM| Sample Application Configuration File
           }
         }
 
-        # Configuration for the TapRoot Analytics REST API server
+        # Configuration for the TAProot Analytics REST API server
         api {
           # this is reported by the API server in the /info results -
           # it can be used to identify a particular server or cluster.
-          //identifier = "ia"
+          //identifier = "ta"
 
           #The default page size for result pagination
           //default-count = 20
@@ -288,7 +288,7 @@ Appendix A |EM| Sample Application Configuration File
             cache {
               # Adjust cache size parameters if you experience OutOfMemory
               # errors during Titan queries.
-              # Either increase heap allocation for TapRootAnalytics Engine, or
+              # Either increase heap allocation for TAProotAnalytics Engine, or
               # reduce db-cache-size.
               # Reducing db-cache will result in cache misses and increased
               # reads from disk.

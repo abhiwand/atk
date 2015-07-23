@@ -29,15 +29,6 @@ import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
 // TODO: all plugins should move out of engine-core into plugin modules
 
-/*
-Parameters
-----------
-predict_frame : Frame
-    A frame whose labels are to be predicted.
-observation_column : list of str (Optional)
-    Column(s) containing the observations whose labels are to be predicted.
-    Default is the columns the LibsvmModel was trained on.
-*/
 @PluginDoc(oneLine = "New frame with new predicted label column.",
   extended = """Predict the labels for a test frame and create a new frame revision with
 existing columns and a new predicted label's column.""",

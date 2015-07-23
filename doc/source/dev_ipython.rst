@@ -12,9 +12,9 @@ IPython Setup Instructions
 Introduction
 ------------
 
-These instructions show how to use the |IAT| server through
+These instructions show how to use the |PACKAGE| server through
 `IPython <http://ipython.org/>`__.
-This is a guide through the IPython setup needed to communicate with an |IAT|
+This is a guide through the IPython setup needed to communicate with an |PACKAGE|
 service on a remote cluster.
 With an understanding of this information, the Python REST client can be
 accessed from a remote host through an IPyhon shell or notebook server.
@@ -23,9 +23,9 @@ accessed from a remote host through an IPyhon shell or notebook server.
 Requirements
 ------------
 
-A working |IAT| cluster installation is required.
+A working |PACKAGE| cluster installation is required.
 It must be configured to run with the Python2.7 executable.
-If the |IAT| is not installed, see :doc:`/ad_inst_ia1` to install it.
+If the |PACKAGE| is not installed, see :doc:`/ad_inst_ta1` to install it.
 
 Installing IPython
 ==================
@@ -35,12 +35,12 @@ To install IPython run::
     $ sudo yum install python27-ipython
 
 ----------------------------------
-Configure |IAT| Python REST Client
+Configure |PACKAGE| Python REST Client
 ----------------------------------
 
-Before IPython can operate properly, it is necessary to configure the |IAT|
+Before IPython can operate properly, it is necessary to configure the |PACKAGE|
 REST client.
-The REST client needs to know where to find the |IAT| REST server.
+The REST client needs to know where to find the |PACKAGE| REST server.
 This is done by updating the host address in
 '/usr/lib/taprootanalytics/rest-client/python/rest/config.py'::
 
@@ -70,17 +70,17 @@ The 'config.py' file will look similar to this::
 
 Update the address for host to the `Fully Qualified Domain Name
 <http://en.wikipedia.org/wiki/Fully_qualified_domain_name>`_ or
-the IP address of the node hosting the |IAT| REST server.
+the IP address of the node hosting the |PACKAGE| REST server.
 
 ---------------
 Running IPython
 ---------------
 
-Test the |IAT| IPython installation by importing the REST client libraries
+Test the |PACKAGE| IPython installation by importing the REST client libraries
 inside of a notebook or IPython shell and ping the REST server.
 ::
 
-    # testing IPython/TapRoot Analytics
+    # testing IPython/TAProot Analytics
 
     $ ipython
     Python 2.7.5 (default, Sep  4 2014, 17:06:50)
@@ -91,12 +91,12 @@ inside of a notebook or IPython shell and ping the REST server.
     help      -> Python's own help system.
     object?   -> Details about 'object', use 'object??' for extra details.
 
-    In [1]: import taprootanalytics as ia
+    In [1]: import taprootanalytics as ta
 
-    In [2]: ia.server.ping()
-    Successful ping to TapRoot Analytics at http://localhost:9099/info
+    In [2]: ta.server.ping()
+    Successful ping to TAProot Analytics at http://localhost:9099/info
 
-    In [3]: ia.connect()
+    In [3]: ta.connect()
 
 IPython Notebook
 ================

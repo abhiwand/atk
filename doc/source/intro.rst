@@ -10,10 +10,10 @@ Technical Summary
 Overview
 --------
 
-The |IAT| is a platform that simplifies applying :term:`graph analytics` and
+The |PACKAGE| is a platform that simplifies applying :term:`graph analytics` and
 :term:`machine learning` to big data for superior knowledge discovery and
 predictive modeling across a wide variety of use cases and solutions.
-The |IAT| provides an analytics pipeline spanning feature engineering, graph
+The |PACKAGE| provides an analytics pipeline spanning feature engineering, graph
 construction, graph analytics, and machine learning using an extensible,
 modular framework.
 By unifying graph and entity-based machine learning, machine learning
@@ -33,13 +33,13 @@ formats and interfaces.
 Python and Data Frame User Interface Summary
 --------------------------------------------
 
-The |IAT| utilizes Python data science abstractions to make programming fully
+The |PACKAGE| utilizes Python data science abstractions to make programming fully
 scalable big data analytic workflows using Spark/Hadoop clusters as familiar
 and accessible as using popular desktop machine learning solutions such as
 Pandas and SciKit Learn.
 The scalable data frame representation is more familiar and intuitive to data
 researchers compared to low level HDFS file and Spark RDD formats.
-The |IAT| provides an extensive library to manipulate the data frames for
+The |PACKAGE| provides an extensive library to manipulate the data frames for
 feature engineering and exploration, such as joins and aggregations.
 User-defined transformations and filters can be written in Python and applied
 to terabytes (and more) of data using distributed processing.
@@ -65,14 +65,14 @@ predictive signals that can otherwise be missed with entity-based methods.
 Working with graph representations can often be more intuitive and
 computationally efficient for data sets where the connections between data
 observations are more numerous and more important than the data points alone.
-The |IAT| offers a representation of graph data as fully-scalable property
+The |PACKAGE| offers a representation of graph data as fully-scalable property
 graph objects with vertices, edges, and associated properties.
 The pipeline brings together into one workflow all the capabilities to create
 and analyze graph objects, including engineering features, linking data,
 performing rich traversal queries, and applying graph-based algorithms.
 Because data scientists often need to iterate analysis using both graph and
 frame representations (for example, applying a clustering algorithm to a vertex
-list with features developed using graph analytics), the |IAT| provides the
+list with features developed using graph analytics), the |PACKAGE| provides the
 seamless ability to move between both data representations.
 
 
@@ -112,9 +112,9 @@ Plugins Summary
 In addition to the extensive set of capabilities provided, the platform is
 fully extensible using a plugin architecture.
 This allows developers to incorporate graph analytical tools into the existing
-range of machine learning abilities, expanding the capabilities of the |IAT|
+range of machine learning abilities, expanding the capabilities of the |PACKAGE|
 for new problem solutions.
-Plugins are developed using a thin Scala wrapper, and the |IAT| framework
+Plugins are developed using a thin Scala wrapper, and the |PACKAGE| framework
 automatically generates a Python presentation for those added functions.
 Plug-ins can be used for a range of purposes, such as developing custom
 algorithms for specialized data types, building custom transformations for
@@ -127,11 +127,11 @@ See the :doc:`Plugin Authoring Guide </ad_plug>` for more information.
 Installation Summary
 --------------------
 
-The |IAT| installs as an edge node on a Hadoop/Spark cluster and makes use of a
+The |PACKAGE| installs as an edge node on a Hadoop/Spark cluster and makes use of a
 number of engines provided with the distribution.
-This version of the |IAT| supports installation onto the Cloudera distribution
+This version of the |PACKAGE| supports installation onto the Cloudera distribution
 to ensure compatibility with the underlying Spark and Hadoop engines.
 This also allows the use of the Cloudera Manager to install the necessary
 parcels and to provide the metadata store.
-See the section on :doc:`/ad_inst_ia1` for more information.
+See the section on :doc:`/ad_inst_ta1` for more information.
 

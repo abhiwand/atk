@@ -37,21 +37,6 @@ import org.apache.spark.mllib.ia.plugins.VectorUtils._
 
 import scala.collection.mutable.ListBuffer
 
-/**
- * Parameters
- * ----------
- * predict_frame : Frame
- *   A frame whose labels are to be predicted.
- *   By default, predict is run on the same columns over which the model is
- *   trained.
- *   The user could specify column names too if needed.
- * observation_columns : list of str (optional)
- *   Column(s) containing the observations whose clusters are to be predicted.
- *   By default, we predict the clusters over columns the KMeansModel was
- *   trained on.
- *   The columns are scaled using the same values used when training the model.
- */
-
 @PluginDoc(oneLine = "Predict the cluster assignments for the data points.",
   extended = "",
   returns = """Frame
