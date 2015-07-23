@@ -80,7 +80,6 @@ class LoadGraphPlugin extends SparkCommandPlugin[LoadGraphArgs, GraphEntity] {
     val inputRowsRdd = frames.loadFrameData(sc, frameEntity)
     val inputRdd: RDD[Seq[_]] = inputRowsRdd.mapRows(x => x.toSeq)
     graphBuilder.build(inputRdd)
-    graphs.updateStatus(graphEntity, Status.Active)
 
     graphEntity
   }

@@ -137,21 +137,6 @@ class SparkGraphStorage(metaStore: MetaStore,
   }
 
   /**
-   * Update status id of the graph
-   * @param graph graph instance
-   * @param newStatusId status id
-   */
-  override def updateStatus(graph: GraphEntity, newStatusId: Long): Unit = {
-    metaStore.withSession("spark.graphstorage.rename") {
-      implicit session =>
-        {
-          val newGraph = graph.copy(statusId = newStatusId)
-          metaStore.graphRepo.update(newGraph).get
-        }
-    }
-  }
-
-  /**
    * Registers a new graph.
    * @param graph The graph being registered.
    * @return Graph metadata.
