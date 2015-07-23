@@ -1,7 +1,7 @@
 #!/bin/awk -f
 
 BEGIN {
-    LineAdded = 0;
+    LineAdded = 1;
     EngineLine = ".engine.plugin.";
 }
 

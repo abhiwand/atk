@@ -43,14 +43,8 @@ Graphical Models
 
 
 The graphical models find more insights from structured noisy data.
-We currently support `LP`_ and `LBP`_.
-
-.. _LP:
-.. include:: ds_mlal_lp.inc
-
-
-.. _LBP:
-.. include:: ds_mlal_lbp.inc
+See `graph API <python_api/graphs/index>`_ for details of the
+**Label Propagation (LP)** and **Loopy Belief Propagation (LBP)**.
 
 
 .. _Topic_Modeling:
