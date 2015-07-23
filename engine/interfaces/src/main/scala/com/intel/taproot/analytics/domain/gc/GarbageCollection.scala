@@ -41,5 +41,5 @@ case class GarbageCollection(id: Long,
   require(processId > 0, "ProcessID must be greater than 0")
   require(startTime != null, "StartTime must not be null")
 
-  def isRunning(): Boolean = endTime != None
+  def isRunning(): Boolean = endTime.isDefined
 }

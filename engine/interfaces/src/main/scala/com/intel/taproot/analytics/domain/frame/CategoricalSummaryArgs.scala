@@ -22,7 +22,7 @@ case class CategoricalSummaryArgs(@ArgDoc("Frame in reference to fetch categoric
                                   @ArgDoc("List of Categorical Column Input consisting of column, topk and/or threshold") columnInput: List[CategoricalColumnInput]) {
 
   require(frame != null, "frame is required but not provided")
-  require(columnInput.length > 0, "Column Input must not be empty. Please provide at least a single Column Input")
+  require(columnInput.nonEmpty, "Column Input must not be empty. Please provide at least a single Column Input")
 }
 
 case class CategoricalColumnInput(column: String, topK: Option[Int], threshold: Option[Double]) {

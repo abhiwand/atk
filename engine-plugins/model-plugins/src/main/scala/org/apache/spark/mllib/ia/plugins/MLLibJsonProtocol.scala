@@ -113,14 +113,11 @@ object MLLibJsonProtocol {
     override def read(json: JsValue): LogisticRegressionModelWithFrequency = {
       val fields = json.asJsObject.fields
 
-      val intercept = fields.get("intercept")
-        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
+      val intercept = fields.getOrElse("intercept", throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
         .asInstanceOf[JsNumber].value.doubleValue()
-      val numFeatures = fields.get("numFeatures")
-        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numFeatures"))
+      val numFeatures = fields.getOrElse("numFeatures", throw new IllegalArgumentException("Error in de-serialization: Missing numFeatures"))
         .asInstanceOf[JsNumber].value.intValue()
-      val numClasses = fields.get("numClasses")
-        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing numClasses"))
+      val numClasses = fields.getOrElse("numClasses", throw new IllegalArgumentException("Error in de-serialization: Missing numClasses"))
         .asInstanceOf[JsNumber].value.intValue()
 
       val weights = fields.get("weights").map(v => {
@@ -157,8 +154,7 @@ object MLLibJsonProtocol {
      */
     override def read(json: JsValue): LinearRegressionModel = {
       val fields = json.asJsObject.fields
-      val intercept = fields.get("intercept")
-        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
+      val intercept = fields.getOrElse("intercept", throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
         .asInstanceOf[JsNumber].value.doubleValue()
 
       val weights = fields.get("weights").map(v => {
@@ -281,8 +277,7 @@ object MLLibJsonProtocol {
      */
     override def read(json: JsValue): SVMModel = {
       val fields = json.asJsObject.fields
-      val intercept = fields.get("intercept")
-        .getOrElse(throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
+      val intercept = fields.getOrElse("intercept", throw new IllegalArgumentException("Error in de-serialization: Missing intercept."))
         .asInstanceOf[JsNumber].value.doubleValue()
 
       val weights = fields.get("weights").map(v => {

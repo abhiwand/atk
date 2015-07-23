@@ -86,7 +86,7 @@ object ClassificationMetrics extends Serializable {
       var correctPredict: Long = 0
       val totalPredict = label._2._2.size
 
-      label._2._1.map { prediction =>
+      label._2._1.foreach { prediction =>
         if (prediction._1.equals(prediction._2)) {
           correctPredict += 1
         }
@@ -119,7 +119,7 @@ object ClassificationMetrics extends Serializable {
       // label is tuple of (labelValue, SeqOfInstancesWithThisActualLabel)
       var correctPredict: Long = 0
 
-      label._2.map { prediction =>
+      label._2.foreach { prediction =>
         if (prediction._1.equals(prediction._2)) {
           correctPredict += 1
         }
@@ -156,7 +156,7 @@ object ClassificationMetrics extends Serializable {
       var correctPredict: Long = 0
       val totalPredict = label._2._2.size
 
-      label._2._1.map { prediction =>
+      label._2._1.foreach { prediction =>
         if (prediction._1.equals(prediction._2)) {
           correctPredict += 1
         }
@@ -172,7 +172,7 @@ object ClassificationMetrics extends Serializable {
         case _ => labelCount * (correctPredict / labelCount.toDouble)
       }
 
-      ((math.pow(beta, 2) * precision) + recall) match {
+      (math.pow(beta, 2) * precision) + recall match {
         case 0 => 0
         case _ => (1 + math.pow(beta, 2)) * ((precision * recall) / ((math.pow(beta, 2) * precision) + recall))
       }

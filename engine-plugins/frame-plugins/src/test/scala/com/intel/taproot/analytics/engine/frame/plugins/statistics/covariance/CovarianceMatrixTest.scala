@@ -36,7 +36,7 @@ class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
 
     val rdd = sparkContext.parallelize(arrGenericRow)
     val columnsList = List("col_0", "col_1", "col_2")
-    val inputDataColumnNamesAndTypes: List[Column] = columnsList.map({ name => Column(name, DataTypes.float64) }).toList
+    val inputDataColumnNamesAndTypes: List[Column] = columnsList.map({ name => Column(name, DataTypes.float64) })
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
     val frameRdd = new FrameRdd(schema, rdd)
     val result = CovarianceFunctions.covarianceMatrix(frameRdd, columnsList).collect()

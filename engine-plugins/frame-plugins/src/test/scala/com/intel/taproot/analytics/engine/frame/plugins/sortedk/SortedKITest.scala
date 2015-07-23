@@ -64,7 +64,7 @@ class SortedKITest extends TestingSparkContextFlatSpec with Matchers {
     )
 
     results.length should equal(4)
-    results should contain theSameElementsInOrderAs (expectedResults)
+    results should contain theSameElementsInOrderAs expectedResults
   }
 
   "sortedK" should "return top-K rows ordered by column in descending order" in {
@@ -81,7 +81,7 @@ class SortedKITest extends TestingSparkContextFlatSpec with Matchers {
     )
 
     results.length should equal(3)
-    results should contain theSameElementsInOrderAs (expectedResults)
+    results should contain theSameElementsInOrderAs expectedResults
   }
 
   "sortedK" should "return top-K rows ordered by column in mixed order" in {
@@ -99,6 +99,6 @@ class SortedKITest extends TestingSparkContextFlatSpec with Matchers {
     )
 
     results.length should equal(4)
-    results should contain theSameElementsInOrderAs (expectedResults)
+    results should contain theSameElementsInOrderAs expectedResults
   }
 }

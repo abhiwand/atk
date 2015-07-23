@@ -138,7 +138,7 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
     })
 
     // Filter by split type
-    val filteredFeatureRDD = if (arguments.split_types != None) {
+    val filteredFeatureRDD = if (arguments.split_types.isDefined) {
       featureVectorRDD.filter(f => arguments.split_types.get.contains(f.splitType))
     }
     else featureVectorRDD
@@ -146,7 +146,7 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
 
     // Compute histograms
     val priorHistograms = FeatureVector.getHistograms(filteredFeatureRDD, usePosterior = false, numBuckets)
-    val posteriorHistograms = if (arguments.posterior_property_list != None) {
+    val posteriorHistograms = if (arguments.posterior_property_list.isDefined) {
       Some(FeatureVector.getHistograms(filteredFeatureRDD, usePosterior = true, numBuckets))
     }
     else None

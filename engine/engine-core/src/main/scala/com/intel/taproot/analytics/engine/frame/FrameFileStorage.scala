@@ -74,7 +74,7 @@ class FrameFileStorage(fsRoot: String,
    */
   private[frame] def isParquet(dataFrame: FrameEntity): Boolean = {
     val path = frameBaseDirectory(dataFrame.id)
-    hdfs.globList(path, "*.parquet").length > 0
+    hdfs.globList(path, "*.parquet").nonEmpty
   }
 
 }

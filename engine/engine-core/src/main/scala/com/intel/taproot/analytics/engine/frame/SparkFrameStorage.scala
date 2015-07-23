@@ -447,7 +447,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.createFrame") {
       implicit session =>
         {
-          if (arguments.name != None) {
+          if (arguments.name.isDefined) {
             metaStore.frameRepo.lookupByName(arguments.name).foreach {
               existingFrame =>
                 throw new DuplicateNameException("frame", arguments.name.get, "Frame with same name exists. Create aborted.")
@@ -471,7 +471,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
    */
   override def lookupOrCreateErrorFrame(frame: FrameEntity)(implicit invocation: Invocation): (FrameEntity, FrameEntity) = {
     val errorFrame = lookupErrorFrame(frame)
-    if (!errorFrame.isDefined) {
+    if (errorFrame.isEmpty) {
       metaStore.withSession("frame.lookupOrCreateErrorFrame") {
         implicit session =>
           {
@@ -537,7 +537,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     metaStore.withSession("frame.updateLastReadDate") {
       implicit session =>
         {
-          if (frame.graphId != None) {
+          if (frame.graphId.isDefined) {
             val graph = metaStore.graphRepo.lookup(frame.graphId.get).get
             metaStore.graphRepo.updateLastReadDate(graph)
           }

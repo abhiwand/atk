@@ -213,6 +213,6 @@ class DegreeSmallUndirectedTest extends FlatSpec with Matchers with TestingSpark
   }
 
   private def approximateMapEquality(map1: Map[GBVertex, Double], map2: Map[GBVertex, Double]): Boolean = {
-    (map1.keySet equals map2.keySet) && map1.keySet.forall(k => (Math.abs(map1.apply(k) - map2.apply(k)) < floatingPointEqualityThreshold))
+    (map1.keySet equals map2.keySet) && map1.keySet.forall(k => Math.abs(map1.apply(k) - map2.apply(k)) < floatingPointEqualityThreshold)
   }
 }

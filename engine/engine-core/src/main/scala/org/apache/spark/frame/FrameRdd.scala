@@ -301,7 +301,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
    * @return the sorted Frame
    */
   def sortByColumns(columnNamesAndAscending: List[(String, Boolean)]): FrameRdd = {
-    require(columnNamesAndAscending != null && columnNamesAndAscending.length > 0, "one or more columnNames is required")
+    require(columnNamesAndAscending != null && columnNamesAndAscending.nonEmpty, "one or more columnNames is required")
 
     val columnNames = columnNamesAndAscending.map(_._1)
     val ascendingPerColumn = columnNamesAndAscending.map(_._2)

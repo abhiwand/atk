@@ -34,7 +34,7 @@ object EdgeDistance extends Serializable {
     var edgeWithMinDist: GraphClusteringEdge = null
     var nonMinDistEdges: List[GraphClusteringEdge] = List[GraphClusteringEdge]()
 
-    if ((null != edgeList) && (!edgeList.isEmpty)) {
+    if ((null != edgeList) && edgeList.nonEmpty) {
       for (edge <- edgeList) {
         if (null != edge) {
           if (edge.distance < dist) {
@@ -143,7 +143,7 @@ object EdgeDistance extends Serializable {
       }
     }
 
-    if (!edges.isEmpty) {
+    if (edges.nonEmpty) {
       edges.head
     }
     else {

@@ -116,7 +116,7 @@ class VectorMathTest extends FlatSpec with Matchers {
   "l1 norm" should "calculate the l1 norm of a vector" in new VectorTest {
     val test = VectorMath.l1Norm(vector1)
 
-    test shouldEqual vector1.map(Math.abs).reduce(_ + _)
+    test shouldEqual vector1.map(Math.abs).sum
   }
 
   "l1 normalization" should "return the null vector for the null vector" in new VectorTest {
@@ -131,7 +131,7 @@ class VectorMathTest extends FlatSpec with Matchers {
 
   "l1 normalization" should "return the l1 normalization of its input vector" in new VectorTest {
     val test = VectorMath.l1Normalize(vector1)
-    val l1Norm = vector1.map(Math.abs).reduce(_ + _)
+    val l1Norm = vector1.map(Math.abs).sum
 
     test shouldEqual vector1.map(x => x / l1Norm)
   }

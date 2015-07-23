@@ -32,8 +32,6 @@ import scala.reflect.ClassTag
  * Vertex List for a "Seamless" Graph
  *
  * @param schema  the schema describing the columns of this frame
- * @param sqlContext a spark SQLContext
- * @param logicalPlan a logical plan describing the SchemaRDD
  */
 class VertexFrameRdd(schema: VertexSchema, prev: RDD[Row]) extends FrameRdd(schema, prev) {
 

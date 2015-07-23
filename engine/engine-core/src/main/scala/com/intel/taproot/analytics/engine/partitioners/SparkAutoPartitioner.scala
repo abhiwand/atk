@@ -61,9 +61,9 @@ class SparkAutoPartitioner(fileStorage: HdfsFileStorage) extends EventLogging wi
   def repartitionFromFileSize(path: String, frameRdd: FrameRdd)(implicit invocation: Invocation): FrameRdd = withContext[FrameRdd]("spark-auto-partitioning") {
     val repartitionedRdd = EngineConfig.repartitionStrategy match {
       case ShrinkOnly =>
-        repartition(path, frameRdd, false)
+        repartition(path, frameRdd, shuffle = false)
       case ShrinkOrGrow =>
-        repartition(path, frameRdd, true)
+        repartition(path, frameRdd, shuffle = true)
       case _ => frameRdd
     }
     info("re-partitioning path:" + path + ", from " + frameRdd.partitions.length + " to " + repartitionedRdd.partitions.length + " partitions")

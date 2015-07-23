@@ -86,7 +86,7 @@ class OrderStatistics[T: ClassTag](dataWeightPairs: RDD[(T, Double)])(implicit o
     val weightPrecedingMedian = (totalWeight / 2) - weightInPrecedingPartitions
 
     if (it.nonEmpty) {
-      var currentDataWeightPair: (T, BigDecimal) = it.next
+      var currentDataWeightPair: (T, BigDecimal) = it.next()
       var weightSoFar: BigDecimal = currentDataWeightPair._2
 
       while (weightSoFar < weightPrecedingMedian) {

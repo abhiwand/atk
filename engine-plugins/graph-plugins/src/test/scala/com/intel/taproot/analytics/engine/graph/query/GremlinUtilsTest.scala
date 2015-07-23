@@ -72,8 +72,8 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
 
     val json = GremlinUtils.serializeGremlinToJson(titanIdGraph, row).asJsObject
     val jsonFields = json.fields
-    jsonFields.keySet should contain theSameElementsAs (rowMap.keySet)
-    jsonFields.values.toList should contain theSameElementsAs (List(JsString("val1"), JsString("val2")))
+    jsonFields.keySet should contain theSameElementsAs rowMap.keySet
+    jsonFields.values.toList should contain theSameElementsAs List(JsString("val1"), JsString("val2"))
   }
   "serializeGremlinToJson" should "serialize Java collections to JSON" in {
     import com.intel.taproot.analytics.domain.DomainJsonProtocol._
@@ -83,8 +83,8 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
     val jsonSet = GremlinUtils.serializeGremlinToJson(titanIdGraph, javaSet)
     val jsonList = GremlinUtils.serializeGremlinToJson(titanIdGraph, javaList)
 
-    jsonSet.convertTo[java.util.Set[Int]] should contain theSameElementsAs (javaSet)
-    jsonList.convertTo[java.util.List[String]] should contain theSameElementsAs (javaList)
+    jsonSet.convertTo[java.util.Set[Int]] should contain theSameElementsAs javaSet
+    jsonList.convertTo[java.util.List[String]] should contain theSameElementsAs javaList
   }
   "serializeGremlinToJson" should "serialize Java maps to JSON" in {
     import com.intel.taproot.analytics.domain.DomainJsonProtocol._
@@ -96,8 +96,8 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
     val jsonMap = GremlinUtils.serializeGremlinToJson(titanIdGraph, javaHashMap)
     val javaJsonToHashMap = jsonMap.convertTo[java.util.HashMap[String, Int]]
 
-    javaJsonToHashMap.keySet() should contain theSameElementsAs (javaHashMap.keySet())
-    javaJsonToHashMap.values() should contain theSameElementsAs (javaHashMap.values())
+    javaJsonToHashMap.keySet() should contain theSameElementsAs javaHashMap.keySet()
+    javaJsonToHashMap.values() should contain theSameElementsAs javaHashMap.values()
   }
 
   "deserializeJsonToGremlin" should "deserialize GraphSON into a Blueprint's vertex" in {
@@ -124,8 +124,8 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
 
     val row = GremlinUtils.deserializeJsonToGremlin[Row[Int]](titanIdGraph, json)
 
-    row.getColumnNames should contain theSameElementsAs (jsonFields.keySet)
-    row.getColumnNames.map(row.getColumn(_)) should contain theSameElementsAs (List(1, 2))
+    row.getColumnNames should contain theSameElementsAs jsonFields.keySet
+    row.getColumnNames.map(row.getColumn(_)) should contain theSameElementsAs List(1, 2)
   }
 
   "deserializeJsonToGremlin" should "deserialize a JSON map to a Java Map" in {
@@ -135,8 +135,8 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
 
     val javaHashMap = GremlinUtils.deserializeJsonToGremlin[java.util.Map[String, Double]](titanIdGraph, json)
 
-    javaHashMap.keySet() should contain theSameElementsAs (javaHashMap.keySet())
-    javaHashMap.values() should contain theSameElementsAs (javaHashMap.values())
+    javaHashMap.keySet() should contain theSameElementsAs javaHashMap.keySet()
+    javaHashMap.values() should contain theSameElementsAs javaHashMap.values()
   }
 
   "deserializeJsonToGremlin" should "deserialize a JSON array to a Java collection" in {
@@ -147,8 +147,8 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
     val javaSet = GremlinUtils.deserializeJsonToGremlin[java.util.Set[Int]](titanIdGraph, jsonSet)
     val javaList = GremlinUtils.deserializeJsonToGremlin[java.util.List[String]](titanIdGraph, jsonList)
 
-    javaSet should contain theSameElementsAs (Array(1, 2, 3))
-    javaList should contain theSameElementsAs (Array("Alice", "Bob", "Charles"))
+    javaSet should contain theSameElementsAs Array(1, 2, 3)
+    javaList should contain theSameElementsAs Array("Alice", "Bob", "Charles")
   }
 
   "getGraphSONMode" should "return the Blueprint's GraphSON mode for supported modes" in {

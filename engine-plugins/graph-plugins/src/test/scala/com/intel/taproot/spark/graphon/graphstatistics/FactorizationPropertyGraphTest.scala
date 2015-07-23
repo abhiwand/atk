@@ -115,7 +115,7 @@ class FactorizationPropertyGraphTest extends FlatSpec with Matchers with Testing
     val edgeRDD: RDD[GBEdge] = sparkContext.parallelize(gbDivisorEdgeList.union(gbMultipleEdgeList))
 
     val expectedDivisorInDegreeOutput: Set[(GBVertex, Long)] =
-      gbVertexList.map(v => (v, (numToDivisors(v.physicalId.asInstanceOf[Long]).size.toLong))).toSet
+      gbVertexList.map(v => (v, numToDivisors(v.physicalId.asInstanceOf[Long]).size.toLong)).toSet
 
     val expectedMultipleInDegreeOutput: Set[(GBVertex, Long)] =
       gbVertexList.map(v => (v, numToMultiples(v.physicalId.asInstanceOf[Long]).size.toLong)).toSet
