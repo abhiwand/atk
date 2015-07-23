@@ -27,8 +27,8 @@ case class CategoricalSummaryArgs(@ArgDoc("Frame in reference to fetch categoric
 
 case class CategoricalColumnInput(column: String, topK: Option[Int], threshold: Option[Double]) {
   require(!column.isEmpty && column != null, "Column name should not be empty or null")
-  require(topK == None || topK.get > 0, "top_k input value should be greater than 0")
-  require(threshold == None || (threshold.get >= 0.0 && threshold.get <= 1.0), "threshold should be greater than or equal to 0.0 and less than or equal to 1.0")
+  require(topK.isEmpty || topK.get > 0, "top_k input value should be greater than 0")
+  require(threshold.isEmpty || (threshold.get >= 0.0 && threshold.get <= 1.0), "threshold should be greater than or equal to 0.0 and less than or equal to 1.0")
 }
 
 case class LevelData(level: String, frequency: Int, percentage: Double)
