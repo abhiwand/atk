@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.frame
+package com.intel.taproot.analytics.engine.frame.plugins.load
 
 import org.apache.spark.frame.FrameRdd
 

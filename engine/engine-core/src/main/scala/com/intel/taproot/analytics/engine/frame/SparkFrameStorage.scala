@@ -410,18 +410,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     }
   }
 
-  /**
-   * Get the pair of FrameRdd's that were the result of a parse
-   * @param sc spark context
-   * @param frame the model of the frame that was the successfully parsed lines
-   * @param errorFrame the model for the frame that was the parse errors
-   */
-  def getParseResult(sc: SparkContext, frame: FrameEntity, errorFrame: FrameEntity)(implicit invocation: Invocation): ParseResultRddWrapper = {
-    val frameRdd = loadFrameData(sc, frame)
-    val errorFrameRdd = loadFrameData(sc, errorFrame)
-    new ParseResultRddWrapper(frameRdd, errorFrameRdd)
-  }
-
   @deprecated("please use expectFrame() instead")
   override def lookup(id: Long)(implicit invocation: Invocation): Option[FrameEntity] = {
     metaStore.withSession("frame.lookup") {
