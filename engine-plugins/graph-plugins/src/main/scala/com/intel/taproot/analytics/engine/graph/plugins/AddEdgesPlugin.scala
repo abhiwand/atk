@@ -101,13 +101,13 @@ class AddEdgesPlugin extends SparkCommandPlugin[AddEdgesArgs, UnitReturn] {
     require(edgeFrameEntity.isEdgeFrame, "add edges requires an edge frame")
     var graph = graphs.expectSeamless(edgeFrameEntity.graphId.get)
     var graphRef = GraphReference(graph.id)
-    val sourceFrameMeta = frames.expectFrame(arguments.sourceFrame)
-    sourceFrameMeta.schema.validateColumnsExist(arguments.allColumnNames)
+    val sourceFrame = frames.expectFrame(arguments.sourceFrame)
+    sourceFrame.schema.validateColumnsExist(arguments.allColumnNames)
 
     // run the operation
 
     // load source data
-    val sourceRdd = frames.loadFrameData(sc, sourceFrameMeta)
+    val sourceRdd = frames.loadFrameData(sc, sourceFrame)
 
     // assign unique ids to source data
     val edgeDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames).assignUniqueIds(GraphSchema.edgeProperty, startId = graph.nextId())

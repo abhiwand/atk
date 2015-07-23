@@ -99,15 +99,15 @@ class AddVerticesPlugin extends SparkCommandPlugin[AddVerticesArgs, UnitReturn] 
    */
   def addVertices(sc: SparkContext, frames: SparkFrameStorage, graphs: SparkGraphStorage, arguments: AddVerticesArgs, sourceRdd: FrameRdd, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
     // validate arguments
-    val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
-    require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")
-    val graph = graphs.expectSeamless(vertexFrameMeta.graphId.get)
+    val vertexFrame = frames.expectFrame(arguments.vertexFrame)
+    require(vertexFrame.isVertexFrame, "add vertices requires a vertex frame")
+    val graph = graphs.expectSeamless(vertexFrame.graphId.get)
     val graphRef = GraphReference(graph.id)
 
     val vertexDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames)
 
     // handle id column
-    val idColumnName = vertexFrameMeta.schema.asInstanceOf[VertexSchema].determineIdColumnName(arguments.idColumnName)
+    val idColumnName = vertexFrame.schema.asInstanceOf[VertexSchema].determineIdColumnName(arguments.idColumnName)
     val vertexDataWithIdColumn = vertexDataToAdd.renameColumn(arguments.idColumnName, idColumnName)
 
     // assign unique ids
@@ -118,12 +118,12 @@ class AddVerticesPlugin extends SparkCommandPlugin[AddVerticesArgs, UnitReturn] 
     graphs.updateIdCounter(graphRef, verticesToAdd.count())
 
     // load existing data, if any, and append the new data
-    val existingVertexData = graphs.loadVertexRDD(sc, vertexFrameMeta.toReference)
+    val existingVertexData = graphs.loadVertexRDD(sc, vertexFrame.toReference)
     val combinedRdd = existingVertexData.setIdColumnName(idColumnName).append(verticesToAdd, preferNewVertexData)
 
     combinedRdd.persist(StorageLevel.MEMORY_AND_DISK)
 
-    graphs.saveVertexRdd(vertexFrameMeta.toReference, combinedRdd)
+    graphs.saveVertexRdd(vertexFrame.toReference, combinedRdd)
 
     verticesToAdd.unpersist(blocking = false)
     combinedRdd.unpersist(blocking = false)
