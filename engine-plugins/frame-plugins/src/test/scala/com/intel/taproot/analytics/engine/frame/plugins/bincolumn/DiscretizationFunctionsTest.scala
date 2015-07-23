@@ -52,4 +52,64 @@ class DiscretizationFunctionsTest extends WordSpec {
     }
 
   }
+
+  "DiscretizationFunction.binElement" should {
+
+    "handle lowerInclusive true, strictBinning true" in {
+      val cutoffs = List(1.0, 2.0, 3.0, 4.0)
+      val lowerInclusive = true
+      val strictBinning = true
+
+      assert(binElement(1.0, cutoffs, lowerInclusive, strictBinning) === 0)
+      assert(binElement(1.5, cutoffs, lowerInclusive, strictBinning) === 0)
+      // 2.0 is part of bin 1 when lowerInclusive is true
+      assert(binElement(2.0, cutoffs, lowerInclusive, strictBinning) === 1)
+      assert(binElement(2.5, cutoffs, lowerInclusive, strictBinning) === 1)
+      assert(binElement(3.0, cutoffs, lowerInclusive, strictBinning) === 2)
+      assert(binElement(3.5, cutoffs, lowerInclusive, strictBinning) === 2)
+      assert(binElement(4.0, cutoffs, lowerInclusive, strictBinning) === 2)
+
+      // out of bounds gives negative ones with strict binning
+      assert(binElement(0.5, cutoffs, lowerInclusive, strictBinning) === -1)
+      assert(binElement(4.5, cutoffs, lowerInclusive, strictBinning) === -1)
+    }
+
+    "handle lowerInclusive false, strictBinning true" in {
+      val cutoffs = List(1.0, 2.0, 3.0, 4.0)
+      val lowerInclusive = false
+      val strictBinning = true
+
+      assert(binElement(1.0, cutoffs, lowerInclusive, strictBinning) === 0)
+      assert(binElement(1.5, cutoffs, lowerInclusive, strictBinning) === 0)
+      // 2.0 is part of bin 0 when lowerInclusive is false
+      assert(binElement(2.0, cutoffs, lowerInclusive, strictBinning) === 0)
+      assert(binElement(2.5, cutoffs, lowerInclusive, strictBinning) === 1)
+      assert(binElement(3.0, cutoffs, lowerInclusive, strictBinning) === 1)
+      assert(binElement(3.5, cutoffs, lowerInclusive, strictBinning) === 2)
+      assert(binElement(4.0, cutoffs, lowerInclusive, strictBinning) === 2)
+
+      // out of bounds gives negative ones with strict binning
+      assert(binElement(0.5, cutoffs, lowerInclusive, strictBinning) === -1)
+      assert(binElement(4.5, cutoffs, lowerInclusive, strictBinning) === -1)
+    }
+
+    "handle lowerInclusive true, strictBinning false" in {
+      val cutoffs = List(1.0, 2.0, 3.0, 4.0)
+      val lowerInclusive = true
+      val strictBinning = false
+
+      assert(binElement(1.0, cutoffs, lowerInclusive, strictBinning) === 0)
+      assert(binElement(1.5, cutoffs, lowerInclusive, strictBinning) === 0)
+      // 2.0 is part of bin 1 when lowerInclusive is true
+      assert(binElement(2.0, cutoffs, lowerInclusive, strictBinning) === 1)
+      assert(binElement(2.5, cutoffs, lowerInclusive, strictBinning) === 1)
+      assert(binElement(3.0, cutoffs, lowerInclusive, strictBinning) === 2)
+      assert(binElement(3.5, cutoffs, lowerInclusive, strictBinning) === 2)
+      assert(binElement(4.0, cutoffs, lowerInclusive, strictBinning) === 2)
+
+      // out of bounds gives max or min bin when strict binning is false
+      assert(binElement(0.5, cutoffs, lowerInclusive, strictBinning) === 0)
+      assert(binElement(4.5, cutoffs, lowerInclusive, strictBinning) === 2)
+    }
+  }
 }
