@@ -47,8 +47,10 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
                         maxRows: Int,
                         val metaStore: SlickMetaStoreComponent#SlickMetaStore,
                         sparkAutoPartitioner: SparkAutoPartitioner)
-    extends FrameStorage with EventLogging with EventLoggingImplicits with ClassLoaderAware {
-  storage =>
+    extends FrameStorage
+    with EventLogging
+    with EventLoggingImplicits
+    with ClassLoaderAware {
 
   override type Context = SparkContext
   override type Data = FrameRdd
