@@ -8,6 +8,7 @@ BEGIN {
 {
     FLine=$0;
     if ( LineAdded == 1 ) {
+        # We are still active because we have not added anything yet.
         if ( FLine ~ EngineLine ) {
             LineAdded = 0;
             if ( FLine ~ /{/) {
@@ -23,7 +24,7 @@ BEGIN {
                 if ( FLine ~ /\n/ ) {
                     FLine = substr( FLine, 1, index( FLine, "\n" ) - 1 ) " }" substr( FLine, index( FLine, "\n" ));
                 } else {
-                    FLine = Fline " }"
+                    FLine = FLine " }"
                 }
             }
         }
