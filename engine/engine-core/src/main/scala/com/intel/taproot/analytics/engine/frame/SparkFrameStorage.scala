@@ -284,21 +284,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     expectFrame(targetFrameRef)
   }
 
-  def updateFrameStatus(frame: FrameReference, statusId: Long)(implicit invocation: Invocation): Unit = {
-    try {
-      metaStore.withSession("frame.updateFrameStatus") {
-        implicit session =>
-          {
-            val entity = expectFrame(frame)
-            metaStore.frameRepo.update(entity.copy(status = statusId))
-          }
-      }
-    }
-    catch {
-      case e: Exception => error(s"Error rolling back frame, exception while trying to mark frame with status $statusId", exception = e)
-    }
-  }
-
   /**
    * Retrieve records from the given dataframe
    * @param frame Frame to retrieve records from
