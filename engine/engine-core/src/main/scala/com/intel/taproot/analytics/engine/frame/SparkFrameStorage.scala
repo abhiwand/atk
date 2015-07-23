@@ -345,7 +345,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
    * @param frameEntity reference to a data frame
    * @return Optional size of frame in bytes
    */
-  def getSizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long] = {
+  def sizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long] = {
     (frameEntity.storageFormat, frameEntity.storageLocation) match {
       case (Some(StorageFormats.FileParquet), Some(absPath)) =>
         Some(frameFileStorage.hdfs.size(absPath))

@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphReference }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrameImpl, SparkFrame }
-import com.intel.taproot.analytics.engine.graph.{ SparkGraphImpl, SparkGraph, SparkVertexFrameImpl, SparkVertexFrame }
+import com.intel.taproot.analytics.engine.graph._
 
 import scala.collection.JavaConversions._
 
@@ -51,10 +51,19 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
 
   def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
+  // Frames
   implicit def frameRefToSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkFrame = new SparkFrameImpl(frame, sc, engine.frames)
   implicit def frameEntityToSparkFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): SparkFrame = frameRefToSparkFrame(frameEntity.toReference)
+
+  // Vertex Frames
   implicit def frameRefToVertexSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkVertexFrame = new SparkVertexFrameImpl(frame, sc, engine.frames, engine.graphs)
   implicit def frameEntityToVertexSparkFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): SparkVertexFrame = frameRefToVertexSparkFrame(frameEntity.toReference)
+
+  // Edge Frames
+  implicit def frameRefToEdgeSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkEdgeFrame = new SparkEdgeFrameImpl(frame, sc, engine.frames, engine.graphs)
+  implicit def frameEntityToEdgeSparkFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): SparkEdgeFrame = frameRefToEdgeSparkFrame(frameEntity.toReference)
+
+  // Graphs
   implicit def graphRefToSparkGraph(graph: GraphReference)(implicit invocation: Invocation): SparkGraph = new SparkGraphImpl(graph, sc, engine.graphs)
   implicit def graphEntityToSparkGraph(graphEntity: GraphEntity)(implicit invocation: Invocation): SparkGraph = graphRefToSparkGraph(graphEntity.toReference)
 

@@ -124,7 +124,7 @@ class FrameImpl(frame: FrameReference, frameStorage: FrameStorage)(implicit invo
   /** the schema of the frame (defines columns, data types, etc) */
   override def schema: Schema = entity.schema
 
-  override def sizeInBytes: Option[Long] = frameStorage.getSizeInBytes(entity)
+  override def sizeInBytes: Option[Long] = frameStorage.sizeInBytes(entity)
 
   /** Rename columns supplying old and new names */
   override def renameColumns(namePairs: Seq[(String, String)]): Unit = {

@@ -16,12 +16,10 @@
 
 package com.intel.taproot.analytics.engine
 
-import com.intel.taproot.event.EventContext
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, DataFrameTemplate, _ }
-import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes }
-import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
+import com.intel.taproot.analytics.domain.frame.{ FrameEntity, _ }
+import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.domain.{ UserPrincipal, CreateEntityArgs }
+import com.intel.taproot.analytics.domain.CreateEntityArgs
 
 trait FrameStorage {
 
@@ -58,7 +56,7 @@ trait FrameStorage {
    * @return the parse errors for the 'good' frame
    */
   def lookupErrorFrame(frame: FrameEntity)(implicit invocation: Invocation): Option[FrameEntity]
-  def getSizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long]
+  def sizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long]
 
   def scheduleDeletion(frame: FrameEntity)(implicit invocation: Invocation): Unit
 }
