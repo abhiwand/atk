@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.analytics.domain.StorageFormats
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphReference }
-import com.intel.taproot.analytics.domain.schema.{EdgeSchema, VertexSchema}
+import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, VertexSchema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import org.apache.spark.SparkContext
