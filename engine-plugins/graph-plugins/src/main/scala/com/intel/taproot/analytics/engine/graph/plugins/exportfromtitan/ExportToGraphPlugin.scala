@@ -98,11 +98,11 @@ class ExportToGraphPlugin extends SparkCommandPlugin[GraphNoArgs, GraphEntity] {
     val edgeSchemas = edgesWithCorrectedLabels.aggregate(EdgeSchemaAggregator.zeroValue)(EdgeSchemaAggregator.seqOp, EdgeSchemaAggregator.combOp).values
 
     // Create the target Graph
-    val targetGraph = engine.graphs.createGraph(GraphTemplate(None, "ia/frame"))
+    val targetGraph: SparkGraph = engine.graphs.createGraph(GraphTemplate(None, "ia/frame"))
 
     // Create the Edge and Vertex frames
-    vertexSchemas.foreach(schema => engine.graphs.defineVertexType(targetGraph.toReference, schema))
-    edgeSchemas.foreach(schema => engine.graphs.defineEdgeType(targetGraph.toReference, schema))
+    vertexSchemas.foreach(schema => targetGraph.defineVertexType(schema))
+    edgeSchemas.foreach(schema => targetGraph.defineEdgeType(schema))
 
     saveVertices(engine.graphs, engine.frames.asInstanceOf[SparkFrameStorage], labeledVertices, targetGraph.toReference)
     saveEdges(engine.graphs, engine.frames, edgesWithCorrectedLabels.map(_.edge), targetGraph.toReference)
@@ -110,9 +110,8 @@ class ExportToGraphPlugin extends SparkCommandPlugin[GraphNoArgs, GraphEntity] {
     vertices.unpersist()
     edges.unpersist()
 
-    engine.graphs.incrementIdCounter(targetGraph.toReference, Math.max(maxVertexId, maxEdgeId) + 1)
-
-    engine.graphs.expectGraph(targetGraph.toReference)
+    targetGraph.incrementIdCounter(Math.max(maxVertexId, maxEdgeId) + 1)
+    targetGraph
   }
 
   /**
