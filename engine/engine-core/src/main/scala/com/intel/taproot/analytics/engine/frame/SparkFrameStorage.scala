@@ -384,8 +384,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
         {
           val check = metaStore.frameRepo.lookupByName(Some(newName))
           if (check.isDefined) {
-
-            //metaStore.frameRepo.scan(0,20).foreach(println)
             throw new RuntimeException("Frame with same name exists. Rename aborted.")
           }
           val newFrame = frame.copy(name = Some(newName))
