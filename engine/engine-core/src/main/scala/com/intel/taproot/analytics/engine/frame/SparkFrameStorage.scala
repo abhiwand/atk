@@ -395,11 +395,11 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def renameColumns(frame: FrameEntity, name_pairs: Seq[(String, String)])(implicit invocation: Invocation): FrameEntity =
+  override def renameColumns(frame: FrameEntity, namePairs: Seq[(String, String)])(implicit invocation: Invocation): FrameEntity =
     metaStore.withSession("frame.renameColumns") {
       implicit session =>
         {
-          metaStore.frameRepo.updateSchema(frame, frame.schema.renameColumns(name_pairs.toMap))
+          metaStore.frameRepo.updateSchema(frame, frame.schema.renameColumns(namePairs.toMap))
         }
     }
 

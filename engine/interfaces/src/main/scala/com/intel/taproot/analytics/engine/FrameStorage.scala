@@ -36,7 +36,7 @@ trait FrameStorage {
   def getFrames()(implicit invocation: Invocation): Seq[FrameEntity]
   def create(arguments: CreateEntityArgs)(implicit invocation: Invocation): FrameEntity
   def renameFrame(frame: FrameEntity, newName: String)(implicit invocation: Invocation): FrameEntity
-  def renameColumns(frame: FrameEntity, name_pairs: Seq[(String, String)])(implicit invocation: Invocation): FrameEntity
+  def renameColumns(frame: FrameEntity, namePairs: Seq[(String, String)])(implicit invocation: Invocation): FrameEntity
   def getRows(frame: FrameEntity, offset: Long, count: Long)(implicit invocation: Invocation): Iterable[Array[Any]]
   def drop(frame: FrameEntity)(implicit invocation: Invocation)
   def loadFrameData(context: Context, frame: FrameEntity)(implicit invocation: Invocation): Data
