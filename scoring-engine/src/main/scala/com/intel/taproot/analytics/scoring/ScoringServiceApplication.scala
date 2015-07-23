@@ -55,10 +55,10 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
   override def start() = {
 
     //TODO: modelfile to include the archive and loader info
-    lazy val modelLoader = com.intel.taproot.analytics.component.Boot.getArchive(config.getString("intel.taproot.scoring-models.archive"))
-      .load("com.intel.taproot.analytics.scoring." + config.getString("intel.taproot.scoring-models.scoring.loader"))
+    lazy val modelLoader = com.intel.taproot.analytics.component.Boot.getArchive(config.getString("intel.taproot.scoring-engine.archive"))
+      .load("com.intel.taproot.analytics.scoring.models." + config.getString("intel.taproot.scoring-engine.scoring.loader"))
 
-    val modelFile = config.getString("intel.taproot.scoring-models.scoring.model")
+    val modelFile = config.getString("intel.taproot.scoring-engine.scoring.model")
 
     val service = initializeScoringServiceDependencies(modelLoader.asInstanceOf[ModelLoader], modelFile)
 

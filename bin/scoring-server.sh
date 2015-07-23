@@ -17,6 +17,6 @@ export HOSTNAME=`hostname`
 # -agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5005
 
 echo java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot scoring-models
-java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot scoring-models
+java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot scoring-engine
 
 popd

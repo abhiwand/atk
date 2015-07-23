@@ -17,7 +17,7 @@ package com.intel.taproot.analytics.scoring.models
 
 import java.io._
 
-import com.intel.taproot.analytics.scoring.interfaces.{Model, ModelLoader}
+import com.intel.taproot.analytics.scoring.interfaces.{ Model, ModelLoader }
 import libsvm.svm
 
 class LibSvmModelReaderPlugin extends ModelLoader {

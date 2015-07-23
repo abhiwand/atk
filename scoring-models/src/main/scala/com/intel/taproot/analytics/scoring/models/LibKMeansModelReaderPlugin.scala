@@ -2,8 +2,9 @@
 package com.intel.taproot.analytics.scoring.models
 
 import java.io._
-
-import com.intel.taproot.analytics.scoring.interfaces.{Model, ModelLoader}
+import com.intel.taproot.analytics.scoring.models.JsonReadersWriters.KMeansModelFormat
+import com.intel.taproot.analytics.scoring.interfaces.{ Model, ModelLoader }
+import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector }
 import spray.json._
 

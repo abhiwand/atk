@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.scoring.models
 import java.util.StringTokenizer
 
 import com.intel.taproot.analytics.scoring.interfaces.Model
-import libsvm.{svm, svm_node, svm_model}
+import libsvm.{ svm, svm_node, svm_model }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
