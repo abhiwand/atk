@@ -36,7 +36,9 @@ trait EdgeFrame extends Frame {
    */
   override def schema: EdgeSchema
 
-  def graph: SeamlessGraphMeta
+  def graphMeta: SeamlessGraphMeta
+
+  def graph: Graph
 }
 
 object EdgeFrame {
@@ -57,6 +59,8 @@ trait SparkEdgeFrame extends EdgeFrame {
   /** Update the data for this frame */
   def save(rdd: EdgeFrameRdd): SparkEdgeFrame
 
+  def graph: SparkGraph
+
 }
 
 class EdgeFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)
@@ -76,8 +80,12 @@ class EdgeFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGrap
   override def schema: EdgeSchema = super.schema.asInstanceOf[EdgeSchema]
 
   /** The graph this EdgeFrame is a part of */
-  override def graph: SeamlessGraphMeta = {
+  override def graphMeta: SeamlessGraphMeta = {
     sparkGraphStorage.expectSeamless(entity.graphId.getOrElse(throw new RuntimeException("VertxFrame is required to have a graphId but this one didn't")))
+  }
+
+  override def graph: Graph = {
+    new GraphImpl(graphMeta.toReference, sparkGraphStorage)
   }
 
 }
@@ -95,4 +103,7 @@ class SparkEdgeFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStor
     new SparkEdgeFrameImpl(result, sc, sparkFrameStorage, sparkGraphStorage)
   }
 
+  override def graph: SparkGraph = {
+    new SparkGraphImpl(graphMeta.toReference, sc, sparkGraphStorage)
+  }
 }
