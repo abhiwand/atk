@@ -18,6 +18,8 @@ package com.intel.taproot.analytics.domain.frame
 
 import com.intel.taproot.analytics.domain.UriReference
 
+import com.intel.taproot.analytics.engine.plugin.{ Invocation }
+
 case class FrameReference(frameId: Long) extends UriReference {
   /** The entity id */
   override def id: Long = frameId

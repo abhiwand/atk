@@ -16,7 +16,10 @@
 
 package com.intel.taproot.analytics.domain.frame
 
-case class CountWhereArgs(frame: FrameReference, udf: Udf) {
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
+case class CountWhereArgs(frame: FrameReference,
+                          @ArgDoc("""<TBD>""") udf: Udf) {
   require(frame != null, "frame is required")
   require(udf != null, "where predicate is required")
 }

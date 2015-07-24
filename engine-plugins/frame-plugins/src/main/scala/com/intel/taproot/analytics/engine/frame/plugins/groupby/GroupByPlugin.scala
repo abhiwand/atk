@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.groupby
 
 import com.intel.taproot.analytics.domain.frame.{ GroupByArgs, FrameEntity }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 

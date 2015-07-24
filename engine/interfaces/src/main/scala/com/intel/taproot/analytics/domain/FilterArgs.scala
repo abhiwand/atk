@@ -19,7 +19,10 @@ package com.intel.taproot.analytics.domain
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.frame.Udf
 
-case class FilterArgs(frame: FrameReference, udf: Udf) {
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
+case class FilterArgs(frame: FrameReference,
+                      @ArgDoc("""<TBD>""") udf: Udf) {
   require(frame != null, "frame is required")
   require(udf != null, "predicate is required")
 }

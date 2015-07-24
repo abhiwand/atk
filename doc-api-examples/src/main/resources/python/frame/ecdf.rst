@@ -1,3 +1,5 @@
+Examples
+--------
 Consider the following sample data set in *frame* with actual data labels
 specified in the *labels* column and the predicted labels in the
 *predictions* column:

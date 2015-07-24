@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ DropColumnsArgs, FrameEntity }
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 

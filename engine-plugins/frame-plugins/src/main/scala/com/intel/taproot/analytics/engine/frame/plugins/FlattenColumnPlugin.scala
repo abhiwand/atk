@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FlattenColumnArgs }
 import org.apache.spark.sql.Row
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -31,13 +31,6 @@ import java.util.regex.Pattern
 /**
  * Take a row with multiple values in a column and 'flatten' it into multiple rows.
  *
- * Parameters
- * ----------
- * column : str
- *   The column to be flattened.
- * delimiter : str (optional)
- *   The delimiter string.
- *   Default is comma (,).
  */
 @PluginDoc(oneLine = "Spread data to multiple rows based on cell data.",
   extended = """Splits cells in the specified column into multiple rows according to a string

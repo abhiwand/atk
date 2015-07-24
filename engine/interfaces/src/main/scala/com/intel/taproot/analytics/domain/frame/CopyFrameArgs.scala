@@ -16,7 +16,12 @@
 
 package com.intel.taproot.analytics.domain.frame
 
-case class CopyFrameArgs(frame: FrameReference, columns: Option[Map[String, String]] = None, where: Option[Udf] = None, name: Option[String] = None) {
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
+case class CopyFrameArgs(frame: FrameReference,
+                         @ArgDoc("""<TBD>""") columns: Option[Map[String, String]] = None,
+                         @ArgDoc("""<TBD>""") where: Option[Udf] = None,
+                         @ArgDoc("""<TBD>""") name: Option[String] = None) {
   require(frame != null, "frame is required")
   require(name != null, "name cannot be null")
   if (name.isDefined) FrameName.validate(name.get)

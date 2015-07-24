@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.model
 
 import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
 import com.intel.taproot.analytics.engine.ModelStorage
-import com.intel.taproot.analytics.engine.plugin.Invocation
+import com.intel.taproot.analytics.engine.plugin.{ Invocation }
 import spray.json.JsObject
 
 /**

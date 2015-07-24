@@ -16,6 +16,8 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Command for calculating the Shannon entropy of a column in a data frame.
  *
@@ -23,7 +25,11 @@ package com.intel.taproot.analytics.domain.frame
  * @param weightsColumn Optional. Name of the column that provides weights (frequencies).
  *
  */
-case class EntropyArgs(frame: FrameReference, dataColumn: String, weightsColumn: Option[String] = None) {
+case class EntropyArgs(frame: FrameReference,
+                       @ArgDoc("""The column whose entropy is to be calculated.""") dataColumn: String,
+                       @ArgDoc("""The column that provides weights (frequencies) for the entropy calculation.
+Must contain numerical data.
+Default is using uniform weights of 1 for all items.""") weightsColumn: Option[String] = None) {
   require(frame != null, "frame is required")
   require(dataColumn != null, "column name is required")
 }

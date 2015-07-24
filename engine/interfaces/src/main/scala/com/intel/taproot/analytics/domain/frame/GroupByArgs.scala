@@ -16,8 +16,12 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /** Arguments to GroupByPlugin (see Spark API) */
-case class GroupByArgs(frame: FrameReference, groupByColumns: List[String], aggregations: List[GroupByAggregationArgs]) {
+case class GroupByArgs(frame: FrameReference,
+                       @ArgDoc("""<TBD>""") groupByColumns: List[String],
+                       @ArgDoc("""<TBD>""") aggregations: List[GroupByAggregationArgs]) {
   require(frame != null, "frame is required")
   require(groupByColumns != null, "group_by columns is required")
   require(aggregations != null, "aggregation list is required")

@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Schema }
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.EngineConfig
 import com.intel.taproot.analytics.engine.frame._
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -38,8 +38,7 @@ import JoinJsonFormat._
  * Join two data frames (similar to SQL JOIN)
  */
 @PluginDoc(oneLine = "Join two data frames (similar to SQL JOIN).",
-  extended = "",
-  returns = "")
+  extended = "<TBD>")
 class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
 
   /**

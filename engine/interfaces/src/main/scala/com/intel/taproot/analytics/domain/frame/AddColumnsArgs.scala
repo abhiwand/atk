@@ -19,11 +19,11 @@ package com.intel.taproot.analytics.domain.frame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
 case class AddColumnsArgs(
-    @ArgDoc("") frame: FrameReference,
-    @ArgDoc("") columnNames: List[String],
-    @ArgDoc("") columnTypes: List[String],
-    @ArgDoc("") udf: Udf,
-    @ArgDoc("") columnsAccessed: List[String]) {
+    @ArgDoc("<TBD>") frame: FrameReference,
+    @ArgDoc("<TBD>") columnNames: List[String],
+    @ArgDoc("<TBD>") columnTypes: List[String],
+    @ArgDoc("<TBD>") udf: Udf,
+    @ArgDoc("<TBD>") columnsAccessed: List[String]) {
   require(frame != null, "frame is required")
   require(columnNames != null, "column names is required")
   for {

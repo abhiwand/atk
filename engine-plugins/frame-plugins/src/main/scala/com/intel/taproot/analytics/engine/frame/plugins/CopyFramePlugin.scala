@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.frame._
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, PythonRddStorage }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 

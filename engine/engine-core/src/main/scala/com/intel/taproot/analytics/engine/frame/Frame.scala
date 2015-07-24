@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.frame
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.FrameStorage
-import com.intel.taproot.analytics.engine.plugin.Invocation
+import com.intel.taproot.analytics.engine.plugin.{ Invocation }
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 

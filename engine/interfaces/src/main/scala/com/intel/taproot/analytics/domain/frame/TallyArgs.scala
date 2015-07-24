@@ -16,15 +16,16 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Represents a CumulativeCount object
  *
- * @param sampleCol name of the column from which to compute a cumulative distribution
- * @param frame identifier for the input dataframe
- * @param countVal column value to be used for the counts
  */
 
-case class TallyArgs(frame: FrameReference, sampleCol: String, countVal: String) {
+case class TallyArgs(frame: FrameReference,
+                     @ArgDoc("""The name of the column from which to compute the cumulative count.""") sampleCol: String,
+                     @ArgDoc("""The column value to be used for the counts.""") countVal: String) {
   require(frame != null, "frame is required")
   require(sampleCol != null, "column name for sample is required")
   require(countVal != null, "count value for the sample is required")

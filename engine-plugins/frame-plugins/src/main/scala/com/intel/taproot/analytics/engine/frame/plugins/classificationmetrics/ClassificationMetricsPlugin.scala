@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics
 
 import com.intel.taproot.analytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
@@ -28,20 +28,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Computes Model accuracy, precision, recall, confusion matrix and f_measure
  *
- * Parameters
- * ----------
- * label_column : str
- * The name of the column containing the correct label for each instance.
- * pred_column : str
- * The name of the column containing the predicted label for each instance.
- * pos_label : [ str | int | Null ] (optional)
- * This is a str or int for binary classifiers, and Null for multi-class
- * classifiers.
- * The value to be interpreted as a positive instance.
- * beta : double (optional)
- * This is the beta value to use for :math:`F_{ \beta}` measure (default F1
- * measure is computed); must be greater than zero.
- * Defaults to 1.
  */
 @PluginDoc(oneLine = "Model statistics of accuracy, precision, and others.",
   extended = """Calculate the accuracy, precision, confusion_matrix, recall and

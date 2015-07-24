@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins.bincolumn
 
 import com.intel.taproot.analytics.domain.frame.ComputedBinColumnArgs
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row

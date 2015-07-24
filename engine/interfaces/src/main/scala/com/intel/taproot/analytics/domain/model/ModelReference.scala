@@ -18,6 +18,8 @@ package com.intel.taproot.analytics.domain.model
 
 import com.intel.taproot.analytics.domain.UriReference
 
+import com.intel.taproot.analytics.engine.plugin.{ Invocation }
+
 /**
  * ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
  */

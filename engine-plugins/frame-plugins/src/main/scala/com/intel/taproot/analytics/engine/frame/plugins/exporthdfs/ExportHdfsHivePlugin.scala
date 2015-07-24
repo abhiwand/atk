@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame.ExportHdfsHiveArgs
 import com.intel.taproot.analytics.engine.PluginDocAnnotation
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.HdfsFileStorage
 import com.intel.taproot.analytics.engine.EngineConfig
 import com.intel.taproot.analytics.engine.frame.SparkFrame

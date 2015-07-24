@@ -16,14 +16,16 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
- * Command for flatten the specified column of the data frame and store the result to a
+ * Command to flatten the specified column of the data frame and store the result to a
  * new data frame.
- * @param frame FrameReference of the data frame to perform column flattening
- * @param column name of the target column to be flattened
- * @param delimiter separator for the data in the target column
  */
-case class FlattenColumnArgs(frame: FrameReference, column: String, delimiter: Option[String] = None) {
+case class FlattenColumnArgs(frame: FrameReference,
+                             @ArgDoc("""The column to be flattened.""") column: String,
+                             @ArgDoc("""The delimiter string.
+Default is comma (,).""") delimiter: Option[String] = None) {
   require(frame != null, "frame is required")
   require(column != null, "column is required")
 }

@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins.bincolumn
 
 import com.intel.taproot.analytics.domain.frame._
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD

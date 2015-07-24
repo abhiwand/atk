@@ -34,9 +34,9 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Adds one or more new columns to the frame by evaluating the given func on each row.
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "<TBD>",
+  extended = "<TBD>",
+  returns = "<TBD>")
 class AddColumnsPlugin extends SparkCommandPlugin[AddColumnsArgs, FrameEntity] {
 
   /**

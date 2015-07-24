@@ -16,6 +16,8 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Represents a CumulativePercentCount object
  *
@@ -23,7 +25,10 @@ package com.intel.taproot.analytics.domain.frame
  * @param frame identifier for the input dataframe
  * @param countVal column value to be used for the counts
  */
-case class TallyPercentArgs(frame: FrameReference, sampleCol: String, countVal: String) {
+case class TallyPercentArgs(frame: FrameReference,
+                            @ArgDoc("""The name of the column from which to compute
+the cumulative sum.""") sampleCol: String,
+                            @ArgDoc("""The column value to be used for the counts.""") countVal: String) {
   require(frame != null, "frame is required")
   require(sampleCol != null, "column name for sample is required")
   require(countVal != null, "count value for the sample is required")

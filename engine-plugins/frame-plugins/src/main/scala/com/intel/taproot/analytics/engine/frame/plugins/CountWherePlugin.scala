@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.PythonRddStorage
 import com.intel.taproot.analytics.domain.frame.CountWhereArgs
 import org.bson.BSON

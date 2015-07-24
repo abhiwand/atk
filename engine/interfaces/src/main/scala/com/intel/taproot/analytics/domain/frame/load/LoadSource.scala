@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.domain.frame.load
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ SchemaUtil, FrameSchema, Schema }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * The case classes in this file are used to parse the json submitted as part of a load or append call
@@ -27,10 +28,11 @@ import com.intel.taproot.analytics.domain.schema.{ SchemaUtil, FrameSchema, Sche
 /**
  * Object used for parsing and then executing the frame.append command
  *
- * @param destination DataFrame to load data into. Should be either a uri or id
- * @param source Object describing the data to load into the destination. Includes the Where and How of loading.
  */
-case class LoadFrameArgs(destination: FrameReference, source: LoadSource)
+case class LoadFrameArgs(@ArgDoc("""DataFrame to load data into.
+Should be either a uri or id.""") destination: FrameReference,
+                         @ArgDoc("""Object describing the data to load into the destination.
+Includes the Where and How of loading.""") source: LoadSource)
 
 /**
  * Describes a resource that should be loaded into a DataFrame

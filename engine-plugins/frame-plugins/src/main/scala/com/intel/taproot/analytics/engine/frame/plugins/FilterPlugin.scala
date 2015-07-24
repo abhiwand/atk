@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.FilterArgs
 import com.intel.taproot.analytics.domain.frame.FrameEntity
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, PythonRddStorage }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
@@ -29,9 +29,9 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Select all rows which satisfy a predicate
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "<TBD>",
+  extended = "<TBD>",
+  returns = "<TBD>")
 class FilterPlugin extends SparkCommandPlugin[FilterArgs, FrameEntity] {
 
   /**

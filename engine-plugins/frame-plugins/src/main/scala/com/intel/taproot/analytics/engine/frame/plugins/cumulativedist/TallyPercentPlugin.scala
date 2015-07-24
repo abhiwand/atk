@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 
 import com.intel.taproot.analytics.domain.frame.{ TallyPercentArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -30,12 +30,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Computes a cumulative percent count
  *
- * Parameters
- * ----------
- * sample_col : str
- * The name of the column from which to compute the cumulative sum.
- * count_value : str
- * The column value to be used for the counts.
  */
 @PluginDoc(oneLine = "Compute a cumulative percent count.",
   extended = """A cumulative percent count is computed by sequentially stepping through

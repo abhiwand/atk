@@ -34,11 +34,20 @@ import spray.json._
 case class PageRankArgs(graph: GraphReference,
                         @ArgDoc("""Name of the property to which pagerank value will be stored on vertex and edge.""") output_property: String,
                         @ArgDoc("""List of edge labels to consider for pagerank computation.
-If None, all edges are considered.""") input_edge_labels: Option[List[String]] = None,
+Default is all edges are considered.""") input_edge_labels: Option[List[String]] = None,
                         @ArgDoc("""The maximum number of iterations that will be invoked.
-Defaults to 20.""") max_iterations: Option[Int] = None,
-                        @ArgDoc("""Random reset probability.""") reset_probability: Option[Double] = None,
-                        @ArgDoc("""Tolerance allowed at convergence (smaller values tend to yield accurate results).""") convergence_tolerance: Option[Double] = None) {
+The valid range is all positive int.
+Invalid value will terminate with vertex page rank set to
+reset_probability.
+Default is 20.""") max_iterations: Option[Int] = None,
+                        @ArgDoc("""The probability that the random walk of a page is reset.
+                        Default is 0.15.""") reset_probability: Option[Double] = None,
+                        @ArgDoc("""The amount of change in cost function that will be tolerated at
+convergence.
+If this parameter is specified, max_iterations is not considered as a stopping condition.
+If the change is less than this threshold, the algorithm exits earlier.
+The valid value range is all float and zero.
+Default is 0.001.""") convergence_tolerance: Option[Double] = None) {
   require(!output_property.isEmpty, "Output property label must be provided")
 }
 
@@ -62,11 +71,24 @@ object PageRankJsonFormat {
 
 import PageRankJsonFormat._
 
-@PluginDoc(oneLine = "The pagerank computation on a graph by invoking graphx pagerank.",
-  extended = """Pulls graph from underlying store, sends it off to the PageRankRunner, and then writes the output graph
-back to the underlying store.
+@PluginDoc(oneLine = "Determining which vertices are the most important.",
+  extended = """Pulls graph from underlying store, sends it off to the PageRankRunner,
+and then writes the output graph back to the underlying store.
 
-Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""")
+Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.
+
+** Experimental Feature **
+The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.""",
+  returns = """dict((vertex_dictionary, (label, Frame)), (edge_dictionary,(label,Frame))).
+Dictionary containing a dictionary of labeled vertices and labeled edges.
+For the vertex_dictionary the vertex type is the key and the corresponding
+vertex's frame with a new column storing the page rank value for the vertex
+Call vertex_dictionary['label'] to get the handle to frame whose vertex
+type is label.
+For the edge_dictionary the edge type is the key and the corresponding
+edge's frame with a new column storing the page rank value for the edge
+Call edge_dictionary['label'] to get the handle to frame whose edge type
+is label.""")
 class PageRankPlugin extends SparkCommandPlugin[PageRankArgs, PageRankResult] {
 
   override def name: String = "graph/graphx_pagerank"

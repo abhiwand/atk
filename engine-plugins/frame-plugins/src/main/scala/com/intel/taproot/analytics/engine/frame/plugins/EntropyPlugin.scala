@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.DoubleValue
 import com.intel.taproot.analytics.domain.frame.EntropyArgs
 import com.intel.taproot.analytics.domain.schema.Column
 import org.apache.spark.sql.Row
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives.ColumnStatistics
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -37,16 +37,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
  * Calculate Shannon entropy of a column.
  *
  * Entropy is a measure of the uncertainty in a random variable.
- * Parameters
- * ----------
- * data_column : str
- *   The column whose entropy is to be calculated.
- * weights_column : str (optional)
- *   The column that provides weights (frequencies) for the entropy
- *   calculation.
- *   Must contain numerical data.
- *   Uniform weights of 1 for all items will be used for the calculation if
- *   this parameter is not provided.
  */
 @PluginDoc(oneLine = "Calculate the Shannon entropy of a column.",
   extended = """The column can be weighted.

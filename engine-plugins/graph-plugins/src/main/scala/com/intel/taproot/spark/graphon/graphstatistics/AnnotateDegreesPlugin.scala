@@ -38,9 +38,23 @@ import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits.
 import scala.concurrent.Await
 
 case class AnnotateDegreesArgs(graph: GraphReference,
-                               @ArgDoc("") outputPropertyName: String,
-                               @ArgDoc("") degreeOption: Option[String] = None,
-                               @ArgDoc("") inputEdgeLabels: Option[List[String]] = None) {
+                               @ArgDoc("""The name of the new property.
+The degree is stored in this property.""") outputPropertyName: String,
+                               @ArgDoc("""Indicator for the definition of degree to be used for the
+calculation.
+Permitted values:
+
+*   "out" (default value) : Degree is calculated as the out-degree.
+*   "in" : Degree is calculated as the in-degree.
+*   "undirected" : Degree is calculated as the undirected degree.
+    (Assumes that the edges are all undirected.)
+   
+Any prefix of the strings "out", "in", "undirected" will select the
+corresponding option.""") degreeOption: Option[String] = None,
+                               @ArgDoc("""If this list is provided, only edges whose labels are
+included in the given set will be considered in the degree calculation.
+In the default situation (when no list is provided), all edges will be used
+in the degree calculation, regardless of label.""") inputEdgeLabels: Option[List[String]] = None) {
   require(!outputPropertyName.isEmpty, "Output property label must be provided")
 
   // validate arguments
@@ -75,12 +89,22 @@ object AnnotateDegreesJsonFormat {
 }
 
 import AnnotateDegreesJsonFormat._
-
+/* Documentation updated from rst file. 20150723
 @PluginDoc(oneLine = "Calculates the degree of each vertex with respect to an (optional) set of labels.",
   extended = """Pulls graph from underlying store, calculates degrees and writes them into the property specified,
 and then writes the output graph to the underlying store.
 
 Right now it uses only Titan for graph storage. Other backends will be supported later.""")
+*/
+@PluginDoc(oneLine = "Make new graph with degrees.",
+  extended = """Creates a new graph which is the same as the input graph, with the addition
+that every vertex of the graph has its :term:`degree` stored in a
+user-specified property.""",
+  returns = """Dictionary containing the vertex type as the key and the corresponding
+vertex's frame with a column storing the annotated degree for the vertex
+in a user specified property.
+Call dictionary_name['label'] to get the handle to frame whose vertex type
+is label.""")
 class AnnotateDegreesPlugin extends SparkCommandPlugin[AnnotateDegreesArgs, AnnotateDegreesReturn] {
 
   override def name: String = "graph/annotate_degrees"

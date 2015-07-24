@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 
 import com.intel.taproot.analytics.domain.frame.{ CumulativeSumArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -30,10 +30,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Compute a cumulative sum
  *
- * Parameters
- * ----------
- * sample_col : str
- * The name of the column from which to compute the cumulative sum.
  */
 @PluginDoc(oneLine = "Walk through single column and track cumulative sums.",
   extended = """A cumulative sum is computed by sequentially stepping through the column

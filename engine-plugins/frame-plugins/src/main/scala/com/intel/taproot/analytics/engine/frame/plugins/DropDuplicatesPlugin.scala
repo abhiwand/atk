@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
-import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, ArgDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, MiscFrameFunctions }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
@@ -31,11 +31,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 /**
  * Remove duplicate rows, keeping only one row per uniqueness criteria match
  *
- * Parameters
- * ----------
- * columns : [str | list of str] (optional)
- *   Column name(s) to identify duplicates.
- *   Default is the entire row is compared.
  */
 @PluginDoc(oneLine = "Modify the current frame, removing duplicate rows.",
   extended = """Remove data rows which are the same as other rows.

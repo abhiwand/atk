@@ -31,11 +31,10 @@ import DomainJsonProtocol._
 
 /**
  * Parameters for executing connected components.
- * @param graph Reference to the graph object on which to compute connected components.
- * @param outputProperty Name of the property to which connected components value will be stored on vertex and edge.
  */
 case class ConnectedComponentsArgs(graph: GraphReference,
-                                   @ArgDoc("""Name of the property to which connected components value will be stored on vertex and edge.""") outputProperty: String) {
+                                   /*                                 @ArgDoc("""Name of the property to which connected components value will be stored on vertex and edge.""") outputProperty: String) { */
+                                   @ArgDoc("""The name of the column containing the connected component value.""") outputProperty: String) {
   require(!outputProperty.isEmpty, "Output property label must be provided")
 }
 
@@ -54,7 +53,10 @@ import ConnectedComponentsJsonFormat._
   extended = """Pulls graph from underlying store, sends it off to the ConnectedComponentGraphXDefault,
 and then writes the output graph back to the underlying store.
 
-Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""")
+Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""",
+  returns = """Dictionary containing the vertex type as the key and the corresponding
+  vertex's frame with a connected component column.
+  Call dictionary_name['label'] to get the handle to frame whose vertex type is label.""")
 class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsArgs, ConnectedComponentsReturn] {
   override def name: String = "graph/graphx_connected_components"
 
