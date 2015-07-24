@@ -34,7 +34,7 @@ import org.mockito.Mockito._
 import com.intel.taproot.analytics.domain.schema.Column
 
 class ExportToGraphPluginTest extends FlatSpec with Matchers with MockitoSugar {
-  
+
   "getPropertiesValueByColumns" should "get property values by column sequence" in {
     val properties = Set(Property("col4", 2f), Property("col1", 1), Property("col2", "2"), Property("col3", true))
     val vertex = GBVertex(1, Property("gbId", "1"), properties)
