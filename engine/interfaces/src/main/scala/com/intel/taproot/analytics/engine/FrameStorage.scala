@@ -46,9 +46,9 @@ trait FrameStorage {
   /**
    * Get the error frame of the supplied frame or create one if it doesn't exist
    * @param frame the 'good' frame
-   * @return the parse errors for the 'good' frame
+   * @return the 'error' frame associated with the 'good' frame
    */
-  def lookupOrCreateErrorFrame(frame: FrameEntity)(implicit invocation: Invocation): (FrameEntity, FrameEntity)
+  def lookupOrCreateErrorFrame(frame: FrameEntity)(implicit invocation: Invocation): FrameEntity
 
   /**
    * Get the error frame of the supplied frame
