@@ -18,18 +18,11 @@ package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ RenameFrameArgs, FrameEntity }
 import com.intel.taproot.analytics.engine.frame.Frame
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
-
-/**
- * Parameters
- * ----------
- * new_name : str
- *   the new name of the frame.
- */
 
 /**
  * Rename a frame

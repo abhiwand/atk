@@ -18,5 +18,10 @@ package com.intel.taproot.analytics.domain.frame.partitioning
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /** Arguments to CoalescePlugin (see Spark API) */
-case class CoalesceArgs(frame: FrameReference, numberPartitions: Int, shuffle: Option[Boolean] = Some(false))
+case class CoalesceArgs(
+  @ArgDoc("""<TBD>""") frame: FrameReference,
+  @ArgDoc("""<TBD>""") numberPartitions: Int,
+  @ArgDoc("""<TBD>""") shuffle: Option[Boolean] = Some(false))

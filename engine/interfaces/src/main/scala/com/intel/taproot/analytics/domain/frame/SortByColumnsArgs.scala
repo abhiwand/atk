@@ -16,6 +16,8 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Arguments for SortByColumns - a list of columns to sort on
  * @param frame the frame to modify

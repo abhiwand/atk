@@ -38,11 +38,11 @@ import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
- * Export a frame to csv file
+ * Export a frame to hive table
  */
-@PluginDoc(oneLine = "Write current frame to Hive table. Table must not exist in Hive",
-  extended = """Export of Vectors is not currently supported""",
-  returns = "None")
+@PluginDoc(oneLine = "Write current frame to Hive table.",
+  extended = """Table must not exist in Hive.
+Export of Vectors is not currently supported.""")
 class ExportHdfsHivePlugin extends SparkCommandPlugin[ExportHdfsHiveArgs, UnitReturn] {
 
   /**

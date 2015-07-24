@@ -18,5 +18,9 @@ package com.intel.taproot.analytics.domain.frame.partitioning
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /** Arguments to RepartitionPlugin (see Spark API) */
-case class RepartitionArgs(frame: FrameReference, numberPartitions: Int)
+case class RepartitionArgs(
+  @ArgDoc("""<TBD>""") frame: FrameReference,
+  @ArgDoc("""<TBD>""") numberPartitions: Int)
