@@ -56,9 +56,8 @@ class FakeCommandStorage extends CommandStorage {
     commands += (id -> command)
     command
   }
-
-  override def start(id: Long): Unit = ???
 }
+
 class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
   val loader = mock[CommandLoader]
