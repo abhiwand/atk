@@ -31,14 +31,14 @@ import com.intel.taproot.analytics.repository.{ Profile, SlickMetaStoreComponent
 /**
  * Class Responsible for creating all objects necessary for instantiating an instance of the SparkEngine.
  */
-abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends EngineComponent
-    with DbProfileComponent
+abstract class AbstractEngineComponent extends DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging
     with EventLoggingImplicits {
 
   implicit lazy val startupCall = Call(null, EngineExecutionContext.global)
 
+  val commandLoader = new CommandLoader
   lazy val commandPluginRegistry: CommandPluginRegistry = new CommandPluginRegistry(commandLoader)
 
   val sparkContextFactory = SparkContextFactory

@@ -27,7 +27,7 @@ import scala.reflect.io.Directory
 /**
  * Executes
  */
-class CommandDriver extends AbstractEngineComponent(new CommandLoader) {
+class CommandDriver extends AbstractEngineComponent {
 
   /**
    * Execute Command
