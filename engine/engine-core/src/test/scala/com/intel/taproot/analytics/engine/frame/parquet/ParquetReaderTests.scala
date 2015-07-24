@@ -38,7 +38,7 @@ import parquet.schema.PrimitiveType.PrimitiveTypeName
 import scala.collection.JavaConverters._
 import com.intel.taproot.testutils.DirectoryUtils._
 
-import org.mockito.Matchers._;
+import org.mockito.Matchers._
 
 case class TestClass(a: Int, b: Int)
 
@@ -67,13 +67,13 @@ class ParquetReaderTests extends WordSpec with Matchers with MockitoSugar with B
       override def answer(invocation: InvocationOnMock): Int = {
         invocation.getMock.asInstanceOf[ColumnReader].getInteger
       }
-    });
+    })
     when(col2.getCurrentDefinitionLevel).thenReturn(1)
     when(col2.skip()).thenAnswer(new Answer[Int] {
       override def answer(invocation: InvocationOnMock): Int = {
         invocation.getMock.asInstanceOf[ColumnReader].getInteger
       }
-    });
+    })
     when(store.getColumnReader(schema.getColumns.get(0))).thenReturn(col1)
     when(store.getColumnReader(schema.getColumns.get(1))).thenReturn(col2)
     store
@@ -125,7 +125,7 @@ class ParquetReaderTests extends WordSpec with Matchers with MockitoSugar with B
   def createTestParquetReader(): ParquetReader = {
     val mockFactory = createMockParquetFileReaderFactory()
     val fs = mock[HdfsFileStorage]
-    val conf: Configuration = new Configuration();
+    val conf: Configuration = new Configuration()
     val fileSystem = mock[FileSystem]
     when(fileSystem.isDirectory(anyObject())).thenReturn(true)
     when(fs.configuration).thenReturn(conf)

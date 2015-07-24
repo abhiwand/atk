@@ -41,7 +41,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[DropColumnsArgs, FrameEntity]
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/drop_columns"
+  override def name: String = "frame/drop_columns"
 
   /**
    * Remove columns from a frame.
@@ -60,7 +60,7 @@ class DropColumnsPlugin extends SparkCommandPlugin[DropColumnsArgs, FrameEntity]
       "Cannot delete all columns, please leave at least one column remaining")
 
     // run the operation
-    val result = frame.rdd.selectColumns(schema.columnNamesExcept(arguments.columns))
+    val result = frame.rdd.selectColumns(schema.dropColumns(arguments.columns).columnNames)
     frame.save(result)
   }
 }

@@ -95,8 +95,6 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
 
     val jsonModel = new SVMData(svmModel, arguments.observationColumns)
     model.data = jsonModel.toJson.asJsObject
-
-    new UnitReturn
   }
 
   private def initializeSVMModel(arguments: ClassificationWithSGDTrainArgs): SVMWithSGD = {

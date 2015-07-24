@@ -18,8 +18,6 @@ package org.apache.spark.mllib.ia.plugins.clustering
 
 //Implicits needed for JSON conversion
 
-import com.intel.taproot.analytics.UnitReturn
-import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.model.Model
