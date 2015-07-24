@@ -16,8 +16,13 @@
 
 package com.intel.taproot.analytics.scoring
 
+import java.io.{ FileOutputStream, File, FileInputStream }
+
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.io.IO
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.io.IOUtils
 import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
@@ -49,18 +54,26 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
   Archive.logger = s => info(s)
   Archive.logger("Archive logger installed")
 
+  var archiveName: String = null
+  var modelName: String = null
+  var ModelBytesFileName: String = null
+
   /**
    * Main entry point to start the Scoring Service Application
    */
   override def start() = {
 
-    //TODO: modelfile to include the archive and loader info
-    lazy val modelLoader = com.intel.taproot.analytics.component.Boot.getArchive(config.getString("intel.taproot.scoring-engine.archive"))
+    readModelInfo()
+    //
+    lazy val modelLoader = com.intel.taproot.analytics.component.Boot.getArchive(archiveName)
       .load("com.intel.taproot.analytics.scoring.models." + config.getString("intel.taproot.scoring-engine.scoring.loader"))
+    //
+    //    //val modelFile = config.getString("intel.taproot.scoring-engine.scoring.model")
+    //lazy val modelLoader = com.intel.taproot.analytics.component.Boot.getArchive(config.getString("intel.taproot.scoring-engine.archive"))
+    //.load("com.intel.taproot.analytics.scoring.models." + config.getString("intel.taproot.scoring-engine.scoring.loader"))
 
-    val modelFile = config.getString("intel.taproot.scoring-engine.scoring.model")
-
-    val service = initializeScoringServiceDependencies(modelLoader.asInstanceOf[ModelLoader], modelFile)
+    //val modelFile = config.getString("intel.taproot.scoring-engine.scoring.model")
+    val service = initializeScoringServiceDependencies(modelLoader.asInstanceOf[ModelLoader], ModelBytesFileName)
 
     createActorSystemAndBindToHttp(service)
   }
@@ -74,6 +87,43 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
     new ScoringService(model, modelName)
   }
 
+  private def readModelInfo(): Unit = {
+
+    info("archive tar = " + config.getString("intel.taproot.scoring-engine.archive-tar"))
+    val myTarFile: TarArchiveInputStream = new TarArchiveInputStream(new FileInputStream(new File(config.getString("intel.taproot.scoring-engine.archive-tar"))));
+    var entry: TarArchiveEntry = null;
+    entry = myTarFile.getNextTarEntry()
+    while (entry != null) {
+      // Get the name of the file
+      val individualFile: String = entry.getName();
+      // Get Size of the file and create a byte array for the size
+      val content: Array[Byte] = new Array[Byte](entry.getSize.toInt);
+      /* Some SOP statements to check progress */
+      info("File Name in TAR File is: " + individualFile);
+      info("Size of the File is: " + entry.getSize());
+      info("Byte Array length: " + content.length);
+      // Read file from the archive into byte array
+      myTarFile.read(content, 0, content.length);
+      //Define OutputStream for writing the file
+      val outputFile = new FileOutputStream(new File(individualFile));
+      IOUtils.write(content, outputFile);
+      outputFile.close();
+      if (individualFile.contains(".jar")) {
+        archiveName = individualFile.substring(0, individualFile.indexOf(".jar"))
+        info("Archive name is  " + archiveName);
+      }
+      else if (individualFile.contains("modelname")) {
+        modelName = new String(content)
+        info("Model name is  " + modelName);
+      }
+      else {
+        ModelBytesFileName = individualFile
+        info("Model file name is  " + ModelBytesFileName);
+      }
+      entry = myTarFile.getNextTarEntry()
+    }
+    myTarFile.close();
+  }
   /**
    * We need an ActorSystem to host our application in and to bind it to an HTTP port
    */
