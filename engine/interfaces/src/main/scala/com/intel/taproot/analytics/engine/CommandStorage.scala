@@ -24,7 +24,6 @@ trait CommandStorage {
   def lookup(id: Long): Option[Command]
   def create(frame: CommandTemplate): Command
   def scan(offset: Int, count: Int): Seq[Command]
-  def start(id: Long): Unit
 
   /**
    * On complete - mark progress as 100% or failed
