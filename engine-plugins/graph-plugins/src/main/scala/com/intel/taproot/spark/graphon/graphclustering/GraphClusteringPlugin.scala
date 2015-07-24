@@ -56,6 +56,5 @@ class GraphClusteringPlugin extends SparkCommandPlugin[GraphClusteringArgs, Unit
     val titanConfig = GraphBuilderConfigFactory.getTitanConfiguration(graph)
 
     new GraphClusteringWorker(titanConfig).execute(vertices, edges, arguments.edgeDistance)
-    new UnitReturn
   }
 }

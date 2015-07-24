@@ -23,7 +23,7 @@ import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
 
 class TitanHadoopCacheConfigurationTest extends FlatSpec with Matchers with BeforeAndAfter {
   val hadoopConfig = new Configuration()
-  val faunusConf = null;
+  val faunusConf = null
 
   "TitanHadoopCacheConfiguration" should "create a TitanHadoopCacheConfiguration" in {
     val hadoopConfig = new Configuration()

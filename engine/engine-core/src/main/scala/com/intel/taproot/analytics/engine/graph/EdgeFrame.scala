@@ -18,68 +18,68 @@ package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta
-import com.intel.taproot.analytics.domain.schema.VertexSchema
+import com.intel.taproot.analytics.domain.schema.EdgeSchema
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.{ GraphStorage, FrameStorage }
 import com.intel.taproot.analytics.engine.frame._
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.ia.graph.VertexFrameRdd
+import org.apache.spark.ia.graph.EdgeFrameRdd
 
 /**
- * Interface for working with VertexFrames for plugin authors
+ * Interface for working with EdgeFrames for plugin authors
  */
-trait VertexFrame extends Frame {
+trait EdgeFrame extends Frame {
 
   /**
-   * A frame Schema with the extra info needed for a VertexFrame
+   * A frame Schema with the extra info needed for a EdgeFrame
    */
-  override def schema: VertexSchema
+  override def schema: EdgeSchema
 
   def graphMeta: SeamlessGraphMeta
 
   def graph: Graph
 }
 
-object VertexFrame {
+object EdgeFrame {
 
-  implicit def vertexFrameToFrameReference(vertexFrame: VertexFrame): FrameReference = vertexFrame.entity.toReference
+  implicit def EdgeFrameToFrameReference(EdgeFrame: EdgeFrame): FrameReference = EdgeFrame.entity.toReference
 
-  implicit def vertexFrameToFrameEntity(vertexFrame: VertexFrame): FrameEntity = vertexFrame.entity
+  implicit def EdgeFrameToFrameEntity(EdgeFrame: EdgeFrame): FrameEntity = EdgeFrame.entity
 }
 
 /**
- * Interface for working with VertexFrames for plugin authors, including Spark related methods
+ * Interface for working with EdgeFrames for plugin authors, including Spark related methods
  */
-trait SparkVertexFrame extends VertexFrame {
+trait SparkEdgeFrame extends EdgeFrame {
 
   /** Load the frame's data as an RDD */
-  def rdd: VertexFrameRdd
+  def rdd: EdgeFrameRdd
 
   /** Update the data for this frame */
-  def save(rdd: VertexFrameRdd): SparkVertexFrame
+  def save(rdd: EdgeFrameRdd): SparkEdgeFrame
 
   def graph: SparkGraph
 
 }
 
-class VertexFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)
+class EdgeFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)
     extends FrameImpl(frame, frameStorage)(invocation)
-    with VertexFrame {
+    with EdgeFrame {
 
   @deprecated("use other methods in interface, we want to move away from exposing entities to plugin authors")
   override def entity: FrameEntity = {
     val e = super.entity
-    require(e.isVertexFrame, s"VertexFrame is required but found other frame type: $e")
+    require(e.isEdgeFrame, s"EdgeFrame is required but found other frame type: $e")
     e
   }
 
   /**
-   * A frame Schema with the extra info needed for a VertexFrame
+   * A frame Schema with the extra info needed for a EdgeFrame
    */
-  override def schema: VertexSchema = super.schema.asInstanceOf[VertexSchema]
+  override def schema: EdgeSchema = super.schema.asInstanceOf[EdgeSchema]
 
-  /** The graph this VertexFrame is a part of */
+  /** The graph this EdgeFrame is a part of */
   override def graphMeta: SeamlessGraphMeta = {
     sparkGraphStorage.expectSeamless(entity.graphId.getOrElse(throw new RuntimeException("VertxFrame is required to have a graphId but this one didn't")))
   }
@@ -87,23 +87,23 @@ class VertexFrameImpl(frame: FrameReference, frameStorage: FrameStorage, sparkGr
   override def graph: Graph = {
     new GraphImpl(graphMeta.toReference, sparkGraphStorage)
   }
+
 }
 
-class SparkVertexFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)
-    extends VertexFrameImpl(frame, sparkFrameStorage, sparkGraphStorage)(invocation)
-    with SparkVertexFrame {
+class SparkEdgeFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage: SparkFrameStorage, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)
+    extends EdgeFrameImpl(frame, sparkFrameStorage, sparkGraphStorage)(invocation)
+    with SparkEdgeFrame {
 
   /** Load the frame's data as an RDD */
-  override def rdd: VertexFrameRdd = sparkGraphStorage.loadVertexRDD(sc, frame)
+  override def rdd: EdgeFrameRdd = sparkGraphStorage.loadEdgeRDD(sc, frame)
 
   /** Update the data for this frame */
-  override def save(rdd: VertexFrameRdd): SparkVertexFrame = {
-    val result = sparkGraphStorage.saveVertexRdd(frame, rdd)
-    new SparkVertexFrameImpl(result, sc, sparkFrameStorage, sparkGraphStorage)
+  override def save(rdd: EdgeFrameRdd): SparkEdgeFrame = {
+    val result = sparkGraphStorage.saveEdgeRdd(frame, rdd)
+    new SparkEdgeFrameImpl(result, sc, sparkFrameStorage, sparkGraphStorage)
   }
 
   override def graph: SparkGraph = {
     new SparkGraphImpl(graphMeta.toReference, sc, sparkGraphStorage)
   }
-
 }

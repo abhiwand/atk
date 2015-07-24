@@ -17,6 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ RenameColumnsArgs, FrameEntity }
+import com.intel.taproot.analytics.engine.frame.Frame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 
 // Implicits needed for JSON conversion
@@ -49,10 +50,8 @@ class RenameColumnsPlugin extends CommandPlugin[RenameColumnsArgs, FrameEntity] 
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: RenameColumnsArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    val frame = frames.expectFrame(arguments.frame)
-    frames.renameColumns(frame, arguments.names.toSeq)
+    val frame: Frame = arguments.frame
+    frame.renameColumns(arguments.names.toSeq)
+    frame
   }
 }

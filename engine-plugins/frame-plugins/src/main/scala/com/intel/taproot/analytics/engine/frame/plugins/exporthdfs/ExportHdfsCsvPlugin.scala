@@ -64,6 +64,5 @@ class ExportHdfsCsvPlugin extends SparkCommandPlugin[ExportHdfsCsvArgs, UnitRetu
     val frame: SparkFrame = arguments.frame
     // load frame as RDD
     FrameExportHdfs.exportToHdfsCsv(frame.rdd, arguments.folderName, arguments.separator.getOrElse(','), arguments.count, arguments.offset)
-    new UnitReturn
   }
 }

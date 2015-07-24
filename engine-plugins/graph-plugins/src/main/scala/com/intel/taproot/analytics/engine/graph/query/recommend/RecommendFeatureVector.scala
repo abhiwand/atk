@@ -119,7 +119,7 @@ object RecommendFeatureVector {
       case targetTuple =>
         {
           val targetVector = targetTuple.resultVector
-          if (sourceVector.size != targetVector.size) {
+          if (sourceVector.length != targetVector.length) {
             throw new RuntimeException("the vector size of left-side vertex and right-side vertex does not match")
           }
           val targetVectorValue = if (biasOn) {

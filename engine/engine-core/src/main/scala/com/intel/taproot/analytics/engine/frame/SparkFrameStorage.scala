@@ -47,8 +47,10 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
                         maxRows: Int,
                         val metaStore: SlickMetaStoreComponent#SlickMetaStore,
                         sparkAutoPartitioner: SparkAutoPartitioner)
-    extends FrameStorage with EventLogging with EventLoggingImplicits with ClassLoaderAware {
-  storage =>
+    extends FrameStorage
+    with EventLogging
+    with EventLoggingImplicits
+    with ClassLoaderAware {
 
   override type Context = SparkContext
   override type Data = FrameRdd
@@ -284,21 +286,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     expectFrame(targetFrameRef)
   }
 
-  def updateFrameStatus(frame: FrameReference, statusId: Long)(implicit invocation: Invocation): Unit = {
-    try {
-      metaStore.withSession("frame.updateFrameStatus") {
-        implicit session =>
-          {
-            val entity = expectFrame(frame)
-            metaStore.frameRepo.update(entity.copy(status = statusId))
-          }
-      }
-    }
-    catch {
-      case e: Exception => error(s"Error rolling back frame, exception while trying to mark frame with status $statusId", exception = e)
-    }
-  }
-
   /**
    * Retrieve records from the given dataframe
    * @param frame Frame to retrieve records from
@@ -345,7 +332,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
    * @param frameEntity reference to a data frame
    * @return Optional size of frame in bytes
    */
-  def getSizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long] = {
+  def sizeInBytes(frameEntity: FrameEntity)(implicit invocation: Invocation): Option[Long] = {
     (frameEntity.storageFormat, frameEntity.storageLocation) match {
       case (Some(StorageFormats.FileParquet), Some(absPath)) =>
         Some(frameFileStorage.hdfs.size(absPath))
@@ -384,8 +371,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
         {
           val check = metaStore.frameRepo.lookupByName(Some(newName))
           if (check.isDefined) {
-
-            //metaStore.frameRepo.scan(0,20).foreach(println)
             throw new RuntimeException("Frame with same name exists. Rename aborted.")
           }
           val newFrame = frame.copy(name = Some(newName))
@@ -395,11 +380,11 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
     }
   }
 
-  override def renameColumns(frame: FrameEntity, name_pairs: Seq[(String, String)])(implicit invocation: Invocation): FrameEntity =
+  override def renameColumns(frame: FrameEntity, namePairs: Seq[(String, String)])(implicit invocation: Invocation): FrameEntity =
     metaStore.withSession("frame.renameColumns") {
       implicit session =>
         {
-          metaStore.frameRepo.updateSchema(frame, frame.schema.renameColumns(name_pairs.toMap))
+          metaStore.frameRepo.updateSchema(frame, frame.schema.renameColumns(namePairs.toMap))
         }
     }
 
@@ -410,18 +395,6 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
           metaStore.frameRepo.lookupByName(name)
         }
     }
-  }
-
-  /**
-   * Get the pair of FrameRdd's that were the result of a parse
-   * @param sc spark context
-   * @param frame the model of the frame that was the successfully parsed lines
-   * @param errorFrame the model for the frame that was the parse errors
-   */
-  def getParseResult(sc: SparkContext, frame: FrameEntity, errorFrame: FrameEntity)(implicit invocation: Invocation): ParseResultRddWrapper = {
-    val frameRdd = loadFrameData(sc, frame)
-    val errorFrameRdd = loadFrameData(sc, errorFrame)
-    new ParseResultRddWrapper(frameRdd, errorFrameRdd)
   }
 
   @deprecated("please use expectFrame() instead")
