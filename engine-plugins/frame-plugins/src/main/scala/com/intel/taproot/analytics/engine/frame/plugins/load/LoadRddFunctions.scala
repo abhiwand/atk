@@ -38,6 +38,11 @@ import scala.reflect.ClassTag
 object LoadRddFunctions extends Serializable {
 
   /**
+   * Schema for Error Frames
+   */
+  val ErrorFrameSchema = new FrameSchema(List(Column("original_row", DataTypes.str), Column("error_message", DataTypes.str)))
+
+  /**
    * Load each line from CSV file into an RDD of Row objects.
    * @param sc SparkContext used for textFile reading
    * @param fileName name of file to parse
@@ -168,7 +173,7 @@ object LoadRddFunctions extends Serializable {
         .map(rowParseResult => rowParseResult.row)
 
       val schema = parser.arguments.schema
-      new ParseResultRddWrapper(FrameRdd.toFrameRdd(schema.schema, successesRdd), FrameRdd.toFrameRdd(SchemaUtil.ErrorFrameSchema, failuresRdd))
+      new ParseResultRddWrapper(FrameRdd.toFrameRdd(schema.schema, successesRdd), FrameRdd.toFrameRdd(ErrorFrameSchema, failuresRdd))
     }
     finally {
       parseResultRdd.unpersist(blocking = false)
