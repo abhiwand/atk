@@ -18,6 +18,7 @@ package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.analytics.domain.StorageFormats
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphReference }
+import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, VertexSchema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import org.apache.spark.SparkContext
@@ -39,6 +40,12 @@ trait Graph {
   def nextId: Long
 
   def incrementIdCounter(value: Long): Unit
+
+  // TODO: not sure to leave these here or move to a SeamlessGraph interface
+
+  def defineVertexType(vertexSchema: VertexSchema): Unit
+
+  def defineEdgeType(edgeSchema: EdgeSchema): Unit
 
 }
 
@@ -93,6 +100,14 @@ class GraphImpl(graph: GraphReference, sparkGraphStorage: SparkGraphStorage)(imp
   override def nextId: Long = entity.nextId()
 
   override def incrementIdCounter(value: Long): Unit = sparkGraphStorage.incrementIdCounter(graph, value)
+
+  override def defineVertexType(vertexSchema: VertexSchema): Unit = {
+    sparkGraphStorage.defineVertexType(graph, vertexSchema)
+  }
+
+  override def defineEdgeType(edgeSchema: EdgeSchema): Unit = {
+    sparkGraphStorage.defineEdgeType(graph, edgeSchema)
+  }
 }
 
 class SparkGraphImpl(graph: GraphReference, sc: SparkContext, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)

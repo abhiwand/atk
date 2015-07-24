@@ -35,14 +35,10 @@ import scala.util.Try
  */
 
 class ModelStorageImpl(metaStore: MetaStore)
-    extends ModelStorage with EventLogging with EventLoggingImplicits with ClassLoaderAware {
-  storage =>
-  def updateLastReadDate(model: ModelEntity): Try[ModelEntity] = {
-    metaStore.withSession("model.updateLastReadDate") {
-      implicit session =>
-        metaStore.modelRepo.updateLastReadDate(model)
-    }
-  }
+    extends ModelStorage
+    with EventLogging
+    with EventLoggingImplicits
+    with ClassLoaderAware {
 
   /** Lookup a Model, Throw an Exception if not found */
   override def expectModel(modelRef: ModelReference): ModelEntity = {
