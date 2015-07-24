@@ -74,7 +74,6 @@ class ExportHdfsJsonPlugin extends SparkCommandPlugin[ExportHdfsJsonArgs, UnitRe
     require(!fileStorage.exists(new Path(arguments.folderName)), "File or Directory already exists")
     val frame: SparkFrame = arguments.frame
     FrameExportHdfs.exportToHdfsJson(frame.rdd, arguments.folderName, arguments.count, arguments.offset)
-    new UnitReturn
   }
 
 }

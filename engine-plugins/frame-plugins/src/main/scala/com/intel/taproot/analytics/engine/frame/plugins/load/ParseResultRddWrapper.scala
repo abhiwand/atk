@@ -14,18 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.graph.plugins
+package com.intel.taproot.analytics.engine.frame.plugins.load
 
-import com.intel.taproot.analytics.domain.schema.GraphSchema
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, PluginDoc }
+import org.apache.spark.frame.FrameRdd
 
 /**
- * Drop columns from edge frame.
+ * RDD results of loading a dataframe including both successfully parsed lines and errors
+ * @param parsedLines lines that were successfully parsed
+ * @param errorLines lines that were NOT successfully parsed including error messages
  */
-@PluginDoc(oneLine = "Drop columns from edge frame.",
-  extended = "",
-  returns = "")
-class DropEdgeColumnPlugin extends DropVertexColumnPlugin {
-  override def name: String = "frame:edge/drop_columns"
-  override val systemFields = Set(GraphSchema.edgeProperty, GraphSchema.srcVidProperty, GraphSchema.destVidProperty, GraphSchema.labelProperty)
-}
+case class ParseResultRddWrapper(parsedLines: FrameRdd, errorLines: FrameRdd)

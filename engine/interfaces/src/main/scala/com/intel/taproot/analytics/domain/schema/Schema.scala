@@ -67,7 +67,10 @@ case class VertexSchema(columns: List[Column] = List[Column](), label: String, i
     if (idColumnName.isDefined) {
       require(idColumnName.get != columnName, s"The id column is not allowed to be dropped: $columnName")
     }
-    // TODO: check for system column names
+
+    if (GraphSchema.vertexSystemColumnNames.contains(columnName)) {
+      throw new IllegalArgumentException(s"$columnName is a system column that is not allowed to be dropped")
+    }
 
     super.dropColumn(columnName)
   }
@@ -91,6 +94,14 @@ case class EdgeSchema(columns: List[Column] = List[Column](), label: String, src
     new EdgeSchema(columns, label, srcVertexLabel, destVertexLabel, directed)
   }
 
+  override def dropColumn(columnName: String): Schema = {
+
+    if (GraphSchema.edgeSystemColumnNamesSet.contains(columnName)) {
+      throw new IllegalArgumentException(s"$columnName is a system column that is not allowed to be dropped")
+    }
+
+    super.dropColumn(columnName)
+  }
 }
 
 /**

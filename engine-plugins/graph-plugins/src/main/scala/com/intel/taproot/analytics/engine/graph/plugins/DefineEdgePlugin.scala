@@ -62,7 +62,6 @@ class DefineEdgePlugin extends CommandPlugin[DefineEdgeArgs, UnitReturn] {
    */
   override def execute(arguments: DefineEdgeArgs)(implicit invocation: Invocation): UnitReturn = {
     engine.graphs.defineEdgeType(arguments.graphRef, arguments.edgeSchema)
-    UnitReturn()
   }
 
 }

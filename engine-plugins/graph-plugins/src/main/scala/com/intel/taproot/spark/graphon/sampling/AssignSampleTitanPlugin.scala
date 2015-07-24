@@ -97,7 +97,6 @@ class AssignSampleTitanPlugin extends SparkCommandPlugin[AssignSampleTitanArgs, 
     //GB Edges are unchanged so we do not need to supply the edges
     val emptyRDD: RDD[GBEdge] = sc.parallelize(Nil)
     engine.graphs.writeToTitan(graph, splitRDD, emptyRDD, append = true)
-    new UnitReturn
   }
 
   /**

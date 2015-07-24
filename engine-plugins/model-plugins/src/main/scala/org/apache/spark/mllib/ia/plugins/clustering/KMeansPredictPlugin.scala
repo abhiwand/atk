@@ -16,9 +16,7 @@
 
 package org.apache.spark.mllib.ia.plugins.clustering
 
-import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.Column
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes }

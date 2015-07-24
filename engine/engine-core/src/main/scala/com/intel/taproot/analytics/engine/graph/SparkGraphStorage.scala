@@ -47,14 +47,8 @@ import org.joda.time.DateTime
 class SparkGraphStorage(metaStore: MetaStore,
                         backendStorage: GraphBackendStorage,
                         frameStorage: SparkFrameStorage)
-    extends GraphStorage with EventLogging {
-  storage =>
-  def updateLastReadDate(graph: GraphEntity): Option[GraphEntity] = {
-    metaStore.withSession("graph.updateLastReadDate") {
-      implicit session =>
-        metaStore.graphRepo.updateLastReadDate(graph).toOption
-    }
-  }
+    extends GraphStorage
+    with EventLogging {
 
   /** Lookup a Graph, throw an Exception if not found */
   override def expectGraph(graphRef: GraphReference)(implicit invocation: Invocation): GraphEntity = {
@@ -134,21 +128,6 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
     // refresh from DB
     expectGraph(copiedEntity.toReference)
-  }
-
-  /**
-   * Update status id of the graph
-   * @param graph graph instance
-   * @param newStatusId status id
-   */
-  override def updateStatus(graph: GraphEntity, newStatusId: Long): Unit = {
-    metaStore.withSession("spark.graphstorage.rename") {
-      implicit session =>
-        {
-          val newGraph = graph.copy(statusId = newStatusId)
-          metaStore.graphRepo.update(newGraph).get
-        }
-    }
   }
 
   /**
@@ -234,11 +213,11 @@ class SparkGraphStorage(metaStore: MetaStore,
     }
   }
 
-  def updateIdCounter(graph: GraphReference, idCounter: Long)(implicit invocation: Invocation): Unit = {
+  def incrementIdCounter(graph: GraphReference, idCounter: Long)(implicit invocation: Invocation): Unit = {
     metaStore.withSession("spark.graphstorage.updateIdCounter") {
       implicit session =>
         {
-          metaStore.graphRepo.updateIdCounter(graph.id, idCounter)
+          metaStore.graphRepo.incrementIdCounter(graph.id, idCounter)
         }
     }
   }

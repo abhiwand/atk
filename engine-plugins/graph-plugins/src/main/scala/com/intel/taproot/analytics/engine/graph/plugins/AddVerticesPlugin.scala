@@ -22,8 +22,8 @@ import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.domain.graph.construction.AddVerticesArgs
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema }
-import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, RowWrapper }
-import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
+import com.intel.taproot.analytics.engine.frame.{ SparkFrame, SparkFrameStorage, RowWrapper }
+import com.intel.taproot.analytics.engine.graph.{ SparkGraph, SparkVertexFrame, SparkGraphStorage }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
@@ -75,55 +75,40 @@ class AddVerticesPlugin extends SparkCommandPlugin[AddVerticesArgs, UnitReturn] 
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: AddVerticesArgs)(implicit invocation: Invocation): UnitReturn = {
-    val frames = engine.frames
-    val graphs = engine.graphs
-
-    // validate arguments
-    val sourceFrameEntity = frames.expectFrame(arguments.sourceFrame)
-    sourceFrameEntity.schema.validateColumnsExist(arguments.allColumnNames)
-
-    // run the operation
-    val sourceRdd = frames.loadFrameData(sc, sourceFrameEntity)
-    addVertices(sc, frames, graphs, arguments, sourceRdd)
-
-    new UnitReturn
+    val sourceFrame: SparkFrame = arguments.sourceFrame
+    sourceFrame.schema.validateColumnsExist(arguments.allColumnNames)
+    addVertices(arguments, sourceFrame.rdd)
   }
 
   /**
    * Add vertices
-   * @param sc spark context
    * @param arguments user supplied arguments
-   * @param sourceRdd source data
    * @param preferNewVertexData true to prefer new vertex data, false to prefer existing vertex data - during merge
    *                            false is useful for createMissingVertices, otherwise you probably always want true.
    */
-  def addVertices(sc: SparkContext, frames: SparkFrameStorage, graphs: SparkGraphStorage, arguments: AddVerticesArgs, sourceRdd: FrameRdd, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
-    // validate arguments
-    val vertexFrameMeta = frames.expectFrame(arguments.vertexFrame)
-    require(vertexFrameMeta.isVertexFrame, "add vertices requires a vertex frame")
-    val graph = graphs.expectSeamless(vertexFrameMeta.graphId.get)
-    val graphRef = GraphReference(graph.id)
+  def addVertices(arguments: AddVerticesArgs, sourceRdd: FrameRdd, preferNewVertexData: Boolean = true)(implicit invocation: Invocation): Unit = {
 
+    val vertexFrame: SparkVertexFrame = arguments.vertexFrame
     val vertexDataToAdd = sourceRdd.selectColumns(arguments.allColumnNames)
 
     // handle id column
-    val idColumnName = vertexFrameMeta.schema.asInstanceOf[VertexSchema].determineIdColumnName(arguments.idColumnName)
+    val idColumnName = vertexFrame.schema.determineIdColumnName(arguments.idColumnName)
     val vertexDataWithIdColumn = vertexDataToAdd.renameColumn(arguments.idColumnName, idColumnName)
 
     // assign unique ids
-    val verticesToAdd = vertexDataWithIdColumn.assignUniqueIds(GraphSchema.vidProperty, startId = graph.nextId())
+    val verticesToAdd = vertexDataWithIdColumn.assignUniqueIds(GraphSchema.vidProperty, startId = vertexFrame.graph.nextId)
 
     verticesToAdd.persist(StorageLevel.MEMORY_AND_DISK)
 
-    graphs.updateIdCounter(graphRef, verticesToAdd.count())
+    vertexFrame.graph.incrementIdCounter(verticesToAdd.count())
 
     // load existing data, if any, and append the new data
-    val existingVertexData = graphs.loadVertexRDD(sc, vertexFrameMeta.toReference)
+    val existingVertexData = vertexFrame.rdd
     val combinedRdd = existingVertexData.setIdColumnName(idColumnName).append(verticesToAdd, preferNewVertexData)
 
     combinedRdd.persist(StorageLevel.MEMORY_AND_DISK)
 
-    graphs.saveVertexRdd(vertexFrameMeta.toReference, combinedRdd)
+    vertexFrame.save(combinedRdd)
 
     verticesToAdd.unpersist(blocking = false)
     combinedRdd.unpersist(blocking = false)
