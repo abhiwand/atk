@@ -63,7 +63,7 @@ import scala.collection.mutable.ArrayBuffer
  * Implicit conversions for domain objects to/from JSON
  */
 
-object DomainJsonProtocol extends IADefaultJsonProtocol with EventLogging {
+object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
 
   /**
    * ***********************************************************************

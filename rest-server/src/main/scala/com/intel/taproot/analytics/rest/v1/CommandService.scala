@@ -34,7 +34,7 @@ import com.intel.taproot.analytics.rest.v1.viewmodels.ViewModelJsonImplicits._
 import com.intel.taproot.analytics.domain.command.{ CommandPost, Execution, CommandTemplate, Command }
 import com.intel.taproot.analytics.rest.{ RestServerConfig, CommonDirectives }
 import com.intel.taproot.analytics.rest.v1.decorators.CommandDecorator
-import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
+import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 import com.intel.taproot.event.EventLogging
 
 import SprayExecutionContext.global
@@ -98,7 +98,7 @@ class CommandService(commonDirectives: CommonDirectives, engine: Engine) extends
         pathPrefix("commands") {
           path("definitions") {
             get {
-              import IADefaultJsonProtocol.listFormat
+              import AtkDefaultJsonProtocol.listFormat
               import DomainJsonProtocol.commandDefinitionFormat
               onComplete(Future { engine.getCommandDefinitions().toList }) {
                 case Success(list) => complete(list)

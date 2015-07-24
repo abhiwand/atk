@@ -31,7 +31,7 @@ import com.intel.taproot.analytics.rest.v1.decorators.{ FrameDecorator, GraphDec
 
 import com.intel.taproot.analytics.rest.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.taproot.analytics.rest.v1.viewmodels.Rel
-import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
+import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 import com.intel.taproot.event.EventLogging
 import spray.json._
 
@@ -96,7 +96,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       //TODO: cursor
                       onComplete(engine.getGraphs()) {
                         case Success(graphs) =>
-                          import IADefaultJsonProtocol._
+                          import AtkDefaultJsonProtocol._
                           implicit val indexFormat = ViewModelJsonImplicits.getGraphsFormat
                           complete(GraphDecorator.decorateForIndex(uri.toString(), graphs))
                         case Failure(ex) => throw ex
@@ -154,7 +154,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         uri =>
                           {
                             get {
-                              import IADefaultJsonProtocol._
+                              import AtkDefaultJsonProtocol._
                               parameters('label.?) {
                                 (label) =>
                                   label match {
@@ -172,7 +172,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                                       onComplete(engine.getVertices(id)) {
                                         case Success(frames) =>
                                           import spray.httpx.SprayJsonSupport._
-                                          import IADefaultJsonProtocol._
+                                          import AtkDefaultJsonProtocol._
                                           import ViewModelJsonImplicits.getDataFrameFormat
                                           complete(FrameDecorator.decorateEntities(uri.toString(), Nil, frames))
                                         case Failure(ex) => throw ex
@@ -191,7 +191,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                         uri =>
                           {
                             get {
-                              import IADefaultJsonProtocol._
+                              import AtkDefaultJsonProtocol._
                               parameters('label.?) {
                                 (label) =>
                                   label match {
@@ -209,7 +209,7 @@ class GraphService(commonDirectives: CommonDirectives, engine: Engine) extends D
                                       onComplete(engine.getEdges(id)) {
                                         case Success(frames) =>
                                           import spray.httpx.SprayJsonSupport._
-                                          import IADefaultJsonProtocol._
+                                          import AtkDefaultJsonProtocol._
                                           import ViewModelJsonImplicits.getDataFrameFormat
                                           complete(FrameDecorator.decorateEntities(uri.toString(), Nil, frames))
                                         case Failure(ex) => throw ex

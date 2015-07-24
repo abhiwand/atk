@@ -22,7 +22,7 @@ import spray.json._
  * Our JsonProtocol is similar to Spray's DefaultJsonProtocol
  * except we handle ProductFormats differently.
  */
-trait IADefaultJsonProtocol extends BasicFormats
+trait AtkDefaultJsonProtocol extends BasicFormats
   with StandardFormats
   with CollectionFormats
   with CustomProductFormats
@@ -32,4 +32,4 @@ trait IADefaultJsonProtocol extends BasicFormats
  * Our JsonProtocol is similar to Spray's DefaultJsonProtocol
  * except we handle ProductFormats differently.
  */
-object IADefaultJsonProtocol extends IADefaultJsonProtocol
+object AtkDefaultJsonProtocol extends AtkDefaultJsonProtocol

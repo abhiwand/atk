@@ -22,7 +22,7 @@ import spray.http._
 import MediaTypes._
 import akka.event.Logging
 import com.intel.taproot.analytics.rest.v1.ApiV1Service
-import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
+import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 
 /**
  * We don't implement our route structure directly in the service actor because
@@ -74,7 +74,7 @@ class ApiService(val commonDirectives: CommonDirectives, val apiV1Service: ApiV1
 
   import spray.json._
   import spray.httpx.SprayJsonSupport._
-  import IADefaultJsonProtocol._
+  import AtkDefaultJsonProtocol._
   implicit val descFormat = jsonFormat3(ServiceDescription)
   implicit val oauthServerFormat = jsonFormat1(OAuthServer)
 
