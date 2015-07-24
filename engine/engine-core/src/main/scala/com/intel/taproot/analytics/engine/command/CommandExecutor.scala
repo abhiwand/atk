@@ -19,8 +19,6 @@ package com.intel.taproot.analytics.engine.command
 import java.io.File
 import java.nio.file.{ FileSystems, Files }
 
-import com.intel.taproot.analytics.engine.hadoop.HadoopSupport
-
 import sys.process._
 
 import com.intel.taproot.analytics.component.ClassLoaderAware
@@ -30,7 +28,6 @@ import com.intel.taproot.analytics.engine.plugin.{ Invocation, CommandPlugin }
 import com.intel.taproot.analytics.engine.util.{ JvmMemory, KerberosAuthenticator }
 import com.intel.taproot.analytics.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
-
 import scala.concurrent._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
@@ -38,7 +35,6 @@ import scala.util.Try
 import com.intel.taproot.analytics.domain.command.{ CommandDefinition, CommandTemplate, Execution, Command }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.event.{ EventContext, EventLogging }
-import scala.concurrent.duration._
 import EngineExecutionContext.global
 
 case class CommandContext(
@@ -325,7 +321,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPl
         SparkCommandPlugin.stop(commandId)
       }
       else {
-        HadoopSupport.killYarnJob(command.getJobName)
+        YarnUtils.killYarnJob(command.getJobName)
       }
     }
     else {

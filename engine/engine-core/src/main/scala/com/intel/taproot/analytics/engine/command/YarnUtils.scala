@@ -14,15 +14,16 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.hadoop
+package com.intel.taproot.analytics.engine.command
 
+import com.intel.taproot.event.EventLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.yarn.client.api.YarnClient
 import org.apache.hadoop.yarn.conf.YarnConfiguration
-import scala.collection.JavaConversions._
-import com.intel.taproot.event.EventLogging
 
-object HadoopSupport extends EventLogging {
+import scala.collection.JavaConversions._
+
+object YarnUtils extends EventLogging {
 
   def killYarnJob(jobName: String): Unit = {
     val yarnClient = YarnClient.createYarnClient
