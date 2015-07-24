@@ -70,7 +70,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
           try {
             if (gcRepo.getCurrentExecutions().isEmpty) {
               info("Execute Garbage Collector")
-              val gc: GarbageCollection = gcRepo.insert(new GarbageCollectionTemplate(hostname(), processId(), new DateTime)).get
+              val gc: GarbageCollection = gcRepo.insert(new GarbageCollectionTemplate(hostname, processId, new DateTime)).get
               garbageCollectFrames(gc, gcAgeToDeleteData)
               garbageCollectGraphs(gc, gcAgeToDeleteData)
               garbageCollectModels(gc, gcAgeToDeleteData)
