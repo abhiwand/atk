@@ -206,16 +206,16 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPl
             case true => (executorClassPathString,
               s".:${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
               s"${EngineConfig.hiveLib}:${getPluginJarPath(pluginJarsList, ":")}" +
-              s"${EngineConfig.sparkConfProperties.getOrElse(executorClassPathString,"")}")
+              s"${EngineConfig.sparkConfProperties.getOrElse(executorClassPathString, "")}")
             case false => (executorClassPathString,
-              s"${EngineConfig.hiveLib}:${EngineConfig.sparkConfProperties.getOrElse(executorClassPathString,"")}")
+              s"${EngineConfig.hiveLib}:${EngineConfig.sparkConfProperties.getOrElse(executorClassPathString, "")}")
           }
 
           val driverClassPathString = "spark.driver.extraClassPath"
           val driverClassPathTuple = (driverClassPathString,
             s".:interfaces.jar:launcher.jar:engine-core.jar:frame-plugins.jar:graph-plugins.jar:model-plugins.jar:application.conf:" +
             s"${pluginExtraClasspath.mkString(":")}:${EngineConfig.hiveLib}:${EngineConfig.hiveConf}:" +
-            s"${EngineConfig.sparkConfProperties.getOrElse(driverClassPathString,"")}")
+            s"${EngineConfig.sparkConfProperties.getOrElse(driverClassPathString, "")}")
 
           val executionConfigs = {
             for {
