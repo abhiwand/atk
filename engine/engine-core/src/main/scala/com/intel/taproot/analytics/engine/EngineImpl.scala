@@ -23,9 +23,9 @@ import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.command.{ CommandExecutor, CommandPluginRegistry }
+import com.intel.taproot.analytics.engine.command.CommandExecutor
 import com.intel.taproot.analytics.engine.frame._
-import com.intel.taproot.analytics.engine.gc.{ GarbageCollectionPlugin, GarbageCollector }
+import com.intel.taproot.analytics.engine.gc.GarbageCollector
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
 import com.intel.taproot.analytics.engine.model.ModelStorageImpl
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
@@ -39,10 +39,6 @@ import org.apache.spark.frame.FrameRdd
 
 import scala.concurrent._
 import scala.util.{ Failure, Success, Try }
-
-object EngineImpl {
-  private val pythonRddDelimiter = "YoMeDelimiter"
-}
 
 class EngineImpl(val sparkContextFactory: SparkContextFactory,
                  commands: CommandExecutor,
