@@ -18,6 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.assignsample
 
 import com.intel.taproot.analytics.domain.frame.{ AssignSampleArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.frame.plugins.{ LabeledLine, MLDataSplitter }
 import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }

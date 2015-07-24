@@ -71,8 +71,6 @@ class CommandPluginRegistry(loader: CommandLoader) {
       CommandDefinition(p.name, argSchema, retSchema, doc, p.apiMaturityTag)
     })
 
-  //  private var commandPlugins: Map[String, CommandPlugin[_, _]] = pluginRegistry.commandPlugins
-
   def getCommandDefinition(name: String): Option[CommandPlugin[_, _]] = {
     commandPlugins.get(name)
   }

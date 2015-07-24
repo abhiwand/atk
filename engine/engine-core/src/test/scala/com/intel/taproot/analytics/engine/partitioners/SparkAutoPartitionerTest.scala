@@ -50,10 +50,10 @@ class SparkAutoPartitionerTest extends TestingSparkContextFlatSpec with MockitoS
     val repartitioner = new SparkAutoPartitioner(mockHdfs)
     val frameRdd = FrameRdd.toFrameRdd(schema, sparkContext.parallelize(rows, 180))
 
-    val repartitionedRdd = repartitioner.repartition("testpath", frameRdd, false)
+    val repartitionedRdd = repartitioner.repartition("testpath", frameRdd, shuffle = false)
     assert(repartitionedRdd.partitions.length == 30)
 
-    val repartitionedRdd2 = repartitioner.repartition("testpath", frameRdd, true)
+    val repartitionedRdd2 = repartitioner.repartition("testpath", frameRdd, shuffle = true)
     assert(repartitionedRdd2.partitions.length == 30)
   }
 
@@ -65,7 +65,7 @@ class SparkAutoPartitionerTest extends TestingSparkContextFlatSpec with MockitoS
     val repartitioner = new SparkAutoPartitioner(mockHdfs)
     val frameRdd = FrameRdd.toFrameRdd(schema, sparkContext.parallelize(rows, 30))
 
-    val repartitionedRdd = repartitioner.repartition("testpath", frameRdd, true)
+    val repartitionedRdd = repartitioner.repartition("testpath", frameRdd, shuffle = true)
     assert(repartitionedRdd.partitions.length == 90)
   }
 
@@ -77,7 +77,7 @@ class SparkAutoPartitionerTest extends TestingSparkContextFlatSpec with MockitoS
     val repartitioner = new SparkAutoPartitioner(mockHdfs)
     val frameRdd = FrameRdd.toFrameRdd(schema, sparkContext.parallelize(rows, 30))
 
-    val repartitionedRdd = repartitioner.repartition("testpath", frameRdd, false)
+    val repartitionedRdd = repartitioner.repartition("testpath", frameRdd, shuffle = false)
     assert(repartitionedRdd.partitions.length == 30)
   }
 
@@ -89,7 +89,7 @@ class SparkAutoPartitionerTest extends TestingSparkContextFlatSpec with MockitoS
     val repartitioner = new SparkAutoPartitioner(mockHdfs)
     val frameRdd = FrameRdd.toFrameRdd(schema, sparkContext.parallelize(rows, 75))
 
-    val repartitionedRdd = repartitioner.repartition("testpath", frameRdd, true)
+    val repartitionedRdd = repartitioner.repartition("testpath", frameRdd, shuffle = true)
     assert(repartitionedRdd.partitions.length == 75)
   }
 }

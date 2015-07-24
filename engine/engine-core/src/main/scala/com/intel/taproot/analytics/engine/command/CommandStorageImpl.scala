@@ -45,10 +45,6 @@ class CommandStorageImpl(val metaStore: SlickMetaStoreComponent#SlickMetaStore) 
       repo.scan(offset, count).sortBy(c => c.id) //TODO: Can't seem to get db to produce sorted results.
   }
 
-  override def start(id: Long): Unit = {
-    //TODO: set start date
-  }
-
   /**
    * On complete - mark progress as 100% or failed
    */

@@ -18,8 +18,8 @@ package com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics
 
 import com.intel.taproot.analytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.frame.plugins.ClassificationMetrics
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
 import spray.json._
