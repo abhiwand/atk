@@ -40,6 +40,9 @@ import org.apache.spark.frame.FrameRdd
 import scala.concurrent._
 import scala.util.{ Failure, Success, Try }
 
+/**
+ * Engine implementation exposed to the REST Server and to plugin authors.
+ */
 class EngineImpl(val sparkContextFactory: SparkContextFactory,
                  commands: CommandExecutor,
                  commandStorage: CommandStorage,
@@ -54,9 +57,6 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
 
   type Data = FrameRdd
   type Context = SparkContext
-
-  val fsRoot = EngineConfig.fsRoot
-  override val pageSize: Int = EngineConfig.pageSize
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
