@@ -674,8 +674,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             >>> new_frame = my_frame.group_by('a', agg.count)
             >>> new_frame.inspect()
 
-              a:str       count:ta.int32
-            /----------------------------/
+              a:str       count:int32
+            /-------------------------/
               cat             3
               apple           1
               bat             2
@@ -687,13 +687,13 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.inspect()
 
-              a:ta.int32   b:str   c:ta.float32
-            /-----------------------------------/
-              1       alpha     3.0
-              1       bravo     5.0
-              1       alpha     5.0
-              2       bravo     8.0
-              2       bravo    12.0
+              a:int32   b:str   c:float32
+            /-----------------------------/
+               1         alpha   3.0
+               1         bravo   5.0
+               1         alpha   5.0
+               2         bravo   8.0
+               2         bravo  12.0
 
         Create a new frame from this data, grouping the rows by unique
         combinations of column *a* and *b*.
@@ -704,11 +704,11 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             >>> new_frame = my_frame.group_by(['a', 'b'], {'c' : agg.avg})
             >>> new_frame.inspect()
 
-              a:ta.int32   b:str   c_avg:ta.float32
-            /---------------------------------------/
-              1       alpha     4.0
-              1       bravo     5.0
-              2       bravo    10.0
+              a:int32   b:str   c_avg:float32
+            /---------------------------------/
+               1         alpha       4.0
+               1         bravo       5.0
+               2         bravo      10.0
 
         For this example, we use *my_frame* with columns *a*, *c*, *d*,
         and *e*:
@@ -717,13 +717,13 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.inspect()
 
-              a:str   c:ta.int32   d:ta.float32 e:ta.int32
-            /----------------------------------------------/
-              ape     1       4.0     9
-              ape     1       8.0     8
-              big     1       5.0     7
-              big     1       6.0     6
-              big     1       8.0     5
+              a:str   c:int32   d:float32 e:int32
+            /-------------------------------------/
+               ape     1         4.0       9
+               ape     1         8.0       8
+               big     1         5.0       7
+               big     1         6.0       6
+               big     1         8.0       5
 
         Create a new frame from this data, grouping the rows by unique
         combinations of column *a* and *c*.
@@ -737,10 +737,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
                 >>> new_frame = my_frame.group_by(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
-                  a:str   c:ta.int32   count:ta.int32  d_avg:ta.float32  d_sum:ta.float32   d_min:ta.float32   e_max:ta.int32
-                /-------------------------------------------------------------------------------------------------------------/
-                  ape     1       2          6.0          12.0          4.0           9
-                  big     1       3          6.333333     19.0          5.0           7
+                  a:str   c:int32   count:int32  d_avg:float32  d_sum:float32   d_min:float32   e_max:int32
+                /-------------------------------------------------------------------------------------------/
+                   ape     1             2            6.0            12.0            4.0             9
+                   big     1             3            6.333333       19.0            5.0             7
 
         .. only:: latex
 
@@ -859,8 +859,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> print my_frame.inspect(4)
 
-            column defs ->  animal:str  name:str    age:ta.int32   weight:ta.float32
-                          /----------------------------------------------------------/
+            column defs ->  animal:str  name:str    age:int32   weight:float32
+                          /----------------------------------------------------/
             frame data ->   human       George        8            542.5
                             human       Ursula        6            495.0
                             ape         Ape          41            400.0
@@ -940,11 +940,11 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> print your_frame.inspect(3)
 
-              a:str  d:ta.int32  e:ta.int32
-            /-------------------------------------/
-                abc    1              2
-                def    3              4
-                b      5              6
+              a:str  d:int32  e:int32
+            /-------------------------/
+                abc    1        2
+                def    3        4
+                b      5        6
 
             >>> joined_frame = my_frame.join(your_frame, 'a')
 
@@ -957,10 +957,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> print joined_frame.inspect(3)
 
-              a_L:str  a_R:str  b:str  c:str  d:ta.int32  e:ta.int32
-            /--------------------------------------------------------------/
-                  abc      abc    bcd    cde    1              2
-                  def      def    efg    fgh    3              4
+              a_L:str  a_R:str  b:str  c:str  d:int32  e:int32
+            /--------------------------------------------------/
+                  abc      abc    bcd    cde    1        2
+                  def      def    efg    fgh    3        4
 
         It is possible to use a single frame with two columns such as
         *b* and *book*.
@@ -1217,8 +1217,8 @@ class Frame(_DocStubsFrame, _BaseFrame):
           ..code::
 
                 >>> your_frame.inspect(4)
-                  col_1:str  col_qty:ta.int32
-                /-----------------------------/
+                  col_1:str  col_qty:int32
+                /--------------------------/
                   bear          15
                   cat            2
                   snake          8
@@ -1233,8 +1233,8 @@ class Frame(_DocStubsFrame, _BaseFrame):
 
             >>> my_frame.append(your_frame)
             >>> my_frame.inspect(8)
-              col_1:str  col_2:ta.int32
-            /---------------------------/
+              col_1:str  col_2:int32
+            /------------------------/
               dog           None
               bear            15
               bear          None
