@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics
 
 /**
- *
+ * String Utility methods
  */
 object StringUtils {
 
