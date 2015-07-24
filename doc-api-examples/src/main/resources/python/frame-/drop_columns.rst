@@ -22,7 +22,7 @@ Eliminate columns *column_b* and *column_d*:
 
 .. code::
 
-    >>> my_frame.drop_columns([column_b, column_d])
+    >>> my_frame.drop_columns(["column_b", "column_d"])
     >>> print my_frame.schema
     [("column_a", str), ("column_c", str)]
 
