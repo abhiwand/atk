@@ -65,8 +65,10 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
 
     readModelInfo()
     //
-    lazy val modelLoader = com.intel.taproot.analytics.component.Boot.getArchive(archiveName)
-      .load("com.intel.taproot.analytics.scoring.models." + config.getString("intel.taproot.scoring-engine.scoring.loader"))
+    val x = modelName
+    lazy val modelLoader = com.intel.taproot.analytics.component.Boot.getArchive(archiveName).load(modelName)
+    //.load("com.intel.taproot.analytics.scoring.models.LibKMeansModelReaderPlugin")
+    //.load("com.intel.taproot.analytics.scoring.models." + config.getString("intel.taproot.scoring-engine.scoring.loader"))
     //
     //    //val modelFile = config.getString("intel.taproot.scoring-engine.scoring.model")
     //lazy val modelLoader = com.intel.taproot.analytics.component.Boot.getArchive(config.getString("intel.taproot.scoring-engine.archive"))
@@ -103,7 +105,7 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
       info("Size of the File is: " + entry.getSize());
       info("Byte Array length: " + content.length);
       // Read file from the archive into byte array
-      myTarFile.read(content, 0, content.length);
+      myTarFile.read(content, 0, content.length-1);
       //Define OutputStream for writing the file
       val outputFile = new FileOutputStream(new File(individualFile));
       IOUtils.write(content, outputFile);
