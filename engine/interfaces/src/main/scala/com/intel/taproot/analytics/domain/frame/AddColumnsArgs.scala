@@ -22,8 +22,14 @@ case class AddColumnsArgs(
     @ArgDoc("<TBD>") frame: FrameReference,
     @ArgDoc("<TBD>") columnNames: List[String],
     @ArgDoc("<TBD>") columnTypes: List[String],
-    @ArgDoc("<TBD>") udf: Udf,
-    @ArgDoc("<TBD>") columnsAccessed: List[String]) {
+    @ArgDoc("""User-Defined Function (|UDF|) which takes the values in the row
+and produces a value, or collection of values, for the
+new cell(s).""") udf: Udf,
+    @ArgDoc("""List of columns which the |UDF| will access.
+This adds significant performance benefit if we know which column(s) will be
+needed to execute the |UDF|, especially when the frame has significantly more
+columns than those being used to evaluate
+the |UDF|.""") columnsAccessed: List[String]) {
   require(frame != null, "frame is required")
   require(columnNames != null, "column names is required")
   for {

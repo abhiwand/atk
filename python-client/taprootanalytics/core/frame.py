@@ -289,7 +289,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @has_udf_arg
-    @arg('func', 'UDF', "User-Defined Function (|UDF|) which takkes the values in the row and produces a value, or "
+    @arg('func', 'UDF', "User-Defined Function (|UDF|) which takes the values in the row and produces a value, or "
          "collection of values, for the new cell(s).")
     @arg('schema', 'tuple | list of tuples', "The schema for the results of the |UDF|, indicating the new column(s) to "
          "add.  Each tuple provides the column name and data type, and is of the form (str, type).")
@@ -347,14 +347,14 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             .. code::
 
-                >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", float32), ("a_plus_b", float32))
+                >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", float32), ("a_plus_b", float32)])
 
         .. only:: latex
 
             .. code::
 
                 >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a +
-                ... row.b], [("a_times_b", float32), ("a_plus_b", float32))
+                ... row.b], [("a_times_b", float32), ("a_plus_b", float32)])
 
         Two new columns are created, "a_times_b" and "a_plus_b", with the
         appropriate contents.
@@ -408,7 +408,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         columns. If not specified, columns_accessed defaults to None which implies that all columns might be accessed
         by the |UDF|.
 
-        More information on a row |UDF| can be found at :doc:`/ds_apir`
+        More information on a row |UDF| can be found at :doc:`/ds_apir`.
 
         """
         # For further examples, see :ref:`example_frame.add_columns`.
