@@ -2,14 +2,14 @@ Examples
 --------
 .. code::
 
-    >>> import taprootanalytics as ia
-    >>> ia.connect()
+    >>> import taprootanalytics as ta
+    >>> ta.connect()
     >>> dataset = r"datasets/kclique_edges.csv"
     >>> schema = [("source", int64), ("target", int64)]
-    >>> csvfile = ia.CsvFile(dataset, schema)
-    >>> my_frame = ia.Frame(csvfile)
+    >>> csvfile = ta.CsvFile(dataset, schema)
+    >>> my_frame = ta.Frame(csvfile)
 
-    >>> my_graph = ia.Graph())
+    >>> my_graph = ta.Graph())
     >>> my_graph.name = "mygraph"
     >>> source_vertex_type = my_graph.define_vertex_type("source")
     >>> target_vertex_type = my_graph.define_vertex_type("target")

@@ -4,9 +4,9 @@ Consider the following sample data set in *frame* with actual data labels
 specified in the *labels* column and the predicted labels in the
 *predictions* column:
 
->>> import taprootanalytics as ia
+>>> import taprootanalytics as ta
 >>> import pandas as p
->>> f = ia.Frame(ia.Pandas(p.DataFrame([1, 3, 1, 0]), [('numbers', ia.int32)]))
+>>> f = ta.Frame(ta.Pandas(p.DataFrame([1, 3, 1, 0]), [('numbers', ta.int32)]))
   [==Job Progress...]
 
 >>> f.take(5)
