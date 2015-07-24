@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.frame.plugins.assignsample
+package com.intel.taproot.analytics.engine.frame.plugins
 
 import org.apache.spark.rdd._
 
@@ -32,6 +32,8 @@ case class LabeledLine[L: ClassTag, T: ClassTag](label: L, entry: T)
 /**
  * Data Splitter for ML algorithms. It randomly labels an input RDD with user
  * specified percentage for each category.
+ *
+ * TODO: this class doesn't really belong in the Engine but it is shared code that both frame-plugins and graph-plugins need access to
  *
  * @param percentages A double array stores percentages.
  * @param seed Random seed for random number generator.

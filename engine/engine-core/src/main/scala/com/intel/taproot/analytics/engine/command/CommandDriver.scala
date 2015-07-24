@@ -27,7 +27,7 @@ import scala.reflect.io.Directory
 /**
  * Executes
  */
-class CommandDriver extends AbstractEngineComponent(new CommandLoader) {
+class CommandDriver extends AbstractEngineComponent {
 
   /**
    * Execute Command
@@ -48,7 +48,7 @@ class CommandDriver extends AbstractEngineComponent(new CommandLoader) {
           case Some(u) => userStorage.createUserPrincipalFromUser(u)
           case _ => null
         }, EngineExecutionContext.global)
-        commandExecutor.executeCommand(command, commandPluginRegistry)(invocation)
+        commandExecutor.executeCommand(command)(invocation)
       }
     }
   }

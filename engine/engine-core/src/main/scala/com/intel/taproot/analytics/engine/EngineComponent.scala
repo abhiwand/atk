@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.engine.util.{ DiskSpaceReporter, EnvironmentL
 /**
  * Main class for initializing the Spark Engine
  */
-class SparkEngineComponent extends AbstractEngineComponent(new CommandLoader) {
+class EngineComponent extends AbstractEngineComponent {
   EnvironmentLogger.log()
   EngineConfig.logSettings()
   JvmVersionReporter.check()

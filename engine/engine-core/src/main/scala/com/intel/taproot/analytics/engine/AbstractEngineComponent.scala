@@ -16,6 +16,7 @@
 
 package com.intel.taproot.analytics.engine
 
+import com.intel.taproot.analytics.engine.gc.GarbageCollectionPlugin
 import com.intel.taproot.event.EventLogging
 import com.intel.taproot.analytics.EventLoggingImplicits
 import com.intel.taproot.analytics.engine._
@@ -31,21 +32,21 @@ import com.intel.taproot.analytics.repository.{ Profile, SlickMetaStoreComponent
 /**
  * Class Responsible for creating all objects necessary for instantiating an instance of the SparkEngine.
  */
-abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends EngineComponent
-    with DbProfileComponent
+abstract class AbstractEngineComponent extends DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging
     with EventLoggingImplicits {
 
   implicit lazy val startupCall = Call(null, EngineExecutionContext.global)
 
-  lazy val commandPluginRegistry: CommandPluginRegistry = new CommandPluginRegistry(commandLoader)
+  private val commandLoader = new CommandLoader
+  private lazy val commandPluginRegistry: CommandPluginRegistry = new CommandPluginRegistry(commandLoader)
 
-  val sparkContextFactory = SparkContextFactory
+  private val sparkContextFactory = SparkContextFactory
 
-  val fileStorage = new HdfsFileStorage(EngineConfig.fsRoot)
+  private val fileStorage = new HdfsFileStorage(EngineConfig.fsRoot)
 
-  val sparkAutoPartitioner = new SparkAutoPartitioner(fileStorage)
+  private val sparkAutoPartitioner = new SparkAutoPartitioner(fileStorage)
 
   val frameFileStorage = new FrameFileStorage(EngineConfig.fsRoot, fileStorage)
 
@@ -60,7 +61,7 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
 
   val commands = new CommandStorageImpl(metaStore.asInstanceOf[SlickMetaStore])
 
-  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands)
+  lazy val commandExecutor: CommandExecutor = new CommandExecutor(engine, commands, commandPluginRegistry)
 
   override lazy val profile = withContext("engine connecting to metastore") {
 
@@ -74,7 +75,10 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
       poolMaxActive = EngineConfig.metaStorePoolMaxActive)
   }(startupCall.eventContext)
 
+  // Administrative plugins
+  commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
+
   val engine = new EngineImpl(sparkContextFactory,
     commandExecutor, commands, frameStorage, graphStorage, modelStorage, userStorage,
-    sparkAutoPartitioner, commandPluginRegistry) {}
+    sparkAutoPartitioner) {}
 }

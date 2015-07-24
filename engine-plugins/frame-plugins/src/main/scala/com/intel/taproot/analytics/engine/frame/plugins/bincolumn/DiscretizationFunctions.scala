@@ -24,7 +24,6 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
 import scala.math._
 
 //implicit conversion for PairRDD
-
 import org.apache.spark.SparkContext._
 
 /**
@@ -67,8 +66,6 @@ object DiscretizationFunctions extends Serializable {
    * @return new RDD with binned column appended
    */
   def binColumns(index: Int, cutoffs: List[Double], lowerInclusive: Boolean, strictBinning: Boolean, rdd: RDD[Row]): RDD[Row] = {
-    val min: Int = 0
-    val max: Int = cutoffs.length - 2
     rdd.map { row: Row =>
       val element = DataTypes.toDouble(row(index))
       //if lower than first cutoff

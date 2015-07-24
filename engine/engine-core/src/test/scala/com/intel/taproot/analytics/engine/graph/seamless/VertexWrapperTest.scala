@@ -76,9 +76,9 @@ class VertexWrapperTest extends FlatSpec with Matchers {
 
     gbVertex.gbId.key should be("_vid")
     gbVertex.gbId.value should be(1L)
-    gbVertex.getProperty("name").get.value shouldBe ("Bob")
-    gbVertex.getProperty("from").get.value shouldBe ("PDX")
-    gbVertex.getProperty("to").get.value shouldBe ("LAX")
-    gbVertex.getProperty("fair").get.value shouldBe (350)
+    gbVertex.getProperty("name").get.value shouldBe "Bob"
+    gbVertex.getProperty("from").get.value shouldBe "PDX"
+    gbVertex.getProperty("to").get.value shouldBe "LAX"
+    gbVertex.getProperty("fair").get.value shouldBe 350
   }
 }

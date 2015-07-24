@@ -51,8 +51,7 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
                  val graphs: SparkGraphStorage,
                  val models: ModelStorageImpl,
                  users: UserStorage,
-                 val sparkAutoPartitioner: SparkAutoPartitioner,
-                 commandPluginRegistry: CommandPluginRegistry) extends Engine
+                 val sparkAutoPartitioner: SparkAutoPartitioner) extends Engine
     with EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
@@ -62,9 +61,6 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
 
   val fsRoot = EngineConfig.fsRoot
   override val pageSize: Int = EngineConfig.pageSize
-
-  // Administrative plugins
-  commandPluginRegistry.registerCommand(new GarbageCollectionPlugin)
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)
@@ -107,7 +103,7 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
    * @return an Execution that can be used to track the completion of the command
    */
   def execute(command: CommandTemplate)(implicit invocation: Invocation): Execution = {
-    commands.execute(command, commandPluginRegistry)
+    commands.execute(command)
   }
 
   /**
@@ -115,7 +111,7 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
    */
   override def getCommandDefinitions()(implicit invocation: Invocation): Iterable[CommandDefinition] =
     withContext("se.getCommandDefinitions") {
-      commandPluginRegistry.commandDefinitions
+      commands.commandDefinitions
     }
 
   @deprecated("use engine.graphs.createFrame()")
@@ -300,7 +296,7 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
 
   override def cancelCommand(id: Long)(implicit invocation: Invocation): Future[Unit] = withContext("se.cancelCommand") {
     future {
-      commands.cancelCommand(id, commandPluginRegistry)
+      commands.cancelCommand(id)
     }
   }
 

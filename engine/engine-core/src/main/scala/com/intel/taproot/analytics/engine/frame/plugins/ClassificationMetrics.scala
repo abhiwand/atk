@@ -14,14 +14,13 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics
+package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
-import org.apache.spark.sql.Row
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 
 //implicit conversion for PairRDD
-import org.apache.spark.SparkContext._
 
 /**
  * Model Accuracy, Precision, Recall, FMeasure, ConfusionMatrix
@@ -31,6 +30,8 @@ import org.apache.spark.SparkContext._
  * [[http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-part-1-amp-camp-2012-spark-intro.pdf]]
  * and Task Serialization
  * [[http://stackoverflow.com/questions/22592811/scala-spark-task-not-serializable-java-io-notserializableexceptionon-when]]
+ *
+ * TODO: this class doesn't really belong in the Engine but it is shared code that both frame-plugins and graph-plugins need access to
  */
 object ClassificationMetrics extends Serializable {
 
@@ -241,17 +242,17 @@ object ClassificationMetrics extends Serializable {
       }
     }
 
-    val precision = (tp.value + fp.value) match {
+    val precision = tp.value + fp.value match {
       case 0 => 0
       case _ => tp.value / (tp.value + fp.value).toDouble
     }
 
-    val recall = (tp.value + fn.value) match {
+    val recall = tp.value + fn.value match {
       case 0 => 0
       case _ => tp.value / (tp.value + fn.value).toDouble
     }
 
-    val fmeasure = ((math.pow(beta, 2) * precision + recall)) match {
+    val fmeasure = math.pow(beta, 2) * precision + recall match {
       case 0 => 0
       case _ => (1 + math.pow(beta, 2)) * ((precision * recall) / ((math.pow(beta, 2) * precision) + recall))
     }
