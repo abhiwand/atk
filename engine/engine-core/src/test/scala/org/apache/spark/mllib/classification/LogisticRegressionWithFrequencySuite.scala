@@ -278,7 +278,7 @@ class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite w
     val xVariance = Array(0.6856, 0.1899, 3.116, 0.581)
 
     val testData = LogisticRegressionWithFrequencySuite.generateMultinomialLogisticInput(
-      weights, xMean, xVariance, true, nPoints, 42)
+      weights, xMean, xVariance, addIntercept = true, nPoints, 42)
 
     val testRDD = sparkContext.parallelize(testData, 2)
     testRDD.cache()
@@ -339,7 +339,7 @@ class LogisticRegressionWithFrequencySuite extends TestingSparkContextFunSuite w
     assert(model.weights ~== weightsR relTol 0.05)
 
     val validationData = LogisticRegressionWithFrequencySuite.generateMultinomialLogisticInput(
-      weights, xMean, xVariance, true, nPoints, 17)
+      weights, xMean, xVariance, addIntercept = true, nPoints, 17)
     val validationRDD = sparkContext.parallelize(validationData, 2)
     // The validation accuracy is not good since this model (even the original weights) doesn't have
     // very steep curve in logistic function so that when we draw samples from distribution, it's
