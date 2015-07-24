@@ -36,6 +36,10 @@ trait Graph {
 
   def isTitan: Boolean
 
+  def nextId: Long
+
+  def incrementIdCounter(value: Long): Unit
+
 }
 
 object Graph {
@@ -85,6 +89,10 @@ class GraphImpl(graph: GraphReference, sparkGraphStorage: SparkGraphStorage)(imp
   override def isSeamless: Boolean = entity.isSeamless
 
   override def isTitan: Boolean = entity.isTitan
+
+  override def nextId: Long = entity.nextId()
+
+  override def incrementIdCounter(value: Long): Unit = sparkGraphStorage.incrementIdCounter(graph, value)
 }
 
 class SparkGraphImpl(graph: GraphReference, sc: SparkContext, sparkGraphStorage: SparkGraphStorage)(implicit invocation: Invocation)

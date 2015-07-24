@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.load
 import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.analytics.domain.frame.{ FrameReference, FrameEntity }
 import com.intel.taproot.analytics.domain.frame.load.LoadFrameArgs
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.engine.plugin.PluginDoc
@@ -59,19 +60,17 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: LoadFrameArgs)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
     val sparkAutoPartitioner = engine.sparkAutoPartitioner
     def getAbsolutePath(s: String): String = engine.frames.frameFileStorage.hdfs.absolutePath(s).toString
 
     // validate arguments
     val frameRef = arguments.destination
-    val destinationFrame = frames.expectFrame(frameRef)
+    val destinationFrame: SparkFrame = arguments.destination
 
     // run the operation
     if (arguments.source.isFrame) {
       // load data from an existing frame and add its data onto the target frame
-      val additionalData = frames.loadFrameData(sc, frames.expectFrame(FrameReference(arguments.source.uri.toInt)))
+      val additionalData = (FrameReference(arguments.source.uri.toInt): SparkFrame).rdd
       unionAndSave(destinationFrame, additionalData)
     }
     else if (arguments.source.isFile || arguments.source.isMultilineFile) {
@@ -100,7 +99,7 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
       }
       // parse failures go to their own data frame
       val updatedFrame = if (parseResult.errorLines.count() > 0) {
-        val (updated, errorFrame) = frames.lookupOrCreateErrorFrame(destinationFrame)
+        val (updated, errorFrame) = engine.frames.lookupOrCreateErrorFrame(destinationFrame)
         unionAndSave(errorFrame, parseResult.errorLines)
         updated
       }
@@ -123,13 +122,9 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
    * @param additionalData the data to add to the existingFrame
    * @return the frame with updated schema
    */
-  private def unionAndSave(existingFrame: FrameEntity, additionalData: FrameRdd)(implicit invocation: Invocation): FrameEntity = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    val existingRdd = frames.loadFrameData(sc, existingFrame)
-    val unionedRdd = existingRdd.union(additionalData)
-    frames.saveFrameData(existingFrame.toReference, unionedRdd)
+  private def unionAndSave(existingFrame: SparkFrame, additionalData: FrameRdd)(implicit invocation: Invocation): SparkFrame = {
+    val unionedRdd = existingFrame.rdd.union(additionalData)
+    existingFrame.save(unionedRdd)
   }
 
 }

@@ -36,17 +36,17 @@ case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[Frame
   frameEntities.foreach(frame => require(frame.graphId.get == graphEntity.id, "frame should be owned by the graph, graphId did not match"))
 
   /** Labels to frames */
-  @transient private lazy val edgeFrameMetasMap = frameEntities.filter(frame => frame.isEdgeFrame)
+  @transient private lazy val edgeFramesMap = frameEntities.filter(frame => frame.isEdgeFrame)
     .map(frame => (frame.label.get, frame))
     .toMap[String, FrameEntity]
 
   /** Labels to frames */
-  @transient private lazy val vertexFrameMetasMap = frameEntities.filter(frame => frame.isVertexFrame)
+  @transient private lazy val vertexFramesMap = frameEntities.filter(frame => frame.isVertexFrame)
     .map(frame => (frame.label.get, frame))
     .toMap[String, FrameEntity]
 
   // TODO: this might be good but worried it might be introducing issues, commenting out for now -- Todd 1/9/2015
-  //require(frameEntities.size == (edgeFrameMetasMap.size + vertexFrameMetasMap.size), "labels should not be duplicated within a graph, this is a bug")
+  //require(frameEntities.size == (edgeFramesMap.size + vertexFramesMap.size), "labels should not be duplicated within a graph, this is a bug")
 
   /** convenience method for getting the id of the graph */
   def id: Long = graphEntity.id
@@ -69,7 +69,7 @@ case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[Frame
    * @return frame meta data
    */
   def edgeMeta(label: String): FrameEntity = {
-    edgeFrameMetasMap.getOrElse(label, throw new IllegalArgumentException(s"No edge frame with label $label in this graph.  Defined edge labels: $edgeLabelsAsString"))
+    edgeFramesMap.getOrElse(label, throw new IllegalArgumentException(s"No edge frame with label $label in this graph.  Defined edge labels: $edgeLabelsAsString"))
   }
 
   /**
@@ -78,7 +78,7 @@ case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[Frame
    * @return frame meta data
    */
   def vertexMeta(label: String): FrameEntity = {
-    vertexFrameMetasMap.getOrElse(label, throw new IllegalArgumentException(s"No vertex frame with label $label in this graph.  Defined vertex labels: $vertexLabelsAsString"))
+    vertexFramesMap.getOrElse(label, throw new IllegalArgumentException(s"No vertex frame with label $label in this graph.  Defined vertex labels: $vertexLabelsAsString"))
   }
 
   /**
@@ -92,7 +92,7 @@ case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[Frame
    * True if the supplied label is a vertex label within this graph
    */
   def isVertexLabel(label: String): Boolean = {
-    vertexFrameMetasMap.contains(label)
+    vertexFramesMap.contains(label)
   }
 
   /**
@@ -100,7 +100,7 @@ case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[Frame
    * @return list of frame meta data
    */
   def vertexFrames: List[FrameEntity] = {
-    vertexFrameMetasMap.map {
+    vertexFramesMap.map {
       case (label: String, frame: FrameEntity) => frame
     }.toList
   }
@@ -110,7 +110,7 @@ case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[Frame
    * @return list of frame meta data
    */
   def edgeFrames: List[FrameEntity] = {
-    edgeFrameMetasMap.map {
+    edgeFramesMap.map {
       case (label: String, frame: FrameEntity) => frame
     }.toList
   }

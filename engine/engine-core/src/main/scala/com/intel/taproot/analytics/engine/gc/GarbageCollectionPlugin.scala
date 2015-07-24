@@ -50,7 +50,6 @@ class GarbageCollectionPlugin extends CommandPlugin[GarbageCollectionArgs, UnitR
       case None => EngineConfig.gcAgeToDeleteData
     }
     GarbageCollector.singleTimeExecution(dataDeleteAge)
-    new UnitReturn
   }
 
   /**

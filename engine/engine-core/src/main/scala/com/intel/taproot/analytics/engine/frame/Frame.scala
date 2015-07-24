@@ -48,6 +48,9 @@ trait Frame {
   /** the schema of the frame (defines columns, data types, etc) */
   def schema: Schema
 
+  /** Rename columns supplying old and new names */
+  def renameColumns(namePairs: Seq[(String, String)])
+
   /**
    * lifecycle status. For example, ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete)
    */
@@ -121,7 +124,12 @@ class FrameImpl(frame: FrameReference, frameStorage: FrameStorage)(implicit invo
   /** the schema of the frame (defines columns, data types, etc) */
   override def schema: Schema = entity.schema
 
-  override def sizeInBytes: Option[Long] = frameStorage.getSizeInBytes(entity)
+  override def sizeInBytes: Option[Long] = frameStorage.sizeInBytes(entity)
+
+  /** Rename columns supplying old and new names */
+  override def renameColumns(namePairs: Seq[(String, String)]): Unit = {
+    frameStorage.renameColumns(entity, namePairs)
+  }
 }
 
 /**

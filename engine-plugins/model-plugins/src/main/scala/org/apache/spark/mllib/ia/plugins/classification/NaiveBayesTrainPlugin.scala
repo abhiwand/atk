@@ -98,6 +98,5 @@ class NaiveBayesTrainPlugin extends SparkCommandPlugin[NaiveBayesTrainArgs, Unit
     val jsonModel = new NaiveBayesData(naiveBayesModel, arguments.observationColumns)
 
     model.data = jsonModel.toJson.asJsObject
-    new UnitReturn
   }
 }

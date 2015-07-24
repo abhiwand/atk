@@ -58,7 +58,6 @@ class DefineVertexPlugin extends CommandPlugin[DefineVertexArgs, UnitReturn] {
    */
   override def execute(arguments: DefineVertexArgs)(implicit invocation: Invocation): UnitReturn = {
     engine.graphs.defineVertexType(arguments.graphRef, VertexSchema(GraphSchema.vertexSystemColumns, arguments.label, None))
-    UnitReturn()
   }
 
 }

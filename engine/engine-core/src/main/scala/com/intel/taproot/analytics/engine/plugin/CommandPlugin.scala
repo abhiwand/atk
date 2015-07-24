@@ -16,6 +16,7 @@
 
 package com.intel.taproot.analytics.engine.plugin
 
+import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.component._
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }

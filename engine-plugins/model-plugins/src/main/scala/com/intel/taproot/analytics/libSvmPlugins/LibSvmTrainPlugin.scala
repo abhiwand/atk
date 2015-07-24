@@ -80,9 +80,6 @@ class LibSvmTrainPlugin extends SparkCommandPlugin[LibSvmTrainArgs, UnitReturn] 
 
     val jsonModel = new LibSvmData(mySvmModel, arguments.observationColumns)
     model.data = jsonModel.toJson.asJsObject
-
-    new UnitReturn
-
   }
 
   /**
