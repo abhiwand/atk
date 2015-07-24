@@ -27,7 +27,7 @@ import spray.json.JsObject
  * @param name name assigned by user, auto-assigned by system if user doesn't supply
  * @param modelType the type of the model eg: OLS, LogisticRegression
  * @param description description of the model (a good default might say what frame it came from)
- * @param statusId lifecycle status. For example, INIT (building), ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete), INCOMPLETE (failed construction)
+ * @param statusId lifecycle status. For example, ACTIVE, DELETED (un-delete possible), DELETE_FINAL (no un-delete),
  * @param data the JsObject containing the trained model
  * @param createdOn date/time this record was created
  * @param modifiedOn date/time this record was last modified

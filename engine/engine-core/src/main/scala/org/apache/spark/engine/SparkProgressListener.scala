@@ -20,13 +20,11 @@ import com.intel.taproot.analytics.domain.command.Command
 import org.apache.spark.SparkConf
 import org.apache.spark.scheduler._
 import org.apache.spark.ui.jobs.JobProgressListener
-import scala.collection.mutable.{ ListBuffer, HashMap, HashSet }
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import org.apache.spark.scheduler.SparkListenerTaskEnd
-import org.apache.spark.scheduler.SparkListenerStageSubmitted
-import org.apache.spark.scheduler.SparkListenerStageCompleted
-import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
-import com.intel.taproot.analytics.engine.spark.CommandProgressUpdater
+import com.intel.taproot.analytics.engine.CommandProgressUpdater
 import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
 
 /**
@@ -40,7 +38,7 @@ object SparkProgressListener {
 
 class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val command: Command, val jobCount: Int) extends JobProgressListener(new SparkConf(true)) {
 
-  val jobIdToStagesIds = new HashMap[Int, Array[Int]]
+  val jobIdToStagesIds = new mutable.HashMap[Int, Array[Int]]
 
   val jobs = new ListBuffer[Int]
 

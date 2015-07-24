@@ -18,30 +18,19 @@ package com.intel.taproot.analytics.libSvmPlugins
 
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.Rows._
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
-import com.intel.taproot.analytics.engine.spark.frame.plugins.classificationmetrics.ClassificationMetrics
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.model.Model
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 
-// TODO: all plugins should move out of engine-core into plugin modules
-/*
-Parameters
-----------
-predict_frame : Frame
-    A frame whose labels are to be predicted.
-label_column : str
-    Column containing the actual label for each observation.
-observation_column : list of str (Optional)
-    Column(s) containing the observations whose labels are to be predicted and
-    tested.
-    By default, we test over the columns the LibsvmModel was trained on.
-*/
 @PluginDoc(oneLine = "Predict test frame labels and return metrics.",
-  extended = "Predict the labels for a test frame and run classification metrics on predicted and target labels.",
+  extended = """Predict the labels for a test frame and run classification
+metrics on predicted and target labels.""",
   returns = """Object
     Object with binary classification metrics.
     The data returned is composed of multiple components:
@@ -86,21 +75,12 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: LibSvmTestArgs)(implicit invocation: Invocation): ClassificationMetricValue = {
-    val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
-
-    val frames = engine.frames
-    val inputFrame = frames.expectFrame(arguments.frame)
-
-    val frame: SparkFrameData = resolve(arguments.frame)
-
-    // load frame as RDD
-    val inputFrameRdd = frame.data
+    val model: Model = arguments.model
+    val frame: SparkFrame = arguments.frame
 
     //Loading the model
     val svmColumns = arguments.observationColumns
-    val svmJsObject = modelMeta.data.get
-    val libsvmData = svmJsObject.convertTo[LibSvmData]
+    val libsvmData = model.data.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 
     if (arguments.observationColumns.isDefined) {
@@ -108,9 +88,13 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
     }
 
     //predicting a label for the observation column/s
-    val predictionsRdd: RDD[Row] = inputFrameRdd.mapRows(row => {
+    val predictionsRdd: RDD[Row] = frame.rdd.mapRows(row => {
       val array = row.valuesAsArray(arguments.observationColumns.getOrElse(libsvmData.observationColumns))
-      val label = row.value(arguments.labelColumn)
+      val label = row.value(arguments.labelColumn) match {
+        case x: Int => x.toInt
+        case y: Double => y.toDouble
+        case _ => throw new RuntimeException(s"Only Int and Double are supported as label columns")
+      }
       val doubles = array.map(i => DataTypes.toDouble(i))
       var vector = Vector.empty[Double]
       var i: Int = 0
@@ -119,7 +103,7 @@ class LibSvmTestPlugin extends SparkCommandPlugin[LibSvmTestArgs, Classification
         i += 1
       }
       val predictionLabel = LibSvmPluginFunctions.score(libsvmModel, vector)
-      Array[Any](label.asInstanceOf[Int], predictionLabel.value)
+      Row(label, predictionLabel.value)
     })
 
     //Run Binary classification metrics

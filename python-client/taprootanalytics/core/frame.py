@@ -760,12 +760,93 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         return self._backend.group_by(self, group_by_columns, aggregation_arguments)
 
+    @api
+    @alpha
+    @arg('column_inputs', 'str | tuple(str, dict)', 'Comma-separated column names to summarize or tuple containing column name '
+                                                    'and dictionary of optional parameters. '
+                                                    'Optional parameters (see below for details): '
+                                                    'top_k (default = 10), threshold (default = 0.0)')
+
+    @returns(dict, 'Summary for specified column(s) consisting of levels with their frequency and percentage')
+    def __categorical_summary(self, *column_inputs):
+        """
+        Compute a summary of the data in a column(s) for categorical or numerical data types.
+        The returned value is a Map containing categorical summary for each specified column.
+
+        For each column, levels which satisfy the top k and/or threshold cutoffs are displayed along
+        with their frequency and percentage occurrence with respect to the total rows in the dataset.
+
+        Missing data is reported when a column value is empty ("") or null.
+
+        All remaining data is grouped together in the Other category and its frequency and percentage are reported as well.
+
+        User must specify the column name and can optionally specify top_k and/or threshold.
+
+        Optional parameters:
+
+            top_k
+                Displays levels which are in the top k most frequently occurring values for that column.
+
+            threshold
+                Displays levels which are above the threshold percentage with respect to the total row count.
+
+            top_k and threshold
+                Performs level pruning first based on top k and then filters out levels which satisfy the threshold criterion.
+
+            defaults
+                Displays all levels which are in Top 10.
+
+
+        Examples
+        --------
+
+        .. code::
+
+            >>> frame.categorical_summary('source','target')
+            >>> frame.categorical_summary(('source', {'top_k' : 2}))
+            >>> frame.categorical_summary(('source', {'threshold' : 0.5}))
+            >>> frame.categorical_summary(('source', {'top_k' : 2}), ('target',
+            ... {'threshold' : 0.5}))
+
+        Sample output (for last example above):
+
+            >>> {u'categorical_summary': [{u'column': u'source', u'levels': [
+            ... {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'thing'},
+            ... {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'abstraction'},
+            ... {u'percentage': 0.25, u'frequency': 7, u'level': u'physical_entity'},
+            ... {u'percentage': 0.10714285714285714, u'frequency': 3, u'level': u'entity'},
+            ... {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
+            ... {u'percentage': 0.0, u'frequency': 0, u'level': u'Other'}]},
+            ... {u'column': u'target', u'levels': [
+            ... {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'thing'},
+            ... {u'percentage': 0.07142857142857142, u'frequency': 2,
+            ...  u'level': u'physical_entity'},
+            ... {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'entity'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'variable'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'unit'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'substance'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'subject'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'set'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'reservoir'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'relation'},
+            ... {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
+            ... {u'percentage': 0.5357142857142857, u'frequency': 15, u'level': u'Other'}]}]}
+
+        """
+        return self._backend.categorical_summary(self, column_inputs)
 
     @api
     @arg('n', int, 'The number of rows to print.')
     @arg('offset', int, 'The number of rows to skip before printing.')
     @arg('columns', int, 'Filter columns to be included.  By default, all columns are included')
-    def __inspect(self, n=10, offset=0, columns=None):
+    @arg('wrap', "int or 'stripes'", "If set to 'stripes' then inspect prints rows in stripes; if set to an integer N, "
+                                     "rows will be printed in clumps of N columns, where the columns are wrapped")
+    @arg('truncate', int, 'If set to integer N, all strings will be truncated to length N, including a tagged ellipses')
+    @arg('round', int, 'If set to integer N, all floating point numbers will be rounded and truncated to N digits')
+    @arg('width', int, 'If set to integer N, the print out will try to honor a max line width of N')
+    @arg('margin', int, "('stripes' mode only) If set to integer N, the margin for printing names in a "
+                        "stripe will be limited to N characters")
+    def __inspect(self, n=10, offset=0, columns=None, wrap=None, truncate=None, round=None, width=80, margin=None):
         """
         Prints the frame data in readable format.
 
@@ -789,7 +870,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         # For other examples, see :ref:`example_frame.inspect`.
         """
-        return self._backend.inspect(self, n, offset, columns)
+        return self._backend.inspect(self, n, offset, columns, wrap=wrap, truncate=truncate, round=round, width=width, margin=margin)
 
     @api
     @beta
@@ -803,7 +884,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     @returns('Frame', 'A new frame with the results of the join')
     def __join(self, right, left_on, right_on=None, how='inner', name=None):
         """
-        New frame from current frame and another frame.
+        Join operation on one or two frames, creating a new frame.
 
         Create a new frame from a SQL JOIN operation with another frame.
         The frame on the 'left' is the currently active frame.

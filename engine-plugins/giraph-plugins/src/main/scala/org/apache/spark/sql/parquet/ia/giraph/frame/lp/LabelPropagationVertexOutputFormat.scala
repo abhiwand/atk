@@ -30,11 +30,11 @@ import org.apache.spark.sql.types._
 import parquet.hadoop.ParquetOutputFormat
 
 object LabelPropagationOutputFormat {
-  //val OutputRowSchema = "StructType(row(StructField(id,LongType,false),StructField(result,ArrayType(DoubleType,true),true)))"
+
   //Using JSON format for schema due to bug in Spark 1.3.0 which causes failures when reading StructType literal strings
   val OutputRowSchema = StructType(
-    StructField("id", LongType, false) ::
-      StructField("result", ArrayType(DoubleType), true) :: Nil).json
+    StructField("id", LongType, nullable = false) ::
+      StructField("result", ArrayType(DoubleType), nullable = true) :: Nil).json
 }
 /**
  * OutputFormat for parquet frame

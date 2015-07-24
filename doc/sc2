@@ -1,0 +1,413 @@
+#!/bin/bash
+
+############################################################################################################
+function changes() {
+    echo "function changes $1 $2" >> $deBug
+    List1=" $1 "
+    List2=" $2 "
+    FoundLong=""
+    FoundShort=""
+    for File in $List1; do
+        echo "Looking for $File" >> $deBug
+        echo $List2 | grep -i -e "$File" > /dev/null
+        if [ "$?" == "0" ]; then
+            FoundLong="$FoundLong $File"
+            echo "FoundLong" >> $deBug
+        else
+            echo $List2 | grep -i -e "$(basename $File)" > /dev/null
+            if [ "$?" == "0" ]; then
+                FoundShort="$FoundShort $File"
+                echo "FoundShort" >> $deBug
+            fi
+        fi
+    done
+    for File in $FoundLong; do
+        List1=${List1/$File/}
+        List2=${List2/$File/}
+    done
+    echo "Removed FoundLong from List1 and List2" >> $deBug
+    for File in $FoundShort; do
+        List1=${List1/$File/}
+        for OtherFile in $List2; do
+            if [ "$(basename $File)" == "$(basename $Otherfile)" ]; then
+                List2=${List2/$OtherFile/}
+            fi
+        done
+    done
+    List1=$(echo $List1)
+    List2=$(echo $List2)
+    echo "Removed FoundShort from List1 and List2" >> $deBug
+    echo "List1=$List1" >> $deBug
+    echo "List2=$List2" >> $deBug
+    echo "Leaving function changes." >> $deBug
+}
+
+############################################################################################################
+function compare_lists() {
+    # Compare the current file names against the previous file names for changes
+    if [ "${#PreviousList}" -gt "0" -a "${#CurrentList}" -gt "0" ]; then
+        for Index in 1 2; do
+            echo -n "Phase $Index"
+            if [ "$Index" == "1" ]; then
+                # If Index is 1, we are looking for files which are not in the previous file,
+                # therefore the file is new.
+                changes "$CurrentList" "$PreviousList"
+                unset NewFilesArray
+                for File in $List1; do
+                    NewFilesArray[${#NewFilesArray[@]}]=$File
+                done
+                unset MovedToArray
+                for File in $List2; do
+                    MovedToArray[${#MovedToArray[@]}]=$File
+                done
+            else
+                # If Index is 2, we are looking for files which are not in existance,
+                # therefore the file is deprecated.
+                changes "$PreviousList" "$CurrentList"
+                unset OldFilesArray
+                for File in $List1; do
+                    OldFilesArray[${#OldFilesArray[@]}]=$File
+                done
+                unset MovedFromArray
+                for File in $List2; do
+                    MovedFromArray[${#MovedFromArray[@]}]=$File
+                done
+            fi
+            # Valid file moves must have both FROM and TO for the same base name
+            MovedFiles=""
+            for ToFile in MovedToArray[@]; do
+                for FromFile in MovedFromArray[@]; do
+                    if [ "$(basename $ToFile)" == "$(basename $FromFile)" ]; then
+                        MovedFiles="$MovedFiles $(basename $FromFile)"
+                    fi
+                done
+            done
+            echo
+        done
+    fi
+    echo
+}
+
+############################################################################################################
+function give_me_a_Y() {
+
+    echo function give_me_a_Y\($@\) >> $deBug
+    Prioritize=${2:-Y}
+    Prioritize=${Prioritize:0:1}
+    Prioritize=${Prioritize^^}
+    if [ "$Prioritize" == "Y" ]; then
+        Adder="[Y|n]"
+    else
+        Adder="[y|N]"
+    fi
+    UserResponse=$Prioritize
+    Looping=True
+    while [ "$Looping" == "True" ]; do
+        read -p "$1 $Adder " UserResponse
+        UserResponse=${UserResponse:-$Prioritize}
+        UserResponse=${UserResponse:0:1}
+        UserResponse=${UserResponse^^}
+        if [ ! $(echo "YN"|grep -i ${UserResponse:0:1} ) ]; then
+            echo "Please respond with (Y)es or (N)o."
+        else
+            Looping=False
+        fi
+    done
+    if [ "$UserResponse" == "$Prioritize" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+############################################################################################################
+
+FileList=""
+FileOnly=False
+Reset=False
+Restart=False
+ReportStatus=False
+
+deBug="/dev/null"
+BaseDirectory="/home/work/atk"
+ProgramName=$(basename $0)
+StatusFile=.$ProgramName
+PreviousListFile=.$ProgramName.p
+TemporaryFile=.$ProgramName.t
+
+# Process any parameters
+while [ "$#" -gt "0" ]; do
+    # At this point we take the lowercase version of the parameter to make the tests case in-sensitive.
+    Parameter1=${1,,}
+    if [ "${1:0:1}" != "-" ]; then
+        # Any parameter which does not start with - is assumed to be a file name
+        FileList="$FileList $1"
+    elif [ "$Parameter1" == "-h" -o "$Parameter1" == "--help" ]; then
+        # Asking for help
+        echo "Program to edit the scala documentation content and the associated .rst files."
+        echo "Program generates the files \"$StatusFile\" & \"$PreviousListFile\" to keep track"
+        echo "of information between sessions."
+        echo "Quit the editor with the command ':cq' to stop processing files. Quitting in this"
+        echo "fashion will prompt you to verify resetting the history file, if applicable."
+        echo
+        echo "The history file keeps a list of all current files so the program can let you"
+        echo "know when new files are presented and previous ones are gone."
+        echo
+        echo "Options:"
+        echo
+        echo "-b or --begin will go through all the files, otherwise the program will"
+        echo "    resume where it last was."
+        echo
+        echo "-h, --help will present this \"help\". The \"help\" flag supersedes other"
+        echo "    flags and the program stops at the end of presenting this information."
+        echo
+        echo "-r or --reset will reset the history file at the end of the program to"
+        echo "    store a list of the current files. This flag will have no affect if"
+        echo "    the program is aborted or if the \"help\" flag is used."
+        echo
+        echo "-s or --status will report the status of changes, if any."
+        echo "    If there are new or deprecated files, they will be shown before:"
+        echo "    any files are processed, even without this flag."
+        echo
+        exit 0
+    elif [ "$Parameter1" == "-b" -o "$Parameter1" == "--begin" ]; then
+        Restart=True
+    elif [ "$Parameter1" == "-r" -o "$Parameter1" == "--reset" ]; then
+        Reset=True
+    elif [ "$Parameter1" == "-s" -o "$Parameter1" == "--status" ]; then
+        ReportStatus=True
+    elif [ "$Parameter1" == "-d" -o "$Parameter1" == "--debug" ]; then
+        deBug="sc2.log"
+        if [ -f $deBug ]; then rm $deBug; echo $(date) > $deBug; fi
+    else
+        echo "Unrecognized parameter \"$1\" will be ignored."
+        give_me_a_Y "Abort?"
+        if [ "$?" == "0" ]; then
+            exit 2
+        fi
+    fi
+    shift
+done
+
+# Get the previous list if available
+if [ -f "$PreviousListFile" ]; then
+    PreviousList=$(cat "$PreviousListFile")
+else
+    PreviousList=""
+fi
+echo "PreviousList=\"$Previouslist\"" >> $deBug
+
+# Start with this file name
+if [ "$Restart" == "False" -a "${#FileList}" -eq "0" -a -e $StatusFile ]; then
+    StartFile=$(cat $StatusFile)
+else
+    StartFile="~"
+fi
+echo "StartFile=\"$StartFile\"" >> $deBug
+
+# Get currently existing file names
+echo "Searching for active files"
+CurrentList=$(grep -ril --include=*.scala "override def name:" $BaseDirectory | sort)
+if [ "$Previouslist" == "" ]; then
+    PreviousList=$CurrentList
+    Reset=True
+fi
+if [ "${#FileList}" -eq "0" ]; then
+    compare_lists
+    # If the status has been requested, report the changed files
+    PauseLater=False
+    if [ "$ReportStatus" == "True" -o "${#NewFilesArray[@]}" -gt "0" ]; then
+        if [ "${#NewFilesArray[@]}" -gt "0" ]; then
+            echo
+            if [ "${#NewFilesArray[@]}" -eq "1" ]; then
+                echo "There is a new file:"
+            else
+                echo "There are new files:"
+            fi
+            for File in ${NewFilesArray[@]}; do
+                echo $File
+            done
+            for File in ${NewFilesArray[@]}; do
+                PreviousList="$PreviousList $File"
+            done
+        else
+            echo "There are no new files."
+        fi
+        PauseLater=True
+    fi
+    if [ "$ReportStatus" == "True" -o "${#OldFilesArray[@]}" -gt "0" ]; then
+        if [ "${#OldFilesArray[@]}" -gt "0" ]; then
+            echo
+            if [ "${#OldFilesArray[@]}" -eq "1" ]; then
+                echo "There is a deprecated file:"
+            else
+                echo "There are deprecated files:"
+            fi
+            for File in ${OldFilesArray[@]}; do
+                echo $File
+            done
+            for File in ${OldFilesArray[@]}; do
+                PreviousList=${PreviousList/$File/}
+                PreviousList=${PreviousList/  / }
+            done
+            PreviousList=$(echo $PreviousList)
+        else
+            echo "There are no deprecated files."
+        fi
+        PauseLater=True
+    fi
+    if [ "$ReportStatus" == "True" -o "${#MovedFiles}" -gt "0" ]; then
+        if [ "${#MovedFiles}" -gt "0" ]; then
+            for File in $MovedFiles; do
+                echo "$File seems to have moved"
+                for LongFileName in ${MovedFromArray[@]}; do
+                    if [ "$File" == "$(basename $LongFileName)" ]; then
+                        echo "from $LongFileName"
+                        PreviousList=${PreviousList/$File/}
+                    fi
+                done
+                for LongFileName in ${MovedToArray[@]}; do
+                    if [ "$File" == "$(basename $LongFileName)" ]; then
+                        echo "to $LongFileName"
+                        PreviousList="$PreviousList $File"
+                    fi
+                done
+            done
+        else
+            echo "There are no moved files."
+        fi
+        PauseLater=True
+    fi
+    if [ "$PauseLater" == "True" ]; then
+        echo
+        read -p "Press enter to continue."
+    fi
+else
+    # If there is a file list, check that every file can be found
+    # DeleteList will hold file names from FileList which can not be found
+    DeleteList=""
+    LCCurrentList=${CurrentList,,}
+    LCPreviousList=${PreviousList,,}
+    for File in $FileList; do
+        LCFile=${File,,}
+        if [ "$LCCurrentList" == "${LCCurrentList/$LCFile/}" ]; then
+            # The file specified by the user is not in the current files
+            # therefore, we add it to the list of files we are going to ignore.
+            DeleteList="$DeleteList $File"
+        else
+            # The file specified by the user is in the list of current files
+            # so we replace the file with the current path and file name
+            for OldFile in $FileList; do
+                LCOldFile=${OldFile,,}
+                if [ "$LCOldFile" != "${LCOldfile/$LCFile/}" ]; then
+                    FileList="${FileList/$OldFile/}"
+                fi
+            done
+            for CurrentFile in $CurrentList; do
+                LCCurrentFile=${CurrentFile,,}
+                if [ "$LCCurrentFile" != "${LCCurrentFile/$LCFile/}" ]; then
+                    FileList="$FileList $CurrentFile"
+                fi
+            done
+        fi
+    done
+    if [ "${#DeleteList}" -gt "0" ]; then
+        echo "Could not find:"
+        for File in $DeleteList; do
+            echo "$File"
+        done
+        give_me_a_Y "Abort?"
+        if [ "$?" == "0" ]; then
+            exit 4
+        fi
+        # Remove any files not found
+        for File in $DeleteList; do
+            FileList="${FileList/$File/}"
+        done
+        FileList=$(echo $FileList)
+    fi
+    if [ "${#FileList}" -eq "0" ]; then
+        echo "None of the files initially given are found."
+        echo "If you continue, all files will be processed."
+        give_me_a_Y "Abort?"
+        if [ "$?" == "0" ]; then
+            exit 5
+        fi
+    fi
+fi
+# Go through the total list of files, add desirable files to a master processing list
+if [ "${#FileList}" -eq "0" -a "$ReportStatus" == "False" ]; then
+    FileList=$PreviousList
+fi
+# Reset the history file if requested on the command line
+if [ "$Reset" == "True" ]; then
+    echo $CurrentList > $PreviousListFile
+fi
+FileCount=0
+FileCountTotal=$(echo $FileList | wc | awk '{print $2}')
+for File in $FileList; do
+    let " FileCount += 1 "
+    if [ "$File" == "$StartFile" ]; then
+        StartFile="~"
+    fi
+    if [ "$StartFile" == "~" ]; then
+        echo $File > $StatusFile
+        # Add the import statement
+        grep -i ".engine.plugin." $File > /dev/null
+        if [ "$?" != "0" ]; then
+            sc2_engineDoc.awk $File > $TemporaryFile
+        else
+            cp $File $TemporaryFile
+        fi
+        # The PluginDoc import
+        sc2_PluginDoc.awk $TemporaryFile > $File
+        rm $TemporaryFile
+        # Add the ArgDoc import statement if necessary
+        grep -i "@ArgDoc" $File > /dev/null
+        if [ "$?" == "0" ]; then
+            cp $File $TemporaryFile
+            sc2_ArgDoc.awk $TemporaryFile > $File
+            rm $TemporaryFile
+        fi
+        RST=$(grep -i "override def name:" $File | awk -F= '{print "../doc-api-examples/src/main/resources/python/" $2 ".rst"}' | sed s/:/-/g | sed s/\"//g | sed s/\ //g)
+        if [ "$RST" == "" ]; then
+            RST="~"
+        fi
+        ARG=$(grep -i " extends .*\[" $File|awk '{Incoming=$0;print substr(substr($Incoming, 1, index(Incoming, ",")-1), index(Incoming, "[")+1) ".scala";}')
+        if [ "$ARG" != "" ]; then
+            ARG=$(find $BaseDirectory -name $ARG)
+        fi
+        if [ "$ARG" == "" ]; then
+            ARG="~"
+        else
+            # Add the import statement
+            grep -i ".engine.plugin." $ARG > /dev/null
+            if [ "$?" != "0" ]; then
+                sc2_engineDoc.awk $ARG > $TemporaryFile
+            else
+                cp $ARG $TemporaryFile
+            fi
+            # The ArgDoc import
+            sc2_ArgDoc.awk $TemporaryFile > $ARG
+            rm $TemporaryFile
+        fi
+        echo "File $FileCount of $FileCountTotal"
+        if [ -e "$RST" -a -e "$ARG" ]; then
+            vim "$RST" "$ARG" "$File" -c 'sp | n | sp | n'
+            Return=$?
+        elif [ -e "$ARG" ]; then
+            vim "$ARG" "$File" -c 'sp | n'
+            Return=$?
+        elif [ -e "$RST" ]; then
+            vim "$RST" "$File" -c 'sp | n'
+            Return=$?
+        else
+            vim "$File"
+            Return=$?
+        fi
+        if [ "$Return" != "0" ]; then
+            echo "Stopped on file $(basename $File)"
+            break
+        fi
+    fi
+done
+echo "Done."

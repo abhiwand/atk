@@ -16,9 +16,9 @@
 
 package org.apache.spark.ia.graph
 
-import com.intel.taproot.graphbuilder.elements.{ GBVertex }
+import com.intel.taproot.graphbuilder.elements.GBVertex
 import com.intel.taproot.analytics.domain.schema.{ VertexSchema, GraphSchema, Schema }
-import com.intel.taproot.analytics.engine.spark.frame.{ MiscFrameFunctions }
+import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -32,10 +32,8 @@ import scala.reflect.ClassTag
  * Vertex List for a "Seamless" Graph
  *
  * @param schema  the schema describing the columns of this frame
- * @param sqlContext a spark SQLContext
- * @param logicalPlan a logical plan describing the SchemaRDD
  */
-class VertexFrameRdd(schema: VertexSchema, prev: RDD[sql.Row]) extends FrameRdd(schema, prev) {
+class VertexFrameRdd(schema: VertexSchema, prev: RDD[Row]) extends FrameRdd(schema, prev) {
 
   def this(frameRdd: FrameRdd) = this(frameRdd.frameSchema.asInstanceOf[VertexSchema], frameRdd)
 
@@ -56,9 +54,9 @@ class VertexFrameRdd(schema: VertexSchema, prev: RDD[sql.Row]) extends FrameRdd(
    * Drop duplicates based on user defined id
    */
   def dropDuplicates(): VertexFrameRdd = {
-    val pairRdd = map(row => MiscFrameFunctions.createKeyValuePairFromRow(row.toSeq.toArray, schema.columnIndices(Seq(schema.idColumnName.getOrElse(throw new RuntimeException("Cannot drop duplicates is id column has not yet been defined")), schema.label))))
-    val duplicatesRemoved: RDD[Array[Any]] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
-    new VertexFrameRdd(FrameRdd.toFrameRdd(schema, duplicatesRemoved))
+    val pairRdd = map(row => MiscFrameFunctions.createKeyValuePairFromRow(row, schema.columnIndices(Seq(schema.idColumnName.getOrElse(throw new RuntimeException("Cannot drop duplicates is id column has not yet been defined")), schema.label))))
+    val duplicatesRemoved: RDD[Row] = MiscFrameFunctions.removeDuplicatesByKey(pairRdd)
+    new VertexFrameRdd(schema, duplicatesRemoved)
   }
 
   def groupVerticesById() = {

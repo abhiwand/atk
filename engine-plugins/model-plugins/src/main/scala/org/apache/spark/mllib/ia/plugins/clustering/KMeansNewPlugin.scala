@@ -19,7 +19,7 @@ package org.apache.spark.mllib.ia.plugins.clustering
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.model.{ KMeansNewArgs, ModelEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 //Implicits needed for JSON conversion
 import spray.json._
@@ -31,9 +31,7 @@ class KMeansNewPlugin extends SparkCommandPlugin[KMeansNewArgs, ModelEntity] {
 
   override def name: String = "model:k_means/new"
 
-  override def execute(arguments: KMeansNewArgs)(implicit invocation: Invocation): ModelEntity =
-    {
-      val models = engine.models
-      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:k_means")))
-    }
+  override def execute(arguments: KMeansNewArgs)(implicit invocation: Invocation): ModelEntity = {
+    engine.models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:k_means")))
+  }
 }

@@ -23,9 +23,8 @@ import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.PluginDocAnnotation
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, PluginDoc }
-import com.intel.taproot.analytics.schema._
 import spray.json.{ AdditionalFormats, StandardFormats }
-import com.intel.taproot.analytics.spray.json.{ JsonPropertyNameConverter, CustomProductFormats }
+import com.intel.taproot.analytics.spray.json._
 import org.joda.time.DateTime
 import scala.reflect.runtime.{ universe => ru }
 import ru._
@@ -223,6 +222,7 @@ private[analytics] object JsonSchemaExtractor {
     val schema = typeSignature match {
       case t if t =:= typeTag[URI].tpe => StringSchema(format = Some("uri"), description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[String].tpe => StringSchema(description = description, defaultValue = defaultValue)
+      case t if t =:= typeTag[Boolean].tpe => JsonSchema.verbose_bool(description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[Int].tpe => JsonSchema.verbose_int(description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[Long].tpe => JsonSchema.verbose_long(description = description, defaultValue = defaultValue)
       case t if t =:= typeTag[Float].tpe => JsonSchema.verbose_float(description = description, defaultValue = defaultValue)

@@ -18,25 +18,54 @@ package com.intel.taproot.giraph.lbp
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 import org.apache.commons.lang3.StringUtils
 
 /**
  * Arguments to the plugin - see user docs for more on the parameters
  */
 case class LoopyBeliefPropagationArgs(frame: FrameReference,
-                                      srcColName: String,
-                                      destColName: String,
-                                      weightColName: String,
-                                      srcLabelColName: String,
-                                      resultColName: Option[String] = None,
-                                      ignoreVertexType: Option[Boolean] = None,
-                                      maxIterations: Option[Int] = None,
-                                      convergenceThreshold: Option[Float] = None,
-                                      anchorThreshold: Option[Double] = None,
-                                      smoothing: Option[Float] = None,
-                                      maxProduct: Option[Boolean] = None,
-                                      power: Option[Float] = None) {
-
+                                      @ArgDoc("""The column name for the
+source vertex id.""") srcColName: String,
+                                      @ArgDoc("""The column name for the
+destination vertex id.""") destColName: String,
+                                      @ArgDoc("""The column name for the
+edge weight.""") weightColName: String,
+                                      @ArgDoc("""The column name for the
+label properties for the source vertex.""") srcLabelColName: String,
+                                      @ArgDoc("""The column name for the
+results (holding the post labels for the vertices).""") resultColName: Option[String] = None,
+                                      @ArgDoc("""If True, all vertex will be treated as training data.
+Default is False.""") ignoreVertexType: Option[Boolean] = None,
+                                      @ArgDoc("""The maximum number of
+supersteps that the algorithm will execute.
+The valid value range is all positive int.
+The default value is 10.""") maxIterations: Option[Int] = None,
+                                      @ArgDoc("""The amount of change in cost
+function that will be tolerated at convergence.
+If the change is less than this threshold, the algorithm exits earlier
+before it reaches the maximum number of supersteps.
+The valid value range is all float and zero.
+The default value is 0.00000001f.""") convergenceThreshold: Option[Float] = None,
+                                      @ArgDoc("""The parameter that determines
+if a node's posterior will be updated or not.
+If a node's maximum prior value is greater than this threshold, the node
+will be treated as anchor node, whose posterior will inherit from prior
+without update.
+This is for the case where we have confident prior estimation for some
+nodes and don't want the algorithm updates these nodes.
+The valid value range is in [0, 1].
+Default is 1.0.""") anchorThreshold: Option[Double] = None,
+                                      @ArgDoc("""The Ising smoothing parameter.
+This parameter adjusts the relative strength of closeness encoded edge
+weights, similar to the width of Gussian distribution.
+Larger value implies smoother decay and the edge weight beomes less
+important.
+Default is 2.0.""") smoothing: Option[Float] = None,
+                                      @ArgDoc("""Should LBP use max_product or not.
+Default is False.""") maxProduct: Option[Boolean] = None,
+                                      @ArgDoc("""Power coefficient for power edge potential.
+Default is 0.""") power: Option[Float] = None) {
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(srcColName), "source column name property list is required")
   require(StringUtils.isNotBlank(destColName), "destination column name property list is required")

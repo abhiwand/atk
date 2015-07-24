@@ -18,6 +18,6 @@ package com.intel.taproot.analytics.domain.frame
 
 case class RenameFrameArgs(frame: FrameReference, newName: String) {
   require(frame != null, "frame is required")
-  require(newName != null && newName.size > 0, "newName is required")
+  require(newName != null && newName.nonEmpty, "newName is required")
   FrameName.validate(newName)
 }

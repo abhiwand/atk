@@ -67,7 +67,10 @@ case class VertexSchema(columns: List[Column] = List[Column](), label: String, i
     if (idColumnName.isDefined) {
       require(idColumnName.get != columnName, s"The id column is not allowed to be dropped: $columnName")
     }
-    // TODO: check for system column names
+
+    if (GraphSchema.vertexSystemColumnNames.contains(columnName)) {
+      throw new IllegalArgumentException(s"$columnName is a system column that is not allowed to be dropped")
+    }
 
     super.dropColumn(columnName)
   }
@@ -91,6 +94,14 @@ case class EdgeSchema(columns: List[Column] = List[Column](), label: String, src
     new EdgeSchema(columns, label, srcVertexLabel, destVertexLabel, directed)
   }
 
+  override def dropColumn(columnName: String): Schema = {
+
+    if (GraphSchema.edgeSystemColumnNamesSet.contains(columnName)) {
+      throw new IllegalArgumentException(s"$columnName is a system column that is not allowed to be dropped")
+    }
+
+    super.dropColumn(columnName)
+  }
 }
 
 /**
@@ -246,6 +257,28 @@ trait Schema {
     require(dataTypeChecker(colDataType), s"column $columnName has bad type $colDataType")
   }
 
+  def requireColumnIsNumerical(columnName: String): Unit = {
+    val colDataType = columnDataType(columnName)
+    require(colDataType.isNumerical, s"Column $columnName was not numerical. Expected a numerical data type, but got $colDataType.")
+  }
+
+  /**
+   * Either single column name that is a vector or a list of columns that are numeric primitives
+   * that can be converted to a vector.
+   *
+   * List cannot be empty
+   */
+  def requireColumnsAreVectorizable(columnNames: List[String]): Unit = {
+    require(columnNames.nonEmpty, "single vector column, or one or more numeric columns required")
+    if (columnNames.size > 1) {
+      requireColumnsOfNumericPrimitives(columnNames)
+    }
+    else {
+      val colDataType = columnDataType(columnNames.head)
+      require(colDataType.isVector || colDataType.isNumerical, s"column ${columnNames.head} should be of type numeric")
+    }
+  }
+
   /**
    * Column names as comma separated list in a single string
    * (useful for error messages, etc)
@@ -351,6 +384,15 @@ trait Schema {
       case Some(name) => Some(column(name))
       case None => None
     }
+  }
+
+  /**
+   * Select a subset of columns.
+   *
+   * List can be empty.
+   */
+  def columns(columnNames: List[String]): List[Column] = {
+    columnNames.map(column)
   }
 
   /**

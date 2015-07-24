@@ -16,17 +16,16 @@
 
 package org.apache.spark.mllib.ia.plugins.clustering
 
-import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.Column
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.{ SparkFrameData }
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
 import spray.json._
@@ -35,21 +34,6 @@ import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.VectorUtils._
 
 import scala.collection.mutable.ListBuffer
-
-/**
- * Parameters
- * ----------
- * predict_frame : Frame
- *   A frame whose labels are to be predicted.
- *   By default, predict is run on the same columns over which the model is
- *   trained.
- *   The user could specify column names too if needed.
- * observation_columns : list of str (optional)
- *   Column(s) containing the observations whose clusters are to be predicted.
- *   By default, we predict the clusters over columns the KMeansModel was
- *   trained on.
- *   The columns are scaled using the same values used when training the model.
- */
 
 @PluginDoc(oneLine = "Predict the cluster assignments for the data points.",
   extended = "",
@@ -95,19 +79,11 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: KMeansPredictArgs)(implicit invocation: Invocation): FrameEntity = {
-
-    val models = engine.models
-    val frames = engine.frames
-
-    val inputFrame = frames.expectFrame(arguments.frame)
-    val modelMeta = models.expectModel(arguments.model)
-
-    //create RDD from the frame
-    val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
+    val frame: SparkFrame = arguments.frame
+    val model: Model = arguments.model
 
     //Extracting the KMeansModel from the stored JsObject
-    val kmeansJsObject = modelMeta.data.get
-    val kmeansData = kmeansJsObject.convertTo[KMeansData]
+    val kmeansData = model.data.convertTo[KMeansData]
     val kmeansModel = kmeansData.kMeansModel
     if (arguments.observationColumns.isDefined) {
       require(kmeansData.observationColumns.length == arguments.observationColumns.get.length, "Number of columns for train and predict should be same")
@@ -117,7 +93,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     val scalingValues = kmeansData.columnScalings
 
     //Predicting the cluster for each row
-    val predictionsRDD = inputFrameRdd.mapRows(row => {
+    val predictionsRDD = frame.rdd.mapRows(row => {
       val columnsArray = row.valuesAsArray(kmeansColumns).map(row => DataTypes.toDouble(row))
       val columnScalingsArray = scalingValues.toArray
       val doubles = columnsArray.zip(columnScalingsArray).map { case (x, y) => x * y }
@@ -136,7 +112,7 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     //Updating the frame schema
     var columnNames = new ListBuffer[String]()
     var columnTypes = new ListBuffer[DataTypes.DataType]()
-    for (i <- 1 to (kmeansModel.clusterCenters.length)) {
+    for (i <- 1 to kmeansModel.clusterCenters.length) {
       val colName = "distance_from_cluster_" + i.toString
       columnNames += colName
       columnTypes += DataTypes.float64
@@ -145,13 +121,12 @@ class KMeansPredictPlugin extends SparkCommandPlugin[KMeansPredictArgs, FrameEnt
     columnTypes += DataTypes.int32
 
     val newColumns = columnNames.toList.zip(columnTypes.toList.map(x => x: DataType))
-    val updatedSchema = inputFrameRdd.frameSchema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
+    val updatedSchema = frame.schema.addColumns(newColumns.map { case (name, dataType) => Column(name, dataType) })
     val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
-    tryNew(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameMeta =>
-      save(new SparkFrameData(
-        newPredictedFrame.meta, predictFrameRdd))
-    }.meta
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by KMeans predict operation"))) { newPredictedFrame: FrameEntity =>
+      newPredictedFrame.save(predictFrameRdd)
+    }
   }
 
 }

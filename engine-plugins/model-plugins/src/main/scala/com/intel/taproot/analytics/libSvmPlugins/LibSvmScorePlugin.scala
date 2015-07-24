@@ -19,8 +19,9 @@ package com.intel.taproot.analytics.libSvmPlugins
 import java.util.StringTokenizer
 
 import com.intel.taproot.analytics.domain.DoubleValue
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, CommandPlugin, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.model.Model
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, CommandPlugin, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import libsvm.{ svm_model, svm, svm_node }
 import org.apache.spark.frame.FrameRdd
@@ -28,12 +29,6 @@ import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
 // TODO: all plugins should move out of engine-core into plugin modules
 
-/*
-Parameters
-----------
-observation : Vector
-    A single observation of features.
-*/
 @PluginDoc(oneLine = "Calculate the prediction label for a single observation.",
   extended = "",
   returns = "Predicted label.")
@@ -67,11 +62,9 @@ class LibSvmScorePlugin extends CommandPlugin[LibSvmScoreArgs, DoubleValue] {
    */
 
   override def execute(arguments: LibSvmScoreArgs)(implicit invocation: Invocation): DoubleValue = {
-    val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model: Model = arguments.model
 
-    val svmJsObject = modelMeta.data.get
-    val libsvmData = svmJsObject.convertTo[LibSvmData]
+    val libsvmData = model.data.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 
     LibSvmPluginFunctions.score(libsvmModel, arguments.vector)

@@ -19,7 +19,7 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.model.{ GenericNewModelArgs, ModelEntity }
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
@@ -35,9 +35,7 @@ class LogisticRegressionNewPlugin extends SparkCommandPlugin[GenericNewModelArgs
    */
   override def name: String = "model:logistic_regression/new"
 
-  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity =
-    {
-      val models = engine.models
-      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:logistic_regression")))
-    }
+  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
+    engine.models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:logistic_regression")))
+  }
 }

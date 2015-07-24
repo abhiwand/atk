@@ -17,30 +17,17 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameMeta }
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.spark.frame.SparkFrameData
-import com.intel.taproot.analytics.engine.spark.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDPredictArgs
 import org.apache.spark.mllib.linalg.Vectors
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
-
-/**
- * Parameters
- * ----------
- * predict_frame : Frame
- *   A frame whose labels are to be predicted.
- *   By default, predict is run on the same columns over which the model is
- *   trained.
- *   The user could specify column names too if needed.
- * observation_column : list of str (Optional)
- *   Column(s) containing the observations whose labels are to be predicted.
- *   By default, we predict the labels over columns the LogisticRegressionModel
- *   was trained on.
- */
 
 @PluginDoc(oneLine = "Make a new frame with a column for label prediction.",
   extended = """Predict the labels for a test frame and create a new frame revision with
@@ -73,43 +60,35 @@ class LogisticRegressionPredictPlugin extends SparkCommandPlugin[ClassificationW
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity =
-    {
-      val models = engine.models
-      val frames = engine.frames
+  override def execute(arguments: ClassificationWithSGDPredictArgs)(implicit invocation: Invocation): FrameEntity = {
+    val frame: SparkFrame = arguments.frame
+    val model: Model = arguments.model
 
-      val inputFrame = frames.expectFrame(arguments.frame)
-      val modelMeta = models.expectModel(arguments.model)
-
-      //create RDD from the frame
-      val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
-
-      //Running MLLib
-      val logRegJsObject = modelMeta.data.get
-      val logRegData = logRegJsObject.convertTo[LogisticRegressionData]
-      val logRegModel = logRegData.logRegModel
-      if (arguments.observationColumns.isDefined) {
-        require(logRegData.observationColumns.length == arguments.observationColumns.get.length,
-          "Number of columns for train and predict should be same")
-      }
-      val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
-
-      //predicting a label for the observation columns
-      val predictionsRDD = inputFrameRdd.mapRows(row => {
-        val array = row.valuesAsArray(logRegColumns)
-        val doubles = array.map(i => DataTypes.toDouble(i))
-        val point = Vectors.dense(doubles)
-        val prediction = logRegModel.predict(point)
-        row.addValue(prediction.toInt)
-      })
-
-      val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_label", DataTypes.int32)
-      val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
-
-      tryNew(CreateEntityArgs(description = Some("created by LogisticRegression predict operation"))) {
-        newPredictedFrame: FrameMeta =>
-          save(new SparkFrameData(newPredictedFrame.meta, predictFrameRdd))
-      }.meta
+    //Running MLLib
+    val logRegData = model.data.convertTo[LogisticRegressionData]
+    val logRegModel = logRegData.logRegModel
+    if (arguments.observationColumns.isDefined) {
+      require(logRegData.observationColumns.length == arguments.observationColumns.get.length,
+        "Number of columns for train and predict should be same")
     }
+    val logRegColumns = arguments.observationColumns.getOrElse(logRegData.observationColumns)
+
+    //predicting a label for the observation columns
+    val predictionsRDD = frame.rdd.mapRows(row => {
+      val array = row.valuesAsArray(logRegColumns)
+      val doubles = array.map(i => DataTypes.toDouble(i))
+      val point = Vectors.dense(doubles)
+      val prediction = logRegModel.predict(point)
+      row.addValue(prediction.toInt)
+    })
+
+    val updatedSchema = frame.schema.addColumn("predicted_label", DataTypes.int32)
+    val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
+
+    engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by LogisticRegression predict operation"))) {
+      newPredictedFrame: FrameEntity =>
+        newPredictedFrame.save(predictFrameRdd)
+    }
+  }
 
 }

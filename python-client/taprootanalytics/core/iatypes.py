@@ -345,3 +345,4 @@ def numpy_to_bson_friendly(obj):
         return obj.tolist()
     # Let the base class default method raise the TypeError
     return obj
+

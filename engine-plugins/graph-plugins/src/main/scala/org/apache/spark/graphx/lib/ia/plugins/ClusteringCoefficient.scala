@@ -45,7 +45,7 @@ object ClusteringCoefficient {
       g.collectNeighborIds(EdgeDirection.Either).mapValues { (vid, nbrs) =>
         val set = new VertexSet(4)
         var i = 0
-        while (i < nbrs.size) {
+        while (i < nbrs.length) {
           // prevent self cycle
           if (nbrs(i) != vid) {
             set.add(nbrs(i))
@@ -82,7 +82,7 @@ object ClusteringCoefficient {
 
     val triangleDoubleCounts: VertexRDD[Int] = setGraph.mapReduceTriplets(edgeFunc, _ + _)
 
-    val degreesChooseTwo: Graph[Long, ED] = setGraph.mapVertices({ case (vid, vertexSet) => (chooseTwo(vertexSet.size)) })
+    val degreesChooseTwo: Graph[Long, ED] = setGraph.mapVertices({ case (vid, vertexSet) => chooseTwo(vertexSet.size) })
 
     val doubleCountOfTriangles: Long =
       triangleDoubleCounts.aggregate[Long](0L)({ case (x: Long, (vid: VertexId, triangleDoubleCount: Int)) => x + triangleDoubleCount.toLong }, _ + _)

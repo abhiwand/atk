@@ -13,9 +13,9 @@ import org.apache.spark.rdd.RDD
  * This is a copy of the private CostFun class in MLlib's LBFGS class
  * @see org.apache.spark.mllib.optimization.LBFGS
  */
-class CostFunction(
-    data: RDD[(Double, Vector)],
-    gradient: Gradient,
+class CostFunctionWithFrequency(
+    data: RDD[(Double, Vector, Double)],
+    gradient: GradientWithFrequency,
     updater: Updater,
     regParam: Double,
     numExamples: Long) extends DiffFunction[BDV[Double]] {
@@ -29,9 +29,9 @@ class CostFunction(
 
     val (gradientSum, lossSum) = data.treeAggregate((Vectors.zeros(n), 0.0))(
       seqOp = (c, v) => (c, v) match {
-        case ((grad, loss), (label, features)) =>
+        case ((grad, loss), (label, features, frequency)) =>
           val l = localGradient.compute(
-            features, label, bcW.value, grad)
+            features, label, frequency, bcW.value, grad)
           (grad, loss + l)
       },
       combOp = (c1, c2) => (c1, c2) match {

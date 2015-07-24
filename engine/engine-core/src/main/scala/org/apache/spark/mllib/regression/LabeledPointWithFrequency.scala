@@ -9,7 +9,7 @@ import scala.beans.BeanInfo
 /**
  * Class that represents the features and labels of a data point.
  *
- * Copy of MlLib's labeled points that supports a frequency column.
+ * Extension of MlLib's labeled points that supports a frequency column.
  * The frequency column contains the frequency of occurrence of each observation.
  * @see org.apache.spark.mllib.regression.LabeledPoint
  *

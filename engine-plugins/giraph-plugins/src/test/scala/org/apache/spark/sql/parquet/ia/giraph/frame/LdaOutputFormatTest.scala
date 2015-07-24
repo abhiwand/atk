@@ -17,6 +17,7 @@
 package org.apache.spark.sql.parquet.ia.giraph.frame
 
 import org.apache.spark.sql.parquet.ParquetTypesConverter
+import org.apache.spark.sql.parquet.ia.giraph.frame.lda.LdaOutputFormat
 import org.scalatest.WordSpec
 
 class LdaOutputFormatTest extends WordSpec {

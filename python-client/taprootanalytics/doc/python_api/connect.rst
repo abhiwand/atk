@@ -3,53 +3,47 @@
 .. index::
        single: connect
 
-Connect
-=======
-
-Before the Python API can be used, the user must "connect" to the server, such
-that the Python client can download the API and configure itself::
-
-    import taprootanalytics as ia
-    ia.connect()
-
-.. autofunction:: taprootanalytics.connect
-
-Connecting to |ATK| server
-==========================
+Connect to the Server
+=====================
 
 .. contents:: Table of Contents
     :local:
     :backlinks: none
 
+Before the Python API can be used, the user must "connect" to the server, such
+that the Python client can download the API and configure itself:
+
+.. autofunction:: taprootanalytics.connect
+
 Basic connecting
 ----------------
 
-To use the default settings provided by the env and/or conf:
+To use the default settings provided by the environment and/or configuration:
 
 .. code::
 
-    >>> import taprootanalytics as ia
-    >>> ia.connect()
+    >>> import taprootanalytics as ta
+    >>> ta.connect()
 
 To connect to a specific server:
 
 .. code::
 
-    >>> import taprootanalytics as ia
-    >>> ia.server.uri = 'myhost-name:port'
-    >>> ia.connect()
+    >>> import taprootanalytics as ta
+    >>> ta.server.uri = 'myhost-name:port'
+    >>> ta.connect()
 
 Connections requiring OAuth
 ---------------------------
 
-To connect to a Analytics PaaS instance of |ATK|, the python client must have an OAuth
+To connect to an Analytics PaaS instance of |PACKAGE|, the python client must have an OAuth
 access token (see
 `oauth tokens <http://self-issued.info/docs/draft-ietf-oauth-v2-bearer.html>`).
 The user must have a credentials file which holds an OAuth access token and
 a refresh token.
 
-The user can create a credentials file using |ATK| client running in an
-interactive python REPL.
+The user can create a credentials file using |PACKAGE| client running in an
+interactive python session.
 Call ``create_connect_file('filename_of_your_choice')`` and interactively
 provide answers to its prompt.
 
@@ -57,31 +51,31 @@ provide answers to its prompt.
 
     $ python2.7
 
-    >>> import taprootanalytics as ia
-    >>> ia.create_connect_file('~/.atk/demo.creds')
+    >>> import taprootanalytics as ta
+    >>> ta.create_connect_file('~/.ta/demo.creds')
     OAuth server URI: uaa.my-dp2-domain.com
     user name: dscientist9
     Password: **********
 
-    Credentials created at '/home/dscientist9/.atk/demo.creds'
+    Credentials created at '/home/dscientist9/.ta/demo.creds'
 
 The credentials file can be specified when calling ``connect`` or
-set as an env variable $ATK_CREDS.
+set as an environmental variable $TA_CREDS.
 
 .. only:: html
 
     .. code::
 
-        >>> ia.connect('~/.atk/demo.creds')
-        Connected.  This client instance connected to server http://my-atk-instance.my-dp2-apps-domain.com/v1 as user dscientist9 at 2015-06-19 10:27:21.583704.
+        >>> ta.connect('~/.ta/demo.creds')
+        Connected.  This client instance connected to server http://my-ta-instance.my-dp2-apps-domain.com/v1 as user dscientist9 at 2015-06-19 10:27:21.583704.
 
 .. only:: latex
 
     .. code::
 
-        >>> ia.connect('~/.atk/demo.creds')
+        >>> ta.connect('~/.ta/demo.creds')
         Connected.  This client instance connected to
-        server http://my-atk-instance.my-dp2-apps-domain.com/v1
+        server http://my-ta-instance.my-dp2-apps-domain.com/v1
         as user dscientist9 at 2015-06-19 10:27:21.583704.
 
 The credentials file path must be relative to how python was launched.
@@ -89,29 +83,29 @@ Full paths are recommended.
 Multiple credentials files can be created.
 They should be protected with appropriate OS privileges.
 
-Using ENV variables
--------------------
+Using Environmental Variables
+-----------------------------
 
-The URI of the |ATK| server can be specified by the env variable ``$ATK_URI``.
+The URI of the |PACKAGE| server can be specified by the environmental variable ``$TA_URI``.
 The python client will initialize its config setting to this value.
 It may still be overridden as shown above in the session or script.
 
 .. code::
 
-    $ export ATK_URI=atk-server.demo-gotapaas.com
+    $ export TA_URI=ta-server.demo-gotapaas.com
 
-The credentials file can be specified by $ATK_CREDS.
+The credentials file can be specified by $TA_CREDS.
 
 .. code::
 
-    $ export ATK_CREDS=~/.atk/demo.creds
+    $ export TA_CREDS=~/.ta/demo.creds
 
 With these two variables set, the simple connect sequence works.
 
 .. code::
 
-    >>> import taprootanalytics as ia
-    >>> ia.connect()
+    >>> import taprootanalytics as ta
+    >>> ta.connect()
 
 Troubleshooting
 ---------------
@@ -120,13 +114,13 @@ Client's Server Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 To see the client's configuration to find the server, just repr the
-``ia.server``:
+``ta.server``:
 
-.. only: html
+.. only:: html
 
     .. code::
 
-        >>> ia.server
+        >>> ta.server
         {
             "headers": {
                 "Accept": "application/json,text/plain", 
@@ -134,15 +128,15 @@ To see the client's configuration to find the server, just repr the
                 "Content-type": "application/json"
             }, 
             "scheme": "http", 
-            "uri": "atk-server.demo-gotapaas.com", 
+            "uri": "ta-server.demo-gotapaas.com", 
             "user": "dscientist9"
         }
 
-.. only: latex
+.. only:: latex
 
     .. code::
 
-        >>> ia.server
+        >>> ta.server
         {
             "headers": {
                 "Accept": "application/json,text/plain", 
@@ -162,22 +156,10 @@ To see the client's configuration to find the server, just repr the
                 "Content-type": "application/json"
             }, 
             "scheme": "http", 
-            "uri": "atk-server.demo-gotapaas.com", 
+            "uri": "ta-server.demo-gotapaas.com", 
             "user": "dscientist9"
         }
 
-The settings may be individually modified off the ``ia.server`` object,
+The settings may be individually modified with the ``ta.server`` object,
 before calling connect.
 
-HTTP Logging
-------------
-
-To see http traffic, call ``ia.loggers.set_http()``.
-It can be helpful to turn on the logging before calling connect or
-create_connect_file.
-
-.. code::
-
-    >>> import taprootanalytics as ia
-    >>> ia.loggers.set_http()
-    >>> ia.create_connect_file('supercreds')

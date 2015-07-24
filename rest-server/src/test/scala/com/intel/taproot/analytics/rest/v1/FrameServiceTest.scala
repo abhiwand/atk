@@ -16,9 +16,9 @@
 
 package com.intel.taproot.analytics.rest.v1
 
+import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.analytics.engine.plugin.{ Call, Invocation }
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
-import com.intel.taproot.analytics.security.UserPrincipal
 import org.mockito.Mockito._
 
 import com.intel.taproot.analytics.engine.Engine

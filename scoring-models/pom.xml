@@ -7,8 +7,7 @@
     <packaging>jar</packaging>
 
     <description>
-        Not used yet - this will be where the Scoring Engine is launched when we move it from inside the API Server to
-        its own process.
+        Scoring Engine
     </description>
 
     <parent>
