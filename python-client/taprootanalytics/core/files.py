@@ -72,29 +72,29 @@ class CsvFile(DataFile):
     Examples
     --------
     Given a raw data file named 'raw_data.csv', located at
-    'hdfs://localhost.localdomain/user/iauser/data/'.
+    'hdfs://localhost.localdomain/user/taproot/data/'.
     It consists of three columns, *a*, *b*, and *c*.
     The columns have the data types *int32*, *int32*, and *str* respectively.
     The fields of data are separated by commas.
     There is no header to the file.
 
-    Import the |IAT|:
+    Import the |TA|:
 
     .. code::
 
-        >>> import taprootanalytics as ia
+        >>> import taprootanalytics as ta
 
     Define the data:
 
     .. code::
 
-        >>> csv_schema = [("a", int32), ("b", int32), ("c", str)]
+        >>> csv_schema = [("a", ta.int32), ("b", ta.int32), ("c", str)]
 
     Create a CsvFile object with this schema:
 
     .. code::
 
-        >>> csv_define = ia.CsvFile("data/raw_data.csv", csv_schema)
+        >>> csv_define = ta.CsvFile("data/raw_data.csv", csv_schema)
 
     The default delimiter, a comma, was used to separate fields in the file, so
     it was not specified.
@@ -105,14 +105,14 @@ class CsvFile(DataFile):
 
     .. code::
 
-        >>> ia.CsvFile("data/raw_data.csv", csv_schema, delimiter = ':')
+        >>> ta.CsvFile("data/raw_data.csv", csv_schema, delimiter = ':')
 
     If the data had some lines of header at the beginning of the file, the
     lines should be skipped:
 
     .. code::
 
-        >>> csv_data = ia.CsvFile("data/raw_data.csv", csv_schema, skip_header_lines=2)
+        >>> csv_data = ta.CsvFile("data/raw_data.csv", csv_schema, skip_header_lines=2)
 
     For other examples see :ref:`Importing a CSV File <example_files.csvfile>`.
 
@@ -162,15 +162,15 @@ class CsvFile(DataFile):
 
             .. code::
 
-                >>> csv_class = ia.CsvFile("raw_data.csv", schema=[("col1", int32), ("col2", float32)])
+                >>> csv_class = ta.CsvFile("raw_data.csv", schema=[("col1", ta.int32), ("col2", ta.float32)])
                 >>> print(csv_class.field_names())
 
         .. only:: latex
 
             .. code::
 
-                >>> csv_class = ia.CsvFile("raw_data.csv",
-                ... schema=[("col1", int32), ("col2", float32)])
+                >>> csv_class = ta.CsvFile("raw_data.csv",
+                ... schema=[("col1", ta.int32), ("col2", ta.float32)])
                 >>> print(csv_class.field_names())
 
         Results:
@@ -204,22 +204,22 @@ class CsvFile(DataFile):
 
             .. code::
 
-                >>> csv_class = ia.CsvFile("raw_data.csv", schema = [("col1", int32), ("col2", float32)])
+                >>> csv_class = ta.CsvFile("raw_data.csv", schema = [("col1", ta.int32), ("col2", ta.float32)])
                 >>> print(csv_class.field_types())
 
         .. only:: html
 
             .. code::
 
-                >>> csv_class = ia.CsvFile("raw_data.csv",
-                ... schema=[("col1", int32), ("col2", float32)])
+                >>> csv_class = ta.CsvFile("raw_data.csv",
+                ... schema=[("col1", ta.int32), ("col2", ta.float32)])
                 >>> print(csv_class.field_types())
 
         Results:
 
         .. code::
 
-            [numpy.int32, numpy.float32]
+            [ta.int32, ta.float32]
 
         """
         # TODO - Review docstring
@@ -266,21 +266,21 @@ class LineFile(DataFile):
     Examples
     --------
     Given a raw data file 'rawline_data.txt' located at
-    'hdfs://localhost.localdomain/user/iauser/data/'.
+    'hdfs://localhost.localdomain/user/taproot/data/'.
     It consists of multiple lines separated by new line character.
 
-    Import the |IAT|:
+    Import the |TA|:
 
     .. code::
 
-        >>> import taprootanalytics as ia
-        >>> ia.connect()
+        >>> import taprootanalytics as ta
+        >>> ta.connect()
 
     Define the data:
 
     .. code::
 
-        >>> linefile_class = ia.LineFile("data/rawline_data.txt")
+        >>> linefile_class = ta.LineFile("data/rawline_data.txt")
 
     """
 
@@ -340,7 +340,7 @@ class JsonFile(MultiLineFile):
     Examples
     --------
     Given a raw data file named 'raw_data.json' located at
-    'hdfs://localhost.localdomain/user/iauser/data/'.
+    'hdfs://localhost.localdomain/user/taproot/data/'.
     It consists of a 3 top level json objects with a single value each called
     obj. Each object contains the attributes color, size, and shape.
 
@@ -362,24 +362,24 @@ class JsonFile(MultiLineFile):
             "shape": "square" }
         }
 
-    Import the |IAT|:
+    Import the |TA|:
 
     .. code::
 
-        >>> import taprootanalytics as ia
-        >>> ia.connect()
+        >>> import taprootanalytics as ta
+        >>> ta.connect()
 
     Define the data:
 
     .. code::
 
-        >>> json_file = ia.JsonFile("data/raw_data.json")
+        >>> json_file = ta.JsonFile("data/raw_data.json")
 
     Create a frame using this JsonFile:
 
     .. code::
 
-        >>> my_frame = ia.Frame(json_file)
+        >>> my_frame = ta.Frame(json_file)
 
     The frame looks like:
 
@@ -480,7 +480,7 @@ class XmlFile(MultiLineFile):
     Examples
     --------
     Given a raw data file named 'raw_data.xml' located at
-    'hdfs://localhost.localdomain/user/iauser/data/'.
+    'hdfs://localhost.localdomain/user/taproot/data/'.
     It consists of a root element called *shapes* with subelements with the
     tag names *square* and *triangle*.
     Each of these subelements has two potential subelements called *name* and
@@ -506,24 +506,24 @@ class XmlFile(MultiLineFile):
             </square>
         </shapes>
 
-    Import the |IAT|:
+    Import the |TA|:
 
     .. code::
 
-        >>> import taprootanalytics as ia
-        >>> ia.connect()
+        >>> import taprootanalytics as ta
+        >>> ta.connect()
 
     Define the data:
 
     .. code::
 
-        >>> xml_file = ia.XmlFile("data/raw_data.xml", "square")
+        >>> xml_file = ta.XmlFile("data/raw_data.xml", "square")
 
     Create a frame using this XmlFile:
 
     .. code::
 
-        >>> my_frame = ia.Frame(xml_file)
+        >>> my_frame = ta.Frame(xml_file)
 
     The frame looks like:
 
@@ -612,20 +612,20 @@ class HiveQuery(DataFile):
     A simple query could be to get the query for the name and age
     .. code::
 
-        >>> import taprootanalytics as ia
-        >>> ia.connect()
+        >>> import taprootanalytics as ta
+        >>> ta.connect()
 
     Define the data:
 
     .. code::
 
-        >>> hive_query = ia.HiveQuery("select name, age from person")
+        >>> hive_query = ta.HiveQuery("select name, age from person")
 
     Create a frame using the object:
 
     .. code::
 
-        >>> my_frame = ia.Frame(hive_query)
+        >>> my_frame = ta.Frame(hive_query)
 
     """
 

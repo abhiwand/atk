@@ -245,14 +245,14 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> BF = ia.get_frame('my_data')
+            >>> BF = ta.get_frame('my_data')
             >>> print BF.schema
 
         The result is:
 
         .. code::
 
-            [("col1", str), ("col2", numpy.int32)]
+            [("col1", str), ("col2", ta.int32)]
 
         """
         return self._backend.get_schema(self)
@@ -276,7 +276,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> BF = ia.get_frame('my_data')
+            >>> BF = ta.get_frame('my_data')
             >>> print BF.status
 
         The result is:
@@ -320,7 +320,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         .. code::
 
             >>> my_frame.add_columns(lambda row: row.column1*row.column2,
-            ... ('column3', int32))
+            ... ('column3', ta.int32))
 
         The frame now has three columns, *column1*, *column2* and *column3*.
         The type of *column3* is an int32, and the value is the product of
@@ -347,14 +347,14 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             .. code::
 
-                >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", float32), ("a_plus_b", float32)])
+                >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", ta.float32), ("a_plus_b", ta.float32)])
 
         .. only:: latex
 
             .. code::
 
                 >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a +
-                ... row.b], [("a_times_b", float32), ("a_plus_b", float32)])
+                ... row.b], [("a_times_b", ta.float32), ("a_plus_b", ta.float32)])
 
         Two new columns are created, "a_times_b" and "a_plus_b", with the
         appropriate contents.
@@ -380,7 +380,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> my_frame.add_columns(function_b, ("calculated_b", float32))
+            >>> my_frame.add_columns(function_b, ("calculated_b", ta.float32))
 
         This would result in an error because function_b is returning a value
         as a single element list like [2.4], but our column is defined as a
@@ -389,7 +389,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> my_frame.add_columns(function_b, [("calculated_b", float32)])
+            >>> my_frame.add_columns(function_b, [("calculated_b", ta.float32)])
 
         To run an optimized version of add_columns, columns_accessed parameter can
         be populated with the column names which are being accessed in |UDF|. This
@@ -402,7 +402,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> my_frame.add_columns(lambda row: row.a * row.b, ("a_times_b", float32), columns_accessed=["a", "b"])
+            >>> my_frame.add_columns(lambda row: row.a * row.b, ("a_times_b", ta.float32), columns_accessed=["a", "b"])
 
         add_columns would fail if columns_accessed parameter is not populated with the correct list of accessed
         columns. If not specified, columns_accessed defaults to None which implies that all columns might be accessed
@@ -434,7 +434,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> my_frame = ia.Frame(source="my_data.csv")
+            >>> my_frame = ta.Frame(source="my_data.csv")
             >>> my_frame.name("cust")
 
         Given the frame has columns *id*, *name*, *hair*, and *shoe*.
@@ -674,8 +674,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             >>> new_frame = my_frame.group_by('a', agg.count)
             >>> new_frame.inspect()
 
-              a:str       count:int
-            /-----------------------/
+              a:str       count:ta.int32
+            /----------------------------/
               cat             3
               apple           1
               bat             2
@@ -687,8 +687,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.inspect()
 
-              a:int   b:str   c:float
-            /-------------------------/
+              a:ta.int32   b:str   c:ta.float32
+            /-----------------------------------/
               1       alpha     3.0
               1       bravo     5.0
               1       alpha     5.0
@@ -704,8 +704,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             >>> new_frame = my_frame.group_by(['a', 'b'], {'c' : agg.avg})
             >>> new_frame.inspect()
 
-              a:int   b:str   c_avg:float
-            /-----------------------------/
+              a:ta.int32   b:str   c_avg:ta.float32
+            /---------------------------------------/
               1       alpha     4.0
               1       bravo     5.0
               2       bravo    10.0
@@ -717,8 +717,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.inspect()
 
-              a:str   c:int   d:float e:int
-            /-------------------------------/
+              a:str   c:ta.int32   d:ta.float32 e:ta.int32
+            /----------------------------------------------/
               ape     1       4.0     9
               ape     1       8.0     8
               big     1       5.0     7
@@ -737,8 +737,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
                 >>> new_frame = my_frame.group_by(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
-                  a:str   c:int   count:int  d_avg:float  d_sum:float   d_min:float   e_max:int
-                /-------------------------------------------------------------------------------/
+                  a:str   c:ta.int32   count:ta.int32  d_avg:ta.float32  d_sum:ta.float32   d_min:ta.float32   e_max:ta.int32
+                /-------------------------------------------------------------------------------------------------------------/
                   ape     1       2          6.0          12.0          4.0           9
                   big     1       3          6.333333     19.0          5.0           7
 
@@ -859,8 +859,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> print my_frame.inspect(4)
 
-            column defs ->  animal:str  name:str    age:int     weight:float
-                          /--------------------------------------------------/
+            column defs ->  animal:str  name:str    age:ta.int32   weight:ta.float32
+                          /----------------------------------------------------------/
             frame data ->   human       George        8            542.5
                             human       Ursula        6            495.0
                             ape         Ape          41            400.0
@@ -940,7 +940,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> print your_frame.inspect(3)
 
-              a:str  d:numpy.int32  e:numpy.int32
+              a:str  d:ta.int32  e:ta.int32
             /-------------------------------------/
                 abc    1              2
                 def    3              4
@@ -957,7 +957,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> print joined_frame.inspect(3)
 
-              a_L:str  a_R:str  b:str  c:str  d:numpy.int32  e:numpy.int32
+              a_L:str  a_R:str  b:str  c:str  d:ta.int32  e:ta.int32
             /--------------------------------------------------------------/
                   abc      abc    bcd    cde    1              2
                   def      def    efg    fgh    3              4
@@ -1163,7 +1163,7 @@ class Frame(_DocStubsFrame, _BaseFrame):
 
     .. code::
 
-        >>> my_frame = ia.Frame(my_csv_schema, "myframe")
+        >>> my_frame = ta.Frame(my_csv_schema, "myframe")
 
     A Frame object has been created and *my_frame* is its proxy.
     It brought in the data described by *my_csv_schema*.
@@ -1173,7 +1173,7 @@ class Frame(_DocStubsFrame, _BaseFrame):
 
     .. code::
 
-        >>> your_frame = ia.Frame(name='yourframe')
+        >>> your_frame = ta.Frame(name='yourframe')
 
     A frame has been created and Frame *your_frame* is its proxy.
     It has no data yet, but it does have the name *yourframe*.
@@ -1217,8 +1217,8 @@ class Frame(_DocStubsFrame, _BaseFrame):
           ..code::
 
                 >>> your_frame.inspect(4)
-                  col_1:str  col_qty:int32
-                /--------------------------/
+                  col_1:str  col_qty:ta.int32
+                /-----------------------------/
                   bear          15
                   cat            2
                   snake          8
@@ -1233,8 +1233,8 @@ class Frame(_DocStubsFrame, _BaseFrame):
 
             >>> my_frame.append(your_frame)
             >>> my_frame.inspect(8)
-              col_1:str  col_2:int32
-            /------------------------/
+              col_1:str  col_2:ta.int32
+            /---------------------------/
               dog           None
               bear            15
               bear          None
@@ -1303,9 +1303,9 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
 
         .. code::
 
-            >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32), ('user_name', str), ('movie_id', int32), ('movie_title', str), ('rating', str)])
-            >>> my_frame = ia.Frame(csv)
-            >>> my_graph = ia.Graph()
+            >>> csv = ta.CsvFile("/movie.csv", schema= [('user_id', ta.int32), ('user_name', str), ('movie_id', ta.int32), ('movie_title', str), ('rating', str)])
+            >>> my_frame = ta.Frame(csv)
+            >>> my_graph = ta.Graph()
             >>> my_graph.define_vertex_type('users')
             >>> my_vertex_frame = my_graph.vertices['users']
             >>> my_vertex_frame.add_vertices(my_frame, 'user_id', ['user_name', 'age'])
@@ -1314,13 +1314,13 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
 
         .. code::
 
-            >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+            >>> csv = ta.CsvFile("/movie.csv", schema= [('user_id', ta.int32),
             ...                                     ('user_name', str),
-            ...                                     ('movie_id', int32),
+            ...                                     ('movie_id', ta.int32),
             ...                                     ('movie_title', str),
             ...                                     ('rating', str)])
-            >>> my_frame = ia.Frame(csv)
-            >>> my_graph = ia.Graph()
+            >>> my_frame = ta.Frame(csv)
+            >>> my_graph = ta.Graph()
             >>> my_graph.define_vertex_type('users')
             >>> my_vertex_frame = my_graph.vertices['users']
             >>> my_vertex_frame.add_vertices(my_frame, 'user_id',
@@ -1330,7 +1330,7 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
 
     .. code::
 
-        >>> my_graph = ia.get_graph("your_graph")
+        >>> my_graph = ta.get_graph("your_graph")
         >>> my_vertex_frame = my_graph.vertices["your_label"]
 
     Calling methods on a VertexFrame:
@@ -1454,14 +1454,14 @@ class EdgeFrame(_DocStubsEdgeFrame, _BaseFrame):
 
     .. code::
 
-        >>> my_csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
+        >>> my_csv = ta.CsvFile("/movie.csv", schema= [('user_id', ta.int32),
         ...                                     ('user_name', str),
-        ...                                     ('movie_id', int32),
+        ...                                     ('movie_id', ta.int32),
         ...                                     ('movie_title', str),
         ...                                     ('rating', str)])
 
-        >>> my_frame = ia.Frame(my_csv)
-        >>> my_graph = ia.Graph()
+        >>> my_frame = ta.Frame(my_csv)
+        >>> my_graph = ta.Graph()
         >>> my_graph.define_vertex_type('users')
         >>> my_graph.define_vertex_type('movies')
         >>> my_graph.define_edge_type('ratings','users','movies',directed=True)
@@ -1494,7 +1494,7 @@ class EdgeFrame(_DocStubsEdgeFrame, _BaseFrame):
 
     .. code::
 
-        >>> my_old_graph = ia.get_graph("your_graph")
+        >>> my_old_graph = ta.get_graph("your_graph")
         >>> my_new_edge_frame = my_old_graph.edges["your_label"]
 
     Calling methods on an EdgeFrame:
