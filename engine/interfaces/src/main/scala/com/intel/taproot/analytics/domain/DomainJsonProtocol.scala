@@ -20,21 +20,16 @@ import java.net.URI
 import java.util
 
 import com.intel.taproot.event.EventLogging
-import com.intel.taproot.analytics.domain.command.{ CommandDoc, CommandDefinition }
-import com.intel.taproot.analytics.domain.command.{ CommandPost, CommandDefinition }
+import com.intel.taproot.analytics.domain.command.{ CommandDoc, CommandPost, CommandDefinition }
 import com.intel.taproot.analytics.domain.frame.{ UdfDependency, Udf }
 import com.intel.taproot.analytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }
 import com.intel.taproot.analytics.domain.frame.partitioning.{ RepartitionArgs, CoalesceArgs }
 import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionArgs, GarbageCollectionEntry, GarbageCollection }
 import com.intel.taproot.analytics.domain.model._
-import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.domain.frame.load._
 import com.intel.taproot.analytics.domain.schema._
-import DataTypes.DataType
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Call, Invocation }
-import com.intel.taproot.analytics.spray.json._
 import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag.ApiMaturityTag
-import com.intel.taproot.analytics.engine.plugin.ApiMaturityTag
 
 import spray.json._
 import com.intel.taproot.analytics.domain.frame._
@@ -45,12 +40,10 @@ import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import org.joda.time.{ Duration, DateTime }
 import com.intel.taproot.analytics.engine._
-import org.joda.time.DateTime
 
 import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import com.intel.taproot.analytics.spray.json._
-import scala.util.Success
 import com.intel.taproot.analytics.UnitReturn
 
 import scala.collection.JavaConversions._
@@ -61,20 +54,14 @@ import scala.collection.mutable.ArrayBuffer
 
 /**
  * Implicit conversions for domain objects to/from JSON
+ *
+ * NOTE: Order of implicits matters unless you give an explicit type on the left hand side.
  */
-
 object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
-
-  /**
-   * ***********************************************************************
-   * NOTE:: Order of implicits matters
-   * *************************************************************************
-   */
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
     override def read(json: JsValue): DataType = {
       val raw = json.asInstanceOf[JsString].value
-      //val corrected = raw.substring(1, raw.length - 2)
       DataTypes.toDataType(raw)
     }
 
@@ -98,11 +85,11 @@ object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
     }
   }
 
-  implicit val columnFormat = jsonFormat3(Column)
-  implicit val frameSchemaFormat = jsonFormat(FrameSchema, "columns")
-  implicit val vertexSchemaFormat = jsonFormat(VertexSchema, "columns", "label", "id_column_name")
-  implicit val edgeSchemaFormat = jsonFormat(EdgeSchema, "columns", "label", "src_vertex_label", "dest_vertex_label", "directed")
-  implicit val schemaArgsForamt = jsonFormat1(SchemaArgs)
+  implicit val columnFormat: RootJsonFormat[Column] = jsonFormat3(Column)
+  implicit val frameSchemaFormat: RootJsonFormat[FrameSchema] = jsonFormat(FrameSchema, "columns")
+  implicit val vertexSchemaFormat: RootJsonFormat[VertexSchema] = jsonFormat(VertexSchema, "columns", "label", "id_column_name")
+  implicit val edgeSchemaFormat: RootJsonFormat[EdgeSchema] = jsonFormat(EdgeSchema, "columns", "label", "src_vertex_label", "dest_vertex_label", "directed")
+  implicit val schemaArgsFormat: RootJsonFormat[SchemaArgs] = jsonFormat1(SchemaArgs)
 
   /**
    * Format that can handle reading both the current schema class and the old one.
@@ -124,24 +111,14 @@ object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
      * Read json
      */
     override def read(json: JsValue): Schema = {
-      try {
-        if (json.asJsObject.fields.contains("src_vertex_label")) {
-          edgeSchemaFormat.read(json)
-        }
-        else if (json.asJsObject.fields.contains("label")) {
-          vertexSchemaFormat.read(json)
-        }
-        else {
-          frameSchemaFormat.read(json)
-        }
+      if (json.asJsObject.fields.contains("src_vertex_label")) {
+        edgeSchemaFormat.read(json)
       }
-      catch {
-        //  If the new format can't be deserialized, then try the old format that
-        // might still be used in the database
-        case e: Exception => {
-          info("couldn't deserialize schema using any of the current formats, trying old format for json: " + json.compactPrint)
-          Schema.fromTuples(legacyFormat.read(json).columns)
-        }
+      else if (json.asJsObject.fields.contains("label")) {
+        vertexSchemaFormat.read(json)
+      }
+      else {
+        frameSchemaFormat.read(json)
       }
     }
   }
@@ -163,7 +140,7 @@ object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
     def findMatch(text: String): Option[String] = {
       val result = pattern.findFirstMatchIn(text)
         .map(m => m.group(groupNumber))
-        .flatMap(s => if (s == null) None else Some(s))
+        .flatMap(s => Option(s))
       result
     }
   }
@@ -178,6 +155,7 @@ object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
         json match {
           case JsString(uri) => createReference(uri.substring(uri.lastIndexOf('/') + 1).toLong)
           case JsNumber(n) => createReference(n.toLong)
+          case _ => throw new IllegalArgumentException("Json was not a String or Number")
         }
       }
       catch {
@@ -234,7 +212,7 @@ object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
     }
 
     override def write(obj: E): JsValue = obj match {
-      case javaCollection: E => javaCollection.asScala.toJson
+      case javaCollection: java.util.Collection[T] => javaCollection.asScala.toJson
       case x => serializationError(s"Expected a Java collection, but received: $x")
     }
   }
@@ -260,13 +238,12 @@ object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
     }
 
     override def write(obj: M): JsValue = obj match {
-      case javaMap: java.util.Map[K, V] => {
+      case javaMap: java.util.Map[K, V] =>
         val map = javaMap.map {
           case (key, value) =>
             (key.toString, value.toJson)
         }.toMap
         JsObject(map)
-      }
       case x => serializationError(s"Expected a Java map, but received: $x")
     }
   }
@@ -276,7 +253,7 @@ object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
       obj match {
         case n: Int => new JsNumber(n)
         case n: Long => new JsNumber(n)
-        case n: Float => new JsNumber(n)
+        case n: Float => new JsNumber(BigDecimal(n))
         case n: Double => new JsNumber(n)
         case s: String => new JsString(s)
         case s: Boolean => JsBoolean(s)
@@ -486,11 +463,11 @@ object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
     }
   }
 
-  lazy implicit val booleanSchemaFormat = jsonFormat5(BooleanSchema)
-  lazy implicit val numberSchemaFormat = jsonFormat10(NumberSchema)
-  lazy implicit val stringSchemaFormat = jsonFormat10(StringSchema)
-  lazy implicit val objectSchemaFormat = jsonFormat13(ObjectSchema)
-  lazy implicit val arraySchemaFormat = jsonFormat10(ArraySchema)
+  lazy implicit val booleanSchemaFormat: RootJsonFormat[BooleanSchema] = jsonFormat5(BooleanSchema)
+  lazy implicit val numberSchemaFormat: RootJsonFormat[NumberSchema] = jsonFormat10(NumberSchema)
+  lazy implicit val stringSchemaFormat: RootJsonFormat[StringSchema] = jsonFormat10(StringSchema)
+  lazy implicit val objectSchemaFormat: RootJsonFormat[ObjectSchema] = jsonFormat13(ObjectSchema)
+  lazy implicit val arraySchemaFormat: RootJsonFormat[ArraySchema] = jsonFormat10(ArraySchema)
 
   implicit object CommandDocFormat extends JsonFormat[CommandDoc] {
     override def read(value: JsValue): CommandDoc = {
@@ -517,11 +494,11 @@ object DomainJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
   implicit object FrameCopyFormat extends JsonFormat[CopyFrameArgs] {
     override def read(value: JsValue): CopyFrameArgs = {
       val jo = value.asJsObject
-      val frame = frameReferenceFormat.read(jo.getFields("frame")(0))
+      val frame = frameReferenceFormat.read(jo.getFields("frame").head)
       val columns: Option[Map[String, String]] = jo.getFields("columns") match {
         case Seq(JsString(n)) => Some(Map[String, String](n -> n))
         case Seq(JsArray(names)) => Some((for (n <- names) yield (n.convertTo[String], n.convertTo[String])).toMap)
-        case Seq(JsObject(fields)) => Some((for ((name, new_name) <- fields) yield (name, new_name.convertTo[String])))
+        case Seq(JsObject(fields)) => Some(for ((name, new_name) <- fields) yield (name, new_name.convertTo[String]))
         case Seq(JsNull) => None
         case Seq() => None
         case x => deserializationError(s"Expected FrameCopy JSON string, array, or object for argument 'columns' but got $x")
