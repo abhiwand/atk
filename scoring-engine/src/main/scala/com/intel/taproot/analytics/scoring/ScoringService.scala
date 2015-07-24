@@ -25,6 +25,7 @@ import scala.concurrent._
 import ExecutionContext.Implicits.global
 import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 import scala.util.{ Failure, Success }
+import com.intel.taproot.analytics.scoring.interfaces.{ Model, ModelLoader }
 
 /**
  * We don't implement our route structure directly in the service actor because
