@@ -109,8 +109,8 @@ class DomainJsonProtocolTest extends WordSpec with Matchers {
       val jsonSet = javaSet.toJson
       val jsonList = javaList.toJson
 
-      jsonSet.convertTo[java.util.Set[Int]] should contain theSameElementsAs (javaSet)
-      jsonList.convertTo[java.util.List[String]] should contain theSameElementsAs (javaList)
+      jsonSet.convertTo[java.util.Set[Int]] should contain theSameElementsAs javaSet
+      jsonList.convertTo[java.util.List[String]] should contain theSameElementsAs javaList
     }
   }
   "javaMapFormat" should {
@@ -123,8 +123,8 @@ class DomainJsonProtocolTest extends WordSpec with Matchers {
       val jsonMap = javaHashMap.toJson
       val javaJsonToHashMap = jsonMap.convertTo[java.util.HashMap[String, Int]]
 
-      javaJsonToHashMap.keySet() should contain theSameElementsAs (javaHashMap.keySet())
-      javaJsonToHashMap.values() should contain theSameElementsAs (javaHashMap.values())
+      javaJsonToHashMap.keySet() should contain theSameElementsAs javaHashMap.keySet()
+      javaJsonToHashMap.values() should contain theSameElementsAs javaHashMap.values()
     }
   }
 }
