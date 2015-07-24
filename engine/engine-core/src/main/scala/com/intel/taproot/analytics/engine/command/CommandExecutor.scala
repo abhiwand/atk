@@ -259,7 +259,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPl
         }
       }
       finally {
-        Files.deleteIfExists(FileSystems.getDefault().getPath(s"$tempConfFileName"))
+        Files.deleteIfExists(FileSystems.getDefault.getPath(s"$tempConfFileName"))
         sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
       }
     }
