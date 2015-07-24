@@ -73,7 +73,7 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val sc = mock[SparkContext]
     when(contextFactory.context(anyString(), Some(anyString()))(any[Invocation])).thenReturn(sc)
 
-    new CommandExecutor(engine, commandStorage)
+    new CommandExecutor(engine, commandStorage, commandPluginRegistry)
   }
 
   //  "create spark context" should "add a entry in command id and context mapping" in {

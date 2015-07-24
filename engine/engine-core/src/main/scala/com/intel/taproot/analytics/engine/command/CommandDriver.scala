@@ -48,7 +48,7 @@ class CommandDriver extends AbstractEngineComponent {
           case Some(u) => userStorage.createUserPrincipalFromUser(u)
           case _ => null
         }, EngineExecutionContext.global)
-        commandExecutor.executeCommand(command, commandPluginRegistry)(invocation)
+        commandExecutor.executeCommand(command)(invocation)
       }
     }
   }

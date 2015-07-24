@@ -35,10 +35,8 @@ import scala.concurrent._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.util.Try
-import com.intel.taproot.analytics.domain.command.CommandTemplate
-import com.intel.taproot.analytics.domain.command.Execution
+import com.intel.taproot.analytics.domain.command.{ CommandDefinition, CommandTemplate, Execution, Command }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import com.intel.taproot.analytics.domain.command.Command
 import com.intel.taproot.event.{ EventContext, EventLogging }
 import scala.concurrent.duration._
 import EngineExecutionContext.global
@@ -47,7 +45,6 @@ case class CommandContext(
     command: Command,
     executionContext: ExecutionContext,
     user: UserPrincipal,
-    plugins: CommandPluginRegistry,
     eventContext: EventContext) {
 
 }
@@ -73,11 +70,15 @@ case class CommandContext(
  * @param engine an Engine instance that will be passed to command plugins during execution
  * @param commands a command storage that the executor can use for audit logging command execution
  */
-//class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextFactory: SparkContextFactory)
-class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
+class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPluginRegistry: CommandPluginRegistry)
     extends EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
+
+  /**
+   * Returns all the command definitions registered with this command executor.
+   */
+  def commandDefinitions: Iterable[CommandDefinition] = commandPluginRegistry.commandDefinitions
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
@@ -89,31 +90,20 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
    * @param commandTemplate the CommandTemplate from which to extract the command name and the arguments
    * @return an Execution object that can be used to track the command's execution
    */
-  def execute[A <: Product, R <: Product](commandTemplate: CommandTemplate,
-                                          commandPluginRegistry: CommandPluginRegistry)(implicit invocation: Invocation): Execution =
+  def execute[A <: Product, R <: Product](commandTemplate: CommandTemplate)(implicit invocation: Invocation): Execution =
     withContext("ce.execute(ct)") {
       val cmd = commands.create(commandTemplate.copy(createdBy = if (invocation.user != null) Some(invocation.user.user.id) else None))
-      val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
-      val context = CommandContext(cmd,
-        EngineExecutionContext.global,
-        user,
-        commandPluginRegistry,
-        eventContext)
-
+      validatePluginExists(cmd)
+      val context = CommandContext(cmd, EngineExecutionContext.global, user, eventContext)
       Execution(cmd, executeCommandContextInFuture(context))
     }
 
-  def executeCommand[A <: Product, R <: Product](cmd: Command,
-                                                 commandPluginRegistry: CommandPluginRegistry)(implicit invocation: Invocation): Unit =
+  def executeCommand[A <: Product, R <: Product](cmd: Command)(implicit invocation: Invocation): Unit =
     withContext(s"ce.executeCommand.${cmd.name}") {
-      val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
-      val context = CommandContext(cmd,
-        EngineExecutionContext.global,
-        user,
-        commandPluginRegistry,
-        eventContext)
+      validatePluginExists(cmd)
+      val context = CommandContext(cmd, EngineExecutionContext.global, user, eventContext)
 
-      /* Stores the (intermediate) results, don't mark the command complete yet as it will be marked complete by rest server */
+      // Stores the (intermediate) results, don't mark the command complete yet as it will be marked complete by rest server
       commands.storeResult(context.command.id, Try { executeCommandContext(context) })
     }
 
@@ -145,14 +135,14 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
    */
   private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext)(implicit invocation: Invocation): JsObject = withContext("cmdExcector") {
     info(s"command id:${commandContext.command.id}, name:${commandContext.command.name}, args:${commandContext.command.compactArgs}, ${JvmMemory.memory}")
-    val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
+    val plugin = expectCommandPlugin[A, R](commandContext.command)
     val arguments = plugin.parseArguments(commandContext.command.arguments.get)
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
     debug(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
     if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && EngineConfig.isSparkOnYarn) {
-      val archiveName = commandContext.plugins.getArchiveNameFromPlugin(plugin.name)
-      val sparkSubmitExitCode = executeCommandOnYarn(commandContext.command, plugin, archiveName)
+      val archiveName = commandPluginRegistry.getArchiveNameFromPlugin(plugin.name)
+      executeCommandOnYarn(commandContext.command, plugin, archiveName)
       // Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution
       val updatedCommand = commands.lookup(commandContext.command.id).get
       if (updatedCommand.error.isDefined) {
@@ -302,15 +292,21 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
   }
 
   /**
+   * Throw exception if plugin doesn't exist for the supplied Command
+   */
+  private def validatePluginExists(command: Command): Unit = {
+    expectCommandPlugin(command)
+  }
+
+  /**
    * Lookup the plugin from the registry
-   * @param plugins the registry of plugins
    * @param command the command to lookup a plugin for
    * @tparam A plugin arguments
    * @tparam R plugin return type
    * @return the plugin
    */
-  private def expectCommandPlugin[A <: Product, R <: Product](plugins: CommandPluginRegistry, command: Command): CommandPlugin[A, R] = {
-    plugins.getCommandDefinition(command.name)
+  private def expectCommandPlugin[A <: Product, R <: Product](command: Command): CommandPlugin[A, R] = {
+    commandPluginRegistry.getCommandDefinition(command.name)
       .getOrElse(throw new NotFoundException("command definition", command.name))
       .asInstanceOf[CommandPlugin[A, R]]
   }
@@ -319,7 +315,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
    * Cancel a command
    * @param commandId command id
    */
-  def cancelCommand(commandId: Long, commandPluginRegistry: CommandPluginRegistry): Unit = withMyClassLoader {
+  def cancelCommand(commandId: Long): Unit = withMyClassLoader {
     /* This should be killing any yarn jobs running */
     val command = commands.lookup(commandId).getOrElse(throw new Exception(s"Command $commandId does not exist"))
     val commandPlugin = commandPluginRegistry.getCommandDefinition(command.name).get
