@@ -75,5 +75,5 @@ class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {
 
     new CommandExecutor(engine, commandStorage, commandPluginRegistry)
   }
-  
+
 }
