@@ -16,19 +16,19 @@
 
 package com.intel.taproot.analytics.domain.frame
 
-import com.intel.taproot.analytics.engine.plugin.ArgDoc
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
 case class CategoricalSummaryArgs(@ArgDoc("Frame in reference to fetch categorical summary") frame: FrameReference,
                                   @ArgDoc("List of Categorical Column Input consisting of column, topk and/or threshold") columnInput: List[CategoricalColumnInput]) {
 
   require(frame != null, "frame is required but not provided")
-  require(columnInput.length > 0, "Column Input must not be empty. Please provide at least a single Column Input")
+  require(columnInput.nonEmpty, "Column Input must not be empty. Please provide at least a single Column Input")
 }
 
 case class CategoricalColumnInput(column: String, topK: Option[Int], threshold: Option[Double]) {
   require(!column.isEmpty && column != null, "Column name should not be empty or null")
-  require(topK == None || topK.get > 0, "top_k input value should be greater than 0")
-  require(threshold == None || threshold.get >= 0.0, "threshold should be greater than or equal to zero")
+  require(topK.isEmpty || topK.get > 0, "top_k input value should be greater than 0")
+  require(threshold.isEmpty || (threshold.get >= 0.0 && threshold.get <= 1.0), "threshold should be greater than or equal to 0.0 and less than or equal to 1.0")
 }
 
 case class LevelData(level: String, frequency: Int, percentage: Double)

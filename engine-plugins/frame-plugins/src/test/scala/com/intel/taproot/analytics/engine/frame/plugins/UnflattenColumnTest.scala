@@ -17,10 +17,10 @@
 package com.intel.taproot.analytics.engine.frame.plugins.unflattencolumn
 
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
-import com.intel.taproot.analytics.engine.frame.plugins.{ UnflattenColumnFunctions }
+import com.intel.taproot.analytics.engine.frame.plugins.UnflattenColumnFunctions
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Matchers }
 
 class UnflattenColumnTest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContextFlatSpec {
@@ -40,7 +40,7 @@ class UnflattenColumnTest extends FlatSpec with Matchers with BeforeAndAfterEach
     Array[Any]("Mary", "1/1/2015", "1", "60"),
     Array[Any]("Bob", "1/1/2015", "1", "60"))
 
-  def executeTest(data: List[Array[Any]], rowsInResult: Int): Array[sql.Row] = {
+  def executeTest(data: List[Array[Any]], rowsInResult: Int): Array[Row] = {
     val schema = Schema.fromTuples(List((nameColumn, DataTypes.string),
       (dateColumn, DataTypes.string),
       ("minute", DataTypes.int32),
@@ -63,7 +63,7 @@ class UnflattenColumnTest extends FlatSpec with Matchers with BeforeAndAfterEach
     val result = executeTest(dailyHeartbeats_4_1, rowInResult)
 
     assert(result.length == rowInResult)
-    result.apply(rowInResult - 1) shouldBe sql.Row("Bob", "1/1/2015", "1,2,3,4", "60,70,65,55")
+    result.apply(rowInResult - 1) shouldBe Row("Bob", "1/1/2015", "1,2,3,4", "60,70,65,55")
   }
 
   "UnflattenRddByCompositeKey::2" should "compress data in a single row" in {
@@ -72,7 +72,7 @@ class UnflattenColumnTest extends FlatSpec with Matchers with BeforeAndAfterEach
     val result = executeTest(dailyHeartbeats_1_1, rowInResult)
 
     assert(result.length == rowInResult)
-    result.apply(rowInResult - 1) shouldBe sql.Row("Bob", "1/1/2015", "1", "60")
+    result.apply(rowInResult - 1) shouldBe Row("Bob", "1/1/2015", "1", "60")
   }
 
   "UnflattenRddByCompositeKey::3" should "compress data in two rows" in {

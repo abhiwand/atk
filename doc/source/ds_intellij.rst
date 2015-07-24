@@ -16,14 +16,14 @@ Prerequisites
 These instructions assume you have already installed:
 
 - Python 2.7:
-- |IAT| Python REST Client and required dependencies.
+- |PACKAGE| Python REST Client and required dependencies.
 - `IntelliJ IDEA <http://www.jetbrains.com/idea/>`_.
 
 Verify the Python plugin is enabled in IntelliJ by choosing
 :menuselection:`File --> Settings`, searching for *Python*, and choosing
 *Plugins* from the pane on the left-hand side.
 
-The |IAT| should work with any version of IntelliJ IDEA but these instructions
+The |PACKAGE| should work with any version of IntelliJ IDEA but these instructions
 were tested with IntelliJ IDEA 13.1.3 Ultimate.
 
 -----
@@ -57,25 +57,25 @@ Setup
         *Apply*.
     #)  Choose *Libraries* in the left hand pane.
     #)  Choose the plus sign *+*.
-    #)  Choose *Java* and browse to the |IAT| Python REST Client libraries.
+    #)  Choose *Java* and browse to the |PACKAGE| Python REST Client libraries.
         On RedHat and Centos these are found under
         '/usr/lib/taprootanalytics/rest-client/python'.
     #)  Choose *classes*.
     #)  Choose *myproject* and click *OK* button.
-    #)  Name the library "ia-python-client".
+    #)  Name the library "ta-python-client".
     #)  Choose *OK* button.
 
 #)  Choose :menuselection:`File --> New --> Python File`.
 #)  Name the file 'test' and type in the following code::
 
-        import taprootanalytics as ia
-        ia.server.host = "correct host name or IP address"
-        ia.connect()
-        ia.server.ping()
+        import taprootanalytics as ta
+        ta.server.host = "correct host name or IP address"
+        ta.connect()
+        ta.server.ping()
 
 #)  Choose :menuselection:`Run --> Run`, you should see the output::
 
-        Successful ping to TapRoot Analytics at http://localhost:9099/info
+        Successful ping to TAProot Analytics at http://localhost:9099/info
 
 #)  Next take a look at the included examples.
 

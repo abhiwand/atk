@@ -21,12 +21,11 @@ import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema.{ Column, VertexSchema, _ }
 import com.intel.taproot.analytics.engine.{ FrameStorage, GraphStorage }
-import com.intel.taproot.analytics.engine.Rows.Row
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.{ LegacyFrameRdd, SparkFrameStorage }
-import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
+import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
+import com.intel.taproot.analytics.engine.graph.{ SparkGraph, SparkGraphStorage }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.Vertex
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
@@ -74,12 +73,10 @@ class ExportToGraphPlugin extends SparkCommandPlugin[GraphNoArgs, GraphEntity] {
    */
   override def execute(arguments: GraphNoArgs)(implicit invocation: Invocation): GraphEntity = {
 
-    val graphs = engine.graphs
+    val graph: SparkGraph = arguments.graph
+    require(graph.isTitan, "Titan graph is required for this operation")
 
-    val titanGraphEntity = engine.graphs.expectGraph(arguments.graph)
-    require(titanGraphEntity.isTitan, "Titan graph is required for this operation")
-
-    val (vertices, edges) = graphs.loadFromTitan(sc, titanGraphEntity)
+    val (vertices, edges) = graph.gbRdds
     vertices.cache()
     edges.cache()
 
@@ -88,7 +85,7 @@ class ExportToGraphPlugin extends SparkCommandPlugin[GraphNoArgs, GraphEntity] {
     val maxEdgeId = edges.flatMap(e => e.eid).reduce((a, b) => Math.max(a, b))
 
     // unique indices should exist on Vertex properties that were a user-defined Vertex ID
-    val indexNames: List[String] = ExportToGraphPlugin.uniqueVertexPropertyIndices(graphs, titanGraphEntity.toReference)
+    val indexNames: List[String] = ExportToGraphPlugin.uniqueVertexPropertyIndices(engine.graphs, graph)
 
     // Label all of the vertices
     val labeledVertices = vertices.labelVertices(indexNames)
@@ -101,21 +98,21 @@ class ExportToGraphPlugin extends SparkCommandPlugin[GraphNoArgs, GraphEntity] {
     val edgeSchemas = edgesWithCorrectedLabels.aggregate(EdgeSchemaAggregator.zeroValue)(EdgeSchemaAggregator.seqOp, EdgeSchemaAggregator.combOp).values
 
     // Create the target Graph
-    val targetGraph = graphs.createGraph(GraphTemplate(None, "ia/frame"))
+    val targetGraph = engine.graphs.createGraph(GraphTemplate(None, "ia/frame"))
 
     // Create the Edge and Vertex frames
-    vertexSchemas.foreach(schema => graphs.defineVertexType(targetGraph.toReference, schema))
-    edgeSchemas.foreach(schema => graphs.defineEdgeType(targetGraph.toReference, schema))
+    vertexSchemas.foreach(schema => engine.graphs.defineVertexType(targetGraph.toReference, schema))
+    edgeSchemas.foreach(schema => engine.graphs.defineEdgeType(targetGraph.toReference, schema))
 
-    saveVertices(graphs, engine.frames.asInstanceOf[SparkFrameStorage], labeledVertices, targetGraph.toReference)
-    saveEdges(graphs, engine.frames, edgesWithCorrectedLabels.map(_.edge), targetGraph.toReference)
+    saveVertices(engine.graphs, engine.frames.asInstanceOf[SparkFrameStorage], labeledVertices, targetGraph.toReference)
+    saveEdges(engine.graphs, engine.frames, edgesWithCorrectedLabels.map(_.edge), targetGraph.toReference)
 
     vertices.unpersist()
     edges.unpersist()
 
-    graphs.updateIdCounter(targetGraph.toReference, Math.max(maxVertexId, maxEdgeId) + 1)
+    engine.graphs.updateIdCounter(targetGraph.toReference, Math.max(maxVertexId, maxEdgeId) + 1)
 
-    graphs.expectGraph(targetGraph.toReference)
+    engine.graphs.expectGraph(targetGraph.toReference)
   }
 
   /**

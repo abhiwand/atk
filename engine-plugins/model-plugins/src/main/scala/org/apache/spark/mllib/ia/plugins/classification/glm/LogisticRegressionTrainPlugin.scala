@@ -17,7 +17,9 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.domain.frame.FrameEntity
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.engine.plugin.PluginDoc
@@ -37,16 +39,6 @@ numClasses : Int
     Number of classes in the training data
 summaryTable: table
     A summary table composed of:
-        coefficients: Value for each of the coefficients trained.
-            The number of coefficients is (numClasses - 1) * (numFeatures + 1) if intercept=True, and
-            (numClasses - 1) * numFeatures if intercept=False
-        degreesFreedom: Degree of freedom for each model coefficient
-        standardErrors: dict (optional)
-            Standard errors for model coefficients. The standard errors are the square root of the diagonal of the covariance matrix
-        waldStatistic: dict (optional)
-            Wald Chi-Squared statistic is the coefficients divided by the standard errors
-        pValue: dict (optional)
-            P-values for the model coefficients
 covarianceMatrix: Frame (optional)
     Covariance matrix of the trained model.
     The covariance matrix is the inverse of the Hessian matrix for the trained model.
@@ -78,27 +70,23 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: LogisticRegressionTrainArgs)(implicit invocation: Invocation): LogisticRegressionSummaryTable = {
-    val models = engine.models
-    val frames = engine.frames
-
-    val inputFrame = frames.expectFrame(arguments.frame)
-    val modelMeta = models.expectModel(arguments.model)
+    val frame: SparkFrame = arguments.frame
+    val model: Model = arguments.model
 
     //create RDD from the frame
-    val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
-    val labeledTrainRdd = trainFrameRdd.toLabeledPointRDDWithFrequency(arguments.labelColumn,
+    val labeledTrainRdd = frame.rdd.toLabeledPointRDDWithFrequency(arguments.labelColumn,
       arguments.observationColumns, arguments.frequencyColumn)
 
     //Running MLLib
-    val model = LogisticRegressionModelWrapperFactory.createModel(arguments)
-    val logRegModel = model.getModel.run(labeledTrainRdd)
+    val mlModel = LogisticRegressionModelWrapperFactory.createModel(arguments)
+    val logRegModel = mlModel.getModel.run(labeledTrainRdd)
 
     //Create summary table and covariance frame
     val summaryTable = SummaryTableBuilder(
       logRegModel,
       arguments.observationColumns,
       arguments.intercept,
-      model.getHessianMatrix
+      mlModel.getHessianMatrix
     )
 
     val covarianceFrame = summaryTable.approxCovarianceMatrix match {
@@ -116,8 +104,7 @@ class LogisticRegressionTrainPlugin extends SparkCommandPlugin[LogisticRegressio
 
     // Save model to metastore and return results
     val jsonModel = new LogisticRegressionData(logRegModel, arguments.observationColumns).toJson.asJsObject
-    //TODO: Call save instead once implemented for models
-    models.updateModel(modelMeta.toReference, jsonModel)
+    model.data = jsonModel
     summaryTable.build(covarianceFrame)
   }
 }

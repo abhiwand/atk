@@ -81,11 +81,6 @@ trait SparkFrame extends Frame {
 
   /** Update the data for this frame */
   def save(rdd: FrameRdd): SparkFrame
-
-  /** Update the data for this frame */
-  @deprecated("use FrameRdd instead")
-  def save(rdd: LegacyFrameRdd): SparkFrame
-
 }
 
 object SparkFrame {
@@ -141,12 +136,6 @@ class SparkFrameImpl(frame: FrameReference, sc: SparkContext, sparkFrameStorage:
   /** Update the data for this frame */
   override def save(rdd: FrameRdd): SparkFrame = {
     val result = sparkFrameStorage.saveFrameData(frame, rdd)
-    new SparkFrameImpl(result, sc, sparkFrameStorage)
-  }
-
-  /** Update the data for this frame */
-  override def save(rdd: LegacyFrameRdd): SparkFrame = {
-    val result = sparkFrameStorage.saveLegacyFrame(frame, rdd)
     new SparkFrameImpl(result, sc, sparkFrameStorage)
   }
 

@@ -16,9 +16,7 @@
 
 package com.intel.taproot.analytics.domain.model
 
-/**
- * Generic arguments for "new" model plugins
- * @param dummyModelRef dummy reference
- * @param name user supplied name
- */
-case class GenericNewModelArgs(dummyModelRef: ModelReference, name: Option[String] = None)
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
+case class GenericNewModelArgs(@ArgDoc("""Dummy reference.""") dummyModelRef: ModelReference,
+                               @ArgDoc("""User supplied name.""") name: Option[String] = None)

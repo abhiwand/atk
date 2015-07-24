@@ -18,9 +18,9 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives
 
 import com.intel.taproot.analytics.domain.frame.{ ColumnFullStatisticsReturn, ColumnMedianReturn, ColumnSummaryStatisticsReturn }
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 import org.scalatest.Matchers
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -36,11 +36,11 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
     val epsilon = 0.000000001
 
     // Input data
-    val row0: Row = Array[Any]("A", 1, 2.0f, 2, 3, 1.0f, 0, 0)
-    val row1: Row = Array[Any]("B", 1, 2.0f, 1, 3, 2.0f, 0, 0)
-    val row2: Row = Array[Any]("C", 1, 2.0f, 3, 2, 0.0f, 10, 0)
-    val row3: Row = Array[Any]("D", 1, 2.0f, 6, 1, 1.0f, 0, 0)
-    val row4: Row = Array[Any]("E", 1, 2.0f, 7, 1, 2.0f, 0, 0)
+    val row0 = Row("A", 1, 2.0f, 2, 3, 1.0f, 0, 0)
+    val row1 = Row("B", 1, 2.0f, 1, 3, 2.0f, 0, 0)
+    val row2 = Row("C", 1, 2.0f, 3, 2, 0.0f, 10, 0)
+    val row3 = Row("D", 1, 2.0f, 6, 1, 1.0f, 0, 0)
+    val row4 = Row("E", 1, 2.0f, 7, 1, 2.0f, 0, 0)
 
     val rowRDD: RDD[Row] = sparkContext.parallelize(List(row0, row1, row2, row3, row4))
   }
@@ -65,7 +65,7 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
       None,
       None,
       rowRDD,
-      false)
+      usePopulationVariance = false)
 
     Math.abs(stats.mean - 2.0) should be < epsilon
   }
@@ -73,7 +73,7 @@ class ColumnStatisticsITest extends TestingSparkContextFlatSpec with Matchers {
   "weighted summary statistics" should "work" in new ColumnStatisticsTest() {
 
     val stats: ColumnSummaryStatisticsReturn =
-      ColumnStatistics.columnSummaryStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD, false)
+      ColumnStatistics.columnSummaryStatistics(5, DataTypes.float32, Some(4), Some(DataTypes.int32), rowRDD, usePopulationVariance = false)
 
     Math.abs(stats.mean - 1.2) should be < epsilon
   }

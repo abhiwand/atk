@@ -27,7 +27,7 @@ import com.intel.taproot.analytics.engine.command.{ CommandExecutor, CommandPlug
 import com.intel.taproot.analytics.engine.frame._
 import com.intel.taproot.analytics.engine.gc.{ GarbageCollectionPlugin, GarbageCollector }
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
-import com.intel.taproot.analytics.engine.model.SparkModelStorage
+import com.intel.taproot.analytics.engine.model.ModelStorageImpl
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
 import EngineExecutionContext.global
 import com.intel.taproot.analytics.engine.user.UserStorage
@@ -49,7 +49,7 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
                  commandStorage: CommandStorage,
                  val frames: SparkFrameStorage,
                  val graphs: SparkGraphStorage,
-                 val models: SparkModelStorage,
+                 val models: ModelStorageImpl,
                  users: UserStorage,
                  val sparkAutoPartitioner: SparkAutoPartitioner,
                  commandPluginRegistry: CommandPluginRegistry) extends Engine

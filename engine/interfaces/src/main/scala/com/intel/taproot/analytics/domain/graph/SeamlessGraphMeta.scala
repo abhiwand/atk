@@ -59,7 +59,7 @@ case class SeamlessGraphMeta(graphEntity: GraphEntity, frameEntities: List[Frame
   /**
    * Convenience method for getting a reference to this graph
    */
-  def graphReference: GraphReference = {
+  def toReference: GraphReference = {
     GraphReference(id)
   }
 

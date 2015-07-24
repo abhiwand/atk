@@ -156,7 +156,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
     val results = Try(gremlinExecutor.eval(gremlinScript, bindings)).getOrElse({
-      throw new RuntimeException(s"Invalid syntax for Gremlin query: ${gremlinScript}")
+      throw new RuntimeException(s"Invalid syntax for Gremlin query: $gremlinScript")
     })
 
     val resultIterator = results match {
@@ -167,7 +167,7 @@ class GremlinQuery extends CommandPlugin[QueryArgs, QueryResult] {
     val jsResultsIterator = Try({
       resultIterator.filter(x => x != null).map(GremlinUtils.serializeGremlinToJson(titanGraph, _, graphSONMode))
     }).getOrElse({
-      throw new RuntimeException(s"Invalid syntax for Gremlin query: ${gremlinScript}")
+      throw new RuntimeException(s"Invalid syntax for Gremlin query: $gremlinScript")
     })
 
     jsResultsIterator

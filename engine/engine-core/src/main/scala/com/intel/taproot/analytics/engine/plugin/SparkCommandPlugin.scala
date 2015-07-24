@@ -19,7 +19,9 @@ package com.intel.taproot.analytics.engine.plugin
 import java.nio.file.{ Paths, Files }
 import java.nio.charset.StandardCharsets
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphReference }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrameImpl, SparkFrame }
+import com.intel.taproot.analytics.engine.graph.{ SparkGraphImpl, SparkGraph, SparkVertexFrameImpl, SparkVertexFrame }
 
 import scala.collection.JavaConversions._
 
@@ -50,8 +52,11 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
   def sc(implicit invocation: Invocation): SparkContext = invocation.asInstanceOf[SparkInvocation].sparkContext
 
   implicit def frameRefToSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkFrame = new SparkFrameImpl(frame, sc, engine.frames)
-
   implicit def frameEntityToSparkFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): SparkFrame = frameRefToSparkFrame(frameEntity.toReference)
+  implicit def frameRefToVertexSparkFrame(frame: FrameReference)(implicit invocation: Invocation): SparkVertexFrame = new SparkVertexFrameImpl(frame, sc, engine.frames, engine.graphs)
+  implicit def frameEntityToVertexSparkFrame(frameEntity: FrameEntity)(implicit invocation: Invocation): SparkVertexFrame = frameRefToVertexSparkFrame(frameEntity.toReference)
+  implicit def graphRefToSparkGraph(graph: GraphReference)(implicit invocation: Invocation): SparkGraph = new SparkGraphImpl(graph, sc, engine.graphs)
+  implicit def graphEntityToSparkGraph(graphEntity: GraphEntity)(implicit invocation: Invocation): SparkGraph = graphRefToSparkGraph(graphEntity.toReference)
 
   /**
    * Can be overridden by subclasses to provide a more specialized Invocation. Called before
@@ -127,7 +132,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     def getParentForArchive(archive: String, configMap: Map[String, ConfigValue]): Option[String] = {
       val parent = for {
         (k, v) <- configMap
-        if (k.contains(s"$archive.parent"))
+        if k.contains(s"$archive.parent")
       } yield v
       if (parent.iterator.hasNext)
         Some(parent.head.render.replace("\"", ""))
@@ -150,7 +155,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
       configPathKey = s"intel.taproot.analytics.component.archives.$i.config-path"
       configPath = allEntries.get(configPathKey).get.unwrapped().toString
       extraClassPathKey = s"$configPath.extra-classpath"
-      if (allEntries.contains(extraClassPathKey))
+      if allEntries.contains(extraClassPathKey)
     } extraClassPath ++= allEntries.get(extraClassPathKey).get.asInstanceOf[ConfigList].unwrapped().map(_.toString)
 
     /* Convert all configs to strings; override the archives entry with current plugin's archive name */

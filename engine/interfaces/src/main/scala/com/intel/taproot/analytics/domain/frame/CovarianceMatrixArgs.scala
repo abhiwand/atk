@@ -23,6 +23,6 @@ case class CovarianceMatrixArgs(frame: FrameReference,
                                 dataColumnNames: List[String],
                                 matrixName: Option[String] = None) {
   require(frame != null, "frame is required")
-  require(dataColumnNames.forall(_ != null), "data columns names cannot be null")
+  require(!dataColumnNames.contains(null), "data columns names cannot be null")
   require(dataColumnNames.forall(!_.equals("")), "data columns names cannot be empty")
 }

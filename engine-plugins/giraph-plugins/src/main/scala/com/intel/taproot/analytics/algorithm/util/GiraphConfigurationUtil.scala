@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.algorithm.util
 
 import com.intel.taproot.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.taproot.analytics.domain.graph.GraphEntity
-import com.intel.taproot.analytics.engine.graph.{ GraphBuilderConfigFactory }
+import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
 import com.intel.taproot.analytics.engine.util.KerberosAuthenticator
 import com.typesafe.config.{ ConfigValue, ConfigObject, Config }
 import org.apache.hadoop.conf.Configuration

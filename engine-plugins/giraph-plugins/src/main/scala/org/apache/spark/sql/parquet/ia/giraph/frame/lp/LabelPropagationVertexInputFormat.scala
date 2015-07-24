@@ -16,14 +16,14 @@
 
 package org.apache.spark.sql.parquet.ia.giraph.frame.lp
 
-import com.intel.taproot.giraph.io.{ VertexData4LPWritable }
+import com.intel.taproot.giraph.io.VertexData4LPWritable
 import com.intel.taproot.giraph.lp.LabelPropagationConfiguration
 import com.intel.taproot.analytics.engine.frame.RowWrapper
 import org.apache.giraph.io.{ VertexValueReader, VertexValueInputFormat }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.io.{ LongWritable }
+import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.mapreduce.{ TaskAttemptContext, InputSplit, JobContext }
-import org.apache.mahout.math.{ DenseVector }
+import org.apache.mahout.math.DenseVector
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.parquet.RowReadSupport
 import parquet.hadoop.{ ParquetRecordReader, ParquetInputFormat }

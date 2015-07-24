@@ -25,7 +25,7 @@ import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, PythonRddStorage }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 
 // Implicits needed for JSON conversion
 import spray.json._

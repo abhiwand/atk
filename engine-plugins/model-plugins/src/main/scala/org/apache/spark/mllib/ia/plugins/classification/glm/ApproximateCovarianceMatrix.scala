@@ -18,6 +18,7 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 import breeze.linalg.{ DenseMatrix, inv }
 import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.{ SparkContext, sql }
 
@@ -48,7 +49,7 @@ case class ApproximateCovarianceMatrix(hessianMatrix: DenseMatrix[Double],
   def toFrameRdd(sparkContext: SparkContext, columnNames: List[String]): FrameRdd = {
     val schema = FrameSchema(columnNames.map(name => Column(name, DataTypes.float64)))
 
-    val rows: IndexedSeq[sql.Row] = for {
+    val rows: IndexedSeq[Row] = for {
       i <- 0 until covarianceMatrix.rows
       row = covarianceMatrix(i, ::).t.map(x => x: Any)
     } yield new GenericRow(row.toArray)

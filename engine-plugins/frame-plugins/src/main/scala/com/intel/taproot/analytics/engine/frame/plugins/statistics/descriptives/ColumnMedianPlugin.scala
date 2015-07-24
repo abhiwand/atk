@@ -18,8 +18,9 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives
 
 import com.intel.taproot.analytics.domain.frame.{ FrameReference, ColumnMedianArgs, ColumnMedianReturn }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -74,17 +75,11 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedianArgs, ColumnMedi
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: ColumnMedianArgs)(implicit invocation: Invocation): ColumnMedianReturn = {
-    // dependencies (later to be replaced with dependency injection)
-    val frames = engine.frames
-
-    // validate arguments
-    val frameRef: FrameReference = arguments.frame
-    val frame = frames.expectFrame(frameRef)
+    val frame: SparkFrame = arguments.frame
     val columnIndex = frame.schema.columnIndex(arguments.dataColumn)
-    val valueDataType: DataType = frame.schema.columnTuples(columnIndex)._2
+    val valueDataType = frame.schema.columnDataType(arguments.dataColumn)
 
     // run the operation and return results
-    val rdd = frames.loadLegacyFrameRdd(sc, frameRef)
     val (weightsColumnIndexOption, weightsDataTypeOption) = if (arguments.weightsColumn.isEmpty) {
       (None, None)
     }
@@ -92,6 +87,6 @@ class ColumnMedianPlugin extends SparkCommandPlugin[ColumnMedianArgs, ColumnMedi
       val weightsColumnIndex = frame.schema.columnIndex(arguments.weightsColumn.get)
       (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
     }
-    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, rdd)
+    ColumnStatistics.columnMedian(columnIndex, valueDataType, weightsColumnIndexOption, weightsDataTypeOption, frame.rdd)
   }
 }

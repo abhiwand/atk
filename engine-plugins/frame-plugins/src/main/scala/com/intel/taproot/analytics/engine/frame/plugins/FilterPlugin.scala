@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.FilterArgs
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, PythonRddStorage }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
 import spray.json._

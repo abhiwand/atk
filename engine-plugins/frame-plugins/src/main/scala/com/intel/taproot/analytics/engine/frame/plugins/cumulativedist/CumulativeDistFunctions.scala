@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Column }
-import com.intel.taproot.analytics.engine.Rows._
+import org.apache.spark.sql.Row
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD
@@ -79,11 +79,11 @@ private object CumulativeDistFunctions extends Serializable {
     sumsRdd.map {
       case (value, valueSum) => {
         sampleColumn.dataType match {
-          case DataTypes.int32 => Array(value.toInt.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-          case DataTypes.int64 => Array(value.toLong.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-          case DataTypes.float32 => Array(value.toFloat.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-          case DataTypes.float64 => Array(value.toDouble.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
-          case _ => Array(value.asInstanceOf[Any], (valueSum / numValues).asInstanceOf[Any])
+          case DataTypes.int32 => Row(value.toInt, valueSum / numValues)
+          case DataTypes.int64 => Row(value.toLong, valueSum / numValues)
+          case DataTypes.float32 => Row(value.toFloat, valueSum / numValues)
+          case DataTypes.float64 => Row(value.toDouble, valueSum / numValues)
+          case _ => Row(value, valueSum / numValues)
         }
       }
     }
@@ -229,7 +229,7 @@ private object CumulativeDistFunctions extends Serializable {
           startValue += partSums(i)
         }
         // startValue updated, so drop first value
-        partition.scanLeft((Array[Any](), startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
+        partition.scanLeft((Row(), startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
       }
     }
   }
@@ -240,11 +240,10 @@ private object CumulativeDistFunctions extends Serializable {
    * @param rdd the RDD containing (value, cumulativeDistValue)
    * @return RDD containing Array[Any] (i.e., Rows)
    */
-  private def revertTypes(rdd: RDD[(Row, Double)]): RDD[Array[Any]] = {
+  private def revertTypes(rdd: RDD[(Row, Double)]): RDD[Row] = {
     rdd.map {
-      case (row, valueSum) => {
-        row.asInstanceOf[Array[Any]] :+ valueSum.asInstanceOf[Any]
-      }
+      case (row, valueSum) =>
+        Row.fromSeq(row.toSeq :+ valueSum)
     }
   }
 
@@ -256,12 +255,12 @@ private object CumulativeDistFunctions extends Serializable {
    * @param numValues number of values in the user-specified column
    * @return RDD containing Array[Any] (i.e., Rows)
    */
-  private def revertPercentTypes(rdd: RDD[(Row, Double)], numValues: Double): RDD[Array[Any]] = {
+  private def revertPercentTypes(rdd: RDD[(Row, Double)], numValues: Double): RDD[Row] = {
     rdd.map {
       case (row, valueSum) => {
         numValues match {
-          case 0 => row.asInstanceOf[Array[Any]] :+ 1.asInstanceOf[Any]
-          case _ => row.asInstanceOf[Array[Any]] :+ (valueSum / numValues).asInstanceOf[Any]
+          case 0 => Row.fromSeq(row.toSeq :+ 1)
+          case _ => Row.fromSeq(row.toSeq :+ (valueSum / numValues))
         }
       }
     }

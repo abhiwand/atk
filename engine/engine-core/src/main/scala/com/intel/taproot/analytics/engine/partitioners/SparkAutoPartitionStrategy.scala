@@ -66,7 +66,7 @@ object SparkAutoPartitionStrategy {
    */
   def getRepartitionStrategy(name: String): PartitionStrategy = {
     val strategy = partitionStrategies.find(m => m.name.equalsIgnoreCase(name)).getOrElse({
-      throw new IllegalArgumentException(s"Unsupported Spark auto-partitioning strategy: ${name}")
+      throw new IllegalArgumentException(s"Unsupported Spark auto-partitioning strategy: $name")
     })
     strategy
   }

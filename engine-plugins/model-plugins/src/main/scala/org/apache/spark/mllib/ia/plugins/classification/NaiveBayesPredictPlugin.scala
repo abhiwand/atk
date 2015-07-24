@@ -4,7 +4,9 @@ import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.model.ModelReference
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.Vectors
@@ -12,7 +14,15 @@ import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 
-case class NaiveBayesPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: Option[List[String]]) {
+case class NaiveBayesPredictArgs(@ArgDoc(""" """) model: ModelReference,
+                                 @ArgDoc("""A frame whose labels are
+to be predicted.
+By default, predict is run on the same columns over which the model is
+trained.""") frame: FrameReference,
+                                 @ArgDoc("""Column(s) containing the
+observations whose labels are to be predicted.
+By default, we predict the labels over columns the NaiveBayesModel
+was trained on.""") observationColumns: Option[List[String]]) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
 
@@ -46,14 +56,11 @@ class NaiveBayesPredictPlugin extends SparkCommandPlugin[NaiveBayesPredictArgs, 
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: NaiveBayesPredictArgs)(implicit invocation: Invocation): FrameEntity = {
-    val models = engine.models
-    val frames = engine.frames
-
-    val inputFrame = frames.expectFrame(arguments.frame)
-    val modelMeta = models.expectModel(arguments.model)
+    val frame: SparkFrame = arguments.frame
+    val model: Model = arguments.model
 
     //Running MLLib
-    val naiveBayesJsObject = modelMeta.data.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
+    val naiveBayesJsObject = model.dataOption.getOrElse(throw new RuntimeException("This model has not be trained yet. Please train before trying to predict"))
     val naiveBayesData = naiveBayesJsObject.convertTo[NaiveBayesData]
     val naiveBayesModel = naiveBayesData.naiveBayesModel
     if (arguments.observationColumns.isDefined) {
@@ -61,11 +68,8 @@ class NaiveBayesPredictPlugin extends SparkCommandPlugin[NaiveBayesPredictArgs, 
     }
     val naiveBayesColumns = arguments.observationColumns.getOrElse(naiveBayesData.observationColumns)
 
-    //create RDD from the frame
-    val inputFrameRdd = frames.loadFrameData(sc, inputFrame)
-
     //predicting a label for the observation columns
-    val predictionsRDD = inputFrameRdd.mapRows(row => {
+    val predictionsRDD = frame.rdd.mapRows(row => {
       val array = row.valuesAsArray(naiveBayesColumns)
       val doubles = array.map(i => DataTypes.toDouble(i))
       val point = Vectors.dense(doubles)
@@ -73,7 +77,7 @@ class NaiveBayesPredictPlugin extends SparkCommandPlugin[NaiveBayesPredictArgs, 
       row.addValue(DataTypes.toDouble(prediction))
     })
 
-    val updatedSchema = inputFrameRdd.frameSchema.addColumn("predicted_class", DataTypes.float64)
+    val updatedSchema = frame.schema.addColumn("predicted_class", DataTypes.float64)
     val predictFrameRdd = new FrameRdd(updatedSchema, predictionsRDD)
 
     engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by NaiveBayes predict operation"))) {

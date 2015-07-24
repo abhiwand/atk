@@ -46,7 +46,7 @@ Algorithm Types
     single: classification
     single: prediction
 
-The |IAT| incorporates supervised, unsupervised, and
+The |PACKAGE| incorporates supervised, unsupervised, and
 semi-supervised machine learning algorithms.
 Supervised algorithms are used to learn the relationship between features in
 a dataset and some labeling schema, such as is in classification.

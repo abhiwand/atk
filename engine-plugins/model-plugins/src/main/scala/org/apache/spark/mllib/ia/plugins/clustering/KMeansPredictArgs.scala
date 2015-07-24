@@ -19,12 +19,20 @@ package org.apache.spark.mllib.ia.plugins.clustering
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Command for loading model data into existing model in the model database.
  * @param model Handle to the model to be written to.
  * @param frame Handle to the data frame whose cluster assignments are to be predicted
  */
-case class KMeansPredictArgs(model: ModelReference, frame: FrameReference, observationColumns: Option[List[String]]) {
+case class KMeansPredictArgs(@ArgDoc("""""") model: ModelReference,
+                             @ArgDoc("""A frame whose labels are to be predicted.
+By default, predict is run on the same columns over which the model is
+trained.""") frame: FrameReference,
+                             @ArgDoc("""Column(s) containing the observations whose clusters are to be predicted.
+By default, we predict the clusters over columns the KMeansModel was trained on.
+The columns are scaled using the same values used when training the model.""") observationColumns: Option[List[String]]) {
   require(model != null, "model is required")
   require(frame != null, "frame is required")
 }

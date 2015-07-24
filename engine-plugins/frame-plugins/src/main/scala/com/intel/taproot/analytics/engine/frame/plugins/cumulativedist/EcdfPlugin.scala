@@ -18,11 +18,12 @@ package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes, Column }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 import com.intel.taproot.analytics.domain.{ DomainJsonProtocol, CreateEntityArgs }
+import org.apache.spark.frame.FrameRdd
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -91,9 +92,8 @@ class EcdfPlugin extends SparkCommandPlugin[EcdfArgs, FrameEntity] {
       if (arguments.resultFrameName.isDefined) {
         engine.frames.renameFrame(ecdfFrame, FrameName.validate(arguments.resultFrameName.get))
       }
-      val rdd = frame.rdd.toLegacyFrameRdd
-      val ecdfRdd = CumulativeDistFunctions.ecdf(rdd, sampleColumn)
-      ecdfFrame.save(new LegacyFrameRdd(ecdfSchema, ecdfRdd))
+      val ecdfRdd = CumulativeDistFunctions.ecdf(frame.rdd, sampleColumn)
+      ecdfFrame.save(new FrameRdd(ecdfSchema, ecdfRdd))
     }
   }
 }

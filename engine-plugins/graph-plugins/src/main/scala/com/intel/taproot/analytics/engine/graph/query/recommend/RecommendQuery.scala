@@ -145,7 +145,7 @@ class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult
     val resultPropertyList = outputVertexPropertyList.split(pattern)
     val vectorValue = arguments.vector_value.getOrElse(config.getString("vector_value")).toBoolean
     val biasOn = arguments.bias_on.getOrElse(config.getString("bias_on")).toBoolean
-    require(resultPropertyList.size >= 1,
+    require(resultPropertyList.nonEmpty,
       "Please input at least one vertex property name for ALS/CGD results")
     require(!vectorValue || !biasOn ||
       (vectorValue && biasOn && resultPropertyList.size == 2),

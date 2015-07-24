@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.engine.plugin.Call
 import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, FrameFileStorage }
 import com.intel.taproot.analytics.engine.graph.{ SparkGraphStorage, HBaseAdminFactory, SparkGraphHBaseBackend }
-import com.intel.taproot.analytics.engine.model.SparkModelStorage
+import com.intel.taproot.analytics.engine.model.ModelStorageImpl
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
 import com.intel.taproot.analytics.engine.user.UserStorage
 import com.intel.taproot.analytics.engine.command._
@@ -39,7 +39,7 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
 
   implicit lazy val startupCall = Call(null, EngineExecutionContext.global)
 
-  lazy val commandPluginRegistry: CommandPluginRegistry = new CommandPluginRegistry(commandLoader);
+  lazy val commandPluginRegistry: CommandPluginRegistry = new CommandPluginRegistry(commandLoader)
 
   val sparkContextFactory = SparkContextFactory
 
@@ -54,7 +54,7 @@ abstract class AbstractEngineComponent(commandLoader: CommandLoader) extends Eng
   protected val backendGraphStorage: SparkGraphHBaseBackend = new SparkGraphHBaseBackend(hbaseAdminFactory = new HBaseAdminFactory)
   val graphStorage: SparkGraphStorage = new SparkGraphStorage(metaStore, backendGraphStorage, frameStorage)
 
-  val modelStorage: SparkModelStorage = new SparkModelStorage(metaStore.asInstanceOf[SlickMetaStore])
+  val modelStorage: ModelStorageImpl = new ModelStorageImpl(metaStore.asInstanceOf[SlickMetaStore])
 
   val userStorage = new UserStorage(metaStore.asInstanceOf[SlickMetaStore])
 

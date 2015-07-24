@@ -135,7 +135,7 @@ case class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency
   private def getCoefficientNames: List[String] = {
     val names = if (logRegModel.numClasses > 2) {
       for {
-        i <- 0 until (logRegModel.numFeatures)
+        i <- 0 until logRegModel.numFeatures
         j <- 0 until (logRegModel.numClasses - 1)
       } yield s"${observationColumns(i)}_${j}"
     }

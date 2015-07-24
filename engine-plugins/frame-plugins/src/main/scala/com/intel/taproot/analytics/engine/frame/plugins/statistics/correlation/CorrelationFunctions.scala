@@ -16,25 +16,20 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.statistics.correlation
 
-import breeze.linalg.DenseVector
 import breeze.numerics._
 import com.intel.taproot.analytics.domain.DoubleValue
-import com.intel.taproot.analytics.domain.DoubleValue
-import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.domain.schema.DataTypes
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, Matrix }
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.mllib.stat.Statistics
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 /**
  * Object for calculating correlation and the correlation matrix
  */
 
-object Correlation extends Serializable {
+object CorrelationFunctions extends Serializable {
 
   /**
    * Compute correlation for exactly two columns
@@ -62,7 +57,7 @@ object Correlation extends Serializable {
    * @return the correlation matrix in a RDD[Rows]
    */
   def correlationMatrix(frameRdd: FrameRdd,
-                        dataColumnNames: List[String]): RDD[sql.Row] = {
+                        dataColumnNames: List[String]): RDD[Row] = {
 
     val correlation: Matrix = Statistics.corr(frameRdd.toVectorDenseRDD(dataColumnNames))
     val vecArray = correlation.toArray.grouped(correlation.numCols).toArray

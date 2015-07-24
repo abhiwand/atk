@@ -18,25 +18,26 @@ package com.intel.taproot.giraph.cf
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 import org.apache.commons.lang3.StringUtils
 
 /**
  * Arguments to the plugin - see user docs for more on the parameters
  */
 case class CollaborativeFilteringArgs(frame: FrameReference,
-                                      userColName: String,
-                                      itemColName: String,
-                                      ratingColName: String,
-                                      evaluationFunction: Option[String],
-                                      numFactors: Option[Int],
-                                      maxIterations: Option[Int] = None,
-                                      convergenceThreshold: Option[Double] = None,
-                                      regularization: Option[Float] = None,
-                                      biasOn: Option[Boolean] = None,
-                                      minValue: Option[Float] = None,
-                                      maxValue: Option[Float] = None,
-                                      learningCurveInterval: Option[Int] = None,
-                                      cgdIterations: Option[Int] = None) {
+                                      @ArgDoc("""<TBD>""") userColName: String,
+                                      @ArgDoc("""<TBD>""") itemColName: String,
+                                      @ArgDoc("""<TBD>""") ratingColName: String,
+                                      @ArgDoc("""<TBD>""") evaluationFunction: Option[String],
+                                      @ArgDoc("""<TBD>""") numFactors: Option[Int],
+                                      @ArgDoc("""<TBD>""") maxIterations: Option[Int] = None,
+                                      @ArgDoc("""<TBD>""") convergenceThreshold: Option[Double] = None,
+                                      @ArgDoc("""<TBD>""") regularization: Option[Float] = None,
+                                      @ArgDoc("""<TBD>""") biasOn: Option[Boolean] = None,
+                                      @ArgDoc("""<TBD>""") minValue: Option[Float] = None,
+                                      @ArgDoc("""<TBD>""") maxValue: Option[Float] = None,
+                                      @ArgDoc("""<TBD>""") learningCurveInterval: Option[Int] = None,
+                                      @ArgDoc("""<TBD>""") cgdIterations: Option[Int] = None) {
 
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(userColName), "user column name property list is required")

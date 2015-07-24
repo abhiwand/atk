@@ -18,6 +18,7 @@ package org.apache.spark.mllib.ia.plugins.classification
 
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.command.CommandDoc
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -83,7 +84,7 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
    */
   override def execute(arguments: ClassificationWithSGDTrainArgs)(implicit invocation: Invocation): UnitReturn = {
     val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
+    val model: Model = arguments.model
 
     val frame: SparkFrame = arguments.frame
     val labeledTrainRDD: RDD[LabeledPoint] = frame.rdd.toLabeledPointRDD(arguments.labelColumn, arguments.observationColumns)
@@ -93,9 +94,8 @@ class SVMWithSGDTrainPlugin extends SparkCommandPlugin[ClassificationWithSGDTrai
     val svmModel = svm.run(labeledTrainRDD)
 
     val jsonModel = new SVMData(svmModel, arguments.observationColumns)
+    model.data = jsonModel.toJson.asJsObject
 
-    //TODO: Call save instead once implemented for models
-    models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
     new UnitReturn
   }
 

@@ -25,8 +25,8 @@ import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollectionTemplate, GarbageCollection }
 import com.intel.taproot.analytics.engine.{ EngineExecutionContext, GraphBackendStorage, EngineConfig }
 import com.intel.taproot.analytics.engine.plugin.BackendInvocation
-import com.intel.taproot.analytics.engine.frame.{ FrameFileStorage }
-import com.intel.taproot.analytics.repository.{ MetaStore }
+import com.intel.taproot.analytics.engine.frame.FrameFileStorage
+import com.intel.taproot.analytics.repository.MetaStore
 import org.joda.time.DateTime
 
 /**
@@ -68,7 +68,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
       metaStore.withSession("gc.garbagecollector") {
         implicit session =>
           try {
-            if (gcRepo.getCurrentExecutions().length == 0) {
+            if (gcRepo.getCurrentExecutions().isEmpty) {
               info("Execute Garbage Collector")
               val gc: GarbageCollection = gcRepo.insert(new GarbageCollectionTemplate(getHostName(), getProcessId(), new DateTime)).get
               garbageCollectFrames(gc, gcAgeToDeleteData)

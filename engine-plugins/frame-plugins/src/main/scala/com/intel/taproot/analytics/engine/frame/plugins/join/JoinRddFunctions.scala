@@ -271,7 +271,7 @@ object JoinRddFunctions extends Serializable {
         }
       }
     }
-    else throw new IllegalArgumentException(s"Frame size exceeds broadcast-join-threshold: ${broadcastJoinThreshold}.")
+    else throw new IllegalArgumentException(s"Frame size exceeds broadcast-join-threshold: $broadcastJoinThreshold.")
     innerJoinedRDD
   }
 

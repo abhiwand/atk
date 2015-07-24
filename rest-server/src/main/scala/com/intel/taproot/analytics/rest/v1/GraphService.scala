@@ -20,12 +20,12 @@ import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
 import spray.http.{ StatusCodes, Uri }
-import com.intel.taproot.analytics.engine.{ Engine }
+import com.intel.taproot.analytics.engine.Engine
 import scala.concurrent._
 import scala.util._
 import com.intel.taproot.analytics.rest.v1.viewmodels.GetGraph
 import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphEntity }
-import com.intel.taproot.analytics.rest.{ CommonDirectives }
+import com.intel.taproot.analytics.rest.CommonDirectives
 import spray.routing.Directives
 import com.intel.taproot.analytics.rest.v1.decorators.{ FrameDecorator, GraphDecorator }
 

@@ -18,6 +18,6 @@ package com.intel.taproot.analytics.domain.graph
 
 case class RenameGraphArgs(graph: GraphReference, newName: String) {
   require(graph != null, "graph is required")
-  require(newName != null && newName.size > 0, "newName is required")
+  require(newName != null && newName.nonEmpty, "newName is required")
   GraphName.validate(newName)
 }

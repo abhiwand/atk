@@ -16,13 +16,14 @@
 
 package org.apache.spark.frame
 
+import org.apache.spark.sql.Row
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.engine.Rows.Row
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
-import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, LegacyFrameRdd, RowWrapper }
+import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
@@ -47,8 +48,8 @@ import scala.reflect.ClassTag
  *
  * @param frameSchema  the schema describing the columns of this frame
  */
-class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
-    extends RDD[sql.Row](prev) {
+class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
+    extends RDD[Row](prev) {
 
   /**
    * A Frame RDD is a SchemaRDD with our version of the associated schema
@@ -62,11 +63,13 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   val rowWrapper = new RowWrapper(frameSchema)
 
   /**
-   * Convert this FrameRdd into a LegacyFrameRdd of type RDD[Array[Any]]
+   * Convert this FrameRdd into an RDD of type Array[Any].
+   *
+   * This was added to support some legacy plugin code.
    */
-  @deprecated("use FrameRdd instead")
-  def toLegacyFrameRdd: LegacyFrameRdd = {
-    new LegacyFrameRdd(this.frameSchema, this.toDataFrame)
+  @deprecated("use FrameRdd and Rows instead")
+  def toRowRdd: RDD[Array[Any]] = {
+    mapRows(_.toArray)
   }
 
   /**
@@ -114,8 +117,8 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
       })
   }
 
-  override def compute(split: Partition, context: TaskContext): Iterator[sql.Row] =
-    firstParent[sql.Row].iterator(split, context)
+  override def compute(split: Partition, context: TaskContext): Iterator[Row] =
+    firstParent[Row].iterator(split, context)
 
   /**
    * overrides the default behavior so new partitions get created in the sorted order to maintain the data order for the
@@ -124,7 +127,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
    * @return an array of partitions
    */
   override def getPartitions(): Array[org.apache.spark.Partition] = {
-    val partitions = firstParent[sql.Row].partitions
+    val partitions = firstParent[Row].partitions
 
     if (partitions.length > 0 && partitions(0).isInstanceOf[NewHadoopPartition]) {
       val sorted = partitions.toList.sortBy(partition => {
@@ -194,7 +197,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   /**
    * Spark groupBy with a rowWrapper
    */
-  def groupByRows[K: ClassTag](function: (RowWrapper) => K): RDD[(K, scala.Iterable[sql.Row])] = {
+  def groupByRows[K: ClassTag](function: (RowWrapper) => K): RDD[(K, scala.Iterable[Row])] = {
     this.groupBy(row => {
       function(rowWrapper(row))
     })
@@ -207,7 +210,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   /**
    * Spark keyBy with a rowWrapper
    */
-  def keyByRows[K: ClassTag](function: (RowWrapper) => K): RDD[(K, sql.Row)] = {
+  def keyByRows[K: ClassTag](function: (RowWrapper) => K): RDD[(K, Row)] = {
     this.keyBy(row => {
       function(rowWrapper(row))
     })
@@ -241,7 +244,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   /* Please see documentation. Zip works if 2 SchemaRDDs have the same number of partitions
      and same number of elements in  each partition */
   def zipFrameRdd(frameRdd: FrameRdd): FrameRdd = {
-    new FrameRdd(frameSchema.addColumns(frameRdd.frameSchema.columns), this.zip(frameRdd).map { case (a, b) => sql.Row.merge(a, b) })
+    new FrameRdd(frameSchema.addColumns(frameRdd.frameSchema.columns), this.zip(frameRdd).map { case (a, b) => Row.merge(a, b) })
   }
 
   /**
@@ -298,7 +301,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
    * @return the sorted Frame
    */
   def sortByColumns(columnNamesAndAscending: List[(String, Boolean)]): FrameRdd = {
-    require(columnNamesAndAscending != null && columnNamesAndAscending.length > 0, "one or more columnNames is required")
+    require(columnNamesAndAscending != null && columnNamesAndAscending.nonEmpty, "one or more columnNames is required")
 
     val columnNames = columnNamesAndAscending.map(_._1)
     val ascendingPerColumn = columnNamesAndAscending.map(_._2)
@@ -324,12 +327,12 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
   def assignUniqueIds(columnName: String, startId: Long = 0): FrameRdd = {
     val sumsAndCounts: Map[Int, (Long, Long)] = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(this)
 
-    val newRows: RDD[sql.Row] = this.mapPartitionsWithIndex((i, rows) => {
+    val newRows: RDD[Row] = this.mapPartitionsWithIndex((i, rows) => {
       val (ct: Long, sum: Long) = if (i == 0) (0L, 0L)
       else sumsAndCounts(i - 1)
       val partitionStart = sum + startId
       rows.zipWithIndex.map {
-        case (row: sql.Row, index: Int) => {
+        case (row: Row, index: Int) => {
           val id: Long = partitionStart + index
           rowWrapper(row).addOrSetValue(columnName, id)
         }
@@ -372,7 +375,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[sql.Row])
  */
 object FrameRdd {
 
-  def toFrameRdd(schema: Schema, rowRDD: RDD[Row]) = {
+  def toFrameRdd(schema: Schema, rowRDD: RDD[Array[Any]]) = {
     new FrameRdd(schema, FrameRdd.toRowRDD(schema, rowRDD))
   }
 
@@ -435,7 +438,7 @@ object FrameRdd {
    * Converts row object from an RDD[Array[Any]] to an RDD[Product] so that it can be used to create a SchemaRDD
    * @return RDD[org.apache.spark.sql.Row] with values equal to row object
    */
-  def toRowRDD(schema: Schema, rows: RDD[Row]): RDD[org.apache.spark.sql.Row] = {
+  def toRowRDD(schema: Schema, rows: RDD[Array[Any]]): RDD[org.apache.spark.sql.Row] = {
     val rowRDD: RDD[org.apache.spark.sql.Row] = rows.map(row => {
       val mutableRow = new GenericMutableRow(row.length)
       row.zipWithIndex.map {

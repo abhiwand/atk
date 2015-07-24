@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.groupby
 
-import com.intel.taproot.analytics.engine.Rows
+import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.frame.plugins.groupby.aggregators._
 import com.intel.taproot.analytics.engine.partitioners.SparkCoresPartitioner
 import org.apache.spark.SparkContext._
@@ -53,7 +53,7 @@ case class GroupByAggregateByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
    *
    * @return Row RDD with results of aggregation
    */
-  def aggregateByKey(): RDD[Rows.Row] = {
+  def aggregateByKey(): RDD[Row] = {
     val zeroValues = columnAggregators.map(_.aggregator.zero)
     val numPartitions = SparkCoresPartitioner.getNumPartitions(pairedRDD)
 
@@ -152,7 +152,7 @@ case class GroupByAggregateByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
    * @param row List of aggregated values for each column
    * @return Row with key and aggregated values
    */
-  private def getResults(key: Seq[Any], row: Seq[Any]): Rows.Row = {
+  private def getResults(key: Seq[Any], row: Seq[Any]): Row = {
     var i = 0
     val buf = new ListBuffer[Any]()
     buf ++= key
@@ -163,7 +163,7 @@ case class GroupByAggregateByKey(pairedRDD: RDD[(Seq[Any], Seq[Any])],
       buf += aggregator.getResult(columnValue.asInstanceOf[aggregator.type#AggregateType])
       i += 1
     }
-    buf.toArray
+    Row.fromSeq(buf)
   }
 
 }

@@ -17,10 +17,11 @@
 package com.intel.taproot.analytics.engine.frame.plugins.cumulativedist
 
 import com.intel.taproot.analytics.domain.frame.{ CumulativeSumArgs, FrameEntity }
-import com.intel.taproot.analytics.domain.schema.{ DataTypes }
+import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.{ SparkFrame, LegacyFrameRdd }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.apache.spark.frame.FrameRdd
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -67,10 +68,10 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSumArgs, FrameEnt
     val sampleIndex = frame.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frame.rdd.toLegacyFrameRdd, sampleIndex), "_cumulative_sum")
+    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frame.rdd, sampleIndex), "_cumulative_sum")
     val updatedSchema = frame.schema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
 
     // save results
-    frame.save(new LegacyFrameRdd(updatedSchema, cumulativeDistRdd))
+    frame.save(new FrameRdd(updatedSchema, cumulativeDistRdd))
   }
 }

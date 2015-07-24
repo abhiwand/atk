@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins.join
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 
 /**
  * Join parameters for RDD
@@ -26,4 +26,4 @@ import org.apache.spark.sql
  * @param columnCount Number of columns in value array
  * @param estimatedSizeInBytes Optional estimated size of RDD in bytes used to determine whether to use a broadcast join
  */
-case class RddJoinParam(rdd: RDD[(Any, sql.Row)], columnCount: Int, estimatedSizeInBytes: Option[Long] = None)
+case class RddJoinParam(rdd: RDD[(Any, Row)], columnCount: Int, estimatedSizeInBytes: Option[Long] = None)

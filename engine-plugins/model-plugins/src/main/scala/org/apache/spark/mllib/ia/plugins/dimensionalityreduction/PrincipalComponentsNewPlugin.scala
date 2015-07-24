@@ -34,10 +34,8 @@ class PrincipalComponentsNewPlugin extends SparkCommandPlugin[GenericNewModelArg
    */
   override def name: String = "model:principal_components/new"
 
-  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity =
-    {
-      val models = engine.models
-      models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:principal_components")))
-    }
+  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
+    engine.models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:principal_components")))
+  }
 }
 

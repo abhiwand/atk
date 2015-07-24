@@ -25,3 +25,7 @@ case class GraphReference(graphId: Long) extends UriReference {
   /** The entity name e.g. "frame", "graph", ... */
   override def name: String = "graph"
 }
+
+object GraphReference {
+  implicit def graphEntityToGraphReference(graphEntity: GraphEntity): GraphReference = graphEntity.toReference
+}

@@ -16,7 +16,7 @@
 
 package org.apache.spark.frame.ordering
 
-import org.apache.spark.sql
+import org.apache.spark.sql.Row
 
 /**
  * Ordering for sorting key-value RDDs by key
@@ -26,10 +26,10 @@ import org.apache.spark.sql
  * @param ascendingPerColumn Indicates whether to sort each column in list in ascending (true)
  *                           or descending (false) order
  */
-class MultiColumnKeyOrdering(ascendingPerColumn: List[Boolean]) extends Ordering[(List[Any], sql.Row)] {
+class MultiColumnKeyOrdering(ascendingPerColumn: List[Boolean]) extends Ordering[(List[Any], Row)] {
   val multiColumnOrdering = new MultiColumnOrdering(ascendingPerColumn)
 
-  override def compare(a: (List[Any], sql.Row), b: (List[Any], sql.Row)): Int = {
+  override def compare(a: (List[Any], Row), b: (List[Any], Row)): Int = {
     multiColumnOrdering.compare(a._1, b._1)
   }
 }

@@ -17,12 +17,12 @@
 package com.intel.taproot.analytics.engine.frame.plugins.statistics.correlation
 
 import com.intel.taproot.analytics.domain.frame._
-import com.intel.taproot.analytics.domain.{ CreateEntityArgs }
-import com.intel.taproot.analytics.domain.schema.{ DataTypes }
+import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 import com.intel.taproot.analytics.domain.frame.CorrelationMatrixArgs
 import com.intel.taproot.analytics.domain.schema.FrameSchema
@@ -70,7 +70,7 @@ class CorrelationMatrixPlugin extends SparkCommandPlugin[CorrelationMatrixArgs, 
     frame.schema.validateColumnsExist(arguments.dataColumnNames)
 
     val inputDataColumnNamesAndTypes: List[Column] = arguments.dataColumnNames.map({ name => Column(name, DataTypes.float64) })
-    val correlationRDD = Correlation.correlationMatrix(frame.rdd, arguments.dataColumnNames)
+    val correlationRDD = CorrelationFunctions.correlationMatrix(frame.rdd, arguments.dataColumnNames)
 
     val schema = FrameSchema(inputDataColumnNamesAndTypes)
     engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by correlation matrix command"))) { newFrame: FrameEntity =>

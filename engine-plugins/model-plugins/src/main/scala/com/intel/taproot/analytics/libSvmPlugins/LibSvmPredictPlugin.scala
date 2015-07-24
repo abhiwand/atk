@@ -17,8 +17,9 @@
 package com.intel.taproot.analytics.libSvmPlugins
 
 import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity }
+import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import org.apache.spark.frame.FrameRdd
@@ -28,15 +29,6 @@ import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
 
 // TODO: all plugins should move out of engine-core into plugin modules
 
-/*
-Parameters
-----------
-predict_frame : Frame
-    A frame whose labels are to be predicted.
-observation_column : list of str (Optional)
-    Column(s) containing the observations whose labels are to be predicted.
-    Default is the columns the LibsvmModel was trained on.
-*/
 @PluginDoc(oneLine = "New frame with new predicted label column.",
   extended = """Predict the labels for a test frame and create a new frame revision with
 existing columns and a new predicted label's column.""",
@@ -70,15 +62,12 @@ class LibSvmPredictPlugin extends SparkCommandPlugin[LibSvmPredictArgs, FrameEnt
    * @return a value of type declared as the Return type.
    */
   override def execute(arguments: LibSvmPredictArgs)(implicit invocation: Invocation): FrameEntity = {
-    val models = engine.models
-    val modelMeta = models.expectModel(arguments.model)
-
+    val model: Model = arguments.model
     val frame: SparkFrame = arguments.frame
 
     //Load the libsvm model
     val svmColumns = arguments.observationColumns
-    val svmJsObject = modelMeta.data.get
-    val libsvmData = svmJsObject.convertTo[LibSvmData]
+    val libsvmData = model.data.convertTo[LibSvmData]
     val libsvmModel = libsvmData.svmModel
 
     if (arguments.observationColumns.isDefined) {

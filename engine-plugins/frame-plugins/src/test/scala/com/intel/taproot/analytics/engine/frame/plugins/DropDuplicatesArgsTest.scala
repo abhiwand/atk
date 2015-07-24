@@ -17,13 +17,15 @@
 package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
+import org.apache.spark.sql
+import org.apache.spark.sql.Row
 import org.scalatest.{ FlatSpec, Matchers }
 
 class DropDuplicatesArgsTest extends FlatSpec with Matchers {
   "createKeyValuePairFromRow" should "include specified 2 key columns as key" in {
 
-    val t = MiscFrameFunctions.createKeyValuePairFromRow(Array[Any]("John", 1, "Titanic"), Seq(0, 1))
+    val t = MiscFrameFunctions.createKeyValuePairFromRow(Row("John", 1, "Titanic"), Seq(0, 1))
     t._1 shouldBe Seq("John", 1)
-    t._2 shouldBe Array[Any]("John", 1, "Titanic")
+    t._2 shouldBe Row("John", 1, "Titanic")
   }
 }

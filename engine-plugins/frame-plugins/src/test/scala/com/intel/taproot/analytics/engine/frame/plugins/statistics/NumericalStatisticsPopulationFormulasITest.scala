@@ -36,10 +36,10 @@ class NumericalStatisticsPopulationFormulasITest extends TestingSparkContextFlat
     val frequencies = List(3, 2, 3, 1, 9, 4, 3, 1, 9).map(x => x.toDouble)
 
     require(data.length == frequencies.length, "Test Data in Error: Data length and frequencies length are mismatched")
-    val netFrequencies = frequencies.reduce(_ + _)
+    val netFrequencies = frequencies.sum
 
     val normalizedWeights = frequencies.map(x => x / netFrequencies.toDouble)
-    val netWeight = normalizedWeights.reduce(_ + _)
+    val netWeight = normalizedWeights.sum
 
     val dataFrequencyPairs: List[(Double, Double)] = data.zip(frequencies)
     val dataFrequencyPairsAsOptionValues: List[(Option[Double], Option[Double])] = dataFrequencyPairs.map {
@@ -57,18 +57,18 @@ class NumericalStatisticsPopulationFormulasITest extends TestingSparkContextFlat
 
     val numericalStatisticsWeights = new NumericalStatistics(dataWeightRDD, true)
 
-    val expectedMean: Double = dataWeightPairs.map({ case (x, w) => x * w }).reduce(_ + _)
-    val expectedMax: Double = data.reduce(Math.max(_, _))
-    val expectedMin: Double = data.reduce(Math.min(_, _))
+    val expectedMean: Double = dataWeightPairs.map({ case (x, w) => x * w }).sum
+    val expectedMax: Double = data.max
+    val expectedMin: Double = data.min
     val dataCount: Double = data.length
 
-    val expectedGeometricMean = dataWeightPairs.map({ case (x, w) => Math.pow(x, w) }).reduce(_ * _)
+    val expectedGeometricMean = dataWeightPairs.map({ case (x, w) => Math.pow(x, w) }).product
 
     val expectedVariancesFrequencies = (1.toDouble / netFrequencies) *
-      dataFrequencyPairs.map({ case (x, w) => w * (x - expectedMean) * (x - expectedMean) }).reduce(_ + _)
+      dataFrequencyPairs.map({ case (x, w) => w * (x - expectedMean) * (x - expectedMean) }).sum
 
     val expectedVarianceWeights = (1.toDouble / netWeight) *
-      dataWeightPairs.map({ case (x, w) => w * (x - expectedMean) * (x - expectedMean) }).reduce(_ + _)
+      dataWeightPairs.map({ case (x, w) => w * (x - expectedMean) * (x - expectedMean) }).sum
 
     val expectedStandardDeviationFrequencies = Math.sqrt(expectedVariancesFrequencies)
     val expectedStandardDeviationWeights = Math.sqrt(expectedVarianceWeights)

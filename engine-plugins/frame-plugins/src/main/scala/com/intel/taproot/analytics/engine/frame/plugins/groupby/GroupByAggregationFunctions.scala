@@ -61,7 +61,7 @@ private object GroupByAggregationFunctions extends Serializable {
     val newColumns = groupByColumns ++ columnAggregators.map(_.column)
     val newSchema = FrameSchema(newColumns)
 
-    FrameRdd.toFrameRdd(newSchema, aggregationRDD)
+    new FrameRdd(newSchema, aggregationRDD)
   }
 
   /**
@@ -133,7 +133,7 @@ private object GroupByAggregationFunctions extends Serializable {
     val aggregationColumns = aggregationArguments.map(arg => frameSchema.column(columnName = arg.columnName))
 
     frameRdd.mapRows(row => {
-      val groupByKey = if (!groupByColumnsNames.isEmpty) row.valuesAsArray(groupByColumnsNames).toSeq else Seq[Any]()
+      val groupByKey = if (groupByColumnsNames.nonEmpty) row.valuesAsArray(groupByColumnsNames).toSeq else Seq[Any]()
       val groupByRow = aggregationColumns.map(col => row.data(frameSchema.columnIndex(col.name)))
       (groupByKey, groupByRow.toSeq)
     })

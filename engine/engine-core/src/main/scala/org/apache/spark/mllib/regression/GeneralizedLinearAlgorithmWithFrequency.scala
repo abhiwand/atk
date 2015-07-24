@@ -84,7 +84,7 @@ abstract class GeneralizedLinearModelWithFrequency(val weights: Vector, val inte
    * Print a summary of the model.
    */
   override def toString: String = {
-    s"${this.getClass.getName}: intercept = ${intercept}, numFeatures = ${weights.size}"
+    s"${this.getClass.getName}: intercept = $intercept, numFeatures = ${weights.size}"
   }
 }
 

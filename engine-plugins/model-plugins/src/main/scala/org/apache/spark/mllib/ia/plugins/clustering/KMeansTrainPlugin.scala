@@ -21,6 +21,8 @@ package org.apache.spark.mllib.ia.plugins.clustering
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.schema.DataTypes
+import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -100,34 +102,30 @@ class KMeansTrainPlugin extends SparkCommandPlugin[KMeansTrainArgs, KMeansTrainR
    * @param arguments user supplied arguments to running this plugin
    * @return a value of type declared as the Return type.
    */
-  override def execute(arguments: KMeansTrainArgs)(implicit invocation: Invocation): KMeansTrainReturn =
-    {
-      val models = engine.models
-      val frames = engine.frames
+  override def execute(arguments: KMeansTrainArgs)(implicit invocation: Invocation): KMeansTrainReturn = {
+    val frame: SparkFrame = arguments.frame
 
-      val inputFrame = frames.expectFrame(arguments.frame)
+    val kMeans = initializeKmeans(arguments)
 
-      //create RDD from the frame
-      val trainFrameRdd = frames.loadFrameData(sc, inputFrame)
+    val trainFrameRdd = frame.rdd
+    trainFrameRdd.cache()
+    val vectorRDD = trainFrameRdd.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnScalings)
+    val kmeansModel = kMeans.run(vectorRDD)
+    val size = computeClusterSize(kmeansModel, trainFrameRdd, arguments.observationColumns, arguments.columnScalings)
+    val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
+    trainFrameRdd.unpersist()
 
-      /**
-       * Constructs a KMeans instance with parameters passed or default parameters if not specified
-       */
-      val kMeans = initializeKmeans(arguments)
+    //Writing the kmeansModel as JSON
+    val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
+    val model: Model = arguments.model
+    model.data = jsonModel.toJson.asJsObject
 
-      val vectorRDD = trainFrameRdd.toDenseVectorRDDWithWeights(arguments.observationColumns, arguments.columnScalings)
-      val kmeansModel = kMeans.run(vectorRDD)
-      val size = computeClusterSize(kmeansModel, trainFrameRdd, arguments.observationColumns, arguments.columnScalings)
-      val withinSetSumOfSquaredError = kmeansModel.computeCost(vectorRDD)
+    KMeansTrainReturn(size, withinSetSumOfSquaredError)
+  }
 
-      //Writing the kmeansModel as JSON
-      val jsonModel = new KMeansData(kmeansModel, arguments.observationColumns, arguments.columnScalings)
-      val modelMeta = models.expectModel(arguments.model)
-      models.updateModel(modelMeta.toReference, jsonModel.toJson.asJsObject)
-
-      KMeansTrainReturn(size, withinSetSumOfSquaredError)
-    }
-
+  /**
+   * Constructs a KMeans instance with parameters passed or default parameters if not specified
+   */
   private def initializeKmeans(arguments: KMeansTrainArgs): KMeans = {
     val kmeans = new KMeans()
 
