@@ -14,18 +14,29 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.scoring
+package com.intel.taproot.analytics.scoring.models
+
+import java.io.IOException
+
+import com.intel.taproot.analytics.scoring.interfaces.{ Model, ModelLoader }
 
 import scala.concurrent.Future
-
 /**
  * Base interface for a Model loader.
  */
-trait Model {
+class TestLibKMeansModelReader extends ModelLoader {
 
-  /**
-   * Called for scoring
-   */
-  def score(data: Seq[Array[String]]): Future[Seq[Any]]
+  private var myLibKMeansModel: TestLibKMeansModel = _
 
+  def load(bytes: Array[Byte]): Model = {
+    try {
+      println("model ")
+      myLibKMeansModel = new TestLibKMeansModel()
+      myLibKMeansModel.asInstanceOf[Model]
+    }
+    catch {
+      //TODO: log the error
+      case e: IOException => throw e
+    }
+  }
 }

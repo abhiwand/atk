@@ -14,16 +14,22 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.spark.graphon.iatpregel
+package com.intel.taproot.analytics.scoring.models
 
-import org.apache.spark.rdd.RDD
+import com.intel.taproot.analytics.scoring.interfaces.{ Model, ModelLoader }
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
 /**
- * Implementations of this trait provide a method for creating an initial status report for a Pregel-run using the
- * incoming edge and vertex RDDs.
- * @tparam V Class of the vertex data in the graph.
- * @tparam E Class of the edge data in the graph.
+ * Base interface for a Model loader.
  */
-trait InitialReport[V, E] {
-  def generateInitialReport(vertices: RDD[V], edges: RDD[E]): String
+class TestLibKMeansModel() extends Object with Model {
+
+  override def score(data: Seq[Array[String]]): Future[Seq[Any]] = future {
+    var score = Seq[Any]()
+    println("model is scoring")
+    score
+  }
+
 }

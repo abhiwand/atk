@@ -23,9 +23,9 @@ import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.command.{ CommandExecutor, CommandPluginRegistry }
+import com.intel.taproot.analytics.engine.command.CommandExecutor
 import com.intel.taproot.analytics.engine.frame._
-import com.intel.taproot.analytics.engine.gc.{ GarbageCollectionPlugin, GarbageCollector }
+import com.intel.taproot.analytics.engine.gc.GarbageCollector
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
 import com.intel.taproot.analytics.engine.model.ModelStorageImpl
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
@@ -40,10 +40,9 @@ import org.apache.spark.frame.FrameRdd
 import scala.concurrent._
 import scala.util.{ Failure, Success, Try }
 
-object EngineImpl {
-  private val pythonRddDelimiter = "YoMeDelimiter"
-}
-
+/**
+ * Engine implementation exposed to the REST Server and to plugin authors.
+ */
 class EngineImpl(val sparkContextFactory: SparkContextFactory,
                  commands: CommandExecutor,
                  commandStorage: CommandStorage,
@@ -58,9 +57,6 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
 
   type Data = FrameRdd
   type Context = SparkContext
-
-  val fsRoot = EngineConfig.fsRoot
-  override val pageSize: Int = EngineConfig.pageSize
 
   /* This progress listener saves progress update to command table */
   SparkProgressListener.progressUpdater = new CommandStorageProgressUpdater(commandStorage)

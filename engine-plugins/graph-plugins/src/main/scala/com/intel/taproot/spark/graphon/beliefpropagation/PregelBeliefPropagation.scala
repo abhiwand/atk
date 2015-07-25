@@ -17,7 +17,7 @@
 package com.intel.taproot.spark.graphon.beliefpropagation
 
 import org.apache.spark.graphx._
-import com.intel.taproot.spark.graphon.iatpregel._
+import com.intel.taproot.spark.graphon.atkpregel._
 import com.intel.taproot.graphbuilder.elements.GBVertex
 import com.intel.taproot.spark.graphon.VectorMath
 
@@ -64,7 +64,7 @@ class PregelBeliefPropagation(val maxIterations: Int,
 
     // call  Pregel
 
-    IATPregel(graph,
+    AtkPregel(graph,
       Map().asInstanceOf[Map[Long, Vector[Double]]],
       initialReporter,
       superStepReporter,

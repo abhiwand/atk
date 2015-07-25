@@ -166,6 +166,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                 <module>misc</module>
                 <module>engine</module>
                 <module>engine-plugins</module>
+                <module>scoring-interfaces</module>
+                <module>scoring-engine</module>
                 <module>scoring-models</module>
                 <module>rest-server</module>
                 <module>deploy</module>
