@@ -440,9 +440,9 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
   /**
    * Get the error frame of the supplied frame or create one if it doesn't exist
    * @param frame the 'good' frame
-   * @return the updated frame, plus another frame with parse errors for the 'good' frame
+   * @return the 'error' frame associated with the 'good' frame
    */
-  override def lookupOrCreateErrorFrame(frame: FrameEntity)(implicit invocation: Invocation): (FrameEntity, FrameEntity) = {
+  override def lookupOrCreateErrorFrame(frame: FrameEntity)(implicit invocation: Invocation): FrameEntity = {
     val errorFrame = lookupErrorFrame(frame)
     if (errorFrame.isEmpty) {
       metaStore.withSession("frame.lookupOrCreateErrorFrame") {
@@ -450,17 +450,17 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
           {
             val errorTemplate = new DataFrameTemplate(None, Some(s"This frame was automatically created to capture parse errors for ${frame.name} ID: ${frame.id}"))
             val newlyCreatedErrorFrame = metaStore.frameRepo.insert(errorTemplate).get
-            val updated = metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreatedErrorFrame.id))
+            metaStore.frameRepo.updateErrorFrameId(frame, Some(newlyCreatedErrorFrame.id))
 
             //remove any existing artifacts to prevent collisions when a database is reinitialized.
             frameFileStorage.delete(newlyCreatedErrorFrame)
 
-            (updated, newlyCreatedErrorFrame)
+            newlyCreatedErrorFrame
           }
       }
     }
     else {
-      (frame, errorFrame.get)
+      errorFrame.get
     }
   }
 

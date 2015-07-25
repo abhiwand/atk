@@ -61,21 +61,6 @@ class DomainJsonProtocolTest extends WordSpec with Matchers {
       assert(schema.toJson.compactPrint == """{"columns":[{"name":"_eid","data_type":"int64","index":0},{"name":"_src_vid","data_type":"int64","index":1},{"name":"_dest_vid","data_type":"int64","index":2},{"name":"_label","data_type":"string","index":3}],"label":"mylabel","src_vertex_label":"src","dest_vertex_label":"dest","directed":true}""")
     }
 
-    "parse legacy format" in {
-      val string =
-        """
-          |{
-          |   "columns": [
-          |              ["foo", "str"]
-          |   ]
-          |}
-        """.stripMargin
-      val json = JsonParser(string).asJsObject
-      val schema = json.convertTo[Schema]
-      assert(schema.columnNames.length == 1)
-      assert(schema.columnDataType("foo") == DataTypes.string)
-    }
-
     "parse the current format for frame schemas" in {
       val string =
         """
@@ -124,8 +109,8 @@ class DomainJsonProtocolTest extends WordSpec with Matchers {
       val jsonSet = javaSet.toJson
       val jsonList = javaList.toJson
 
-      jsonSet.convertTo[java.util.Set[Int]] should contain theSameElementsAs (javaSet)
-      jsonList.convertTo[java.util.List[String]] should contain theSameElementsAs (javaList)
+      jsonSet.convertTo[java.util.Set[Int]] should contain theSameElementsAs javaSet
+      jsonList.convertTo[java.util.List[String]] should contain theSameElementsAs javaList
     }
   }
   "javaMapFormat" should {
@@ -138,8 +123,8 @@ class DomainJsonProtocolTest extends WordSpec with Matchers {
       val jsonMap = javaHashMap.toJson
       val javaJsonToHashMap = jsonMap.convertTo[java.util.HashMap[String, Int]]
 
-      javaJsonToHashMap.keySet() should contain theSameElementsAs (javaHashMap.keySet())
-      javaJsonToHashMap.values() should contain theSameElementsAs (javaHashMap.values())
+      javaJsonToHashMap.keySet() should contain theSameElementsAs javaHashMap.keySet()
+      javaJsonToHashMap.values() should contain theSameElementsAs javaHashMap.values()
     }
   }
 }

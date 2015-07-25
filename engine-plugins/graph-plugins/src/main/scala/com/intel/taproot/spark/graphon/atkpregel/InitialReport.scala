@@ -14,12 +14,16 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.spark.graphon.iatpregel
+package com.intel.taproot.spark.graphon.atkpregel
+
+import org.apache.spark.rdd.RDD
 
 /**
- * Implementations of this trait can provide a publicly visible Double value called "delta". It is intended to be
- * used for when cross-iteration change (delta values) are stored with each vertex during an IATPregel computation.
+ * Implementations of this trait provide a method for creating an initial status report for a Pregel-run using the
+ * incoming edge and vertex RDDs.
+ * @tparam V Class of the vertex data in the graph.
+ * @tparam E Class of the edge data in the graph.
  */
-trait DeltaProvider {
-  val delta: Double
+trait InitialReport[V, E] {
+  def generateInitialReport(vertices: RDD[V], edges: RDD[E]): String
 }

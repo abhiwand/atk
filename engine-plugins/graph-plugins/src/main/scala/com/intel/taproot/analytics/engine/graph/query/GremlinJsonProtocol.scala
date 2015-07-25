@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.graph.query
 
 import com.intel.taproot.event.EventLogging
-import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
+import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.tinkerpop.blueprints.util.io.graphson._
 import com.tinkerpop.blueprints.{ Element, Graph }
@@ -31,7 +31,7 @@ import scala.util.Try
 /**
  * Implicit conversions for Gremlin query objects to JSON
  */
-object GremlinJsonProtocol extends IADefaultJsonProtocol with EventLogging {
+object GremlinJsonProtocol extends AtkDefaultJsonProtocol with EventLogging {
 
   /**
    * Convert Blueprints graph elements to GraphSON.
