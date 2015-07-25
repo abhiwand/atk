@@ -16,11 +16,14 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Input arguments class for covariance
  */
-case class CovarianceArgs(frame: FrameReference,
-                          dataColumnNames: List[String]) {
+case class CovarianceArgs(@ArgDoc("""<TBD>""") frame: FrameReference,
+                          @ArgDoc("""The names of two columns from which
+to compute the covariance.""") dataColumnNames: List[String]) {
   require(frame != null, "frame is required")
   require(dataColumnNames.size == 2, "exactly two data columns are required")
   require(!dataColumnNames.contains(null), "data columns names cannot be null")

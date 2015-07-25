@@ -18,19 +18,19 @@ package com.intel.taproot.analytics.engine.frame.plugins.sortedk
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Arguments for SortedK plugin
- *
- * @param frame Frame to sort
- * @param k Number of sorted records to return
- * @param columnNamesAndAscending Column names to sort by, and true to sort column by ascending order,
- *                                or false for descending order
- * @param reduceTreeDepth Depth of reduce tree (governs number of rounds of reduce tasks)
  */
-case class SortedKArgs(frame: FrameReference,
-                       k: Int,
-                       columnNamesAndAscending: List[(String, Boolean)],
-                       reduceTreeDepth: Option[Int] = None) {
+case class SortedKArgs(@ArgDoc("""Frame to sort.""") frame: FrameReference,
+                       @ArgDoc("""Number of sorted records to return.""") k: Int,
+                       @ArgDoc("""Column names to sort by, and true to sort column by ascending order,
+or false for descending order.""") columnNamesAndAscending: List[(String, Boolean)],
+                       @ArgDoc("""Advanced tuning parameter which determines the depth of the
+reduce-tree for the sorted_k plugin.
+This plugin uses Spark's treeReduce() for scalability.
+The default depth is 2.""") reduceTreeDepth: Option[Int] = None) {
   require(frame != null, "frame is required")
   require(k > 0, "k should be greater than zero") //TODO: Should we add an upper bound for K
   require(columnNamesAndAscending != null && columnNamesAndAscending.nonEmpty, "one or more columnNames is required")

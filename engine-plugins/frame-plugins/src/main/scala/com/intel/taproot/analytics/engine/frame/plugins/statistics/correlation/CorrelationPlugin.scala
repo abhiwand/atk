@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.correlation
 
 import com.intel.taproot.analytics.domain.DoubleValue
 import com.intel.taproot.analytics.domain.frame.CorrelationArgs
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
@@ -28,10 +28,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate correlation for the specified columns
- * Parameters
- * ----------
- * columns : [ str | list of str ]
- *   The names of 2 columns from which to compute the correlation.
  */
 @PluginDoc(oneLine = "Calculate correlation for two columns of current frame.",
   extended = """Notes

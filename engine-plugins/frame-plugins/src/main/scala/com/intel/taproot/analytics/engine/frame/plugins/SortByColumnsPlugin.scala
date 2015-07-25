@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ SortByColumnsArgs, FrameEntity }
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
@@ -29,8 +29,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
  * Sort by one or more columns
  */
 @PluginDoc(oneLine = "Sort by one or more columns.",
-  extended = "",
-  returns = "")
+  extended = "<TBD>")
 class SortByColumnsPlugin extends SparkCommandPlugin[SortByColumnsArgs, FrameEntity] {
 
   /**

@@ -16,12 +16,17 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Input arguments class for covariance matrix
  */
-case class CovarianceMatrixArgs(frame: FrameReference,
-                                dataColumnNames: List[String],
-                                matrixName: Option[String] = None) {
+case class CovarianceMatrixArgs(@ArgDoc("""<TBD>""") frame: FrameReference,
+                                @ArgDoc("""The names of the column from which to compute the matrix.
+Names should refer to a single column of type vector, or two or more
+columns of numeric scalars.""") dataColumnNames: List[String],
+                                @ArgDoc("""The name of the new
+matrix.""") matrixName: Option[String] = None) {
   require(frame != null, "frame is required")
   require(!dataColumnNames.contains(null), "data columns names cannot be null")
   require(dataColumnNames.forall(!_.equals("")), "data columns names cannot be empty")

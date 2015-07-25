@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.correlation
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
@@ -34,10 +34,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate correlation matrix for the specified columns
- * Parameters
- * ----------
- * columns : [ str | list of str ]
- *   The names of the column from which to compute the matrix.
  */
 @PluginDoc(oneLine = "Calculate correlation matrix for two or more columns.",
   extended = """Notes

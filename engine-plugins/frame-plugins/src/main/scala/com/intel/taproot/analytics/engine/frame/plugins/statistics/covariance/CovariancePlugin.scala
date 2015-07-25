@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.covariance
 
 import com.intel.taproot.analytics.domain.DoubleValue
 import com.intel.taproot.analytics.domain.frame.CovarianceArgs
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
@@ -28,10 +28,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate covariance for the specified columns
- * Parameters
- * ----------
- * columns : [ str | list of str ]
- *     The names 2 columns from which to compute the covariance.
  */
 
 @PluginDoc(oneLine = "Calculate covariance for exactly two columns.",

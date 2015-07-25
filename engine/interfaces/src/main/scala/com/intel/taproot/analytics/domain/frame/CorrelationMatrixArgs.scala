@@ -16,12 +16,16 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Input arguments class for correlation matrix
  */
-case class CorrelationMatrixArgs(frame: FrameReference,
-                                 dataColumnNames: List[String],
-                                 matrixName: Option[String] = None) {
+case class CorrelationMatrixArgs(@ArgDoc("""<TBD>""") frame: FrameReference,
+                                 @ArgDoc("""The names of the column from
+which to compute the matrix.""") dataColumnNames: List[String],
+                                 @ArgDoc("""The name for the new
+matrix.""") matrixName: Option[String] = None) {
   require(frame != null, "frame is required")
   require(dataColumnNames.size >= 2, "two or more data columns are required")
   require(!dataColumnNames.contains(null), "data columns names cannot be null")
