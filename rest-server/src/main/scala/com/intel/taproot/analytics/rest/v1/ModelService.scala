@@ -30,7 +30,7 @@ import spray.routing.Directives
 import com.intel.taproot.analytics.rest.v1.decorators.ModelDecorator
 import com.intel.taproot.analytics.rest.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.taproot.analytics.rest.v1.viewmodels.Rel
-import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
+import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 import SprayExecutionContext.global
 import com.intel.taproot.event.EventLogging
 import spray.json._
@@ -85,7 +85,7 @@ class ModelService(commonDirectives: CommonDirectives, engine: Engine) extends D
                       //TODO: cursor
                       onComplete(engine.getModels()) {
                         case Success(models) =>
-                          import IADefaultJsonProtocol._
+                          import AtkDefaultJsonProtocol._
                           implicit val indexFormat = ViewModelJsonImplicits.getModelsFormat
                           complete(ModelDecorator.decorateForIndex(uri.toString(), models))
                         case Failure(ex) => throw ex

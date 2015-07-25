@@ -1,12 +1,11 @@
 
-package com.intel.taproot.analytics.scoring
+package com.intel.taproot.analytics.scoring.models
 
-import java.io._
 import java.util.StringTokenizer
 
-import _root_.libsvm.{ svm, svm_model, svm_node }
+import com.intel.taproot.analytics.scoring.interfaces.Model
 import org.apache.spark.mllib.clustering.KMeansModel
-import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.mllib.linalg.{ Vectors, DenseVector }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 
@@ -14,18 +13,15 @@ class LibKMeansModel(libKMeansModel: KMeansModel) extends KMeansModel(libKMeansM
 
   override def score(data: Seq[Array[String]]): Future[Seq[Any]] = future {
     var score = Seq[Any]()
-    data.foreach { vector =>
-      val output = columnFormatter(vector.zipWithIndex)
-      val splitObs: StringTokenizer = new StringTokenizer(output, " \t\n\r\f:")
-      splitObs.nextToken()
-      val counter: Int = splitObs.countTokens / 2
-      val x: Array[Double] = new Array[Double](counter)
-      var j: Int = 0
-      while (j < counter) {
-        x(j) = atof(splitObs.nextToken)
-        j += 1
+    var value: Int = 2;
+    data.foreach { row =>
+      {
+        val x: Array[Double] = new Array[Double](row.length)
+        row.zipWithIndex.foreach {
+          case (value: Any, index: Int) => x(index) = atof(value)
+        }
+        score = score :+ (predict(Vectors.dense(x)) + 1)
       }
-      score = score :+ predict(new DenseVector(x))
     }
     score
   }

@@ -34,31 +34,12 @@ import org.mockito.Mockito._
 import com.intel.taproot.analytics.domain.schema.Column
 
 class ExportToGraphPluginTest extends FlatSpec with Matchers with MockitoSugar {
+
   "getPropertiesValueByColumns" should "get property values by column sequence" in {
     val properties = Set(Property("col4", 2f), Property("col1", 1), Property("col2", "2"), Property("col3", true))
     val vertex = GBVertex(1, Property("gbId", "1"), properties)
     val result = vertex.getPropertiesValueByColumns(List("col1", "col2", "col3", "col4"), properties)
     result shouldBe Array(1, "2", true, 2f)
   }
-
-  //  "getSchemaFromProperties" should "get schema by column name and property values" in {
-  //    val graph = mock[TitanGraph]
-  //
-  //    val key1 = mock[TitanKey]
-  //    doReturn(classOf[java.lang.Integer]).when(key1).getDataType
-  //    val key2 = mock[TitanKey]
-  //    doReturn(classOf[java.lang.String]).when(key2).getDataType
-  //    val key3 = mock[TitanKey]
-  //    doReturn(classOf[java.lang.Float]).when(key3).getDataType
-  //
-  //    when(graph.getType("col1")).thenReturn(key1)
-  //    when(graph.getType("col2")).thenReturn(key2)
-  //    when(graph.getType("col3")).thenReturn(key3)
-  //
-  //    val columns = ExportFromTitanToParquetGraph.getSchemaFromProperties(List("col1", "col2", "col3"), graph)
-  //    columns(0) shouldBe Column("col1", int32)
-  //    columns(1) shouldBe Column("col2", string)
-  //    columns(2) shouldBe Column("col3", float32)
-  //  }
 
 }

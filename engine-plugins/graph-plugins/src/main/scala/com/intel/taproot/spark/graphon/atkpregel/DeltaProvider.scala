@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.spark.graphon.iatpregel
+package com.intel.taproot.spark.graphon.atkpregel
 
 /**
  * Implementations of this trait can provide a publicly visible Double value called "delta". It is intended to be
- * used for when cross-iteration change (delta values) are stored with each vertex during an IATPregel computation.
+ * used for when cross-iteration change (delta values) are stored with each vertex during an AtkPregel computation.
  */
 trait DeltaProvider {
   val delta: Double

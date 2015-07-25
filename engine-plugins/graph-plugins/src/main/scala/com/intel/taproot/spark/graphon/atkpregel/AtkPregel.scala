@@ -14,14 +14,14 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.spark.graphon.iatpregel
+package com.intel.taproot.spark.graphon.atkpregel
 
 import scala.reflect.ClassTag
 
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 
-object IATPregel {
+object AtkPregel {
 
   /**
    * Implements Pregel-like BSP message passing. It is the GraphX implementation of Pregel extended with richer logging.
@@ -77,8 +77,8 @@ object IATPregel {
     var log = new StringBuilder(initialReport)
 
     if (maxIterations <= 0) {
-      log.++=("IATPregel executed no iterations. Requested max iterations == " + maxIterations)
-      (graph, log.toString)
+      log.++=("AtkPregel executed no iterations. Requested max iterations == " + maxIterations)
+      (graph, log.toString())
     }
     else {
 
@@ -134,8 +134,6 @@ object IATPregel {
       log.++=("\nTotal number of iterations: " + (i - 1))
 
       (g, log.toString())
-    } // end of apply
+    }
   }
 }
-
-// end of class IATPregel

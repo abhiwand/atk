@@ -14,22 +14,18 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.spray.json
+package com.intel.taproot.spark.graphon.atkpregel
 
-import spray.json._
+import org.apache.spark.rdd.RDD
 
-/**
- * Our JsonProtocol is similar to Spray's DefaultJsonProtocol
- * except we handle ProductFormats differently.
- */
-trait IADefaultJsonProtocol extends BasicFormats
-  with StandardFormats
-  with CollectionFormats
-  with CustomProductFormats
-  with AdditionalFormats
+case class SuperStepStatus(log: String, earlyTermination: Boolean)
 
 /**
- * Our JsonProtocol is similar to Spray's DefaultJsonProtocol
- * except we handle ProductFormats differently.
+ * Implementations of this trait provide a method for generating a summary of superstep activity after the completion
+ * of a Pregel superstep.
+ * @tparam V Class of the vertex data.
  */
-object IADefaultJsonProtocol extends IADefaultJsonProtocol
+
+trait SuperStepStatusGenerator[V] extends Serializable {
+  def generateSuperStepStatus(iteration: Int, totalVertices: Long, activeVertices: RDD[V]): SuperStepStatus
+}

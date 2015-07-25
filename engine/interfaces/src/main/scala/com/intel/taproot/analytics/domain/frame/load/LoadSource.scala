@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.domain.frame.load
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
-import com.intel.taproot.analytics.domain.schema.{ SchemaUtil, FrameSchema, Schema }
+import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Schema }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
 /**
