@@ -762,39 +762,43 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @alpha
-    @arg('column_inputs', 'str | tuple(str, dict)', 'Comma-separated column names to summarize or tuple containing column name '
+    @arg('column_inputs', 'str | tuple(str, dict)', 'Comma-separated column names to summarize'
+                                                    'or tuple containing column name '
                                                     'and dictionary of optional parameters. '
-                                                    'Optional parameters (see below for details): '
-                                                    'top_k (default = 10), threshold (default = 0.0)')
 
     @returns(dict, 'Summary for specified column(s) consisting of levels with their frequency and percentage')
     def __categorical_summary(self, *column_inputs):
         """
-        Compute a summary of the data in a column(s) for categorical or numerical data types.
-        The returned value is a Map containing categorical summary for each specified column.
-
-        For each column, levels which satisfy the top k and/or threshold cutoffs are displayed along
-        with their frequency and percentage occurrence with respect to the total rows in the dataset.
-
-        Missing data is reported when a column value is empty ("") or null.
-
-        All remaining data is grouped together in the Other category and its frequency and percentage are reported as well.
-
-        User must specify the column name and can optionally specify top_k and/or threshold.
+        Build summary of the data.
 
         Optional parameters:
 
-            top_k
-                Displays levels which are in the top k most frequently occurring values for that column.
+            top_k *: int*
+                Displays levels which are in the top k most frequently
+                occurring values for that column.
+                Default is 10.
 
-            threshold
-                Displays levels which are above the threshold percentage with respect to the total row count.
+            threshold *: float*
+                Displays levels which are above the threshold percentage with
+                respect to the total row count.
+                Default is 0.0.
 
-            top_k and threshold
-                Performs level pruning first based on top k and then filters out levels which satisfy the threshold criterion.
+        Compute a summary of the data in a column(s) for categorical or numerical data types.
+        The returned value is a Map containing categorical summary for each specified column.
 
-            defaults
-                Displays all levels which are in Top 10.
+        For each column, levels which satisfy the top k and/or threshold cutoffs are
+        displayed along with their frequency and percentage occurrence with respect to
+        the total rows in the dataset.
+
+        Performs level pruning first based on top k and then filters
+        out levels which satisfy the threshold criterion.
+
+        Missing data is reported when a column value is empty ("") or null.
+
+        All remaining data is grouped together in the Other category and its frequency
+        and percentage are reported as well.
+
+        User must specify the column name and can optionally specify top_k and/or threshold.
 
 
         Examples
@@ -808,29 +812,37 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             >>> frame.categorical_summary(('source', {'top_k' : 2}), ('target',
             ... {'threshold' : 0.5}))
 
-        Sample output (for last example above):
+        .. only:: html
 
-            >>> {u'categorical_summary': [{u'column': u'source', u'levels': [
-            ... {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'thing'},
-            ... {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'abstraction'},
-            ... {u'percentage': 0.25, u'frequency': 7, u'level': u'physical_entity'},
-            ... {u'percentage': 0.10714285714285714, u'frequency': 3, u'level': u'entity'},
-            ... {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
-            ... {u'percentage': 0.0, u'frequency': 0, u'level': u'Other'}]},
-            ... {u'column': u'target', u'levels': [
-            ... {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'thing'},
-            ... {u'percentage': 0.07142857142857142, u'frequency': 2,
-            ...  u'level': u'physical_entity'},
-            ... {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'entity'},
-            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'variable'},
-            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'unit'},
-            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'substance'},
-            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'subject'},
-            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'set'},
-            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'reservoir'},
-            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'relation'},
-            ... {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
-            ... {u'percentage': 0.5357142857142857, u'frequency': 15, u'level': u'Other'}]}]}
+            Sample output::
+
+                {u'categorical_summary': [{u'column': u'source', u'levels': [{u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'thing'}, {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'abstraction'}, {u'percentage': 0.25, u'frequency': 7, u'level': u'physical_entity'}, {u'percentage': 0.10714285714285714, u'frequency': 3, u'level': u'entity'}, {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'}, {u'percentage': 0.0, u'frequency': 0, u'level': u'Other'}]}, {u'column': u'target', u'levels': [ {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'thing'}, {u'percentage': 0.07142857142857142, u'frequency': 2,  u'level': u'physical_entity'}, {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'entity'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'variable'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'unit'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'substance'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'subject'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'set'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'reservoir'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'relation'}, {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'}, {u'percentage': 0.5357142857142857, u'frequency': 15, u'level': u'Other'}]}]}
+
+        .. only:: latex
+
+            Sample output::
+
+                {u'categorical_summary': [{u'column': u'source', u'levels': [
+                {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'thing'},
+                {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'abstraction'},
+                {u'percentage': 0.25, u'frequency': 7, u'level': u'physical_entity'},
+                {u'percentage': 0.10714285714285714, u'frequency': 3, u'level': u'entity'},
+                {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
+                {u'percentage': 0.0, u'frequency': 0, u'level': u'Other'}]},
+                {u'column': u'target', u'levels': [
+                {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'thing'},
+                {u'percentage': 0.07142857142857142, u'frequency': 2,
+                 u'level': u'physical_entity'},
+                {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'entity'},
+                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'variable'},
+                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'unit'},
+                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'substance'},
+                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'subject'},
+                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'set'},
+                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'reservoir'},
+                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'relation'},
+                {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
+                {u'percentage': 0.5357142857142857, u'frequency': 15, u'level': u'Other'}]}]}
 
         """
         return self._backend.categorical_summary(self, column_inputs)
