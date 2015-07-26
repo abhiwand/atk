@@ -28,7 +28,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
 import com.intel.taproot.event.{ EventLogging, EventLogger }
-import com.intel.taproot.analytics.component.{ ArchiveDefinition, Archive }
+import com.intel.taproot.analytics.component.{ Boot, ArchiveDefinition, Archive }
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.reflect.ClassTag
 import com.intel.taproot.analytics.scoring.interfaces.{ Model, ModelLoader }
@@ -66,7 +66,7 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
     readModelInfo()
     //
     val x = modelName
-    lazy val modelLoader = com.intel.taproot.analytics.component.Boot.getArchive(archiveName).load(modelName)
+    lazy val modelLoader = Boot.getArchive(archiveName).load(modelName)
     //.load("com.intel.taproot.analytics.scoring.models.LibKMeansModelReaderPlugin")
     //.load("com.intel.taproot.analytics.scoring.models." + config.getString("intel.taproot.scoring-engine.scoring.loader"))
     //
@@ -85,7 +85,7 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
     val byteArray = source.map(_.toByte).toArray
     source.close()
     val model = modelLoader.load(byteArray)
-    val modelName = modelFile.substring(modelFile.lastIndexOf("/") + 1)
+    val modelName = modelFile.substring(modelFile.lastIndexOf(File.separator) + 1)
     new ScoringService(model, modelName)
   }
 

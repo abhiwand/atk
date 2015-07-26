@@ -27,10 +27,9 @@ class SystemState(val systemConfig: SystemConfig = new SystemConfig(),
   def withConfiguration(config: SystemConfig): SystemState = new SystemState(config, archives)
 
   /**
-   * Look up the classloader for a given archive. Convenience method.
+   * Look up the class loader for a given archive. Convenience method.
    */
   def loader(archiveName: String) = {
-    require(archiveName != null, "archiveName cannot be null")
     archive(archiveName).map(_.classLoader)
   }
 
