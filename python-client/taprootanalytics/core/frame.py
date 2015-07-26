@@ -764,7 +764,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
     @alpha
     @arg('column_inputs', 'str | tuple(str, dict)', 'Comma-separated column names to summarize'
                                                     'or tuple containing column name '
-                                                    'and dictionary of optional parameters. '
+                                                    'and dictionary of optional parameters. ')
 
     @returns(dict, 'Summary for specified column(s) consisting of levels with their frequency and percentage')
     def __categorical_summary(self, *column_inputs):

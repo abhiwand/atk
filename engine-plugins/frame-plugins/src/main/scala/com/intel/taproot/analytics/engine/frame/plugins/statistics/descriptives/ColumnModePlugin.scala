@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives
 import com.intel.taproot.analytics.domain.frame.{ ColumnModeArgs, ColumnModeReturn }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
@@ -28,18 +28,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate modes of a column.
- * Parameters
- * ----------
- * data_column : str
- *   The column whose mode is to be calculated.
- * weights_column : str (optional)
- *   The name of the column that provides weights (frequencies) for the mode
- *   calculation.
- *   Must contain numerical data.
- *   Default is all items have weight of 1.
- * max_modes_returned : int (optional)
- *   Maximum number of modes returned.
- *   Default is 1.
  */
 @PluginDoc(oneLine = "Evaluate the weights assigned to rows.",
   extended = """Calculate the modes of a column.

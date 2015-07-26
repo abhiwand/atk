@@ -16,17 +16,18 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 import org.apache.commons.lang.StringUtils
 
 /**
  * Command to unflatten a frame and store the result to a new data frame.
- * @param frame FrameReference of the data frame to perform column unflattening
- * @param compositeKeyColumnNames name of the user column to be used as keys for unflattening
- * @param delimiter separator for the data in the result columns
  */
-case class UnflattenColumnArgs(frame: FrameReference,
-                               compositeKeyColumnNames: List[String],
-                               delimiter: Option[String] = None) {
+case class UnflattenColumnArgs(@ArgDoc("""FrameReference of the data frame to perform
+column unflattening.""") frame: FrameReference,
+                               @ArgDoc("""name of the user column to be used as keys
+for unflattening.""") compositeKeyColumnNames: List[String],
+                               @ArgDoc("""separator for the data in the result columns.
+Default is comma (,).""") delimiter: Option[String] = None) {
   require(frame != null, "frame is required")
   require(compositeKeyColumnNames != null && compositeKeyColumnNames.nonEmpty, "column list is required for key")
   compositeKeyColumnNames.foreach(x => require(StringUtils.isNotBlank(x), "non empty column names required for composite key"))

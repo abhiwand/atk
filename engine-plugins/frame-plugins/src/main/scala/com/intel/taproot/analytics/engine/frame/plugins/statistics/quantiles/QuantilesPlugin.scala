@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.quantiles
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Column, DataTypes }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import org.apache.spark.frame.FrameRdd
@@ -30,12 +30,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate quantiles on the given column
- * Parameters
- * ----------
- * column_name : str
- *   The column to calculate quantiles.
- * quantiles : [ float | list of float ]
- *   What is being requested.
  */
 @PluginDoc(oneLine = "New frame with Quantiles and their values.",
   extended = "Calculate quantiles on the given column.",

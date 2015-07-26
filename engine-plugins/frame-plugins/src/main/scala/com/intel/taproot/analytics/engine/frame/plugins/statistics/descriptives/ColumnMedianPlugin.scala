@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives
 import com.intel.taproot.analytics.domain.frame.{ FrameReference, ColumnMedianArgs, ColumnMedianReturn }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
@@ -31,7 +31,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
  * Parameters
  * ----------
  * data_column : str
- *   The column whose median is to be calculated.
+ *
  * weights_column : str (optional)
  *   The column that provides weights (frequencies) for the median
  *   calculation.

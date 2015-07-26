@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.statistics.descriptives
 import com.intel.taproot.analytics.domain.frame.{ FrameReference, ColumnSummaryStatisticsArgs, ColumnSummaryStatisticsReturn }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
 // Implicits needed for JSON conversion
@@ -28,21 +28,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Calculate summary statistics of the specified column.
- * Parameters
- * ----------
- * data_column : str
- *   The column to be statistically summarized.
- *   Must contain numerical data; all NaNs and infinite values are excluded
- *   from the calculation.
- * weights_column_name : str (optional)
- *   Name of column holding weights of column values.
- * use_population_variance : bool (optional)
- *   If true, the variance is calculated as the population variance.
- *   If false, the variance calculated as the sample variance.
- *   Because this option affects the variance, it affects the standard
- *   deviation and the confidence intervals as well.
- *   This option is False by default, so that sample variance is the default
- *   form of variance calculated.
  */
 @PluginDoc(oneLine = "Calculate multiple statistics for a column.",
   extended = """Notes

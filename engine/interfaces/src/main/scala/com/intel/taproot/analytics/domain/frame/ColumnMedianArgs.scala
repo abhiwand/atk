@@ -16,13 +16,19 @@
 
 package com.intel.taproot.analytics.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 import spray.json.JsValue
 
 /**
  * Command for calculating the median of a (possibly weighted) dataframe column.
  * @param frame identifier for the input dataframe
  */
-case class ColumnMedianArgs(frame: FrameReference, dataColumn: String, weightsColumn: Option[String]) {
+case class ColumnMedianArgs(@ArgDoc("""<TBD>""") frame: FrameReference,
+                            @ArgDoc("""The column whose median is to be calculated.""") dataColumn: String,
+                            @ArgDoc("""The column that provides weights (frequencies)
+for the median calculation.
+Must contain numerical data.
+Default is all items have a weight of 1.""") weightsColumn: Option[String]) {
 
   require(frame != null, "frame is required")
   require(dataColumn != null, "data column is required")

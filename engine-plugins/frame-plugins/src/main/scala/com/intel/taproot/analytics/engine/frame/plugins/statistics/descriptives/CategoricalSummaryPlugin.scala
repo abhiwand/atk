@@ -26,9 +26,36 @@ import org.apache.spark.frame.FrameRdd
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
-@PluginDoc(oneLine = "Compute the categorical summary for specified columns in a frame.",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "Build summary of the data.",
+  extended = """Optional parameters:
+
+    top_k *: int*
+        Displays levels which are in the top k most frequently
+        occurring values for that column.
+        Default is 10.
+
+    threshold *: float*
+        Displays levels which are above the threshold percentage with
+        respect to the total row count.
+        Default is 0.0.
+
+Compute a summary of the data in a column(s) for categorical or numerical data types.
+The returned value is a Map containing categorical summary for each specified column.
+
+For each column, levels which satisfy the top k and/or threshold cutoffs are
+displayed along with their frequency and percentage occurrence with respect to
+the total rows in the dataset.
+
+Performs level pruning first based on top k and then filters
+out levels which satisfy the threshold criterion.
+
+Missing data is reported when a column value is empty ("") or null.
+
+All remaining data is grouped together in the Other category and its frequency
+and percentage are reported as well.
+
+User must specify the column name and can optionally specify top_k and/or threshold.""",
+  returns = "Summary for specified column(s) consisting of levels with their frequency and percentage.")
 class CategoricalSummaryPlugin extends SparkCommandPlugin[CategoricalSummaryArgs, CategoricalSummaryReturn] {
 
   /**

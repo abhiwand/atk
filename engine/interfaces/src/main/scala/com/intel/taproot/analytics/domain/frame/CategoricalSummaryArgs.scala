@@ -18,7 +18,9 @@ package com.intel.taproot.analytics.domain.frame
 
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
-case class CategoricalSummaryArgs(@ArgDoc("Frame in reference to fetch categorical summary") frame: FrameReference,
+case class CategoricalSummaryArgs(@ArgDoc("""Comma-separated column names to summarize
+or tuple containing column name
+and dictionary of optional parameters.""") frame: FrameReference,
                                   @ArgDoc("List of Categorical Column Input consisting of column, topk and/or threshold") columnInput: List[CategoricalColumnInput]) {
 
   require(frame != null, "frame is required but not provided")

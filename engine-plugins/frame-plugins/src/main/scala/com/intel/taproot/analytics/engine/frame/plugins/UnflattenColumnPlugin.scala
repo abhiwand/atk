@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins
 
 import com.intel.taproot.analytics.domain.frame.{ UnflattenColumnArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes, Column }
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, RowWrapper }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.commons.lang.StringUtils
@@ -30,14 +30,6 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Take multiple rows and 'unflatten' them into a row with multiple values in a column.
- *
- * Parameters
- * ----------
- * column : List<str>
- * The column list representing the composite key.
- * delimiter : str (optional)
- * The delimiter string.
- * Default is comma (,).
  */
 @PluginDoc(oneLine = "Compacts data from multiple rows based on cell data.",
   extended = """Groups together cells in all columns (less the composite key) using "," as string delimiter.
