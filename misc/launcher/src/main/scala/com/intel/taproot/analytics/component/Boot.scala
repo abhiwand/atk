@@ -39,10 +39,10 @@ object Boot {
    * Returns the class loader for the given archive
    */
   def getClassLoader(archive: String): ClassLoader = {
-    getArchive(archive).classLoader
+    Archive.getClassLoader(archive)
   }
 
-  def usage() = println("Usage: java -jar launcher.jar <archive> <application>")
+  private def usage(): Unit = println("Usage: java -jar launcher.jar <archive> <application>")
 
   def main(args: Array[String]) = {
     if (args.length < 1 || args.length > 2) {

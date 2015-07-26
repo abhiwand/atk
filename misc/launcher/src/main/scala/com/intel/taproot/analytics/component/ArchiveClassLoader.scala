@@ -18,21 +18,19 @@ package com.intel.taproot.analytics.component
 
 import java.net.{ URLClassLoader, URL }
 
-import scala.collection.mutable.ArrayBuffer
-
 /**
  * Packages a class loader with some additional error handling / logging information
  * that's useful for Archives.
  *
  * Loads classes first from its parent, then from the URLs provided, then from its dependencies, in order
  */
-class ArchiveClassLoader(archiveName: String, urls: Array[URL], parent: ClassLoader, dependencies: Array[ClassLoader])
-    extends URLClassLoader(urls, parent) {
+class ArchiveClassLoader(archiveName: String, urls: Array[URL], parentClassLoader: ClassLoader, dependencies: Array[ClassLoader])
+    extends URLClassLoader(urls, parentClassLoader) {
+
   override def loadClass(className: String, resolve: Boolean): Class[_] = {
     //Interestingly, cannot use "attempt" here, have to use try/catch, probably due to stack depth check in ClassLoader.
     try {
-      val klass = super.loadClass(className, resolve)
-      klass
+      super.loadClass(className, resolve)
     }
     catch {
       case e: ClassNotFoundException =>
@@ -48,20 +46,7 @@ class ArchiveClassLoader(archiveName: String, urls: Array[URL], parent: ClassLoa
     }
   }
 
-  /**
-   * Returns the complete class loader parent chain, starting with this class loader.
-   */
-  def chain: Array[ClassLoader] = {
-    val buff = ArrayBuffer[ClassLoader]()
-    var current: ClassLoader = this
-    while (current != null) {
-      buff.append(current)
-      current = current.getParent
-    }
-    buff.toArray
-  }
-
   override def toString = {
-    s"ArchiveClassLoader($archiveName, [${urls.mkString(", ")}], $parent, [${dependencies.mkString(", ")}])"
+    s"ArchiveClassLoader($archiveName, [${urls.mkString(", ")}], $parentClassLoader, [${dependencies.mkString(", ")}])"
   }
 }
