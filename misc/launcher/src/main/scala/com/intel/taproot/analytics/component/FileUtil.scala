@@ -15,13 +15,14 @@
 */
 
 package com.intel.taproot.analytics.component
+import java.io._
 
 object FileUtil {
   /**
    * For debugging only
    */
   private[analytics] def writeFile(fileName: String, content: String) {
-    import java.io._
+
     val file = new java.io.File(fileName)
     val parent = file.getParentFile
     if (!parent.exists()) {

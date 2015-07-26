@@ -16,8 +16,6 @@
 
 package com.intel.taproot.analytics
 
-import scala.util.control.NonFatal
-
 package object component {
 
   //Scalaz also provides this, but we don't want a scalaz dependency in the launcher
