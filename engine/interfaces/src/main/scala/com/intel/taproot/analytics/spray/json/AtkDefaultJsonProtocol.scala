@@ -14,16 +14,22 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.spark.graphon.iatpregel
+package com.intel.taproot.analytics.spray.json
 
-import org.apache.spark.rdd.RDD
+import spray.json._
 
 /**
- * Implementations of this trait provide a method for creating an initial status report for a Pregel-run using the
- * incoming edge and vertex RDDs.
- * @tparam V Class of the vertex data in the graph.
- * @tparam E Class of the edge data in the graph.
+ * Our JsonProtocol is similar to Spray's DefaultJsonProtocol
+ * except we handle ProductFormats differently.
  */
-trait InitialReport[V, E] {
-  def generateInitialReport(vertices: RDD[V], edges: RDD[E]): String
-}
+trait AtkDefaultJsonProtocol extends BasicFormats
+  with StandardFormats
+  with CollectionFormats
+  with CustomProductFormats
+  with AdditionalFormats
+
+/**
+ * Our JsonProtocol is similar to Spray's DefaultJsonProtocol
+ * except we handle ProductFormats differently.
+ */
+object AtkDefaultJsonProtocol extends AtkDefaultJsonProtocol

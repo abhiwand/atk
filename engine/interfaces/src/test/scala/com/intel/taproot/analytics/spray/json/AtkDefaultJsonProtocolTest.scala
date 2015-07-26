@@ -19,9 +19,9 @@ package com.intel.taproot.analytics.spray.json
 import org.scalatest.{ FlatSpec, Matchers }
 
 import spray.json._
-import IADefaultJsonProtocol._
+import AtkDefaultJsonProtocol._
 
-class IADefaultJsonProtocolTest extends FlatSpec with Matchers {
+class AtkDefaultJsonProtocolTest extends FlatSpec with Matchers {
 
   /** For testing case class toJson and back */
   case class Foo(lower: String, mixedCase: String, under_score: String)

@@ -14,13 +14,16 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics
+package com.intel.taproot.spark.graphon.atkpregel
 
-package object component {
+import org.apache.spark.rdd.RDD
 
-  //Scalaz also provides this, but we don't want a scalaz dependency in the launcher
-  implicit class RichBoolean(val b: Boolean) extends AnyVal {
-    final def option[A](a: => A): Option[A] = if (b) Some(a) else None
-  }
-
+/**
+ * Implementations of this trait provide a method for creating an initial status report for a Pregel-run using the
+ * incoming edge and vertex RDDs.
+ * @tparam V Class of the vertex data in the graph.
+ * @tparam E Class of the edge data in the graph.
+ */
+trait InitialReport[V, E] {
+  def generateInitialReport(vertices: RDD[V], edges: RDD[E]): String
 }

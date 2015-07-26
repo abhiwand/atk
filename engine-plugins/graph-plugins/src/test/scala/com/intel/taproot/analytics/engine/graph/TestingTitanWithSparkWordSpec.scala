@@ -18,7 +18,6 @@ package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.taproot.testutils.{ LogUtils, TestingSparkContextWordSpec, TestingTitan }
-import com.tinkerpop.blueprints.Graph
 import org.scalatest.BeforeAndAfter
 
 trait TestingTitanWithSparkWordSpec extends TestingSparkContextWordSpec with BeforeAndAfter with TestingTitan {
