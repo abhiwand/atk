@@ -22,7 +22,7 @@ Ping the server:
 
     >>> import taprootanalytics as ta
     >>> ta.server.ping()
-    Successful ping to TAProot Analytics at http://localhost:9099/info
+    Successful ping to Taproot Analytics ATK at http://localhost:9099/info
     >>> ta.connect()
 
 View and edit the server connection:

@@ -36,7 +36,7 @@ Configuration Script
         Creating application.conf file from application.conf.tpl
         Reading application.conf.tpl
         Updating configuration
-        Configuration created for TAProot Analytics
+        Configuration created for Taproot Analytics ATK
         Configuring postgres access for  "taproot"
         Initializing database:                                     [  OK  ]
         Stopping postgresql service:                               [  OK  ]
@@ -52,13 +52,13 @@ Configuration Script
         initctl: Unknown instance:
         taprootanalytics-rest-server start/running, process 17484
         0
-        Waiting for TAProot Analytics server to restart
+        Waiting for Taproot Analytics ATK server to restart
          .   .   .   .
         You are now connected to database "ta_metastore".
         INSERT 0 1
         0
         postgres is configured
-        TAProot Analytics is ready for use.
+        Taproot Analytics ATK is ready for use.
 
 .. only:: latex
 
@@ -104,7 +104,7 @@ Configuration Script
         Creating application.conf file from application.conf.tpl
         Reading application.conf.tpl
         Updating configuration
-        Configuration created for TAProot Analytics
+        Configuration created for Taproot Analytics ATK
         Configuring postgres access for  "taproot"
         Initializing database:                                     [  OK  ]
         Stopping postgresql service:                               [  OK  ]
@@ -120,12 +120,12 @@ Configuration Script
         initctl: Unknown instance:
         taprootanalytics-rest-server start/running, process 17484
         0
-        Waiting for TAProot Analytics server to restart
+        Waiting for Taproot Analytics ATK server to restart
          .   .   .   .
         You are now connected to database "ta_metastore".
         INSERT 0 1
         0
         postgres is configured
-        TAProot Analytics is ready for use.
+        Taproot Analytics ATK is ready for use.
 
 
