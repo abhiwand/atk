@@ -102,7 +102,13 @@ def get_add_many_columns_function(row_function, data_types):
         result = row_function(row)
         data = []
         for i, data_type in enumerate(data_types):
-            cast_value = valid_data_types.cast(result[i], data_type)
+            try:
+                value = result[i]
+            except TypeError as e:
+                raise RuntimeError("UDF returned non-indexable value. Provided schema indicated an Indexable return type")
+            except IndexError as e:
+                raise RuntimeError("UDF return value did not match the number of items in the provided schema")
+            cast_value = valid_data_types.cast(value, data_type)
             data.append(numpy_to_bson_friendly(cast_value))
         # return json.dumps(data, cls=NumpyJSONEncoder)
         return data
