@@ -40,9 +40,9 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
     If we let:
 
     * beta :math:`\equiv \beta`,
-    * :math:`T_{P}` denote the number of true positives,
-    * :math:`F_{P}` denote the number of false positives, and
-    * :math:`F_{N}` denote the number of false negatives
+    * :math:`T_{P}` denotes the number of true positives,
+    * :math:`F_{P}` denotes the number of false positives, and
+    * :math:`F_{N}` denotes the number of false negatives
 
     then:
 
