@@ -153,17 +153,11 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPl
       }
     }
     else {
-      val returnValue = invokeCommandFunction(plugin, arguments, commandContext)
+      val cmd = commandContext.command
+      info(s"Invoking command ${cmd.name}")
+      val returnValue = plugin(invocation, arguments)
       plugin.serializeReturn(returnValue)
     }
-  }
-
-  private def invokeCommandFunction[A <: Product: TypeTag, R <: Product: TypeTag](command: CommandPlugin[A, R],
-                                                                                  arguments: A,
-                                                                                  commandContext: CommandContext)(implicit invocation: Invocation): R = {
-    val cmd = commandContext.command
-    info(s"Invoking command ${cmd.name}")
-    command(invocation, arguments)
   }
 
   private def getInvocation[R <: Product: TypeTag, A <: Product: TypeTag](command: CommandPlugin[A, R],
