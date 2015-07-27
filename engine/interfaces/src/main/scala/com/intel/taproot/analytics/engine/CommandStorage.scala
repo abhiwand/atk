@@ -16,13 +16,29 @@
 
 package com.intel.taproot.analytics.engine
 
+import com.intel.taproot.analytics.NotFoundException
 import com.intel.taproot.analytics.domain.command.{ CommandTemplate, Command }
 import scala.util.Try
 import spray.json.JsObject
 
 trait CommandStorage {
+
+  /**
+   * Generally it is better to call expectCommand() since commands don't get deleted,
+   * so if you have an id it should be valid
+   */
   def lookup(id: Long): Option[Command]
-  def create(frame: CommandTemplate): Command
+
+  /** Look-up a Command expecting it exists, throw Exception otherwise */
+  def expectCommand(id: Long): Command = {
+    lookup(id).getOrElse(throw new NotFoundException("Command", id))
+  }
+
+  /**
+   * Add a new command to the meta store
+   */
+  def create(commandTemplate: CommandTemplate): Command
+
   def scan(offset: Int, count: Int): Seq[Command]
 
   /**

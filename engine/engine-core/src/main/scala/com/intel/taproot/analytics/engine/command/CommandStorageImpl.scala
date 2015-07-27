@@ -16,6 +16,8 @@
 
 package com.intel.taproot.analytics.engine.command
 
+import com.intel.taproot.analytics.NotFoundException
+
 import scala.util.{ Success, Failure, Try }
 import spray.json.JsObject
 import com.intel.taproot.analytics.domain.command.{ CommandTemplate, Command }
@@ -29,6 +31,10 @@ import com.intel.taproot.event.{ EventContext, EventLogging }
 class CommandStorageImpl(val metaStore: SlickMetaStoreComponent#SlickMetaStore) extends CommandStorage with EventLogging {
   val repo = metaStore.commandRepo
 
+  /**
+   * Generally it is better to call expectCommand() since commands don't get deleted,
+   * so if you have an id it should be valid
+   */
   override def lookup(id: Long): Option[Command] =
     metaStore.withSession("se.command.lookup") {
       implicit session =>
@@ -106,4 +112,5 @@ class CommandStorageImpl(val metaStore: SlickMetaStoreComponent#SlickMetaStore) 
         repo.updateProgress(id, progressInfo)
     }
   }
+
 }

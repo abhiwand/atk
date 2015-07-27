@@ -16,6 +16,11 @@
 
 package com.intel.taproot.analytics.engine.command
 
+import java.io.File
+import java.nio.file.{ FileSystems, Files }
+
+import sys.process._
+
 import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.engine._
@@ -111,7 +116,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPl
             executeCommandContext(commandContext)
           })
           // get the latest command progress from DB when command is done executing
-          commands.lookup(commandContext.command.id).get
+          commands.expectCommand(commandContext.command.id)
         }
         cmdFuture
       }
@@ -131,27 +136,27 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPl
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
     debug(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
-    if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && EngineConfig.isSparkOnYarn) {
-      val archiveName = commandPluginRegistry.getArchiveNameFromPlugin(plugin.name)
-      new SparkSubmitLauncher().execute(commandContext.command, plugin.asInstanceOf[SparkCommandPlugin[A, R]], archiveName)
-      // Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution
-      val updatedCommand = commands.lookup(commandContext.command.id).get
-      if (updatedCommand.error.isDefined) {
-        throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
-      }
-      if (updatedCommand.result.isDefined) {
-        updatedCommand.result.get
-      }
-      else {
-        error(s"Command didn't have any results, this is probably do to an error submitting command to yarn-cluster: $updatedCommand")
-        throw new Exception(s"Error submitting command to yarn-cluster.")
-      }
-    }
-    else {
-      val cmd = commandContext.command
-      info(s"Invoking command ${cmd.name}")
-      val returnValue = plugin(invocation, arguments)
-      plugin.serializeReturn(returnValue)
+    plugin match {
+      case sparkCommandPlugin: SparkCommandPlugin[A, R] if !sys.props.contains("SPARK_SUBMIT") && EngineConfig.isSparkOnYarn =>
+        val archiveName = commandPluginRegistry.getArchiveNameFromPlugin(plugin.name)
+        new SparkSubmitLauncher().execute(commandContext.command, sparkCommandPlugin, archiveName)
+        // Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution
+        val updatedCommand = commands.expectCommand(commandContext.command.id)
+        if (updatedCommand.error.isDefined) {
+          throw new scala.Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
+        }
+        if (updatedCommand.result.isDefined) {
+          updatedCommand.result.get
+        }
+        else {
+          error(s"Command didn't have any results, this is probably do to an error submitting command to yarn-cluster: $updatedCommand")
+          throw new scala.Exception(s"Error submitting command to yarn-cluster.")
+        }
+      case _ =>
+        val cmd = commandContext.command
+        info(s"Invoking command ${cmd.name}")
+        val returnValue = plugin(commandInvocation, arguments)
+        plugin.serializeReturn(returnValue)
     }
   }
 
