@@ -16,11 +16,6 @@
 
 package com.intel.taproot.analytics.engine.command
 
-import java.io.File
-import java.nio.file.{ FileSystems, Files }
-
-import sys.process._
-
 import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.engine._
