@@ -21,7 +21,7 @@ import breeze.linalg.{ DenseMatrix => BDM, DenseVector => BDV }
 import breeze.optimize.{ CachedDiffFunction, LBFGS => BreezeLBFGS }
 import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.mllib.evaluation.{ HessianMatrix, ApproximateHessianMatrix }
+import org.apache.spark.mllib.evaluation.{ ApproximateHessianMatrix, HessianMatrix }
 import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.rdd.RDD
 

@@ -19,7 +19,6 @@ package org.apache.spark.mllib.classification
 import com.intel.taproot.testutils.TestingSparkContextFunSuite
 import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.mllib.regression.LabeledPointWithFrequency
-import org.apache.spark.mllib.util.TestingUtils._
 import org.apache.spark.util.Utils
 import org.scalatest.Matchers
 

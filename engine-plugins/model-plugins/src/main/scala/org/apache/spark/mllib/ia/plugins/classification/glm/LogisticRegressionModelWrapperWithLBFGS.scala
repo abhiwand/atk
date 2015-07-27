@@ -17,7 +17,7 @@ package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import breeze.linalg.DenseMatrix
 import org.apache.spark.mllib.classification.LogisticRegressionWithFrequencyLBFGS
-import org.apache.spark.mllib.optimization.{ L1Updater, SquaredL2Updater }
+import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
 
 /**
  * Logistic regression model with Limited-memory BFGS
