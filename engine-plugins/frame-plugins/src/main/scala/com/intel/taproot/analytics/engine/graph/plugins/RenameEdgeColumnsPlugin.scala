@@ -17,14 +17,13 @@
 package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.domain.schema.GraphSchema
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ PluginDoc }
 
 /**
  * Rename columns for edge frame.
  */
 @PluginDoc(oneLine = "Rename columns for edge frame.",
-  extended = "",
-  returns = "")
+  extended = "<TBD>")
 class RenameEdgeColumnsPlugin extends RenameVertexColumnsPlugin {
   override def name: String = "frame:edge/rename_columns"
   override val systemFields = Set(GraphSchema.edgeProperty, GraphSchema.srcVidProperty, GraphSchema.destVidProperty, GraphSchema.labelProperty)

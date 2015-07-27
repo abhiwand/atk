@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.engine.graph.{ SparkVertexFrame, VertexFrame }
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
 import org.apache.spark.ia.graph.VertexFrameRdd
@@ -33,15 +33,6 @@ import org.apache.spark.sql.Row
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
-/*
-Parameters
-----------
-columns : [str | list of str]
-    Column name(s) to identify duplicates.
-    If empty, the method will remove duplicates that have the whole row of
-    data identical (not including the _vid column that is already unique per
-    row).
-*/
 @PluginDoc(oneLine = "Remove duplicate vertex rows.",
   extended = """Remove duplicate vertex rows, keeping only one vertex row per uniqueness
 criteria match.

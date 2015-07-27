@@ -22,10 +22,13 @@ import com.intel.taproot.giraph.lp._
 import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobManager }
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.{ Column, FrameSchema }
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 import org.apache.spark.sql.parquet.ia.giraph.frame.lp.{ LabelPropagationVertexOutputFormat, LabelPropagationVertexInputFormat, LabelPropagationEdgeInputFormat }
 import LabelPropagationJsonFormat._
 
+@PluginDoc(oneLine = "<TBD>",
+  extended = """<TBD>""",
+  returns = """<TBD>""")
 class LabelPropagationPlugin
     extends CommandPlugin[LabelPropagationArgs, LabelPropagationResult] {
 

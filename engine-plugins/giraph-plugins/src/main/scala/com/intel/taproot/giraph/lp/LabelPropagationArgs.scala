@@ -18,21 +18,21 @@ package com.intel.taproot.giraph.lp
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 import org.apache.commons.lang3.StringUtils
 
 /**
  * Arguments to the plugin - see user docs for more on the parameters
  */
-case class LabelPropagationArgs(@ArgDoc("""""") frame: FrameReference,
-                                @ArgDoc("""""") srcColName: String,
-                                @ArgDoc("""""") destColName: String,
-                                @ArgDoc("""""") weightColName: String,
-                                @ArgDoc("""""") srcLabelColName: String,
-                                @ArgDoc("""""") resultColName: Option[String] = None,
-                                @ArgDoc("""""") maxIterations: Option[Int] = None,
-                                @ArgDoc("""""") convergenceThreshold: Option[Float] = None,
-                                @ArgDoc("""""") alpha: Option[Float] = None) {
+case class LabelPropagationArgs(@ArgDoc("""<TBD>""") frame: FrameReference,
+                                @ArgDoc("""<TBD>""") srcColName: String,
+                                @ArgDoc("""<TBD>""") destColName: String,
+                                @ArgDoc("""<TBD>""") weightColName: String,
+                                @ArgDoc("""<TBD>""") srcLabelColName: String,
+                                @ArgDoc("""<TBD>""") resultColName: Option[String] = None,
+                                @ArgDoc("""<TBD>""") maxIterations: Option[Int] = None,
+                                @ArgDoc("""<TBD>""") convergenceThreshold: Option[Float] = None,
+                                @ArgDoc("""<TBD>""") alpha: Option[Float] = None) {
 
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(srcColName), "source column name property list is required")
