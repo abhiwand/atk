@@ -19,24 +19,24 @@ package com.intel.taproot.analytics.domain.graph.construction
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.schema.GraphSchema
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Arguments for adding Edges to a Edge Frame
- *
- * @param edgeFrame the frame being operated on
- * @param sourceFrame source for the data
- * @param columnNameForSourceVertexId column name for the user defined "id" that uniquely identifies each vertex
- * @param columnNameForDestVertexId column name for the user defined "id" that uniquely identifies each vertex
- * @param columnNames column names to be used as properties for each vertex,
- *                    None means use all columns,
- *                    empty list means use none.
- * @param createMissingVertices true to create extra vertices if needed
  */
-case class AddEdgesArgs(edgeFrame: FrameReference,
-                        sourceFrame: FrameReference,
-                        columnNameForSourceVertexId: String,
-                        columnNameForDestVertexId: String,
-                        columnNames: Option[Seq[String]] = None,
-                        createMissingVertices: Option[Boolean] = Some(false)) {
+case class AddEdgesArgs(@ArgDoc("""The frame being operated on.""") edgeFrame: FrameReference,
+                        @ArgDoc("""Frame that will be the source of
+the edge data.""") sourceFrame: FrameReference,
+                        @ArgDoc("""column name for a unique id for
+each source vertex (this is not the system defined _vid).""") columnNameForSourceVertexId: String,
+                        @ArgDoc("""column name for a unique id for
+each destination vertex (this is not the system defined _vid).""") columnNameForDestVertexId: String,
+                        @ArgDoc("""Column names to be used as properties for each vertex,
+None means use all columns,
+empty list means use none.""") columnNames: Option[Seq[String]] = None,
+                        @ArgDoc("""True to create missing vertices for edge (slightly slower),
+False to drop edges pointing to missing vertices.
+Defaults to False.""") createMissingVertices: Option[Boolean] = Some(false)) {
   require(edgeFrame != null, "edge frame is required")
   require(sourceFrame != null, "source frame is required")
   require(columnNameForSourceVertexId != null, "column name for source vertex id is required to create edges")

@@ -19,17 +19,17 @@ package com.intel.taproot.analytics.domain.graph.construction
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.schema.GraphSchema
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Arguments for adding Vertices to a Vertex Frame
- *
- * @param vertexFrame the frame being operated on
- * @param sourceFrame source for the data
- * @param idColumnName column name for the user defined "id" that uniquely identifies each vertex
- * @param columnNames column names to be used as properties for each vertex,
- *                    None means use all columns,
- *                    empty list means use none.
  */
-case class AddVerticesArgs(vertexFrame: FrameReference, sourceFrame: FrameReference, idColumnName: String, columnNames: Option[Seq[String]] = None) {
+case class AddVerticesArgs(@ArgDoc("""The frame being operated on.""") vertexFrame: FrameReference,
+                           @ArgDoc("""Frame that will be the source of
+the vertex data.""") sourceFrame: FrameReference,
+                           @ArgDoc("""Column name for a unique id for each vertex.""") idColumnName: String,
+                           @ArgDoc("""Column names that will be turned
+into properties for each vertex.""") columnNames: Option[Seq[String]] = None) {
   allColumnNames.foreach(name => require(!GraphSchema.isVertexSystemColumn(name), s"$name can't be used as an input column name, it is reserved for system use"))
 
   /**

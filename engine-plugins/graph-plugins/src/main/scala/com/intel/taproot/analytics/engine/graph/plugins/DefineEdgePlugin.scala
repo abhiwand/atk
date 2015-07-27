@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.domain.graph.DefineEdgeArgs
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.engine.plugin.PluginDoc
 
@@ -25,18 +25,6 @@ import com.intel.taproot.analytics.engine.plugin.PluginDoc
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
-/**
- * Parameters
- * ----------
- * label : str
- *   label of the edge type
- * source_vertex_label : str
- *   label of the source vertex type
- * destination_vertex_label : str
- *   label of the destination vertex type
- * directed : bool
- *   is the edge directed
- */
 /**
  * Define an edge type for a seamless graph
  */

@@ -6,13 +6,12 @@ Getting Started
     :local:
     :backlinks: none
 
-----------------
-Before You Start
-----------------
+-----------
+Open-Source
+-----------
 
-You'll want to know about `Apache Hadoop <http://hadoop.apache.org/>`__ and its
-various components.
-The |PACKAGE| uses standards and open-source routines such as |HDFS|,
+The |PACKAGE| uses standards and open-source routines from
+`Apache Hadoop <http://hadoop.apache.org/>`__ such as |HDFS|,
 :term:`MapReduce`, YARN, as well as
 `Apache Giraph <http://giraph.apache.org/>`__ for graph-based machine learning
 and graph analytics.
@@ -30,9 +29,9 @@ Features
     new features through manipulating existing values
 *   Analysis and machine learning algorithms give deeper insight into the data
 
-------------------
-Built-in Databases
-------------------
+------------
+Data Storage
+------------
 
 The |PACKAGE| stores data in either a traditional table-based format,
 or in a graph format.
@@ -45,8 +44,8 @@ Script Examples
 
 The |PACKAGE| ships with example Python scripts and data sets that exercise the
 various features of the platform.
-The default location for the example scripts is *taproot*'s home directory
-'/home/taproot'.
+The default location for the example scripts is |PACKAGE_USER|'s home directory
+'/home/|PACKAGE_USER|'.
 
 The examples are located in '/home/taproot/examples'::
 
@@ -75,7 +74,7 @@ The datasets in '/home/taproot/examples/datasets' are for reference.
 The actual data that is being used by the Python examples and the |PACKAGE| server
 is in the |HDFS| system.
 
-To get access to the scripts, login as *taproot* and go to the example scripts
+To get access to the scripts, login as taproot and go to the example scripts
 directory::
 
     $ sudo su taproot
@@ -87,7 +86,3 @@ To run any of the Python example scripts type::
 
 where "<SCRIPT_NAME>" is any of the scripts.
 
-Logs
-====
-
-Details about logs can be found in the section on :doc:`log files </ad_log>`.

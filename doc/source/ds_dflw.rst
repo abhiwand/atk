@@ -100,10 +100,12 @@ You should see a list of variable types similar to this:
     single: JSON
     single: LineFile
 
-Types Of Raw Data
-=================
+Bringing in the Raw Data
+========================
 
-The currently supported raw data formats are |CSV|, |JSON| and LineFile.
+See the API section `Data Sources <python_api/datasources/index.html>`_
+for the various methods of ingesting data.
+
 
 .. _example_files.csvfile:
 

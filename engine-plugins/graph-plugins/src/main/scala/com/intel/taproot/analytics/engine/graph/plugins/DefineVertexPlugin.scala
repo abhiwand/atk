@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.graph.plugins
 
 import com.intel.taproot.analytics.domain.graph.DefineVertexArgs
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.taproot.analytics.UnitReturn
 
@@ -25,13 +25,6 @@ import com.intel.taproot.analytics.UnitReturn
 
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
-
-/**
- * Parameters
- * ----------
- * label : str
- *   label of the vertex type
- */
 
 /**
  * Define a vertex type for a seamless graph

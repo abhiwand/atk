@@ -16,7 +16,10 @@
 
 package com.intel.taproot.analytics.domain.graph
 
-case class DefineVertexArgs(graphRef: GraphReference, label: String) {
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
+case class DefineVertexArgs(@ArgDoc("""<TBD>""") graphRef: GraphReference,
+                            @ArgDoc("""Label of the vertex type.""") label: String) {
   require(graphRef != null, "graph is required")
   require(label != null, "label is required")
 }

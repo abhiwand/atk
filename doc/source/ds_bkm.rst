@@ -144,61 +144,63 @@ Note:
 
         export PYTHONSTARTUP=~/.pythonrc
 
-.. index::
-    single: Spark
+.. Outdated 20150727::
 
------
-Spark
------
+    .. index::
+        single: Spark
 
-Resolving disk full issue while running Spark jobs
-==================================================
+    -----
+    Spark
+    -----
 
-Using a Red Hat cluster, or an old CentOS cluster,
-the /tmp drive may become full while running spark jobs.
-This causes the jobs to fail, and it is caused by the way the /tmp file system
-is setup,
-Spark and other |CDH| services, by default, use /tmp as the temporary location
-to store files required during run time, including, but not limited to, shuffle
-data.
+    Resolving disk full issue while running Spark jobs
+    ==================================================
 
-Steps to resolve this issue:
+    Using a Red Hat cluster, or an old CentOS cluster,
+    the /tmp drive may become full while running spark jobs.
+    This causes the jobs to fail, and it is caused by the way the /tmp file system
+    is setup,
+    Spark and other |CDH| services, by default, use /tmp as the temporary location
+    to store files required during run time, including, but not limited to, shuffle
+    data.
 
-1)  Stop the Intelanalytics service.
-#)  From |CDH| Web UI:
+    Steps to resolve this issue:
 
-    a)  Stop the Cloudera Management Service.
-    #)  Stop the |CDH|.
+    1)  Stop the Intelanalytics service.
+    #)  From |CDH| Web UI:
 
-#)  Now run the following steps on each node:
+        a)  Stop the Cloudera Management Service.
+        #)  Stop the |CDH|.
 
-    a)  Find the largest partition by running the command::
+    #)  Now run the following steps on each node:
 
-            $ df -h
+        a)  Find the largest partition by running the command::
 
-    #)  Assuming /mnt is your largest partition, create the folder
-        "/mnt/.bda/tmp", if it isn't already present::
+                $ df -h
 
-            $ sudo mkdir -p /mnt/.bda/tmp
+        #)  Assuming /mnt is your largest partition, create the folder
+            "/mnt/.bda/tmp", if it isn't already present::
 
-    #)  Set the permissions on this directory so that it's wide open::
+                $ sudo mkdir -p /mnt/.bda/tmp
 
-            $ sudo chmod 1777 /mnt/.bda/tmp
+        #)  Set the permissions on this directory so that it's wide open::
 
-    #)  Add the following line to your '/etc/fstab' file and save it::
+                $ sudo chmod 1777 /mnt/.bda/tmp
 
-            /mnt/.bda/tmp    /tmp    none   bind   0   0
+        #)  Add the following line to your '/etc/fstab' file and save it::
 
-    #)  Reboot the machine.
+                /mnt/.bda/tmp    /tmp    none   bind   0   0
 
-Spark space concerns
-====================
-Whenever you run a Spark application, jars and logs go to '/va/run/spark/work'
-(or other location configured in Cloudera Manager).
-These can use up a bit of space eventually (over 140MB per command).
+        #)  Reboot the machine.
 
-* Short-term workaround: periodically delete these files
-* Long-term fix: Spark 1.0 will automatically clean up the files
+    Spark space concerns
+    ====================
+    Whenever you run a Spark application, jars and logs go to '/va/run/spark/work'
+    (or other location configured in Cloudera Manager).
+    These can use up a bit of space eventually (over 140MB per command).
+
+    * Short-term workaround: periodically delete these files
+    * Long-term fix: Spark 1.0 will automatically clean up the files
 
 ----------
 References

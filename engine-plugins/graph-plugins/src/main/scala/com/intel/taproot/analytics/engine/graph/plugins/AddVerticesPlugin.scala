@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.domain.graph.construction.AddVerticesArgs
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, SparkFrameStorage, RowWrapper }
 import com.intel.taproot.analytics.engine.graph.{ SparkGraph, SparkVertexFrame, SparkGraphStorage }
@@ -32,17 +32,6 @@ import org.apache.spark.storage.StorageLevel
 // Implicits needed for JSON conversion
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
-
-/**
- * Parameters
- * ----------
- * source_frame : Frame
- *   frame that will be the source of the vertex data
- * id_column_name : str
- *   column name for a unique id for each vertex
- * column_names : list of str
- *   column names that will be turned into properties for each vertex
- */
 
 /**
  * Add Vertices to a Vertex Frame

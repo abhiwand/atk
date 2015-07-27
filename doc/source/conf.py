@@ -67,6 +67,7 @@ rst_epilog = """
 .. |PACKAGE_DLC|    replace:: taproot-analytics
 .. |PACKAGE_SLC|    replace:: ta
 .. |PACKAGE_SUC|    replace:: TA
+.. |PACKAGE_USER|   replace:: taproot
 .. |TOOLKIT|    replace:: |PACKAGE| Toolkit
 """
 

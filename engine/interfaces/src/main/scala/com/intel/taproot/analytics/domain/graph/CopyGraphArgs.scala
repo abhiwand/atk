@@ -16,11 +16,13 @@
 
 package com.intel.taproot.analytics.domain.graph
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Data needed to export a graph.
- * @param graph reference of the source graph
- * @param name name of the new copied target graph. optional. if not included a name should be generated.
  */
-case class CopyGraphArgs(graph: GraphReference, name: Option[String] = None) {
+case class CopyGraphArgs(@ArgDoc("""Reference of the source graph.""") graph: GraphReference,
+                         @ArgDoc("""The name for the copy of the graph.
+Default is None.""") name: Option[String] = None) {
   require(graph != null, "graph is required")
 }

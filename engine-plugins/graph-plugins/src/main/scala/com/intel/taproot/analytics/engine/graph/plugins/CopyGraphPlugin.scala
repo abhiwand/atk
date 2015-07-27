@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.graph.plugins
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, CopyGraphArgs }
 
@@ -24,13 +24,6 @@ import com.intel.taproot.analytics.domain.graph.{ GraphEntity, CopyGraphArgs }
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
-/**
- * Parameters
- * ----------
- * name : str (optional)
- *   The name for the copy of the graph.
- *   Default is None.
- */
 /**
  * Makes a copy of the existing graph
  */
