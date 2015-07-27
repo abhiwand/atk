@@ -21,7 +21,7 @@ import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema._
 import org.apache.spark.sql.Row
-import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
+import com.intel.taproot.atk.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
 import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
