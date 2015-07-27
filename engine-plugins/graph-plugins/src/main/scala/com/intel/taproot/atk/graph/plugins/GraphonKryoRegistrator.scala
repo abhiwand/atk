@@ -17,9 +17,9 @@
 package com.intel.taproot.atk.graph.plugins
 
 import com.intel.taproot.analytics.engine.EngineKryoRegistrator
-import com.intel.taproot.atk.graph.plugins.atkpregel.{BasicCountsInitialReport, SuperStepNetDelta}
+import com.intel.taproot.atk.graph.atkpregel.{ BasicCountsInitialReport, SuperStepNetDelta }
 import com.intel.taproot.atk.graph.plugins.beliefpropagation.VertexState
-import com.intel.taproot.spark.graphon.atkpregel._
+import com.intel.taproot.atk.graph.atkpregel._
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.graphx.GraphKryoRegistrator
 

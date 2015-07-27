@@ -20,7 +20,6 @@ import com.intel.taproot.atk.graph.plugins.graphconversions.GraphConversions
 import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.frame.RowWrapper
-import GraphConversions
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.graphx.lib.ia.plugins.ClusteringCoefficient
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }

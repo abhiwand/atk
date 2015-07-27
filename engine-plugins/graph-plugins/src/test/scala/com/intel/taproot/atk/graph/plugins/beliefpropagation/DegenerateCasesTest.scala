@@ -22,7 +22,6 @@ import org.scalatest.FlatSpec
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.rdd.RDD
-import ApproximateVertexEquality
 
 /**
  * These tests make sure that belief propagation can correctly handle graphs with no edges and even graphs with

@@ -21,7 +21,6 @@ import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import ApproximateVertexEquality
 
 /**
  * These test cases validate that belief propagation works correctly on (very simple) graphs that contain loops.

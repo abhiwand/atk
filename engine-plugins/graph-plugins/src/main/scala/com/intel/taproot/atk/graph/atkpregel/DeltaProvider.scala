@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.atk.graph.plugins.atkpregel
+package com.intel.taproot.atk.graph.atkpregel
 
 /**
  * Implementations of this trait can provide a publicly visible Double value called "delta". It is intended to be

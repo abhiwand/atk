@@ -16,8 +16,6 @@
 
 package com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes
 
-import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.VertexSet
-
 /**
  * Encodes the fact that a given VertexSet forms a clique, and that the clique can be extended by adding
  * any one of the vertices from the set neighbors.

@@ -16,8 +16,7 @@
 
 package com.intel.taproot.atk.graph.plugins.communitydetection.kclique
 
-import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.{VertexSet, CliqueExtension}
-import CliqueExtension
+import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.{ VertexSet, CliqueExtension }
 import org.apache.spark.rdd.RDD
 
 object CliqueShadowGraphGenerator extends Serializable {

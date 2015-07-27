@@ -16,8 +16,6 @@
 
 package com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes
 
-import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.VertexSet
-
 /**
  * Encodes the fact that all vertices of a given vertex set are neighbors of the vertex specified
  * by the NeighborsOf fact.

@@ -21,11 +21,13 @@ import com.intel.taproot.analytics.domain.graph.construction.AddVerticesArgs
 import com.intel.taproot.analytics.domain.schema.GraphSchema
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.graph.SparkVertexFrame
-import com.intel.taproot.analytics.engine.plugin.{Invocation, PluginDoc, SparkCommandPlugin}
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, SparkCommandPlugin }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.storage.StorageLevel
 
 // Implicits needed for JSON conversion
+import spray.json._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Parameters

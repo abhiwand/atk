@@ -16,10 +16,12 @@
 
 package com.intel.taproot.atk.graph.plugins
 
-import com.intel.taproot.analytics.domain.graph.{CopyGraphArgs, GraphEntity}
-import com.intel.taproot.analytics.engine.plugin.{Invocation, PluginDoc, SparkCommandPlugin}
+import com.intel.taproot.analytics.domain.graph.{ CopyGraphArgs, GraphEntity }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, SparkCommandPlugin }
 
 // Implicits needed for JSON conversion
+import spray.json._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Parameters

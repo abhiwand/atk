@@ -16,11 +16,11 @@
 
 package com.intel.taproot.atk.graph.plugins.communitydetection.kclique
 
-import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.{Clique, CliqueExtension, Edge}
+import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.{ Clique, CliqueExtension, Edge }
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Clique
+import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.Clique
 
 class CliqueExtensionEnumeratorTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

@@ -19,7 +19,7 @@ package com.intel.taproot.atk.graph.plugins.communitydetection.kclique
 import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes._
+import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes._
 
 /**
  * CliqueEnumerator is responsible for enumerating k-clique extension facts from (k-1) clique extension facts.

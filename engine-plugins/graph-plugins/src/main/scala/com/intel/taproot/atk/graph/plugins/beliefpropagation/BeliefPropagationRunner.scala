@@ -21,7 +21,6 @@ import org.apache.spark.rdd.RDD
 import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.graphx.{ PartitionStrategy, Graph, Edge }
 import com.intel.taproot.analytics._
-import VectorMath
 
 /**
  * Arguments for the BeliefPropagationRunner

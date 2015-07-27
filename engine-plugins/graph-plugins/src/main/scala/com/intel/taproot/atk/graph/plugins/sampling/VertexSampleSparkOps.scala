@@ -22,8 +22,6 @@ import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, G
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.graphbuilder.parser.InputSchema
 import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
-import UnweightedDegrees
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 

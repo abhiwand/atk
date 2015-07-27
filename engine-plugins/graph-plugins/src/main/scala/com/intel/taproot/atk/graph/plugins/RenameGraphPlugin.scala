@@ -16,10 +16,12 @@
 
 package com.intel.taproot.atk.graph.plugins
 
-import com.intel.taproot.analytics.domain.graph.{GraphEntity, RenameGraphArgs}
-import com.intel.taproot.analytics.engine.plugin.{CommandPlugin, Invocation, PluginDoc}
+import com.intel.taproot.analytics.domain.graph.{ GraphEntity, RenameGraphArgs }
+import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 
 // Implicits needed for JSON conversion
+import spray.json._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Rename a graph in the database

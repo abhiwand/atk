@@ -16,8 +16,8 @@
 
 package com.intel.taproot.atk.graph.plugins.communitydetection.kclique
 
-import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.{Clique, CliqueExtension, VertexSet}
-import com.intel.taproot.spark.graphon.communitydetection.kclique.datatypes.Clique
+import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.{ Clique, CliqueExtension, VertexSet }
+import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.Clique
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }

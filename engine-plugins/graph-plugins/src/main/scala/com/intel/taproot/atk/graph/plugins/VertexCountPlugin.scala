@@ -19,9 +19,11 @@ package com.intel.taproot.atk.graph.plugins
 import com.intel.taproot.analytics.domain.LongValue
 import com.intel.taproot.analytics.domain.graph.GraphNoArgs
 import com.intel.taproot.analytics.engine.graph.SparkGraphStorage
-import com.intel.taproot.analytics.engine.plugin.{CommandPlugin, Invocation, PluginDoc}
+import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 
 // Implicits needed for JSON conversion
+import spray.json._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Vertex Count for a "seamless graph"

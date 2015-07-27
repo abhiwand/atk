@@ -17,14 +17,17 @@
 package com.intel.taproot.atk.graph.plugins
 
 import com.intel.taproot.analytics.UnitReturn
-import com.intel.taproot.analytics.domain.graph.construction.{AddEdgesArgs, AddVerticesArgs}
-import com.intel.taproot.analytics.domain.schema.{DataTypes, GraphSchema}
+import com.intel.taproot.analytics.domain.graph.construction.{ AddEdgesArgs, AddVerticesArgs }
+import com.intel.taproot.analytics.domain.schema.{ DataTypes, GraphSchema }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.graph.{SparkEdgeFrame, SparkGraph}
-import com.intel.taproot.analytics.engine.plugin.{Invocation, PluginDoc, SparkCommandPlugin}
+import com.intel.taproot.analytics.engine.graph.{ SparkEdgeFrame, SparkGraph }
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, SparkCommandPlugin }
 import org.apache.spark.frame.FrameRdd
 
 // Implicits needed for JSON conversion
+import spray.json._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+
 /**
  * Parameters
  * ----------

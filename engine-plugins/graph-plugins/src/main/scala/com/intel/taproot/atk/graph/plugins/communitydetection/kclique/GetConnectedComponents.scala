@@ -18,9 +18,8 @@ package com.intel.taproot.atk.graph.plugins.communitydetection.kclique
 
 import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.VertexSet
 import com.intel.taproot.atk.graph.plugins.connectedcomponents.ConnectedComponentsGraphXDefault
-import ConnectedComponentsGraphXDefault
 import com.intel.taproot.atk.graph.plugins.idassigner.GraphIDAssigner
-import com.intel.taproot.spark.graphon.idassigner._
+import com.intel.taproot.atk.graph.plugins.idassigner._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 

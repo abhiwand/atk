@@ -16,10 +16,8 @@
 
 package com.intel.taproot.atk.graph.plugins.beliefpropagation
 
-import com.intel.taproot.atk.graph.plugins.testutils.ApproximateVertexEquality
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 

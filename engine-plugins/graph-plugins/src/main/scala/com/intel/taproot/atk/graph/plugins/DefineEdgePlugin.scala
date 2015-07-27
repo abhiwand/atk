@@ -18,9 +18,11 @@ package com.intel.taproot.atk.graph.plugins
 
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.graph.DefineEdgeArgs
-import com.intel.taproot.analytics.engine.plugin.{CommandPlugin, Invocation, PluginDoc}
+import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 
 // Implicits needed for JSON conversion
+import spray.json._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 /**
  * Parameters

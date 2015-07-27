@@ -20,8 +20,12 @@ import com.intel.taproot.analytics.domain.FilterVerticesArgs
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta
 import com.intel.taproot.analytics.domain.schema._
-import com.intel.taproot.analytics.engine.frame.{PythonRddStorage, SparkFrameStorage, _}
-import com.intel.taproot.analytics.engine.plugin.{Invocation, PluginDoc, SparkCommandPlugin}
+import com.intel.taproot.analytics.engine.frame.{ PythonRddStorage, SparkFrameStorage, _ }
+import com.intel.taproot.analytics.engine.graph.plugins.FilterVerticesFunctions
+import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, SparkCommandPlugin }
+
+import spray.json._
+import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 
 @PluginDoc(oneLine = "",
   extended = "")

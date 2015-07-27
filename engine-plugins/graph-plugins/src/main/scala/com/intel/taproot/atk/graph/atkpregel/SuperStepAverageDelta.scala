@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.atk.graph.plugins.atkpregel
+package com.intel.taproot.atk.graph.atkpregel
 
 import org.apache.spark.rdd.RDD
 import akka.dispatch.sysmsg.Failed

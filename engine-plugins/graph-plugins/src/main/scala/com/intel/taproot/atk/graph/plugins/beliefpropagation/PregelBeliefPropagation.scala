@@ -17,11 +17,10 @@
 package com.intel.taproot.atk.graph.plugins.beliefpropagation
 
 import com.intel.taproot.atk.graph.plugins.VectorMath
-import com.intel.taproot.atk.graph.plugins.atkpregel.{AverageDeltaSuperStepStatusGenerator, BasicCountsInitialReport, AtkPregel, DeltaProvider}
+import com.intel.taproot.atk.graph.atkpregel.{ AverageDeltaSuperStepStatusGenerator, BasicCountsInitialReport, AtkPregel, DeltaProvider }
 import org.apache.spark.graphx._
-import com.intel.taproot.spark.graphon.atkpregel._
+import com.intel.taproot.atk.graph.atkpregel._
 import com.intel.taproot.graphbuilder.elements.GBVertex
-import VectorMath
 
 /**
  * Internal state of a vertex during the progress of the belief propagation algorithm.
