@@ -61,6 +61,11 @@ object EventLogging {
  */
 trait EventLogging {
 
+  // If EventLogger hasn't been configured, let's give a reasonable default
+  if (EventLogger.getImplementation() == null) {
+    EventLogger.setImplementation(new SLF4JLogAdapter)
+  }
+
   /**
    * Starts a new event context. Usually this method is not the one you want,
    * more likely you're looking for [[withContext( S t r i n g )]], which will manage
