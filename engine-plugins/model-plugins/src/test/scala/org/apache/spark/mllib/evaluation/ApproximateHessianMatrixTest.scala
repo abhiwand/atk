@@ -4,7 +4,6 @@ import breeze.linalg.{ sum, DenseMatrix, DenseVector }
 import breeze.numerics._
 import breeze.optimize.DiffFunction
 import breeze.util.DoubleImplicits
-import org.apache.spark.mllib.evaluation.ApproximateHessianMatrix
 import org.scalatest.{ FlatSpec, Matchers }
 
 class ApproximateHessianMatrixTest extends FlatSpec with Matchers with DoubleImplicits {
