@@ -38,51 +38,12 @@ class EnginePythonRdd[T: ClassTag](
   pythonIncludes: JList[String],
   preservePartitioning: Boolean,
   pythonExec: String,
-  broadcastVars: JList[Broadcast[IAPythonBroadcast]],
+  broadcastVars: JList[Broadcast[AtkPythonBroadcast]],
   accumulator: Accumulator[JList[Array[Byte]]])
     extends PythonRDD(parent, command, envVars, pythonIncludes,
       preservePartitioning, pythonExec, broadcastVars.asInstanceOf[JList[Broadcast[PythonBroadcast]]], accumulator) {
 
 }
 
-class IAPythonBroadcast extends PythonBroadcast("") {}
-/**
- * Internal class that acts as an `AccumulatorParam` for Python accumulators. Inside, it
- * collects a list of pickled strings that we pass to Python through a socket.
- */
-//class EnginePythonAccumulatorParam(@transient serverHost: String, serverPort: Int)
-//  extends AccumulatorParam[JList[Array[Byte]]] {
-//
-//  Utils.checkHost(serverHost, "Expected hostname")
-//
-//  val bufferSize = SparkEnv.get.conf.getInt("spark.buffer.size", 65536)
-//
-//  override def zero(value: JList[Array[Byte]]): JList[Array[Byte]] = new JArrayList
-//
-//  override def addInPlace(val1: JList[Array[Byte]], val2: JList[Array[Byte]])
-//  : JList[Array[Byte]] = {
-//    if (serverHost == null) {
-//      // This happens on the worker node, where we just want to remember all the updates
-//      val1.addAll(val2)
-//      val1
-//    } else {
-//      // This happens on the master, where we pass the updates to Python through a socket
-//      val socket = new Socket(serverHost, serverPort)
-//      val in = socket.getInputStream
-//      val out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream, bufferSize))
-//      out.writeInt(val2.size)
-//      for (array <- val2) {
-//        out.writeInt(array.length)
-//        out.write(array)
-//      }
-//      out.flush()
-//      // Wait for a byte from the Python side as an acknowledgement
-//      val byteRead = in.read()
-//      if (byteRead == -1) {
-//        throw new SparkException("EOF reached before Python server acknowledged")
-//      }
-//      socket.close()
-//      null
-//    }
-//  }
-//}
+class AtkPythonBroadcast extends PythonBroadcast("") {}
+

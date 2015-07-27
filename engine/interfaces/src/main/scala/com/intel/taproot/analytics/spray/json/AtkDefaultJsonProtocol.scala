@@ -14,15 +14,22 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics
+package com.intel.taproot.analytics.spray.json
 
-import scala.util.control.NonFatal
+import spray.json._
 
-package object component {
+/**
+ * Our JsonProtocol is similar to Spray's DefaultJsonProtocol
+ * except we handle ProductFormats differently.
+ */
+trait AtkDefaultJsonProtocol extends BasicFormats
+  with StandardFormats
+  with CollectionFormats
+  with CustomProductFormats
+  with AdditionalFormats
 
-  //Scalaz also provides this, but we don't want a scalaz dependency in the launcher
-  implicit class RichBoolean(val b: Boolean) extends AnyVal {
-    final def option[A](a: => A): Option[A] = if (b) Some(a) else None
-  }
-
-}
+/**
+ * Our JsonProtocol is similar to Spray's DefaultJsonProtocol
+ * except we handle ProductFormats differently.
+ */
+object AtkDefaultJsonProtocol extends AtkDefaultJsonProtocol

@@ -24,7 +24,6 @@ import com.typesafe.config.Config
 trait Component {
 
   private var configuredName: Option[String] = None
-
   private var config: Option[Config] = None
 
   /**

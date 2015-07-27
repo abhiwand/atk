@@ -16,16 +16,12 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins
 
-import com.intel.taproot.analytics.domain.UriReference
-import com.intel.taproot.analytics.domain.command.CommandDoc
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Column }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.{ SparkFrame, PythonRddStorage }
-import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import org.apache.spark.sql.Row
 
 // Implicits needed for JSON conversion
 import spray.json._
@@ -62,12 +58,14 @@ class AddColumnsPlugin extends SparkCommandPlugin[AddColumnsArgs, FrameEntity] {
     val columnList = newColumns.map { case (name, dataType) => Column(name, dataType) }
     val newSchema = new FrameSchema(columnList)
 
+    val rdd = frame.rdd
+
     // Update the data
     // What we pass to PythonRddStorage is a stripped down version of FrameRdd if columnsAccessed is defined
-    val rdd = arguments.columnsAccessed.isEmpty match {
-      case true => PythonRddStorage.mapWith(frame.rdd, arguments.udf, newSchema, sc)
-      case false => PythonRddStorage.mapWith(frame.rdd.selectColumns(arguments.columnsAccessed), arguments.udf, newSchema, sc)
+    val addedColumnsRdd = arguments.columnsAccessed.isEmpty match {
+      case true => PythonRddStorage.mapWith(rdd, arguments.udf, newSchema, sc)
+      case false => PythonRddStorage.mapWith(rdd.selectColumns(arguments.columnsAccessed), arguments.udf, newSchema, sc)
     }
-    frame.save(frame.rdd.zipFrameRdd(rdd))
+    frame.save(rdd.zipFrameRdd(addedColumnsRdd))
   }
 }

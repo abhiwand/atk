@@ -22,10 +22,9 @@ import com.intel.taproot.analytics.domain.schema.{ Schema, EdgeSchema, GraphSche
 import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
-import org.apache.spark.{ sql, SparkContext }
+import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext._
 
 object FilterVerticesFunctions {
 
@@ -40,7 +39,6 @@ object FilterVerticesFunctions {
   def removeDanglingEdges(vertexLabel: String, frameStorage: SparkFrameStorage, seamlessGraph: SeamlessGraphMeta,
                           sc: SparkContext, filteredRdd: FrameRdd)(implicit invocation: Invocation): Unit = {
     val vertexFrame = seamlessGraph.vertexMeta(vertexLabel)
-    val vertexFrameSchema = vertexFrame.schema
 
     val originalVertexIds = frameStorage.loadFrameData(sc, vertexFrame).mapRows(_.value(GraphSchema.vidProperty))
     val filteredVertexIds = filteredRdd.mapRows(_.value(GraphSchema.vidProperty))
