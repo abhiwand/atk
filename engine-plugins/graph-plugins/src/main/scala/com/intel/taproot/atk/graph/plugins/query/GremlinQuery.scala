@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.graph.query
+package com.intel.taproot.atk.graph.plugins.query
 
 import javax.script.Bindings
 

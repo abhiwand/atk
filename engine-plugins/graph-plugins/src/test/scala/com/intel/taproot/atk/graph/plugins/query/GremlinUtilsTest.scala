@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.graph.query
+package com.intel.taproot.atk.graph.plugins.query
 
 import com.intel.taproot.testutils.TestingTitan
 import com.intel.taproot.testutils.MatcherUtils._
@@ -28,7 +28,7 @@ import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with BeforeAndAfter {
-  import com.intel.taproot.analytics.engine.graph.query.GremlinJsonProtocol._
+  import com.intel.taproot.atk.graph.plugins.query.GremlinJsonProtocol._
 
   before {
     setupTitan()
@@ -66,7 +66,7 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
   }
 
   "serializeGremlinToJson" should "serialize a Blueprint's row into a JSON map" in {
-    import com.intel.taproot.analytics.engine.graph.query.GremlinJsonProtocol._
+    import com.intel.taproot.atk.graph.plugins.query.GremlinJsonProtocol._
     val rowMap = Map("col1" -> "val1", "col2" -> "val2")
     val row = new Row(rowMap.values.toList, rowMap.keys.toList)
 
@@ -118,7 +118,7 @@ class GremlinUtilsTest extends FlatSpec with Matchers with TestingTitan with Bef
   }
 
   "deserializeJsonToGremlin" should "deserialize a JSON map to a Blueprint's row" in {
-    import com.intel.taproot.analytics.engine.graph.query.GremlinJsonProtocol._
+    import com.intel.taproot.atk.graph.plugins.query.GremlinJsonProtocol._
     val json = Map("col1" -> 1, "col2" -> 2).toJson
     val jsonFields = json.asJsObject.fields
 

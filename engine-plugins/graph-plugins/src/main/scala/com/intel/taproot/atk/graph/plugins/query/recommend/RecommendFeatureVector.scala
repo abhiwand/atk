@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.graph.query.recommend
+package com.intel.taproot.atk.graph.plugins.query.recommend
 
 import com.intel.taproot.graphbuilder.elements.GraphElement
 import org.apache.spark.rdd.RDD

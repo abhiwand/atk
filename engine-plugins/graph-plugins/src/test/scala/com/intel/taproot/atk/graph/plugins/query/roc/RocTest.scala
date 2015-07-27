@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.graph.query.roc
+package com.intel.taproot.atk.graph.plugins.query.roc
 
 import org.scalatest.WordSpec
 
