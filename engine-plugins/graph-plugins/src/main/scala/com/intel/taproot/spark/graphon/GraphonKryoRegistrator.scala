@@ -18,7 +18,7 @@ package com.intel.taproot.spark.graphon
 
 import com.intel.taproot.analytics.engine.EngineKryoRegistrator
 import com.intel.taproot.spark.graphon.beliefpropagation.VertexState
-import com.intel.taproot.spark.graphon.iatpregel._
+import com.intel.taproot.spark.graphon.atkpregel._
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.graphx.GraphKryoRegistrator
 
@@ -35,8 +35,6 @@ import org.apache.spark.graphx.GraphKryoRegistrator
 class GraphonKryoRegistrator extends EngineKryoRegistrator {
 
   override def registerClasses(kryo: Kryo) {
-
-    // IATPregel Logging Classes
 
     kryo.register(classOf[SuperStepNetDelta])
 

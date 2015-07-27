@@ -14,18 +14,16 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine.util
+package com.intel.taproot.spark.graphon.atkpregel
 
-import com.intel.taproot.analytics.engine.EngineExecutionContext
-import com.intel.taproot.analytics.engine.plugin.Call
-import org.scalatest.WordSpec
+import org.apache.spark.rdd.RDD
 
-class DiskSpaceReporterTest extends WordSpec {
-  implicit val call = Call(null, EngineExecutionContext.global)
-
-  "DiskSpaceReport" should {
-    "not throw exceptions" in {
-      DiskSpaceReporter.checkDiskSpace()
-    }
-  }
+/**
+ * Implementations of this trait provide a method for creating an initial status report for a Pregel-run using the
+ * incoming edge and vertex RDDs.
+ * @tparam V Class of the vertex data in the graph.
+ * @tparam E Class of the edge data in the graph.
+ */
+trait InitialReport[V, E] {
+  def generateInitialReport(vertices: RDD[V], edges: RDD[E]): String
 }

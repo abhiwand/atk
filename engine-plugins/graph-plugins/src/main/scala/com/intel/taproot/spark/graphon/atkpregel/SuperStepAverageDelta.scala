@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.spark.graphon.iatpregel
+package com.intel.taproot.spark.graphon.atkpregel
 
 import org.apache.spark.rdd.RDD
 import akka.dispatch.sysmsg.Failed
@@ -79,7 +79,7 @@ class AverageDeltaSuperStepStatusGenerator[V <: DeltaProvider](val convergenceTh
     val earlyTermination = (status.sumOfDeltas / totalVertexCount) <= convergenceThreshold
 
     val log =
-      "IATPregel engine has completed iteration " + iteration + "  " + ".  There were " + status.activeCount +
+      "AtkPregel engine has completed iteration " + iteration + "  " + ".  There were " + status.activeCount +
         " many active vertices. The average delta was " + (status.sumOfDeltas / totalVertexCount) + "\n"
 
     SuperStepStatus(log, earlyTermination)

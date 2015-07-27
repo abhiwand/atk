@@ -30,8 +30,6 @@ trait Engine {
 
   type Identifier = Long //TODO: make more generic?
 
-  val pageSize: Int
-
   val frames: FrameStorage
 
   val graphs: GraphStorage

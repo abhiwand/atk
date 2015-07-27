@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.engine.plugin.{ Call, Invocation }
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
 import scala.concurrent.duration._
 import com.intel.taproot.event.EventLogging
-import com.intel.taproot.analytics.component.{ ArchiveDefinition, Archive }
+import com.intel.taproot.analytics.component.{ Boot, ArchiveDefinition, Archive }
 import com.intel.taproot.analytics.engine.Engine
 import com.typesafe.config.Config
 import scala.concurrent.Await
@@ -73,7 +73,7 @@ class RestServerApplication(archiveDefinition: ArchiveDefinition, classLoader: C
   private def initializeEngine()(implicit invocation: Invocation): Engine = {
 
     //TODO: later engine will be initialized in a separate JVM
-    lazy val engine = com.intel.taproot.analytics.component.Boot.getArchive("engine-core")
+    lazy val engine = Boot.getArchive("engine-core")
       .get[Engine]("engine")
 
     //make sure engine is initialized
