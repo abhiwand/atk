@@ -39,6 +39,18 @@ object SparkCoresPartitioner extends Serializable {
     numPartitions
   }
 
+  /**
+   * Get the number number of partitions based on available spark cores
+   *
+   * Returns the maximum number of partitions for the left and right Rdds
+   */
+  def getNumPartitions[T](leftRdd: RDD[T], rightRdd: RDD[T]): Int = {
+    val numPartitions = Math.max(getNumPartitions(leftRdd), getNumPartitions(rightRdd))
+    //TODO: Replace print statement with IAT event context when event contexts are supported at workers
+    println(s"Number of partitions computed by SparkCoresPartitioner: $numPartitions")
+    numPartitions
+  }
+
   // Get the maximum number of spark tasks to run
   private def getMaxSparkTasks[T](rdd: RDD[T]): Int = {
     val numExecutors = Math.max(1, rdd.sparkContext.getExecutorStorageStatus.size - 1)
