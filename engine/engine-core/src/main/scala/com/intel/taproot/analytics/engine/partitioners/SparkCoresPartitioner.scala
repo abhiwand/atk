@@ -41,22 +41,31 @@ object SparkCoresPartitioner extends Serializable {
     numPartitions
   }
 
-
   // Get the maximum number of spark tasks to run
   private def getMaxSparkTasks[T](rdd: RDD[T]): Int = {
     if (EngineConfig.isSparkOnYarn) {
-      val coresPerExecutor = Try({
-        EngineConfig.sparkConfProperties("spark.executor.cores").toInt
-      }).getOrElse(1)
-     EngineConfig.sparkOnYarnNumExecutors * coresPerExecutor * EngineConfig.maxTasksPerCore
+      getMaxExecutorsYarn
     }
     else {
-      val numExecutors = Math.max(1, rdd.sparkContext.getExecutorStorageStatus.size - 1)
-      val numSparkCores = {
-        val maxSparkCores = rdd.sparkContext.getConf.getInt("spark.cores.max", 0)
-        if (maxSparkCores > 0) maxSparkCores else Runtime.getRuntime.availableProcessors() * numExecutors
-      }
-      EngineConfig.maxTasksPerCore * numSparkCores
+      getMaxExecutorsStandalone(rdd)
     }
+  }
+
+  // Get the maximum number of executors for Spark Yarn
+  private def getMaxExecutorsYarn: Int = {
+    val coresPerExecutor = Try({
+      EngineConfig.sparkConfProperties("spark.executor.cores").toInt
+    }).getOrElse(1)
+    EngineConfig.sparkOnYarnNumExecutors * coresPerExecutor * EngineConfig.maxTasksPerCore
+  }
+
+  // Get the maximum number of executors for Spark stand-alone
+  private def getMaxExecutorsStandalone[T](rdd: RDD[T]): Int = {
+    val numExecutors = Math.max(1, rdd.sparkContext.getExecutorStorageStatus.size - 1)
+    val numSparkCores = {
+      val maxSparkCores = rdd.sparkContext.getConf.getInt("spark.cores.max", 0)
+      if (maxSparkCores > 0) maxSparkCores else Runtime.getRuntime.availableProcessors() * numExecutors
+    }
+    EngineConfig.maxTasksPerCore * numSparkCores
   }
 }

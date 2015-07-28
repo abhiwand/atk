@@ -11,5 +11,4 @@ object JoinRddImplicits {
   implicit def joinRddToBroadcastJoinRddFunctions(joinParam: RddJoinParam): BroadcastJoinRddFunctions =
     new BroadcastJoinRddFunctions(joinParam)
 
-
 }

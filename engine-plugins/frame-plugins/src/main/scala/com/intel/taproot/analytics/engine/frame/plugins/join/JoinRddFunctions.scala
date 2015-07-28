@@ -105,18 +105,18 @@ object JoinRddFunctions extends Serializable {
       right.rdd,
       SparkCoresPartitioner.getNumPartitions(left.rdd)
     ).map {
-      case (_, outerJoinResult) =>
-        outerJoinResult match {
-          case (Some(leftValues), Some(rightValues)) =>
-            Row.merge(leftValues, rightValues)
-          case (Some(leftValues), None) =>
-            Row.fromSeq(leftValues.toSeq ++ (1 to right.columnCount).map(i => null))
-          case (None, Some(rightValues)) =>
-            Row.fromSeq((1 to left.columnCount).map(i => null) ++ rightValues.toSeq)
-          case (None, None) =>
-            throw new IllegalArgumentException("No join parameters were supplied")
-        }
-    }
+        case (_, outerJoinResult) =>
+          outerJoinResult match {
+            case (Some(leftValues), Some(rightValues)) =>
+              Row.merge(leftValues, rightValues)
+            case (Some(leftValues), None) =>
+              Row.fromSeq(leftValues.toSeq ++ (1 to right.columnCount).map(i => null))
+            case (None, Some(rightValues)) =>
+              Row.fromSeq((1 to left.columnCount).map(i => null) ++ rightValues.toSeq)
+            case (None, None) =>
+              throw new IllegalArgumentException("No join parameters were supplied")
+          }
+      }
   }
 
   /**
