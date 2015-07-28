@@ -20,7 +20,7 @@ import breeze.linalg.{ DenseMatrix, DenseVector }
 import breeze.math.VectorSpace
 import breeze.optimize.DiffFunction
 import org.apache.spark.mllib.linalg.Vector
-import org.apache.spark.mllib.optimization._
+import org.apache.spark.mllib.optimization.{ CostFunctionWithFrequency, Updater, GradientWithFrequency }
 import org.apache.spark.rdd.RDD
 
 /**

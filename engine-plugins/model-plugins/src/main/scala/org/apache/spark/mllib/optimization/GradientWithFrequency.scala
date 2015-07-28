@@ -174,15 +174,14 @@ class LogisticGradientWithFrequency(numClasses: Int) extends GradientWithFrequen
          * binary version for performance reason.
          */
         val margin = -1.0 * dot(data, weights)
-        val frequencyTerm = frequency - label
-        val multiplier = (1.0 / (1.0 + math.exp(margin))) - label
+        val multiplier = frequency * ((1.0 / (1.0 + math.exp(margin))) - label)
         axpy(multiplier, data, cumGradient)
         if (label > 0) {
           // The following is equivalent to log(1 + exp(margin)) but more numerically stable.
           frequency * MLUtils.log1pExp(margin)
         }
         else {
-          frequency * MLUtils.log1pExp(margin) - margin * frequencyTerm
+          frequency * (MLUtils.log1pExp(margin) - margin)
         }
       case _ =>
         /**
@@ -247,9 +246,9 @@ class LogisticGradientWithFrequency(numClasses: Int) extends GradientWithFrequen
         }
 
         for (i <- 0 until numClasses - 1) {
-          val multiplier = math.exp(margins(i)) / (sum + 1.0) - {
+          val multiplier = frequency * (math.exp(margins(i)) / (sum + 1.0) - {
             if (label != 0.0 && label == i + 1) 1.0 else 0.0
-          }
+          })
           data.foreachActive { (index, value) =>
             if (value != 0.0) cumGradientArray(i * dataSize + index) += multiplier * value
           }
@@ -258,10 +257,10 @@ class LogisticGradientWithFrequency(numClasses: Int) extends GradientWithFrequen
         val loss = if (label > 0.0) math.log1p(sum) - marginY else math.log1p(sum)
 
         if (maxMargin > 0) {
-          loss + maxMargin
+          frequency * (loss + maxMargin)
         }
         else {
-          loss
+          frequency * loss
         }
     }
   }
