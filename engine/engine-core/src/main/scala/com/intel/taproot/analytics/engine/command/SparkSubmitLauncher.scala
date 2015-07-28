@@ -43,7 +43,7 @@ class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with C
     withContext("executeCommandOnYarn") {
 
       val tempConfFileName = s"/tmp/application_${command.id}.conf"
-      val pluginArchiveName = archiveName.getOrElse(plugin.getArchiveName())
+      val pluginArchiveName = archiveName.getOrElse(plugin.archiveName)
 
       // Serialize current config for the plugin so as to pass to Spark Submit
       val (pluginJarsList, pluginExtraClasspath) = plugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)

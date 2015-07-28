@@ -180,7 +180,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     (jars.toList, extraClassPath.distinct.toList)
   }
 
-  def getArchiveName() = withMyClassLoader {
+  def archiveName: String = withMyClassLoader {
     Archive.system.lookupArchiveNameByLoader(Thread.currentThread().getContextClassLoader)
   }
 }
