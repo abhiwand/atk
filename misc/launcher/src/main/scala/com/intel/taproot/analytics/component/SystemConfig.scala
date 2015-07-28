@@ -52,6 +52,8 @@ class SystemConfig(val rootConfiguration: Config = ConfigFactory.load(SystemConf
     }
   }
 
+  val defaultParentArchiveName: String = rootConfiguration.getString(SystemConfig.defaultParentArchiveKey)
+
   val debugConfig = rootConfiguration.getBoolean(SystemConfig.debugConfigKey)
 
   val debugConfigFolder = rootConfiguration.getString(SystemConfig.debugConfigPrefix) + java.util.UUID.randomUUID.toString + File.separator
@@ -67,6 +69,8 @@ object SystemConfig {
   private[component] val debugConfigKey: String = "intel.taproot.analytics.launcher.debug-config.enabled"
 
   private[component] val debugConfigPrefix: String = "intel.taproot.analytics.launcher.debug-config.prefix"
+
+  private[component] val defaultParentArchiveKey = "intel.taproot.analytics.launcher.default-parent-archive"
 
   private[component] val jarFolders = "intel.taproot.analytics.launcher.jar-folders"
 

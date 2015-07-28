@@ -17,7 +17,6 @@
 package com.intel.taproot.analytics.component
 
 import com.typesafe.config.{ ConfigFactory, Config }
-import org.apache.commons.lang.StringUtils
 
 import scala.util.Try
 
@@ -44,11 +43,13 @@ object ArchiveDefinition {
    * Constructs an ArchiveDefinition by reading it from a Config object
    * @param archiveName the name of the ArchiveDefinition to load
    * @param config the {Config} object that presumably has the information to load
+   * @param defaultParentArchiveName the parent archive to use if no parent is present in the Config object
    * @param configKeyBase the prefix string used to locate the archive definition in the Config object.
    *                      The final key is determined by the configKeyBase + archiveName concatenated.
    */
   def apply(archiveName: String,
             config: Config,
+            defaultParentArchiveName: String,
             configKeyBase: String = "intel.taproot.analytics.component.archives"): ArchiveDefinition = {
     val configKey = configKeyBase + "." + archiveName
     val restricted = Try {
@@ -61,8 +62,8 @@ object ArchiveDefinition {
     val parent = Try {
       restricted.getString("parent")
     }.getOrElse({
-      Archive.logger(s"Missing archive parent name for: " + archiveName + " using empty")
-      StringUtils.EMPTY
+      Archive.logger(s"Using default value ($defaultParentArchiveName) for archive parent")
+      defaultParentArchiveName
     })
     val className = Try {
       restricted.getString("class")

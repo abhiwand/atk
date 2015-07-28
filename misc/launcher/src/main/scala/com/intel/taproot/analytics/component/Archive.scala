@@ -300,90 +300,84 @@ object Archive extends ClassLoaderAware {
       //First create a standard plugin class loader, which we will use to query the config
       //to see if this archive needs special treatment (i.e. a parent class loader other than the
       //defaultParentArchive class loader)
+      val defaultParentArchiveName = system.systemConfig.defaultParentArchiveName
+      val defaultParentClassLoader = system.archive(defaultParentArchiveName).map(a => a.classLoader)
 
       val defaultClassLoader = buildClassLoader(archiveName,
-        myClassLoader,
+        defaultParentClassLoader.getOrElse(this.getClass.getClassLoader),
         system.systemConfig.sourceRoots,
         system.systemConfig.jarFolders
       )
 
       val augmentedConfigForDefaultClassLoader = ConfigFactory.defaultReference(defaultClassLoader)
-      val systemConfigForDefaultClassLoader = new SystemConfig(augmentedConfigForDefaultClassLoader)
+      val defaultClassLoaderConfig = new SystemConfig(augmentedConfigForDefaultClassLoader)
 
-      // Default archive definition for current archive name
       val archiveDefinition = {
-        val definition = ArchiveDefinition(archiveName, augmentedConfigForDefaultClassLoader)
+        val defaultDef = ArchiveDefinition(archiveName, augmentedConfigForDefaultClassLoader, defaultParentArchiveName)
         className match {
-          case Some(name) => definition.copy(className = name)
-          case _ => definition
+          case Some(n) => defaultDef.copy(className = n)
+          case _ => defaultDef
         }
       }
 
-      //Non-default parent class loader
-      val parentArchive = archiveDefinition.parent
-      val parentClassLoader = system.loader(parentArchive).getOrElse {
-        if (archiveDefinition.name.equals(parentArchive) || StringUtils.EMPTY.equals(parentArchive)) {
-          myClassLoader
+      //Parent class loader
+      val parentClassLoader = system.loader(archiveDefinition.parent).getOrElse {
+        if (archiveDefinition.name.equals(archiveDefinition.parent)) {
+          Archive.getClass.getClassLoader
         }
         else {
-          getClassLoader(parentArchive)
+          getClassLoader(archiveDefinition.parent)
         }
       }
 
-      //Non-default archive class loader
+      //Archive class loader
       val archiveClassLoader = Archive.buildClassLoader(archiveName,
         parentClassLoader,
         system.systemConfig.sourceRoots,
         system.systemConfig.jarFolders,
-        systemConfigForDefaultClassLoader.extraArchives(archiveDefinition.configPath).map(s => getArchive(s)),
-        systemConfigForDefaultClassLoader.extraClassPath(archiveDefinition.configPath))
+        defaultClassLoaderConfig.extraArchives(archiveDefinition.configPath).map(s => getArchive(s)),
+        defaultClassLoaderConfig.extraClassPath(archiveDefinition.configPath))
 
-      createAndInitializeArchive(archiveName, archiveDefinition, archiveClassLoader)
+      val augmentedConfig = getAugmentedConfig(archiveName, archiveClassLoader)
+      val archiveClass = attempt(archiveClassLoader.loadClass(archiveDefinition.className),
+        s"Archive class ${archiveDefinition.className} not found")
+
+      val constructor = attempt(archiveClass.getConstructor(classOf[ArchiveDefinition],
+        classOf[ClassLoader],
+        classOf[Config]),
+        s"Class ${archiveDefinition.className} does not have a constructor of the form (ArchiveDefinition, ClassLoader, Config)")
+
+      val instance = attempt(constructor.newInstance(archiveDefinition, archiveClassLoader, augmentedConfig),
+        s"Loaded class ${archiveDefinition.className} in archive ${archiveDefinition.name}, but could not create an instance of it")
+
+      val archiveInstance = attempt(instance.asInstanceOf[Archive],
+        s"Loaded class ${archiveDefinition.className} in archive ${archiveDefinition.name}, but it is not an Archive")
+
+      val restrictedConfig = Try { augmentedConfig.getConfig(archiveDefinition.configPath) }.getOrElse(ConfigFactory.empty())
+
+      withLoader(archiveClassLoader) {
+
+        initializeArchive(archiveDefinition, archiveClassLoader, restrictedConfig, archiveInstance)
+        try {
+          synchronized {
+            val newSystemState = system.addArchive(archiveInstance)
+            systemState = newSystemState
+          }
+          logger(s"Registered archive $archiveName with parent ${archiveDefinition.parent}")
+          archiveInstance.start()
+        }
+        catch {
+          case e: Exception => synchronized {
+            throw e
+          }
+        }
+      }
+
+      archiveInstance
     }
     catch {
       case e: Throwable => throw new ArchiveInitException("Exception while building archive: " + archiveName, e)
     }
   }
 
-  private def createAndInitializeArchive(archiveName: String,
-                                         archiveDefinition: ArchiveDefinition,
-                                         archiveClassLoader: ClassLoader) = {
-
-    val augmentedConfig = getAugmentedConfig(archiveName, archiveClassLoader)
-    val archiveClass = attempt(archiveClassLoader.loadClass(archiveDefinition.className),
-      s"Archive class ${archiveDefinition.className} not found")
-
-    val constructor = attempt(archiveClass.getConstructor(classOf[ArchiveDefinition],
-      classOf[ClassLoader],
-      classOf[Config]),
-      s"Class ${archiveDefinition.className} does not have a constructor of the form (ArchiveDefinition, ClassLoader, Config)")
-
-    val instance = attempt(constructor.newInstance(archiveDefinition, archiveClassLoader, augmentedConfig),
-      s"Loaded class ${archiveDefinition.className} in archive ${archiveDefinition.name}, but could not create an instance of it")
-
-    val archiveInstance = attempt(instance.asInstanceOf[Archive],
-      s"Loaded class ${archiveDefinition.className} in archive ${archiveDefinition.name}, but it is not an Archive")
-
-    val restrictedConfig = Try { augmentedConfig.getConfig(archiveDefinition.configPath) }.getOrElse(ConfigFactory.empty())
-
-    withLoader(archiveClassLoader) {
-
-      initializeArchive(archiveDefinition, archiveClassLoader, restrictedConfig, archiveInstance)
-      try {
-        synchronized {
-          val newSystemState = system.addArchive(archiveInstance)
-          systemState = newSystemState
-        }
-        logger(s"Registered archive $archiveName with parent ${archiveDefinition.parent}")
-        archiveInstance.start()
-      }
-      catch {
-        case e: Exception => synchronized {
-          throw e
-        }
-      }
-    }
-
-    archiveInstance
-  }
 }
