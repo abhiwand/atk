@@ -14,20 +14,18 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.analytics.engine
+package com.intel.taproot.analytics.engine.util
 
-import com.intel.taproot.analytics.engine.command._
-import com.intel.taproot.analytics.engine.gc.GarbageCollector
-import com.intel.taproot.analytics.engine.util.{ DiskSpaceReporter, EnvironmentLogger, JvmVersionReporter }
+import com.intel.taproot.analytics.engine.EngineExecutionContext
+import com.intel.taproot.analytics.engine.plugin.Call
+import org.scalatest.WordSpec
 
-/**
- * Main class for initializing the Spark Engine
- */
-class EngineComponent extends AbstractEngineComponent {
-  EnvironmentLogger.log()
-  EngineConfig.logSettings()
-  JvmVersionReporter.check()
-  DiskSpaceReporter.checkDiskSpace()
-  metaStore.initializeSchema()
-  GarbageCollector.startup(metaStore, frameFileStorage, backendGraphStorage)
+class DiskSpaceReporterTest extends WordSpec {
+  implicit val call = Call(null, EngineExecutionContext.global)
+
+  "DiskSpaceReport" should {
+    "not throw exceptions" in {
+      DiskSpaceReporter.checkDiskSpace()
+    }
+  }
 }
