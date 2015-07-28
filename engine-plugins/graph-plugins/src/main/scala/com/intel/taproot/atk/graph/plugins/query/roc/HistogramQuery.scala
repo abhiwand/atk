@@ -101,7 +101,7 @@ posterior_histograms : array
     An array of histograms of posterior probabilities for each feature dimension.""")
 class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult] {
   /**
-   * The name of the command, e.g. graph/sampling/vertex_sample
+   * The name of the command, e.g. graph/vertex_sample
    */
   override def name: String = "graph:titan/query/histogram"
 
