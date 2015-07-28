@@ -56,9 +56,11 @@ def run(path=r"datasets/cities.csv", ta=None):
 
     print frame.inspect()
 
-    print "Add Change column"
+    print "Add Change column."
     frame.add_columns(lambda row: ((row.population_2013 - row.population_2010)/float(row.population_2010)) * 100,
                       ("change", ta.float32))
+
+    print frame.inspect()
 
     print "Drop Change column."
 
@@ -71,7 +73,7 @@ def run(path=r"datasets/cities.csv", ta=None):
     frame.add_columns(lambda row: [row.population_2013 - row.population_2010, ((row.population_2013 - row.population_2010)/float(row.population_2010)) * 100 ], [("difference", ta.int32 ), ("change", ta.float32 )])
 
     print "Format inspection."
-    print frame.inspect(10, wrap=10, filter=["county"], round=2)
+    print frame.inspect(10, wrap=10, columns=["city", "population_2013", "population_2010", "change", "difference"], round=2)
 
 
     return {"frame": frame}
