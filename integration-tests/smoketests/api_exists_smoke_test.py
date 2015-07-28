@@ -235,8 +235,8 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'name',
                                      'page_rank',
                                      'query',
-                                     'sampling',
-                                     'status'], ia.TitanGraph)
+                                     'status',
+                                     'vertex_sample'], ia.TitanGraph)
 
     def test_expected_methods_exist_on_titangraphml(self):
         self.assert_methods_defined(['belief_propagation',
