@@ -39,7 +39,7 @@ class SparkCommandJob extends AbstractEngineComponent {
    */
   def execute(commandId: Long): Unit = {
     commands.lookup(commandId) match {
-      case None => info(s"Command $commandId not found")
+      case None => error(s"Command $commandId not found")
       case Some(command) =>
         val user: Option[User] = command.createdById match {
           case Some(id) => metaStore.withSession("se.command.lookup") {
