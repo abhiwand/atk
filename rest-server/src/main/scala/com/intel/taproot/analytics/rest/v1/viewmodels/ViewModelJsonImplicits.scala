@@ -20,12 +20,12 @@ import com.intel.taproot.analytics.domain.command.CommandDefinition
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import spray.httpx.SprayJsonSupport
 import spray.json._
-import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
+import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 
 /**
  * Implicit Conversions for View/Models to JSON
  */
-object ViewModelJsonImplicits extends IADefaultJsonProtocol with SprayJsonSupport {
+object ViewModelJsonImplicits extends AtkDefaultJsonProtocol with SprayJsonSupport {
 
   //this is needed for implicits
   import com.intel.taproot.analytics.domain.DomainJsonProtocol._

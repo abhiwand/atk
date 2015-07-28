@@ -16,6 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.assignsample
 
+import com.intel.taproot.analytics.engine.frame.plugins.MLDataSplitter
 import com.intel.taproot.testutils.TestingSparkContextFunSuite
 import org.scalatest.Matchers
 

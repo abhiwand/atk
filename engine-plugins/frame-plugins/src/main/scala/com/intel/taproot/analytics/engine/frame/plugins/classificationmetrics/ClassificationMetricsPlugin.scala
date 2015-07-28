@@ -18,6 +18,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics
 
 import com.intel.taproot.analytics.domain.frame.{ ClassificationMetricArgs, ClassificationMetricValue }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
+import com.intel.taproot.analytics.engine.frame.plugins.ClassificationMetrics
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 

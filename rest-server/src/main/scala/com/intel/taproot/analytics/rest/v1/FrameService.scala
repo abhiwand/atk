@@ -30,7 +30,7 @@ import scala.util._
 import com.intel.taproot.analytics.rest.CommonDirectives
 import spray.routing.Directives
 import org.apache.commons.lang.StringUtils
-import com.intel.taproot.analytics.spray.json.IADefaultJsonProtocol
+import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 import com.intel.taproot.analytics.rest.v1.decorators.FrameDecorator
 
 import scala.util.matching.Regex
@@ -70,7 +70,7 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                 case _ =>
                   onComplete(engine.getFrames()) {
                     case Success(frames) =>
-                      import IADefaultJsonProtocol._
+                      import AtkDefaultJsonProtocol._
                       implicit val indexFormat = ViewModelJsonImplicits.getDataFramesFormat
                       complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
                     case Failure(ex) => throw ex

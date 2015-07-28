@@ -16,8 +16,8 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
-import org.apache.spark.mllib.evaluation.HessianMatrix
 import org.apache.spark.mllib.regression.GeneralizedLinearAlgorithmWithFrequency
+import org.apache.spark.mllib.evaluation.HessianMatrix
 
 trait LogisticRegressionModelWrapper extends HessianMatrix {
 
