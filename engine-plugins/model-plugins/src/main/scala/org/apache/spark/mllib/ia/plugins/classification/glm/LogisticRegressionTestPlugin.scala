@@ -17,15 +17,18 @@
 package org.apache.spark.mllib.ia.plugins.classification.glm
 
 import com.intel.taproot.analytics.domain.frame.ClassificationMetricValue
+import com.intel.taproot.analytics.engine.frame.plugins.ClassificationMetrics
 import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.model.Model
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics.ClassificationMetrics
+import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.ia.plugins.classification.ClassificationWithSGDTestArgs
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.ia.plugins.FrameRddImplicits._
 import org.apache.spark.rdd.RDD
+
+//Implicits needed for JSON conversion
 import spray.json._
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._

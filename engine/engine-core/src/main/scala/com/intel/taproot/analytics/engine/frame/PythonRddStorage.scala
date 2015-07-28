@@ -26,7 +26,7 @@ import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.EngineConfig
 import org.apache.spark.SparkContext
-import org.apache.spark.api.python.{ IAPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRdd }
+import org.apache.spark.api.python.{ AtkPythonBroadcast, EnginePythonAccumulatorParam, EnginePythonRdd }
 import org.apache.commons.codec.binary.Base64.decodeBase64
 import java.util.{ ArrayList => JArrayList, List => JList }
 
@@ -138,7 +138,7 @@ object PythonRddStorage {
         Directory.Current.get / "python").map(_.toString).mkString(":"))
 
     val accumulator = rdd.sparkContext.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
-    val broadcastVars = new JArrayList[Broadcast[IAPythonBroadcast]]()
+    val broadcastVars = new JArrayList[Broadcast[AtkPythonBroadcast]]()
 
     var pyIncludes = new JArrayList[String]()
 

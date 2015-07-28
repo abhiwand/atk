@@ -16,6 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.classificationmetrics
 
+import com.intel.taproot.analytics.engine.frame.plugins.ClassificationMetrics
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql.Row
 import org.scalatest.Matchers

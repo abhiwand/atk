@@ -19,8 +19,6 @@ package com.intel.taproot.analytics.engine.command
 import java.io.File
 import java.nio.file.{ FileSystems, Files }
 
-import com.intel.taproot.analytics.engine.hadoop.HadoopSupport
-
 import sys.process._
 
 import com.intel.taproot.analytics.component.ClassLoaderAware
@@ -30,24 +28,19 @@ import com.intel.taproot.analytics.engine.plugin.{ Invocation, CommandPlugin }
 import com.intel.taproot.analytics.engine.util.{ JvmMemory, KerberosAuthenticator }
 import com.intel.taproot.analytics.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
-
 import scala.concurrent._
 import scala.reflect.runtime.{ universe => ru }
 import ru._
 import scala.util.Try
-import com.intel.taproot.analytics.domain.command.CommandTemplate
-import com.intel.taproot.analytics.domain.command.Execution
+import com.intel.taproot.analytics.domain.command.{ CommandDefinition, CommandTemplate, Execution, Command }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import com.intel.taproot.analytics.domain.command.Command
 import com.intel.taproot.event.{ EventContext, EventLogging }
-import scala.concurrent.duration._
 import EngineExecutionContext.global
 
 case class CommandContext(
     command: Command,
     executionContext: ExecutionContext,
     user: UserPrincipal,
-    plugins: CommandPluginRegistry,
     eventContext: EventContext) {
 
 }
@@ -73,11 +66,15 @@ case class CommandContext(
  * @param engine an Engine instance that will be passed to command plugins during execution
  * @param commands a command storage that the executor can use for audit logging command execution
  */
-//class CommandExecutor(engine: => SparkEngine, commands: CommandStorage, contextFactory: SparkContextFactory)
-class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
+class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPluginRegistry: CommandPluginRegistry)
     extends EventLogging
     with EventLoggingImplicits
     with ClassLoaderAware {
+
+  /**
+   * Returns all the command definitions registered with this command executor.
+   */
+  def commandDefinitions: Iterable[CommandDefinition] = commandPluginRegistry.commandDefinitions
 
   /**
    * Executes the given command template, managing all necessary auditing, contexts, class loaders, etc.
@@ -89,31 +86,20 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
    * @param commandTemplate the CommandTemplate from which to extract the command name and the arguments
    * @return an Execution object that can be used to track the command's execution
    */
-  def execute[A <: Product, R <: Product](commandTemplate: CommandTemplate,
-                                          commandPluginRegistry: CommandPluginRegistry)(implicit invocation: Invocation): Execution =
+  def execute[A <: Product, R <: Product](commandTemplate: CommandTemplate)(implicit invocation: Invocation): Execution =
     withContext("ce.execute(ct)") {
       val cmd = commands.create(commandTemplate.copy(createdBy = if (invocation.user != null) Some(invocation.user.user.id) else None))
-      val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
-      val context = CommandContext(cmd,
-        EngineExecutionContext.global,
-        user,
-        commandPluginRegistry,
-        eventContext)
-
+      validatePluginExists(cmd)
+      val context = CommandContext(cmd, EngineExecutionContext.global, user, eventContext)
       Execution(cmd, executeCommandContextInFuture(context))
     }
 
-  def executeCommand[A <: Product, R <: Product](cmd: Command,
-                                                 commandPluginRegistry: CommandPluginRegistry)(implicit invocation: Invocation): Unit =
+  def executeCommand[A <: Product, R <: Product](cmd: Command)(implicit invocation: Invocation): Unit =
     withContext(s"ce.executeCommand.${cmd.name}") {
-      val plugin = expectCommandPlugin[A, R](commandPluginRegistry, cmd)
-      val context = CommandContext(cmd,
-        EngineExecutionContext.global,
-        user,
-        commandPluginRegistry,
-        eventContext)
+      validatePluginExists(cmd)
+      val context = CommandContext(cmd, EngineExecutionContext.global, user, eventContext)
 
-      /* Stores the (intermediate) results, don't mark the command complete yet as it will be marked complete by rest server */
+      // Stores the (intermediate) results, don't mark the command complete yet as it will be marked complete by rest server
       commands.storeResult(context.command.id, Try { executeCommandContext(context) })
     }
 
@@ -130,7 +116,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
             executeCommandContext(commandContext)
           })
           // get the latest command progress from DB when command is done executing
-          commands.lookup(commandContext.command.id).get
+          commands.expectCommand(commandContext.command.id)
         }
         cmdFuture
       }
@@ -145,146 +131,33 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
    */
   private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext)(implicit invocation: Invocation): JsObject = withContext("cmdExcector") {
     info(s"command id:${commandContext.command.id}, name:${commandContext.command.name}, args:${commandContext.command.compactArgs}, ${JvmMemory.memory}")
-    val plugin = expectCommandPlugin[A, R](commandContext.plugins, commandContext.command)
+    val plugin = expectCommandPlugin[A, R](commandContext.command)
     val arguments = plugin.parseArguments(commandContext.command.arguments.get)
     implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
     debug(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
-    if (plugin.isInstanceOf[SparkCommandPlugin[A, R]] && !sys.props.contains("SPARK_SUBMIT") && EngineConfig.isSparkOnYarn) {
-      val archiveName = commandContext.plugins.getArchiveNameFromPlugin(plugin.name)
-      val sparkSubmitExitCode = executeCommandOnYarn(commandContext.command, plugin, archiveName)
-      // Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution
-      val updatedCommand = commands.lookup(commandContext.command.id).get
-      if (updatedCommand.error.isDefined) {
-        throw new Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
-      }
-      if (updatedCommand.result.isDefined) {
-        updatedCommand.result.get
-      }
-      else {
-        error(s"Command didn't have any results, this is probably do to an error submitting command to yarn-cluster: $updatedCommand")
-        throw new Exception(s"Error submitting command to yarn-cluster.")
-      }
-    }
-    else {
-      val returnValue = invokeCommandFunction(plugin, arguments, commandContext)
-      plugin.serializeReturn(returnValue)
-    }
-  }
-
-  private def getPluginJarPath(pluginJarsList: List[String], delimiter: String = ","): String = {
-    pluginJarsList.map(j => SparkContextFactory.jarPath(j)).mkString(delimiter)
-  }
-
-  private def executeCommandOnYarn[A <: Product: TypeTag, R <: Product: TypeTag](command: Command, plugin: CommandPlugin[A, R], archiveName: Option[String])(implicit invocation: Invocation): Int = {
-    withContext("executeCommandOnYarn") {
-
-      val tempConfFileName = s"/tmp/application_${command.id}.conf"
-      val sparkCommandPlugin = plugin.asInstanceOf[SparkCommandPlugin[A, R]]
-      val pluginArchiveName = archiveName.getOrElse(sparkCommandPlugin.getArchiveName())
-
-      /* Serialize current config for the plugin so as to pass to Spark Submit */
-      val (pluginJarsList, pluginExtraClasspath) = sparkCommandPlugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)
-
-      try {
-
-        withMyClassLoader {
-          //Requires a TGT in the cache before executing SparkSubmit if CDH has Kerberos Support
-          KerberosAuthenticator.loginWithKeyTabCLI()
-          val (kerbFile, kerbOptions) = EngineConfig.kerberosKeyTabPath match {
-            case Some(path) => (s",$path",
-              s"-Dintel.taproot.analytics.engine.hadoop.kerberos.keytab-file=${new File(path).getName}")
-            case None => ("", "")
-          }
-
-          val sparkMaster = Array(s"--master", s"${EngineConfig.sparkMaster}")
-          val jobName = Array(s"--name", s"${command.getJobName}")
-          val pluginExecutionDriverClass = Array("--class", "com.intel.taproot.analytics.engine.command.CommandDriver")
-
-          val pluginDependencyJars = EngineConfig.sparkAppJarsLocal match {
-            case true => Array[String]() /* Expect jars to installed locally and available */
-            case false => Array("--jars",
-              s"${SparkContextFactory.jarPath("interfaces")}," +
-                s"${SparkContextFactory.jarPath("launcher")}," +
-                s"${getPluginJarPath(pluginJarsList)}")
-          }
-
-          val pluginDependencyFiles = Array("--files", s"$tempConfFileName#application.conf$kerbFile",
-            "--conf", s"config.resource=application.conf")
-          val executionParams = Array(
-            "--num-executors", s"${EngineConfig.sparkOnYarnNumExecutors}",
-            "--driver-java-options", s"-XX:MaxPermSize=${EngineConfig.sparkDriverMaxPermSize} $kerbOptions")
-
-          val executorClassPathString = "spark.executor.extraClassPath"
-          val executorClassPathTuple = EngineConfig.sparkAppJarsLocal match {
-            case true => (executorClassPathString,
-              s".:${SparkContextFactory.jarPath("interfaces")}:${SparkContextFactory.jarPath("launcher")}:" +
-              s"${EngineConfig.hiveLib}:${getPluginJarPath(pluginJarsList, ":")}" +
-              s"${EngineConfig.sparkConfProperties.get(executorClassPathString).getOrElse("")}")
-            case false => (executorClassPathString,
-              s"${EngineConfig.hiveLib}:${EngineConfig.sparkConfProperties.get(executorClassPathString).getOrElse("")}")
-          }
-
-          val driverClassPathString = "spark.driver.extraClassPath"
-          val driverClassPathTuple = (driverClassPathString,
-            s".:interfaces.jar:launcher.jar:engine-core.jar:frame-plugins.jar:graph-plugins.jar:model-plugins.jar:application.conf:" +
-            s"${pluginExtraClasspath.mkString(":")}:${EngineConfig.hiveLib}:${EngineConfig.hiveConf}:" +
-            s"${EngineConfig.sparkConfProperties.get(driverClassPathString).getOrElse("")}")
-
-          val executionConfigs = {
-            for {
-              (config, value) <- EngineConfig.sparkConfProperties + (executorClassPathTuple, driverClassPathTuple)
-            } yield List("--conf", s"$config=$value")
-          }.flatMap(identity).toArray
-
-          val verbose = Array("--verbose")
-          /* Using engine-core.jar (or deploy.jar) here causes issue due to duplicate copying of the resource.
-          So we hack to submit the job as if we are spark-submit shell script */
-          val sparkInternalDriverClass = Array("spark-internal")
-          val pluginArguments = Array(s"${command.id}")
-
-          /* Prepare input arguments for Spark Submit; Do not change the order */
-          val inputArgs = sparkMaster ++
-            jobName ++
-            pluginExecutionDriverClass ++
-            pluginDependencyJars ++
-            pluginDependencyFiles ++
-            executionParams ++
-            executionConfigs ++
-            verbose ++
-            sparkInternalDriverClass ++
-            pluginArguments
-
-          /* Launch Spark Submit */
-          info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
-          val pluginDependencyJarsStr = s"${SparkContextFactory.jarPath("engine-core")}:${pluginExtraClasspath.mkString(":")}"
-          val javaArgs = Array("java", "-cp", s"$pluginDependencyJarsStr", "org.apache.spark.deploy.SparkSubmit") ++ inputArgs
-
-          // We were initially invoking SparkSubmit main method directly (i.e. inside our JVM). However, only one
-          // ApplicationMaster can exist at a time inside a single JVM. All further calls to SparkSubmit fail to
-          // create an instance of ApplicationMaster due to current spark design. We took the approach of invoking
-          // SparkSubmit as a standalone process (using engine.jar) for every command to get the parallel
-          // execution in yarn-cluster mode.
-
-          val pb = new java.lang.ProcessBuilder(javaArgs: _*)
-          val result = pb.inheritIO().start().waitFor()
-          info(s"Command ${command.id} completed with exitCode:$result, ${JvmMemory.memory}")
-          result
+    plugin match {
+      case sparkCommandPlugin: SparkCommandPlugin[A, R] if !sys.props.contains("SPARK_SUBMIT") && EngineConfig.isSparkOnYarn =>
+        val archiveName = commandPluginRegistry.getArchiveNameFromPlugin(plugin.name)
+        new SparkSubmitLauncher().execute(commandContext.command, sparkCommandPlugin, archiveName)
+        // Reload the command as the error/result etc fields should have been updated in metastore upon yarn execution
+        val updatedCommand = commands.expectCommand(commandContext.command.id)
+        if (updatedCommand.error.isDefined) {
+          throw new scala.Exception(s"Error executing ${plugin.name}: ${updatedCommand.error.get.message}")
         }
-      }
-      finally {
-        Files.deleteIfExists(FileSystems.getDefault().getPath(s"$tempConfFileName"))
-        sys.props -= "SPARK_SUBMIT" /* Removing so that next command executes in a clean environment to begin with */
-      }
+        if (updatedCommand.result.isDefined) {
+          updatedCommand.result.get
+        }
+        else {
+          error(s"Command didn't have any results, this is probably do to an error submitting command to yarn-cluster: $updatedCommand")
+          throw new scala.Exception(s"Error submitting command to yarn-cluster.")
+        }
+      case _ =>
+        val cmd = commandContext.command
+        info(s"Invoking command ${cmd.name}")
+        val returnValue = plugin(commandInvocation, arguments)
+        plugin.serializeReturn(returnValue)
     }
-  }
-
-  private def invokeCommandFunction[A <: Product: TypeTag, R <: Product: TypeTag](command: CommandPlugin[A, R],
-                                                                                  arguments: A,
-                                                                                  commandContext: CommandContext)(implicit invocation: Invocation): R = {
-    val cmd = commandContext.command
-    info(s"Invoking command ${cmd.name}")
-    command(invocation, arguments)
   }
 
   private def getInvocation[R <: Product: TypeTag, A <: Product: TypeTag](command: CommandPlugin[A, R],
@@ -302,15 +175,21 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
   }
 
   /**
+   * Throw exception if plugin doesn't exist for the supplied Command
+   */
+  private def validatePluginExists(command: Command): Unit = {
+    expectCommandPlugin(command)
+  }
+
+  /**
    * Lookup the plugin from the registry
-   * @param plugins the registry of plugins
    * @param command the command to lookup a plugin for
    * @tparam A plugin arguments
    * @tparam R plugin return type
    * @return the plugin
    */
-  private def expectCommandPlugin[A <: Product, R <: Product](plugins: CommandPluginRegistry, command: Command): CommandPlugin[A, R] = {
-    plugins.getCommandDefinition(command.name)
+  private def expectCommandPlugin[A <: Product, R <: Product](command: Command): CommandPlugin[A, R] = {
+    commandPluginRegistry.getCommandDefinition(command.name)
       .getOrElse(throw new NotFoundException("command definition", command.name))
       .asInstanceOf[CommandPlugin[A, R]]
   }
@@ -319,7 +198,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
    * Cancel a command
    * @param commandId command id
    */
-  def cancelCommand(commandId: Long, commandPluginRegistry: CommandPluginRegistry): Unit = withMyClassLoader {
+  def cancelCommand(commandId: Long): Unit = withMyClassLoader {
     /* This should be killing any yarn jobs running */
     val command = commands.lookup(commandId).getOrElse(throw new Exception(s"Command $commandId does not exist"))
     val commandPlugin = commandPluginRegistry.getCommandDefinition(command.name).get
@@ -329,7 +208,7 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage)
         SparkCommandPlugin.stop(commandId)
       }
       else {
-        HadoopSupport.killYarnJob(command.getJobName)
+        YarnUtils.killYarnJob(command.getJobName)
       }
     }
     else {

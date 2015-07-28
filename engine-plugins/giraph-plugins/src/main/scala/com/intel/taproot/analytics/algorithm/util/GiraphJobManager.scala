@@ -109,7 +109,7 @@ object GiraphJobManager {
   def run(jobName: String, computationClassCanonicalName: String,
           config: Config, giraphConf: GiraphConfiguration, invocation: Invocation, reportName: String): String = {
 
-    val giraphLoader = Boot.getArchive(config.getString("giraph.archive.name")).classLoader
+    val giraphLoader = Boot.getClassLoader(config.getString("giraph.archive.name"))
     Thread.currentThread().setContextClassLoader(giraphLoader)
 
     val commandInvocation = invocation.asInstanceOf[CommandInvocation]

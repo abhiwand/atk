@@ -17,7 +17,9 @@
 package com.intel.taproot.analytics.engine.plugin
 
 /**
- * Enumeration of the API Tags with which operations may tagged
+ * Enumeration of the API Tags with which operations may tagged.
+ *
+ * These tags get exposed in end-user documentation.
  */
 object ApiMaturityTag extends Enumeration {
   type ApiMaturityTag = Value

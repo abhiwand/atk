@@ -16,10 +16,8 @@
 
 package com.intel.taproot.analytics.engine
 
-import java.util.concurrent.{ ScheduledFuture, TimeUnit, Executors, ScheduledExecutorService }
-
 import com.intel.taproot.analytics.component.{ ArchiveDefinition, ClassLoaderAware, Archive }
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
@@ -47,15 +45,12 @@ class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: Class
 
   override def stop() = {
     info("Shutting down engine")
-    engine.engine.shutdown
+    engine.engine.shutdown()
   }
 
   override def start() = {
     try {
-      //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
-      engine = com.intel.taproot.analytics.component.Boot.getArchive("engine-core")
-        .load("com.intel.taproot.analytics.engine.SparkEngineComponent")
-        .asInstanceOf[EngineComponent]
+      engine = new EngineComponent
     }
     catch {
       case NonFatal(e) =>

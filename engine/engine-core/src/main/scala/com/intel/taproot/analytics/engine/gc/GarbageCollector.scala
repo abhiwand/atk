@@ -51,17 +51,18 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
   /**
    * @return get host name of computer executing this process
    */
-  def getHostName(): String =
+  def hostname: String =
     InetAddress.getLocalHost.getHostName
 
   /**
    * @return get the process id of the executing process
    */
-  def getProcessId(): Long =
+  def processId: Long =
     ManagementFactory.getRuntimeMXBean.getName.split("@")(0).toLong
 
   /**
    * garbage collect all entities
+   * @param gcAgeToDeleteData in milliseconds
    */
   def garbageCollectEntities(gcAgeToDeleteData: Long = EngineConfig.gcAgeToDeleteData): Unit = {
     this.synchronized {
@@ -70,7 +71,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
           try {
             if (gcRepo.getCurrentExecutions().isEmpty) {
               info("Execute Garbage Collector")
-              val gc: GarbageCollection = gcRepo.insert(new GarbageCollectionTemplate(getHostName(), getProcessId(), new DateTime)).get
+              val gc: GarbageCollection = gcRepo.insert(new GarbageCollectionTemplate(hostname, processId, new DateTime)).get
               garbageCollectFrames(gc, gcAgeToDeleteData)
               garbageCollectGraphs(gc, gcAgeToDeleteData)
               garbageCollectModels(gc, gcAgeToDeleteData)
@@ -194,7 +195,7 @@ object GarbageCollector {
 
   /**
    * Execute a garbage collection outside of the regularly scheduled intervals
-   * @param gcAgeToDeleteData
+   * @param gcAgeToDeleteData in milliseconds
    */
   def singleTimeExecution(gcAgeToDeleteData: Long): Unit = {
     require(garbageCollector != null, "GarbageCollector has not been initialized. Problem during RestServer initialization")

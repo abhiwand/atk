@@ -21,14 +21,12 @@ import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema._
 import org.apache.spark.sql.Row
-import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
+import com.intel.taproot.atk.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
 import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.mllib.regression.LabeledPointWithFrequency
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
 import org.apache.spark.{ TaskContext, Partition, SparkContext, sql }
 import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
@@ -83,39 +81,6 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
    */
   def toDataFrame = new SQLContext(this.sparkContext).createDataFrame(this, sparkSchema)
   def toDataFrameUsingHiveContext = new org.apache.spark.sql.hive.HiveContext(this.sparkContext).createDataFrame(this, sparkSchema)
-
-  /**
-   * Convert FrameRdd into RDD[LabeledPoint] format required by MLLib
-   */
-  def toLabeledPointRDD(labelColumnName: String, featureColumnNames: List[String]): RDD[LabeledPoint] = {
-    this.mapRows(row =>
-      {
-        val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
-        new LabeledPoint(DataTypes.toDouble(row.value(labelColumnName)), new DenseVector(features.toArray))
-      })
-  }
-
-  /**
-   * Convert FrameRdd into RDD[LabeledPointWithFrequency] format required for updates in MLLib code
-   */
-  def toLabeledPointRDDWithFrequency(labelColumnName: String,
-                                     featureColumnNames: List[String],
-                                     frequencyColumnName: Option[String]): RDD[LabeledPointWithFrequency] = {
-    this.mapRows(row =>
-      {
-        val features = row.values(featureColumnNames).map(value => DataTypes.toDouble(value))
-        frequencyColumnName match {
-          case Some(freqColumn) => {
-            new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
-              new DenseVector(features.toArray), DataTypes.toDouble(row.value(freqColumn)))
-          }
-          case _ => {
-            new LabeledPointWithFrequency(DataTypes.toDouble(row.value(labelColumnName)),
-              new DenseVector(features.toArray), DataTypes.toDouble(1.0))
-          }
-        }
-      })
-  }
 
   override def compute(split: Partition, context: TaskContext): Iterator[Row] =
     firstParent[Row].iterator(split, context)

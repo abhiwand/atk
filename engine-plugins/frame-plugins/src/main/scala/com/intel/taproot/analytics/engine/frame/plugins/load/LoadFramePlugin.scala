@@ -63,8 +63,6 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
     val sparkAutoPartitioner = engine.sparkAutoPartitioner
     def getAbsolutePath(s: String): String = engine.frames.frameFileStorage.hdfs.absolutePath(s).toString
 
-    // validate arguments
-    val frameRef = arguments.destination
     val destinationFrame: SparkFrame = arguments.destination
 
     // run the operation
@@ -98,13 +96,9 @@ class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
         LoadRddFunctions.loadAndParseData(sc, data, parser)
       }
       // parse failures go to their own data frame
-      val updatedFrame = if (parseResult.errorLines.count() > 0) {
-        val (updated, errorFrame) = engine.frames.lookupOrCreateErrorFrame(destinationFrame)
+      if (parseResult.errorLines.count() > 0) {
+        val errorFrame = engine.frames.lookupOrCreateErrorFrame(destinationFrame)
         unionAndSave(errorFrame, parseResult.errorLines)
-        updated
-      }
-      else {
-        destinationFrame
       }
 
       // successfully parsed lines get added to the destination frame
