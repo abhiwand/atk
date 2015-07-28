@@ -13,18 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from taprootanalytics import examples
 
 
-def run(path=r"datasets/movie_data_random.csv"):
+def run(path=r"datasets/movie_data_random.csv", ta=None):
     """
     The default home directory is hdfs://user/taproot all the sample data sets are saved to
     hdfs://user/taproot/datasets when installing through the rpm
     you will need to copy the data sets to hdfs manually otherwise and adjust the data set location path accordingly
     :param path: data set hdfs path can be full and relative path
     """
-    import taprootanalytics as ta
+    NAME = "PR"
 
-    ta.connect()
+    if ta is None:
+        ta = examples.connect()
 
     #csv schema definition
     schema = [("user_id", ta.int32),
@@ -32,26 +34,53 @@ def run(path=r"datasets/movie_data_random.csv"):
               ("rating", ta.int32),
               ("splits", str)]
 
-    csv_file = ta.CsvFile(path, schema, skip_header_lines=1)
+    csv = ta.CsvFile(path, schema, skip_header_lines=1)
 
-    print "Building data frame"
+    frames = ta.get_frame_names()
+    if NAME in frames:
+        print "Deleting old '{0}' frame.".format(NAME)
+        ta.drop_frames(NAME)
+        
+    print "Building frame '{0}'.".format(NAME)
 
-    frame = ta.Frame(csv_file)
+    frame = ta.Frame(csv, NAME)
 
-    print "Done building frame"
-
-    print "Inspecting frame"
+    print "Inspecting frame '{0}'.".format(NAME)
 
     print frame.inspect()
 
-    user = ta.VertexRule("user_id", frame.user_id, {"vertex_type": "L"})
+    print "Creating graph '{0}'".format(NAME)
 
-    movie = ta.VertexRule("movie_id", frame.movie_id, {"vertex_type": "R"})
+    # Create a graph
+    graphs = ta.get_graph_names()
+    if NAME in graphs:
+        print "Deleting old '{0}' graph".format(NAME)
+        ta.drop_graphs(NAME)
 
-    rates = ta.EdgeRule("edge", user, movie, {"splits": frame.splits, "rating": frame.rating}, bidirectional=True)
+    # Create some rules
+    graph = ta.Graph()
+    graph.name = NAME
+    graph.define_vertex_type("user_id")
+    graph.define_vertex_type("movie_id")
+    graph.define_edge_type("rating", "user_id", "movie_id", directed=True)
 
-    print "Creating graph 'pr'"
-    graph = ta.TitanGraph([user, movie, rates], "pr")
+    graph.vertices["user_id"].add_vertices(frame, 'user_id')
+    graph.vertices["movie_id"].add_vertices(frame, 'movie_id')
+    graph.edges['rating'].add_edges(frame, 'user_id', 'movie_id', ['rating'])
 
-    print "Running page rank on graph 'pr' "
-    print graph.ml.page_rank(input_edge_label_list=["edge"], output_vertex_property_list=["pr_result"])
+    print graph.vertex_count
+    print graph.edge_count
+    print graph.vertices["user_id"].inspect(20)
+    print graph.vertices["movie_id"].inspect(20)
+    print graph.edges["rating"].inspect(20)
+
+    result = graph.graphx_pagerank(output_property="PageRank", max_iterations=2, convergence_tolerance=0.001)
+
+    for frame_name in result["vertex_dictionary"]:
+        result["vertex_dictionary"][frame_name].inspect(20)
+
+    for frame_name in result["edge_dictionary"]:
+        result["edge_dictionary"][frame_name].inspect(20)
+
+
+    return {"frame": frame, "graph": graph, "result": result}

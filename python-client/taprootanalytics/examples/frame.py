@@ -15,34 +15,33 @@
 #
 from taprootanalytics import examples
 
-def run(path=r"datasets/movie_data_random.csv", ta=None):
+def run(path=r"datasets/cities.csv", ta=None):
     """
     The default home directory is hdfs://user/taproot all the sample data sets are saved to
     hdfs://user/taproot/datasets when installing through the rpm
     you will need to copy the data sets to hdfs manually otherwise and adjust the data set location path accordingly
     :param path: data set hdfs path can be full and relative path
     """
-    NAME = "MGS"
+    NAME = "TEST"
 
     if ta is None:
         ta = examples.connect()
-    #import taprootanalytics as ta
-
-    #ta.connect()
 
     #csv schema definition
-    schema = [("user_id", ta.int32),
-              ("movie_id", ta.int32),
-              ("rating", ta.int32),
-              ("splits", str)]
+    schema = [('rank', ta.int32),
+              ('city', str),
+              ('population_2013', ta.int32),
+              ('population_2010', ta.int32),
+              ('change', str),
+              ('county', str)]
 
-    csv = ta.CsvFile(path, schema, skip_header_lines=1)
+    csv = ta.CsvFile(path, schema, skip_header_lines=1, delimiter='|')
 
     frames = ta.get_frame_names()
     if NAME in frames:
         print "Deleting old '{0}' frame.".format(NAME)
         ta.drop_frames(NAME)
-        
+
     print "Building frame '{0}'.".format(NAME)
 
     frame = ta.Frame(csv, NAME)
@@ -51,38 +50,28 @@ def run(path=r"datasets/movie_data_random.csv", ta=None):
 
     print frame.inspect()
 
-    print "Filter frame by rating."
+    print "Drop Change column."
 
-    frame.filter(lambda row: row.rating >= 5)
+    frame.drop_columns("change")
 
     print frame.inspect()
 
-    print "Creating graph '{0}'.".format(NAME)
+    print "Add Change column"
+    frame.add_columns(lambda row: ((row.population_2013 - row.population_2010)/float(row.population_2010)) * 100,
+                      ("change", ta.float32))
 
-    # Create a graph
-    graphs = ta.get_graph_names()
-    if NAME in graphs:
-        print "Deleting old '{0}' graph.".format(NAME)
-        ta.drop_graphs(NAME)
+    print "Drop Change column."
 
+    frame.drop_columns("change")
 
-    graph = ta.Graph()
-    graph.name = NAME
-    # Create some rules
-    graph.define_vertex_type("user_id")
-    graph.define_vertex_type("movie_id")
-    graph.define_edge_type("rating", "user_id", "movie_id", directed=True)
+    print frame.inspect()
 
-    #add data to graph
-    graph.vertices["user_id"].add_vertices(frame, 'user_id')
-    graph.vertices["movie_id"].add_vertices(frame, 'movie_id')
-    graph.edges['rating'].add_edges(frame, 'user_id', 'movie_id', ['rating'])
+    print "Add Change columns."
 
-    print graph.vertex_count
-    print graph.edge_count
-    print graph.vertices["user_id"].inspect(20)
-    print graph.vertices["movie_id"].inspect(20)
-    print graph.edges["rating"].inspect(20)
+    frame.add_columns(lambda row: [row.population_2013 - row.population_2010, ((row.population_2013 - row.population_2010)/float(row.population_2010)) * 100 ], [("difference", ta.int32 ), ("change", ta.float32 )])
+
+    print "Format inspection."
+    print frame.inspect(10, wrap=10, filter=["county"], round=2)
 
 
-    return {"frame": frame, "graph": graph}
+    return {"frame": frame}

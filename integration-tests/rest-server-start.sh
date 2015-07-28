@@ -25,8 +25,8 @@ export HOSTNAME=`hostname`
 
 PORT=19099
 echo "$NAME making sure port $PORT isn't already in use"
-netstat -atn | grep -q :$PORT
-if [ $? -eq 0 ]
+server=$(netstat -tuln | grep  :$PORT)
+if [ "$server" != "" ]
 then
     echo "$NAME ERROR: Port $PORT is already in use!!! (it can take a little while for it to be released, we should switch to random port)"
     exit 2
