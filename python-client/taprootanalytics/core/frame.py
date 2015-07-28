@@ -272,7 +272,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         Examples
         --------
         Given that we have an existing data frame *my_data*, create a Frame,
-        then show the frame schema:
+        then show the frame status:
 
         .. code::
 
@@ -415,10 +415,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         self._backend.add_columns(self, func, schema, columns_accessed)
 
     @api
-    @arg('columns', 'str | list of str | dict', "If not None, the copy will only include the columns specified. "
-         "If dict, the string pairs represent a column renaming, {source_column_name: destination_column_name}")
+    @arg('columns', 'str | list of str | dict', "Column filter, the names of columns to be included (default is all columns)"
+        "If dict, the string pairs represent a column renaming, {source_column_name: destination_column_name}")
     @arg('where', 'function', "If not None, only those rows for which the UDF evaluates to True will be copied.")
-    @arg('name', str, "Name of the copied frame")
+    @arg('name', str, "A new name for the new frame of copied data.")
     @returns('Frame', "A new Frame of the copied data.")
     def __copy(self, columns=None, where=None, name=None):
         """
@@ -429,7 +429,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Build a Frame from a csv file with 5 million rows of data; call the
+        Build a Frame from a csv file with multiple rows of data; call the
         frame "cust":
 
         .. code::
@@ -444,7 +444,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> your_frame = my_frame.copy()
 
-        Now we have two frames of data, each with 5 million rows.
+        Now we have two frames of data, each with the same data.
         Checking the names:
 
         .. code::
@@ -465,8 +465,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> our_frame = my_frame.copy(['id', 'hair'])
 
-        Our new frame now has two columns, *id* and *hair*, and has 5 million
-        rows.
+        Our new frame now has two columns, *id* and *hair*, and has all of the
+        original rows.
         Let's try that again, but this time change the name of the *hair*
         column to *color*:
 
@@ -498,7 +498,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Frame *my_frame* accesses a frame with millions of rows of data.
+        Given a Frame *my_frame* that accesses a frame with millions of rows of data.
         Get a sample of 500 rows:
 
         .. code::
@@ -563,7 +563,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @has_udf_arg
-    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; rows that answer False are dropped from the Frame")
+    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; rows that evaluate to False are dropped from the Frame")
     def __filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
@@ -1411,7 +1411,7 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)
 
     @api
-    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; vertices that answer False are dropped from the Frame")
+    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; vertices that evaluate to False are dropped from the Frame")
     def __filter(self, predicate):
         self._backend.filter_vertices(self, predicate)
 

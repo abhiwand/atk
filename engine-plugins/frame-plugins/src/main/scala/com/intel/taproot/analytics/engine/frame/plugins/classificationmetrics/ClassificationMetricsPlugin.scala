@@ -71,7 +71,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
     from the data.
 
 *   The **precision** of a binary classification model is the proportion of
-    predicted positive instances that are correct.
+    predicted positive instances that are correctly identified.
     If we let :math:`T_{P}` denote the number of true positives and
     :math:`F_{P}` denote the number of false positives, then the model
     precision is given by: :math:`\frac {T_{P}} {T_{P} + F_{P}}`.
@@ -83,7 +83,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
     from the data.
 
 *   The **accuracy** of a classification model is the proportion of
-    predictions that are correct.
+    predictions that are correctly identified.
     If we let :math:`T_{P}` denote the number of true positives,
     :math:`T_{N}` denote the number of true negatives, and :math:`K` denote
     the total number of classified instances, then the model accuracy is
