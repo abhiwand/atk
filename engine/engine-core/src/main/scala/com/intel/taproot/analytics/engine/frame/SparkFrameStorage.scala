@@ -113,7 +113,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
   import org.apache.spark.sql.Row
 
   override def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): FrameEntity = {
-    lookup(frameRef.frameId).getOrElse(throw new NotFoundException("frame", frameRef.frameId.toString))
+    lookup(frameRef.frameId).getOrElse(throw new NotFoundException("frame", frameRef.frameId))
   }
 
   /**

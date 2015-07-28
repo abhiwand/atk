@@ -47,7 +47,7 @@ class ModelStorageImpl(metaStore: MetaStore)
         {
           metaStore.modelRepo.lookup(modelRef.id)
         }
-    }.getOrElse(throw new NotFoundException("model", modelRef.toString))
+    }.getOrElse(throw new NotFoundException("model", modelRef.id))
   }
 
   /**
