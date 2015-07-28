@@ -32,23 +32,23 @@ trait Invocation {
   /**
    * The user that invoked the operation
    */
-  private[analytics] def user: UserPrincipal
+  private[intel] def user: UserPrincipal
 
   /**
    * A Scala execution context for use with methods that require one
    */
-  private[analytics] def executionContext: ExecutionContext
+  private[intel] def executionContext: ExecutionContext
 
   /**
    * EventContext of the caller
    */
-  private[analytics] def eventContext: EventContext
+  private[intel] def eventContext: EventContext
 
   /**
    * Update the progress
    * @param progress current progress
    */
-  private[analytics] def updateProgress(progress: Float): Unit = ???
+  private[intel] def updateProgress(progress: Float): Unit = ???
 }
 
 /**
@@ -56,8 +56,8 @@ trait Invocation {
  * @param executionContext A Scala execution context for use with methods that require one
  */
 case class BackendInvocation(executionContext: ExecutionContext) extends Invocation {
-  private[analytics] def user: UserPrincipal = null
-  private[analytics] def eventContext: EventContext = null
+  private[intel] def user: UserPrincipal = null
+  private[intel] def eventContext: EventContext = null
 }
 
 case class Call(user: UserPrincipal,
@@ -68,26 +68,26 @@ trait CommandInvocation extends Invocation {
   /**
    * An instance of the engine that the plugin can use to execute its work
    */
-  private[analytics] def engine: Engine
+  private[intel] def engine: Engine
 
   /**
    * The identifier of this execution
    */
-  private[analytics] def commandId: Long
+  private[intel] def commandId: Long
 
   /**
    * The original arguments as supplied by the user
    */
-  private[analytics] def arguments: Option[JsObject]
+  private[intel] def arguments: Option[JsObject]
 
   /**
    * Command Storage to read/update command progress
    */
-  private[analytics] def commandStorage: CommandStorage
+  private[intel] def commandStorage: CommandStorage
 
   val progressUpdater: CommandProgressUpdater
 
-  override private[analytics] def updateProgress(progress: Float): Unit = progressUpdater.updateProgress(commandId, progress)
+  override private[intel] def updateProgress(progress: Float): Unit = progressUpdater.updateProgress(commandId, progress)
 }
 
 object Invocation {

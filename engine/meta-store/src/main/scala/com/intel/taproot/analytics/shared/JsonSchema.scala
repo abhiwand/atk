@@ -39,7 +39,7 @@ import scala.util.{ Try, Success, Failure }
  *
  * It seems that the underlying operations are not thread-safe -- Todd 3/10/2015
  */
-private[analytics] class ProductFormatsAccessor extends CustomProductFormats
+private[intel] class ProductFormatsAccessor extends CustomProductFormats
     with StandardFormats
     with AdditionalFormats {
   override def extractFieldNames(classManifest: ClassManifest[_]): Array[String] =
@@ -49,7 +49,7 @@ private[analytics] class ProductFormatsAccessor extends CustomProductFormats
 /**
  * Generates `JsonSchema` objects to represent case classes
  */
-private[analytics] object JsonSchemaExtractor {
+private[intel] object JsonSchemaExtractor {
 
   def getArgumentsSchema[T](tag: ClassTag[T]): ObjectSchema = {
     getProductSchema(tag, includeDefaultValues = true)

@@ -16,10 +16,8 @@
 
 package com.intel.taproot.analytics.engine
 
-import java.util.concurrent.{ ScheduledFuture, TimeUnit, Executors, ScheduledExecutorService }
-
 import com.intel.taproot.analytics.component.{ ArchiveDefinition, ClassLoaderAware, Archive }
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal

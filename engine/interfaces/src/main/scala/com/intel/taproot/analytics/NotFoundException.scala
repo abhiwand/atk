@@ -19,7 +19,14 @@ package com.intel.taproot.analytics
 /**
  * Thrown when a requested resource does not exist.
  */
-class NotFoundException(resourceType: String, name: String = "<unknown>", message: String = "")
-    extends RuntimeException(s"Requested resource of type '$resourceType' named '$name' could not be found.\n $message\n") {
+class NotFoundException(message: String) extends RuntimeException(message) {
+
+  def this(resourceType: String, name: String, additionalMessage: String = "") = {
+    this(s"Requested resource of type '$resourceType' named '$name' could not be found.\n $additionalMessage\n")
+  }
+
+  def this(resourceType: String, id: Long) = {
+    this(s"Requested resource of type '$resourceType' with id '$id' could not be found.\n")
+  }
 
 }

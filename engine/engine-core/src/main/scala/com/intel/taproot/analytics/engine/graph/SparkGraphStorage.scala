@@ -70,7 +70,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     metaStore.withSession("seamless.graph.storage") {
       implicit session =>
         {
-          val graph = metaStore.graphRepo.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId.toString))
+          val graph = metaStore.graphRepo.lookup(graphId).getOrElse(throw new NotFoundException("graph", graphId))
           require(graph.isSeamless, "graph existed but did not have the expected storage format")
           val frames = metaStore.frameRepo.lookupByGraphId(graphId)
           SeamlessGraphMeta(graph, frames.toList)

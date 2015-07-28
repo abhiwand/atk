@@ -22,10 +22,10 @@ import com.intel.taproot.analytics.engine.EngineConfig
 import com.intel.taproot.analytics.engine.frame._
 import org.apache.hadoop.io.LongWritable
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.{ sql, SparkContext }
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{ types => SparkType, Row, SchemaRDD }
-import org.apache.spark.sql.catalyst.expressions.{ GenericMutableRow, GenericRow }
+import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
 import org.apache.hadoop.io.Text
 import SparkType.{ DateType, StructField, TimestampType, ByteType, BooleanType, ShortType, DecimalType }
 
@@ -38,10 +38,15 @@ import scala.reflect.ClassTag
 object LoadRddFunctions extends Serializable {
 
   /**
+   * Schema for Error Frames
+   */
+  val ErrorFrameSchema = new FrameSchema(List(Column("original_row", DataTypes.str), Column("error_message", DataTypes.str)))
+
+  /**
    * Load each line from CSV file into an RDD of Row objects.
    * @param sc SparkContext used for textFile reading
    * @param fileName name of file to parse
-   * @param parser
+   * @param parser the parser
    * @return  RDD of Row objects
    */
   def loadAndParseLines(sc: SparkContext,
@@ -151,14 +156,13 @@ object LoadRddFunctions extends Serializable {
     val parserFunction = getLineParser(parser, schemaArgs.columns.map(_._2).toArray)
 
     val parseResultRdd = rowsToParse.mapPartitionsWithIndex {
-      case (partition, lines) => {
+      case (partition, lines) =>
         if (partition == 0) {
           lines.drop(skipRows.getOrElse(0)).map(parserFunction)
         }
         else {
           lines.map(parserFunction)
         }
-      }
     }
     try {
       parseResultRdd.cache()
@@ -168,7 +172,7 @@ object LoadRddFunctions extends Serializable {
         .map(rowParseResult => rowParseResult.row)
 
       val schema = parser.arguments.schema
-      new ParseResultRddWrapper(FrameRdd.toFrameRdd(schema.schema, successesRdd), FrameRdd.toFrameRdd(SchemaUtil.ErrorFrameSchema, failuresRdd))
+      new ParseResultRddWrapper(FrameRdd.toFrameRdd(schema.schema, successesRdd), FrameRdd.toFrameRdd(ErrorFrameSchema, failuresRdd))
     }
     finally {
       parseResultRdd.unpersist(blocking = false)
@@ -178,7 +182,7 @@ object LoadRddFunctions extends Serializable {
   private[frame] def getLineParser[T](parser: LineParser, columnTypes: Array[DataTypes.DataType]): T => RowParseResult = {
     parser.name match {
       //TODO: look functions up in a table rather than switching on names
-      case "builtin/line/separator" => {
+      case "builtin/line/separator" =>
         val args = parser.arguments match {
           //TODO: genericize this argument conversion
           case a: LineParserArguments => a
@@ -187,12 +191,10 @@ object LoadRddFunctions extends Serializable {
         }
         val rowParser = new CsvRowParser(args.separator, columnTypes)
         s => rowParser(s.asInstanceOf[String])
-      }
-      case "builtin/upload" => {
+        case "builtin/upload" =>
         val uploadParser = new UploadParser(columnTypes)
         row => uploadParser(row.asInstanceOf[List[Any]])
-      }
-      case x => throw new Exception("Unsupported parser: " + x)
+        case x => throw new Exception("Unsupported parser: " + x)
     }
   }
 
@@ -205,31 +207,30 @@ object LoadRddFunctions extends Serializable {
     val schema = new FrameSchema(list.toList)
     val convertedRdd: RDD[org.apache.spark.sql.Row] = rdd.map(row => {
       val mutableRow = new GenericMutableRow(row.length)
-      row.toSeq.zipWithIndex.map {
-        case (o, i) => {
-          if (o == null) mutableRow(i) = null
-          else {
-            if (array(i).dataType.getClass == TimestampType.getClass || array(i).dataType.getClass == DateType.getClass) {
-              mutableRow(i) = o.toString
-            }
-            else if (array(i).dataType.getClass == ShortType.getClass) {
-              mutableRow(i) = row.getShort(i).toInt
-            }
-            else if (array(i).dataType.getClass == BooleanType.getClass) {
-              mutableRow(i) = row.getBoolean(i).compareTo(false)
-            }
-            else if (array(i).dataType.getClass == ByteType.getClass) {
-              mutableRow(i) = row.getByte(i).toInt
-            }
-            else if (array(i).dataType.getClass == classOf[DecimalType]) { // DecimalType.getClass return value (DecimalType$) differs from expected DecimalType
-              mutableRow(i) = row.getAs[java.math.BigDecimal](i).doubleValue()
-            }
-            else {
-              val colType = schema.columnTuples(i)._2
-              mutableRow(i) = o.asInstanceOf[colType.ScalaType]
-            }
+      row.toSeq.zipWithIndex.foreach {
+        case (o, i) =>
+          if (o == null) {
+            mutableRow(i) = null
           }
-        }
+          else if (array(i).dataType.getClass == TimestampType.getClass || array(i).dataType.getClass == DateType.getClass) {
+            mutableRow(i) = o.toString
+          }
+          else if (array(i).dataType.getClass == ShortType.getClass) {
+            mutableRow(i) = row.getShort(i).toInt
+          }
+          else if (array(i).dataType.getClass == BooleanType.getClass) {
+            mutableRow(i) = row.getBoolean(i).compareTo(false)
+          }
+          else if (array(i).dataType.getClass == ByteType.getClass) {
+            mutableRow(i) = row.getByte(i).toInt
+          }
+          else if (array(i).dataType.getClass == classOf[DecimalType]) { // DecimalType.getClass return value (DecimalType$) differs from expected DecimalType
+            mutableRow(i) = row.getAs[java.math.BigDecimal](i).doubleValue()
+          }
+          else {
+            val colType = schema.columns(i).dataType
+            mutableRow(i) = o.asInstanceOf[colType.ScalaType]
+          }
       }
       mutableRow
     }
