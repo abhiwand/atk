@@ -29,7 +29,7 @@ import org.apache.spark.frame.FrameRdd
 /** Json conversion for arguments and return value case classes */
 object JoinJsonFormat {
   implicit val JoinFrameFormat = jsonFormat2(JoinFrameArgs)
-  implicit val JoinArgsFormat = jsonFormat4(JoinArgs)
+  implicit val JoinArgsFormat = jsonFormat5(JoinArgs)
 }
 
 import JoinJsonFormat._
@@ -77,7 +77,9 @@ class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
     val joinResultRDD = JoinRddFunctions.joinRDDs(
       createRDDJoinParam(leftFrame, arguments.leftFrame.joinColumn, broadcastJoinThreshold),
       createRDDJoinParam(rightFrame, arguments.rightFrame.joinColumn, broadcastJoinThreshold),
-      arguments.how, broadcastJoinThreshold
+      arguments.how,
+      broadcastJoinThreshold,
+      arguments.skewedJoinType
     )
 
     val allColumns = Schema.join(leftFrame.schema.columns, rightFrame.schema.columns)

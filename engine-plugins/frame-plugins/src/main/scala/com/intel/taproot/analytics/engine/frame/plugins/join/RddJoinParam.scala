@@ -26,4 +26,11 @@ import org.apache.spark.sql.Row
  * @param columnCount Number of columns in value array
  * @param estimatedSizeInBytes Optional estimated size of RDD in bytes used to determine whether to use a broadcast join
  */
-case class RddJoinParam(rdd: RDD[(Any, Row)], columnCount: Int, estimatedSizeInBytes: Option[Long] = None)
+case class RddJoinParam(rdd: RDD[(Any, Row)],
+                        columnCount: Int,
+                        estimatedSizeInBytes: Option[Long] = None) {
+  require(rdd != null, "join rdd should not be null")
+  require(columnCount > 0, "column count should be greater than zero")
+  require(estimatedSizeInBytes.isEmpty || estimatedSizeInBytes.get > 0,
+    "Estimated rdd size in bytes should be empty or greater than zero")
+}

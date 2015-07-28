@@ -44,13 +44,17 @@ object JoinRddFunctions extends Serializable {
    * @param how join method
    * @return Joined RDD
    */
-  def joinRDDs(left: RddJoinParam, right: RddJoinParam, how: String, broadcastJoinThreshold: Long = Long.MaxValue): RDD[Row] = {
+  def joinRDDs(left: RddJoinParam,
+               right: RddJoinParam,
+               how: String,
+               broadcastJoinThreshold: Long = Long.MaxValue,
+               skewedJoinType: Option[String] = None): RDD[Row] = {
 
     val result = how match {
-      case "left" => leftOuterJoin(left, right, broadcastJoinThreshold)
-      case "right" => rightOuterJoin(left, right, broadcastJoinThreshold)
+      case "left" => leftOuterJoin(left, right, broadcastJoinThreshold, skewedJoinType)
+      case "right" => rightOuterJoin(left, right, broadcastJoinThreshold, skewedJoinType)
       case "outer" => fullOuterJoin(left, right)
-      case "inner" => innerJoin(left, right, broadcastJoinThreshold)
+      case "inner" => innerJoin(left, right, broadcastJoinThreshold, skewedJoinType)
       case other => throw new IllegalArgumentException(s"Method $other not supported. only support left, right, outer and inner.")
     }
 
@@ -68,13 +72,19 @@ object JoinRddFunctions extends Serializable {
    *
    * @return Joined RDD
    */
-  def innerJoin(left: RddJoinParam, right: RddJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
+  def innerJoin(left: RddJoinParam,
+                right: RddJoinParam,
+                broadcastJoinThreshold: Long,
+                skewedJoinType: Option[String] = None): RDD[Row] = {
     // Estimated size in bytes used to determine whether or not to use a broadcast join
     val leftSizeInBytes = left.estimatedSizeInBytes.getOrElse(Long.MaxValue)
     val rightSizeInBytes = right.estimatedSizeInBytes.getOrElse(Long.MaxValue)
 
     val innerJoinedRDD = if (leftSizeInBytes < broadcastJoinThreshold || rightSizeInBytes < broadcastJoinThreshold) {
       left.innerBroadcastJoin(right, broadcastJoinThreshold)
+    }
+    else if (skewedJoinType.isDefined) {
+      left.innerSkewedBroadcastJoin(right)
     }
     else {
       left.rdd.join(
@@ -130,12 +140,18 @@ object JoinRddFunctions extends Serializable {
    *
    * @return Joined RDD
    */
-  def rightOuterJoin(left: RddJoinParam, right: RddJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
+  def rightOuterJoin(left: RddJoinParam,
+                     right: RddJoinParam,
+                     broadcastJoinThreshold: Long,
+                     skewedJoinType: Option[String] = None): RDD[Row] = {
     // Estimated size in bytes used to determine whether or not to use a broadcast join
     val leftSizeInBytes = left.estimatedSizeInBytes.getOrElse(Long.MaxValue)
 
     val rightJoinedRDD = if (leftSizeInBytes < broadcastJoinThreshold) {
       left.rightBroadcastJoin(right)
+    }
+    else if (skewedJoinType.isDefined) {
+      left.rightSkewedBroadcastJoin(right)
     }
     else {
       left.rdd.rightOuterJoin(
@@ -164,16 +180,16 @@ object JoinRddFunctions extends Serializable {
    *
    * @return Joined RDD
    */
-  def leftOuterJoin(left: RddJoinParam, right: RddJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
+  def leftOuterJoin(left: RddJoinParam,
+                    right: RddJoinParam,
+                    broadcastJoinThreshold: Long,
+                    skewedJoinType: Option[String] = None): RDD[Row] = {
     val rightSizeInBytes = right.estimatedSizeInBytes.getOrElse(Long.MaxValue)
-    val leftJoinedRDD = if (rightSizeInBytes < broadcastJoinThreshold) {
-      left.leftBroadcastJoin(right)
-    }
-    else {
-      left.rdd.leftOuterJoin(
-        right.rdd,
-        SparkCoresPartitioner.getNumPartitions(left.rdd)
-      )
+    val leftJoinedRDD = skewedJoinType match {
+      case Some("skewedbroadcast") => left.leftSkewedBroadcastJoin(right)
+      case Some("skewedhash") => left.leftSkewedHashJoin(right)
+      case x if rightSizeInBytes < broadcastJoinThreshold => left.leftBroadcastJoin(right)
+      case _ => left.rdd.leftOuterJoin(right.rdd, SparkCoresPartitioner.getNumPartitions(left.rdd))
     }
     leftJoinedRDD.map {
       case (_, (leftValues, rightValues)) => {

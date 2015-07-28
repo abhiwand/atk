@@ -25,13 +25,21 @@ import com.intel.taproot.analytics.domain.frame.FrameReference
  * @param rightFrame join arguments for first data frame
  * @param how  methods of join (inner, left, right or outer)
  * @param name Optional name of new frame to be created
+ * @param skewedJoinType Type of skewed join ('skewedhash' or 'skewedbroadcast')
  */
-case class JoinArgs(leftFrame: JoinFrameArgs, rightFrame: JoinFrameArgs, how: String, name: Option[String] = None) {
+case class JoinArgs(leftFrame: JoinFrameArgs,
+                    rightFrame: JoinFrameArgs,
+                    how: String,
+                    name: Option[String] = None,
+                    skewedJoinType: Option[String] = None) {
   require(leftFrame != null && leftFrame.frame != null, "left frame is required")
   require(rightFrame != null && rightFrame.frame != null, "right frame is required")
   require(leftFrame.joinColumn != null, "left join column is required")
   require(rightFrame.joinColumn != null, "right join column is required")
   require(how != null, "join method is required")
+  require(skewedJoinType.isEmpty
+    || (skewedJoinType.get == "skewedhash" || skewedJoinType.get == "skewedbroadcast"),
+    "skewed join type should be 'skewedhash' or 'skewedbroadcast'")
 }
 
 /**
