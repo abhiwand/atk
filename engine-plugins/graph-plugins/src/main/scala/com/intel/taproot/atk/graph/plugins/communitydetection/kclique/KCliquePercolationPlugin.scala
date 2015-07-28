@@ -101,9 +101,6 @@ class KCliquePercolationPlugin extends SparkCommandPlugin[KCliqueArgs, KCliqueRe
 
     val start = System.currentTimeMillis()
 
-    // Titan Settings for input
-    val config = configuration
-
     // Get the graph
     val graph: SparkGraph = arguments.graph
     val (gbVertices, gbEdges) = graph.gbRdds
