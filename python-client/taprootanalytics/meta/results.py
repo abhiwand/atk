@@ -137,7 +137,7 @@ def return_page_ank(selfish, json_result):
     edge_dictionary = dict([(k,get_frame(v["id"])) for k,v in edge_json.items()])
     return {'vertex_dictionary': vertex_dictionary, 'edge_dictionary': edge_dictionary}
 
-@postprocessor('graph/ml/belief_propagation','graph/ml/kclique_percolation')
+@postprocessor('graph/ml/belief_propagation','graph:/ml/kclique_percolation')
 def return_belief_propagation(selfish, json_result):
     from taprootanalytics import get_frame
     vertex_json = json_result['frame_dictionary_output']
