@@ -25,7 +25,7 @@ import com.intel.taproot.analytics.engine.frame.SparkFrame
 import org.apache.spark.frame.FrameRdd
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
-import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
+import org.apache.spark.libsvm.atk.plugins.LibSvmJsonProtocol._
 
 // TODO: all plugins should move out of engine-core into plugin modules
 

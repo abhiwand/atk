@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.graph.seamless
 
 import com.intel.taproot.analytics.domain.schema._
-import org.apache.spark.ia.graph.EdgeWrapper
+import org.apache.spark.atk.graph.EdgeWrapper
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.{ FlatSpec, Matchers }
 

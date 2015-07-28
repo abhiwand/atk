@@ -25,7 +25,7 @@ import com.intel.taproot.analytics.domain.schema._
 import com.intel.taproot.analytics.engine.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
 import com.intel.taproot.testutils.{ TestingSparkContextFlatSpec, TestingSparkContextWordSpec }
 import com.tinkerpop.blueprints.Direction
-import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
+import org.apache.spark.atk.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.joda.time.DateTime

@@ -21,7 +21,7 @@ import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.frame.RowWrapper
 import com.intel.taproot.spark.graphon.graphconversions.GraphConversions
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.graphx.lib.ia.plugins.ClusteringCoefficient
+import org.apache.spark.graphx.lib.atk.plugins.ClusteringCoefficient
 import org.apache.spark.graphx.{ Edge => GraphXEdge, PartitionStrategy, Graph }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._

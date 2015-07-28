@@ -24,7 +24,7 @@ import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
 import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, RowWrapper }
-import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
+import org.apache.spark.atk.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
