@@ -45,7 +45,7 @@ class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with C
       val tempConfFileName = s"/tmp/application_${command.id}.conf"
       val pluginArchiveName = archiveName.getOrElse(plugin.getArchiveName())
 
-      /* Serialize current config for the plugin so as to pass to Spark Submit */
+      // Serialize current config for the plugin so as to pass to Spark Submit
       val (pluginJarsList, pluginExtraClasspath) = plugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)
 
       try {
@@ -100,12 +100,12 @@ class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with C
           }.flatMap(identity).toArray
 
           val verbose = Array("--verbose")
-          /* Using engine-core.jar (or deploy.jar) here causes issue due to duplicate copying of the resource.
-          So we hack to submit the job as if we are spark-submit shell script */
+          // Using engine-core.jar (or deploy.jar) here causes issue due to duplicate copying of the resource.
+          // So we hack to submit the job as if we are spark-submit shell script
           val sparkInternalDriverClass = Array("spark-internal")
           val pluginArguments = Array(s"${command.id}")
 
-          /* Prepare input arguments for Spark Submit; Do not change the order */
+          // Prepare input arguments for Spark Submit; Do not change the order
           val inputArgs = sparkMaster ++
             jobName ++
             pluginExecutionDriverClass ++
@@ -117,7 +117,7 @@ class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with C
             sparkInternalDriverClass ++
             pluginArguments
 
-          /* Launch Spark Submit */
+          // Launch Spark Submit 
           info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
           val pluginDependencyJarsStr = s"${SparkContextFactory.jarPath("engine-core")}:${pluginExtraClasspath.mkString(":")}"
           val javaArgs = Array("java", "-cp", s"$pluginDependencyJarsStr", "org.apache.spark.deploy.SparkSubmit") ++ inputArgs
