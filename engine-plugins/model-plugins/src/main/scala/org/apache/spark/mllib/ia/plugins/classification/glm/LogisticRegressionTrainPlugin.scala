@@ -23,6 +23,7 @@ import com.intel.taproot.analytics.engine.model.Model
 import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.engine.plugin.PluginDoc
+import org.apache.spark.mllib.ia.plugins.FrameRddImplicits._
 
 //Implicits needed for JSON conversion
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._

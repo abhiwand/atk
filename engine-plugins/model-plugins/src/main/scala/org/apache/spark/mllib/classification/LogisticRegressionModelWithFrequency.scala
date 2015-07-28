@@ -22,13 +22,9 @@ import org.apache.spark.annotation.Experimental
 import org.apache.spark.mllib.classification.impl.GLMClassificationModel
 import org.apache.spark.mllib.linalg.BLAS.dot
 import org.apache.spark.mllib.linalg.{ DenseVector, Vector }
-import org.apache.spark.mllib.optimization._
+import org.apache.spark.mllib.optimization.{ GradientDescentWithFrequency, LBFGSWithFrequency, LogisticGradientWithFrequency, SquaredL2Updater }
+import org.apache.spark.mllib.regression.{ GeneralizedLinearAlgorithmWithFrequency, GeneralizedLinearModelWithFrequency, LabeledPointWithFrequency }
 import org.apache.spark.mllib.utils.DataValidatorsWithFrequency
-
-//import org.apache.spark.mllib.pmml.PMMLExportable
-//import org.apache.spark.mllib.pmml.PMMLExportable
-
-import org.apache.spark.mllib.regression._
 import org.apache.spark.mllib.util.{ Loader, Saveable }
 import org.apache.spark.rdd.RDD
 
