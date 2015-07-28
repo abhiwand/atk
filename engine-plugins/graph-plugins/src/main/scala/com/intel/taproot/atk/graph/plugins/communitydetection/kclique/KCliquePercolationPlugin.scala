@@ -81,7 +81,7 @@ class KCliquePercolationPlugin extends SparkCommandPlugin[KCliqueArgs, KCliqueRe
   /**
    * The name of the command, e.g. graphs/ml/kclique_percolation
    */
-  override def name: String = "graph/ml/kclique_percolation"
+  override def name: String = "graph:/ml/kclique_percolation"
 
   /**
    * The number of jobs varies with the number of supersteps required to find the connected components
