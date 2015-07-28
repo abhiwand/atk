@@ -16,19 +16,18 @@
 
 package org.apache.spark.frame
 
+import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ VertexSchemaAggregator, EdgeSchemaAggregator, EdgeHolder }
 import org.apache.spark.sql.Row
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema._
-import org.apache.spark.sql.Row
-import com.intel.taproot.atk.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder, VertexSchemaAggregator }
 import org.apache.spark.frame.ordering.MultiColumnOrdering
 import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, RowWrapper }
 import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
-import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
+import org.apache.spark.mllib.linalg.{ Vectors, Vector }
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
-import org.apache.spark.{ TaskContext, Partition, SparkContext, sql }
+import org.apache.spark.{ TaskContext, Partition, SparkContext }
 import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
 import org.apache.spark.sql.{ types => SparkType }
 import SparkType.{ ArrayType, DateType, DoubleType, FloatType }
