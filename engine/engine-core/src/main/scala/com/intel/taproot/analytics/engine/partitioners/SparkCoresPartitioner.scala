@@ -19,6 +19,8 @@ package com.intel.taproot.analytics.engine.partitioners
 import com.intel.taproot.analytics.engine.EngineConfig
 import org.apache.spark.rdd.RDD
 
+import scala.util.Try
+
 /**
  * Limits the number of partitions for an RDD based on the available spark cores.
  *
@@ -39,25 +41,22 @@ object SparkCoresPartitioner extends Serializable {
     numPartitions
   }
 
-  /**
-   * Get the number number of partitions based on available spark cores
-   *
-   * Returns the maximum number of partitions for the left and right Rdds
-   */
-  def getNumPartitions[T](leftRdd: RDD[T], rightRdd: RDD[T]): Int = {
-    val numPartitions = Math.max(getNumPartitions(leftRdd), getNumPartitions(rightRdd))
-    //TODO: Replace print statement with IAT event context when event contexts are supported at workers
-    println(s"Number of partitions computed by SparkCoresPartitioner: $numPartitions")
-    numPartitions
-  }
 
   // Get the maximum number of spark tasks to run
   private def getMaxSparkTasks[T](rdd: RDD[T]): Int = {
-    val numExecutors = Math.max(1, rdd.sparkContext.getExecutorStorageStatus.size - 1)
-    val numSparkCores = {
-      val maxSparkCores = rdd.sparkContext.getConf.getInt("spark.cores.max", 0)
-      if (maxSparkCores > 0) maxSparkCores else Runtime.getRuntime.availableProcessors() * numExecutors
+    if (EngineConfig.isSparkOnYarn) {
+      val coresPerExecutor = Try({
+        EngineConfig.sparkConfProperties("spark.executor.cores").toInt
+      }).getOrElse(1)
+     EngineConfig.sparkOnYarnNumExecutors * coresPerExecutor * EngineConfig.maxTasksPerCore
     }
-    EngineConfig.maxTasksPerCore * numSparkCores
+    else {
+      val numExecutors = Math.max(1, rdd.sparkContext.getExecutorStorageStatus.size - 1)
+      val numSparkCores = {
+        val maxSparkCores = rdd.sparkContext.getConf.getInt("spark.cores.max", 0)
+        if (maxSparkCores > 0) maxSparkCores else Runtime.getRuntime.availableProcessors() * numExecutors
+      }
+      EngineConfig.maxTasksPerCore * numSparkCores
+    }
   }
 }

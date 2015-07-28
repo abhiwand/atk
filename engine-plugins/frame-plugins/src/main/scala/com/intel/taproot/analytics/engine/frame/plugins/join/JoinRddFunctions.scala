@@ -79,7 +79,7 @@ object JoinRddFunctions extends Serializable {
     else {
       left.rdd.join(
         right.rdd,
-        SparkCoresPartitioner.getNumPartitions(left.rdd, right.rdd)
+        SparkCoresPartitioner.getNumPartitions(left.rdd)
       )
     }
     innerJoinedRDD.map {
@@ -103,7 +103,7 @@ object JoinRddFunctions extends Serializable {
   def fullOuterJoin(left: RddJoinParam, right: RddJoinParam): RDD[Row] = {
     left.rdd.fullOuterJoin(
       right.rdd,
-      SparkCoresPartitioner.getNumPartitions(left.rdd, right.rdd)
+      SparkCoresPartitioner.getNumPartitions(left.rdd)
     ).map {
       case (_, outerJoinResult) =>
         outerJoinResult match {
@@ -140,7 +140,7 @@ object JoinRddFunctions extends Serializable {
     else {
       left.rdd.rightOuterJoin(
         right.rdd,
-        SparkCoresPartitioner.getNumPartitions(left.rdd, right.rdd)
+        SparkCoresPartitioner.getNumPartitions(left.rdd)
       )
     }
     rightJoinedRDD.map {
@@ -172,7 +172,7 @@ object JoinRddFunctions extends Serializable {
     else {
       left.rdd.leftOuterJoin(
         right.rdd,
-        SparkCoresPartitioner.getNumPartitions(left.rdd, right.rdd)
+        SparkCoresPartitioner.getNumPartitions(left.rdd)
       )
     }
     leftJoinedRDD.map {
