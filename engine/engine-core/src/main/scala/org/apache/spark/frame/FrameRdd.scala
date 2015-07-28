@@ -72,7 +72,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
   /**
    * Spark schema representation of Frame Schema to be used with Spark SQL APIs
    */
-  lazy val sparkSchema = FrameRdd.schemaToStructType(frameSchema.columnTuples)
+  lazy val sparkSchema = FrameRdd.schemaToStructType(frameSchema)
 
   /**
    * Convert a FrameRdd to a Spark Dataframe
@@ -442,10 +442,10 @@ object FrameRdd {
    * Converts the schema object to a StructType for use in creating a SchemaRDD
    * @return StructType with StructFields corresponding to the columns of the schema object
    */
-  def schemaToStructType(columns: List[(String, com.intel.taproot.analytics.domain.schema.DataTypes.DataType)]): StructType = {
-    val fields: Seq[StructField] = columns.map {
-      case (name, dataType) =>
-        StructField(name.replaceAll("\\s", ""), dataType match {
+  def schemaToStructType(schema: Schema): StructType = {
+    val fields: Seq[StructField] = schema.columns.map {
+      column =>
+        StructField(column.name.replaceAll("\\s", ""), column.dataType match {
           case x if x.equals(DataTypes.int32) => IntegerType
           case x if x.equals(DataTypes.int64) => LongType
           case x if x.equals(DataTypes.float32) => FloatType

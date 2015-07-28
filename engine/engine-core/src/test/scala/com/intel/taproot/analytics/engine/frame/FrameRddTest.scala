@@ -29,7 +29,7 @@ class FrameRddTest extends TestingSparkContextWordSpec with Matchers {
 
     "create an appropriate StructType from frames Schema" in {
       val schema = Schema.fromTuples(List(("num", DataTypes.int32), ("name", DataTypes.string)))
-      val structType = FrameRdd.schemaToStructType(schema.columnTuples)
+      val structType = FrameRdd.schemaToStructType(schema)
       structType.fields(0).name should be("num")
       structType.fields(0).dataType should be(IntegerType)
 
