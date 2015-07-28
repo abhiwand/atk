@@ -75,7 +75,7 @@ number of vertices that have the same out-degree as it.
 That is, the weight applied to each vertex for 'degreedist' vertex sampling
 is given by the out-degree histogram bin size.""",
   returns = "A new Graph object representing the vertex induced subgraph.")
-class VertexSample extends SparkCommandPlugin[VertexSampleArguments, VertexSampleResult] {
+class VertexSamplePlugin extends SparkCommandPlugin[VertexSampleArguments, VertexSampleResult] {
 
   /**
    * The name of the command
