@@ -19,8 +19,6 @@ package com.intel.taproot.analytics.engine.command
 import java.io.File
 import java.nio.file.{ FileSystems, Files }
 
-import sys.process._
-
 import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.engine.plugin.Invocation
@@ -33,7 +31,11 @@ import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.event.EventLogging
 
 /**
- * Launches SparkSubmit commands
+ * Our wrapper for calling SparkSubmit to run a plugin.
+ *
+ * First, SparkSubmitLauncher starts a SparkSubmit process.
+ * Next, SparkSubmit starts a SparkCommandJob.
+ * Finally, SparkCommandJob executes a SparkCommandPlugin.
  */
 class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with ClassLoaderAware {
 
@@ -59,7 +61,7 @@ class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with C
 
           val sparkMaster = Array(s"--master", s"${EngineConfig.sparkMaster}")
           val jobName = Array(s"--name", s"${command.getJobName}")
-          val pluginExecutionDriverClass = Array("--class", "com.intel.taproot.analytics.engine.command.CommandDriver")
+          val pluginExecutionDriverClass = Array("--class", "com.intel.taproot.analytics.engine.command.SparkCommandJob")
 
           val pluginDependencyJars = EngineConfig.sparkAppJarsLocal match {
             case true => Array[String]() /* Expect jars to installed locally and available */

@@ -25,9 +25,13 @@ import org.apache.commons.lang.exception.ExceptionUtils
 import scala.reflect.io.Directory
 
 /**
- * Executes
+ * The Yarn Job that runs a SparkCommandPlugin.
+ *
+ * First, SparkSubmitLauncher starts a SparkSubmit process.
+ * Next, SparkSubmit starts a SparkCommandJob.
+ * Finally, SparkCommandJob executes a SparkCommandPlugin.
  */
-class CommandDriver extends AbstractEngineComponent {
+class SparkCommandJob extends AbstractEngineComponent {
 
   /**
    * Execute Command
@@ -36,7 +40,7 @@ class CommandDriver extends AbstractEngineComponent {
   def execute(commandId: Long): Unit = {
     commands.lookup(commandId) match {
       case None => info(s"Command $commandId not found")
-      case Some(command) => {
+      case Some(command) =>
         val user: Option[User] = command.createdById match {
           case Some(id) => metaStore.withSession("se.command.lookup") {
             implicit session =>
@@ -49,32 +53,35 @@ class CommandDriver extends AbstractEngineComponent {
           case _ => null
         }, EngineExecutionContext.global)
         commandExecutor.executeCommand(command)(invocation)
-      }
     }
   }
 }
 
 /**
- * Static methods for CommandDriver. Includes main method for use by SparkSubmit
+ * The Yarn Job that runs a SparkCommandPlugin.
+ *
+ * First, SparkSubmitLauncher starts a SparkSubmit process.
+ * Next, SparkSubmit starts a SparkCommandJob.
+ * Finally, SparkCommandJob executes a SparkCommandPlugin.
  */
-object CommandDriver {
+object SparkCommandJob extends EventLogging {
 
   /**
    * Usage string if this was being executed from the command line
    */
-  def usage() = println("Usage: java -cp engine.jar com.intel.taproot.analytics.component.CommandDriver <command_id>")
+  def usage() = println("Usage: java -cp engine.jar com.intel.taproot.analytics.engine.commmand.SparkCommandJob <command_id>")
 
   /**
    * Instantiate an instance of the driver and then executing the requested command.
-   * @param commandId
+   * @param commandId the id of the Command to execute
    */
   def executeCommand(commandId: Long): Unit = {
-    val driver = new CommandDriver
+    val driver = new SparkCommandJob
     driver.execute(commandId)
   }
 
   /**
-   * Entry point of CommandDriver for use by SparkSubmit.
+   * Entry point of SparkCommandJob for use by SparkSubmit.
    * @param args command line arguments. Requires command id
    */
   def main(args: Array[String]) = {
@@ -97,7 +104,7 @@ object CommandDriver {
         executeCommand(commandId)
       }
       catch {
-        case t: Throwable => error(s"Error captured in CommandDriver to prevent percolating up to ApplicationMaster + ${ExceptionUtils.getStackTrace(t)}")
+        case t: Throwable => error(s"Error captured in SparkCommandJob to prevent percolating up to ApplicationMaster + ${ExceptionUtils.getStackTrace(t)}")
       }
       finally {
         sys.props -= "SPARK_SUBMIT"
