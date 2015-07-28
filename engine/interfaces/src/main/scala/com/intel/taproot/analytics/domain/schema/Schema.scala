@@ -129,15 +129,6 @@ trait GraphElementSchema extends Schema {
 object Schema {
 
   /**
-   * A lot of code was using Tuples before we introduced column objects
-   */
-  @deprecated("use column objects and the other constructors")
-  def fromTuples(columnTuples: List[(String, DataType)]): Schema = {
-    val columns = columnTuples.map { case (name, dataType) => Column(name, dataType) }
-    new FrameSchema(columns)
-  }
-
-  /**
    * Join two lists of columns.
    *
    * Join resolves naming conflicts when both left and right columns have same column names
