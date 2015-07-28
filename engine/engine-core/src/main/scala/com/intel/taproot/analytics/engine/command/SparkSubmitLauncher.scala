@@ -24,8 +24,6 @@ import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.util.{ JvmMemory, KerberosAuthenticator }
 import com.intel.taproot.analytics.EventLoggingImplicits
-import scala.reflect.runtime.{ universe => ru }
-import ru._
 import com.intel.taproot.analytics.domain.command.Command
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.event.EventLogging
