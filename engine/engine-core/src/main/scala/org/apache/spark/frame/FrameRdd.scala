@@ -27,13 +27,12 @@ import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector }
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }
-import org.apache.spark.{ TaskContext, Partition, SparkContext }
+import org.apache.spark.{ TaskContext, Partition }
 import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
 import org.apache.spark.sql.{ types => SparkType }
 import SparkType.{ ArrayType, DateType, DoubleType, FloatType }
 import SparkType.{ IntegerType, LongType, StringType, StructField, StructType, TimestampType, ByteType, BooleanType, ShortType, DecimalType }
 import org.apache.spark.sql.{ SQLContext, DataFrame }
-import SparkContext._
 import parquet.hadoop.ParquetInputSplit
 
 import scala.reflect.ClassTag
@@ -90,28 +89,27 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
    *
    * @return an array of partitions
    */
-  override def getPartitions(): Array[org.apache.spark.Partition] = {
+  override def getPartitions: Array[org.apache.spark.Partition] = {
     val partitions = firstParent[Row].partitions
 
     if (partitions.length > 0 && partitions(0).isInstanceOf[NewHadoopPartition]) {
       val sorted = partitions.toList.sortBy(partition => {
         val split = partition.asInstanceOf[NewHadoopPartition].serializableHadoopSplit.value
-        if (split.isInstanceOf[ParquetInputSplit]) {
-          val uri = split.asInstanceOf[ParquetInputSplit].getPath.toUri
-          val index = uri.getPath.lastIndexOf("/")
-          val filename = uri.getPath.substring(index)
-          val fileNumber = filename.replaceAll("[a-zA-Z.\\-/]+", "")
-          fileNumber.toLong
-        }
-        else {
-          partition.index
+        split match {
+          case parquetInputSplit: ParquetInputSplit =>
+            val uri = parquetInputSplit.getPath.toUri
+            val index = uri.getPath.lastIndexOf("/")
+            val filename = uri.getPath.substring(index)
+            val fileNumber = filename.replaceAll("[a-zA-Z.\\-/]+", "")
+            fileNumber.toLong
+          case _ =>
+            partition.index
         }
       })
       sorted.zipWithIndex.map {
-        case (p: Partition, i: Int) => {
+        case (p: Partition, i: Int) =>
           val hp = p.asInstanceOf[NewHadoopPartition]
           new NewHadoopPartition(id, i, hp.serializableHadoopSplit.value)
-        }
       }.toArray
     }
     else {
@@ -292,14 +290,13 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
     val sumsAndCounts: Map[Int, (Long, Long)] = MiscFrameFunctions.getPerPartitionCountAndAccumulatedSum(this)
 
     val newRows: RDD[Row] = this.mapPartitionsWithIndex((i, rows) => {
-      val (ct: Long, sum: Long) = if (i == 0) (0L, 0L)
-      else sumsAndCounts(i - 1)
+      val sum: Long = if (i == 0) 0L
+      else sumsAndCounts(i - 1)._2
       val partitionStart = sum + startId
       rows.zipWithIndex.map {
-        case (row: Row, index: Int) => {
+        case (row: Row, index: Int) =>
           val id: Long = partitionStart + index
           rowWrapper(row).addOrSetValue(columnName, id)
-        }
       }
     })
 
@@ -315,7 +312,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
   /**
    * Convert Vertex or Edge Frames to plain data frames
    */
-  def toPlainFrame(): FrameRdd = {
+  def toPlainFrame: FrameRdd = {
     new FrameRdd(frameSchema.toFrameSchema, this)
   }
 
@@ -382,10 +379,7 @@ object FrameRdd {
    */
   def toFrameRddMap(gbEdgeRDD: RDD[GBEdge], gbVertexRDD: RDD[GBVertex]): Map[String, FrameRdd] = {
 
-    import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-
     val edgeHolders = gbEdgeRDD.map(edge => EdgeHolder(edge, null, null))
-
     val edgeSchemas = edgeHolders.aggregate(EdgeSchemaAggregator.zeroValue)(EdgeSchemaAggregator.seqOp, EdgeSchemaAggregator.combOp).values
 
     edgeSchemas.map(schema => {
@@ -406,17 +400,14 @@ object FrameRdd {
     val rowRDD: RDD[org.apache.spark.sql.Row] = rows.map(row => {
       val mutableRow = new GenericMutableRow(row.length)
       row.zipWithIndex.map {
-        case (o, i) => {
+        case (o, i) =>
           o match {
             case null => null
-            case _ => {
-              val colType = schema.columnTuples(i)._2
-              val value = o.asInstanceOf[colType.ScalaType]
-              mutableRow(i) = value
-            }
+            case _ =>
+              val colType = schema.column(i).dataType
+              mutableRow(i) = o.asInstanceOf[colType.ScalaType]
 
           }
-        }
       }
       mutableRow
     })
@@ -463,19 +454,19 @@ object FrameRdd {
    * @return our schema DataType
    */
   def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.types.DataType): com.intel.taproot.analytics.domain.schema.DataTypes.DataType = {
-    val intType = IntegerType.getClass()
-    val longType = LongType.getClass()
-    val floatType = FloatType.getClass()
-    val doubleType = DoubleType.getClass()
-    val stringType = StringType.getClass()
-    val dateType = DateType.getClass()
-    val timeStampType = TimestampType.getClass()
-    val byteType = ByteType.getClass()
-    val booleanType = BooleanType.getClass()
+    val intType = IntegerType.getClass
+    val longType = LongType.getClass
+    val floatType = FloatType.getClass
+    val doubleType = DoubleType.getClass
+    val stringType = StringType.getClass
+    val dateType = DateType.getClass
+    val timeStampType = TimestampType.getClass
+    val byteType = ByteType.getClass
+    val booleanType = BooleanType.getClass
     val decimalType = classOf[DecimalType] // DecimalType.getClass return value (DecimalType$) differs from expected DecimalType
-    val shortType = ShortType.getClass()
+    val shortType = ShortType.getClass
 
-    val a = dataType.getClass()
+    val a = dataType.getClass
     a match {
       case `intType` => int32
       case `longType` => int64
