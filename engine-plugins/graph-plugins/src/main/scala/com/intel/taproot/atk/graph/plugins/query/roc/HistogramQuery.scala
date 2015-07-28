@@ -20,8 +20,7 @@ import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.domain.graph.GraphReference
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
+import com.intel.taproot.analytics.engine.plugin._
 import org.apache.spark.storage.StorageLevel
 
 import scala.concurrent._
@@ -104,6 +103,8 @@ class HistogramQuery extends SparkCommandPlugin[HistogramParams, HistogramResult
    * The name of the command, e.g. graph/vertex_sample
    */
   override def name: String = "graph:titan/query/histogram"
+
+  override def apiMaturityTag = ApiMaturityTag.Deprecated
 
   override def execute(arguments: HistogramParams)(implicit invocation: Invocation): HistogramResult = {
     import scala.concurrent.duration._
