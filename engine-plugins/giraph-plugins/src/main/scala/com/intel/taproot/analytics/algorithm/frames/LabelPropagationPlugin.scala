@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, Gir
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.{ Column, FrameSchema }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
-import org.apache.spark.sql.parquet.ia.giraph.frame.lp.{ LabelPropagationVertexOutputFormat, LabelPropagationVertexInputFormat, LabelPropagationEdgeInputFormat }
+import org.apache.spark.sql.parquet.atk.giraph.frame.lp.{ LabelPropagationVertexOutputFormat, LabelPropagationVertexInputFormat, LabelPropagationEdgeInputFormat }
 import LabelPropagationJsonFormat._
 
 class LabelPropagationPlugin

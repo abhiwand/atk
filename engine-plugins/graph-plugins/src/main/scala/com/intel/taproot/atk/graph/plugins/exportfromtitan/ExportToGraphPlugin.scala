@@ -30,7 +30,7 @@ import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.tinkerpop.blueprints.Vertex
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.ia.graph.{ VertexWrapper, EdgeWrapper }
+import org.apache.spark.atk.graph.{ VertexWrapper, EdgeWrapper }
 import org.apache.spark.rdd.RDD
 
 import scala.collection.immutable.Map

@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.engine.{ GraphStorage, FrameStorage }
 import com.intel.taproot.analytics.engine.frame._
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.ia.graph.VertexFrameRdd
+import org.apache.spark.atk.graph.VertexFrameRdd
 
 /**
  * Interface for working with VertexFrames for plugin authors

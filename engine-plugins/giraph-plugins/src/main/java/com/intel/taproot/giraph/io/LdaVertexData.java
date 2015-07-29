@@ -20,7 +20,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
-import org.apache.spark.mllib.ia.plugins.VectorUtils;
+import org.apache.spark.mllib.atk.plugins.VectorUtils;
 
 import java.io.DataInput;
 import java.io.DataOutput;
