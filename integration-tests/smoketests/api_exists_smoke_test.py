@@ -223,7 +223,6 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'annotate_weighted_degrees',
                                      'append',
                                      'clustering_coefficient',
-                                     'connected_components',
                                      'copy',
                                      'export_to_graph',
                                      'graphx_connected_components',
@@ -233,7 +232,6 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'load',
                                      'ml',
                                      'name',
-                                     'page_rank',
                                      'query',
                                      'status',
                                      'vertex_sample'], ia.TitanGraph)

@@ -17,7 +17,7 @@
 package org.apache.spark.sql.parquet.atk.giraph.frame.lda
 
 import com.intel.taproot.giraph.io.{ LdaVertexData, LdaVertexId }
-import com.intel.taproot.giraph.lda.v2.LdaConfiguration
+import com.intel.taproot.giraph.lda.LdaConfiguration
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.fs.Path

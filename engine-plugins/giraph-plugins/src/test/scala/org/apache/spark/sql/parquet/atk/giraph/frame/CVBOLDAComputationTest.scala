@@ -18,7 +18,7 @@ package org.apache.spark.sql.parquet.atk.giraph.frame
 
 import com.intel.taproot.giraph.algorithms.lda.CVB0LDAComputation
 import com.intel.taproot.giraph.algorithms.lda.CVB0LDAComputation.{ CVB0LDAAggregatorWriter, CVB0LDAMasterCompute }
-import com.intel.taproot.giraph.lda.v2._
+import com.intel.taproot.giraph.lda._
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.model.ModelReference
 import com.intel.taproot.analytics.domain.schema.FrameSchema
