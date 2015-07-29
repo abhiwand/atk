@@ -20,7 +20,7 @@ import java.util
 
 import com.intel.taproot.analytics.engine.frame.RowWrapper
 import com.intel.taproot.giraph.io.{ LdaEdgeData, LdaVertexId }
-import com.intel.taproot.giraph.lda.v2.LdaConfiguration
+import com.intel.taproot.giraph.lda.LdaConfiguration
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
