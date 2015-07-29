@@ -16,17 +16,13 @@
 
 package com.intel.taproot.analytics.engine.command
 
-import com.intel.taproot.analytics.component.Archive
-import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.analytics.domain.command.{ CommandDocLoader, CommandDefinition, CommandDoc }
-import com.intel.taproot.analytics.engine.PluginDocAnnotation
-import com.intel.taproot.analytics.engine.plugin.{ PluginDoc, CommandPlugin, Invocation }
-import com.intel.taproot.analytics.engine.plugin.{ SparkInvocation, SparkCommandPlugin }
+import com.intel.taproot.analytics.engine.plugin.CommandPlugin
 import com.intel.taproot.analytics.shared.JsonSchemaExtractor
 import com.intel.taproot.analytics.spray.json.ObjectSchema
-import spray.json.JsonFormat
 import scala.reflect.runtime.{ universe => ru }
 import ru._
+
 /**
  * Register and store command plugin
  */

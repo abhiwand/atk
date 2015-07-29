@@ -62,6 +62,7 @@ class GarbageCollector(val metaStore: MetaStore, val frameStorage: FrameFileStor
 
   /**
    * garbage collect all entities
+   * @param gcAgeToDeleteData in milliseconds
    */
   def garbageCollectEntities(gcAgeToDeleteData: Long = EngineConfig.gcAgeToDeleteData): Unit = {
     this.synchronized {
@@ -194,7 +195,7 @@ object GarbageCollector {
 
   /**
    * Execute a garbage collection outside of the regularly scheduled intervals
-   * @param gcAgeToDeleteData
+   * @param gcAgeToDeleteData in milliseconds
    */
   def singleTimeExecution(gcAgeToDeleteData: Long): Unit = {
     require(garbageCollector != null, "GarbageCollector has not been initialized. Problem during RestServer initialization")
