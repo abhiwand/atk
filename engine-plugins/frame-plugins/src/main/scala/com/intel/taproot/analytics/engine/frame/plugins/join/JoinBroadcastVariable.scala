@@ -21,7 +21,7 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql._
 
 import scala.collection.mutable.{ HashMap, MultiMap, Set }
-import scala.util.Random
+import scala.util.{Try, Random}
 
 /**
  * Broadcast variable for joins
@@ -69,7 +69,12 @@ case class JoinBroadcastVariable(joinParam: RddJoinParam) {
   // Create the broadcast variable for the join
   private def createBroadcastMultiMaps(joinParam: RddJoinParam): Seq[Broadcast[MultiMap[Any, Row]]] = {
     //Grouping by key to ensure that duplicate keys are not split across different broadcast variables
-    val broadcastList = joinParam.rdd.groupByKey().collect().toList
+    val broadcastList = joinParam.frame.rdd.groupBy(row => {
+      val columnIndex = joinParam.joinColumnIndex
+      Try(row.get(columnIndex)).getOrElse({
+        throw new IllegalArgumentException(s"Column index ${columnIndex} does not exist in frame")
+      })
+    }).collect().toList
 
     val rddSizeInBytes = joinParam.estimatedSizeInBytes.getOrElse(Long.MaxValue)
     val numBroadcastVars = if (broadcastList.nonEmpty && rddSizeInBytes < Long.MaxValue && rddSizeInBytes > 0) {
@@ -78,7 +83,7 @@ case class JoinBroadcastVariable(joinParam: RddJoinParam) {
     else 1
 
     val broadcastMultiMaps = listToMultiMap(broadcastList, numBroadcastVars)
-    broadcastMultiMaps.map(map => joinParam.rdd.sparkContext.broadcast(map))
+    broadcastMultiMaps.map(map => joinParam.frame.rdd.sparkContext.broadcast(map))
   }
 
   //Converts list to sequence of multi-maps by randomly assigning list elements to multi-maps.

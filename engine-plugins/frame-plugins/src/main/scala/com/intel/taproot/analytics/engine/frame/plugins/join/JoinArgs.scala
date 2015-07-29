@@ -46,6 +46,6 @@ case class JoinArgs(leftFrame: JoinFrameArgs,
  * Join arguments for frame
  *
  * @param frame Data frame
- * @param joinColumn
+ * @param joinColumn Join column name
  */
 case class JoinFrameArgs(frame: FrameReference, joinColumn: String)

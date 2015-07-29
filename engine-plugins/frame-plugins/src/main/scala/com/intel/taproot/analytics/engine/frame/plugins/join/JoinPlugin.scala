@@ -97,7 +97,10 @@ class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
                                  joinColumn: String,
                                  broadcastJoinThreshold: Long)(implicit invocation: Invocation): RddJoinParam = {
     val frameSize = if (broadcastJoinThreshold > 0) frame.sizeInBytes else None
-    val pairRdd = frame.rdd.keyByRows(row => row.value(joinColumn))
-    RddJoinParam(pairRdd, frame.schema.columns.length, frameSize)
+    RddJoinParam(frame.rdd.toDataFrame,
+      joinColumn,
+      frame.schema.columnIndex(joinColumn),
+      frame.schema.columns.length,
+      frameSize)
   }
 }

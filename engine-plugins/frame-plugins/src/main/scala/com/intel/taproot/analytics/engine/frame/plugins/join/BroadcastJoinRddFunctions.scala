@@ -3,6 +3,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.join
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 /**
  * Functions for joining pair RDDs using broadcast variables
@@ -16,17 +17,17 @@ class BroadcastJoinRddFunctions(self: RddJoinParam) extends Logging with Seriali
    *
    * @return key-value RDD whose values are results of left-outer join
    */
-  def leftBroadcastJoin(other: RddJoinParam): RDD[(Any, (Row, Option[Row]))] = {
-    //Use multi-map to handle duplicate keys
+  def leftBroadcastJoin(other: RddJoinParam): RDD[Row] = {
     val rightBroadcastVariable = JoinBroadcastVariable(other)
+    lazy val rightNullRow: Row = new GenericRow(other.columnCount)
 
-    self.rdd.flatMap {
-      case (leftKey, leftValues) => {
+    self.frame.flatMap {
+      case (leftRow) =>
+        val leftKey = leftRow.get(self.joinColumnIndex)
         rightBroadcastVariable.get(leftKey) match {
-          case Some(rightValueSet) => for (values <- rightValueSet) yield (leftKey, (leftValues, Some(values)))
-          case _ => List((leftKey, (leftValues, None))).asInstanceOf[List[(Any, (Row, Option[Row]))]]
+          case Some(rightRowSet) => for (rightRow <- rightRowSet) yield Row.merge(leftRow, rightRow)
+          case _ => List(Row.merge(leftRow, rightNullRow.copy()))
         }
-      }
     }
   }
 
@@ -37,17 +38,17 @@ class BroadcastJoinRddFunctions(self: RddJoinParam) extends Logging with Seriali
    *
    * @return key-value RDD whose values are results of right-outer join
    */
-  def rightBroadcastJoin(other: RddJoinParam): RDD[(Any, (Option[Row], Row))] = {
-    //Use multi-map to handle duplicate keys
+  def rightBroadcastJoin(other: RddJoinParam): RDD[Row] = {
     val leftBroadcastVariable = JoinBroadcastVariable(self)
+    lazy val leftNullRow: Row = new GenericRow(self.columnCount)
 
-    other.rdd.flatMap {
-      case (rightKey, rightValues) => {
+    other.frame.flatMap {
+      case (rightRow) =>
+        val rightKey = rightRow.get(other.joinColumnIndex)
         leftBroadcastVariable.get(rightKey) match {
-          case Some(leftValueSet) => for (values <- leftValueSet) yield (rightKey, (Some(values), rightValues))
-          case _ => List((rightKey, (None, rightValues))).asInstanceOf[List[(Any, (Option[Row], Row))]]
+          case Some(leftRowSet) => for (leftRow <- leftRowSet) yield Row.merge(leftRow, rightRow)
+          case _ => List(Row.merge(leftNullRow.copy(), rightRow))
         }
-      }
     }
   }
 
@@ -58,33 +59,31 @@ class BroadcastJoinRddFunctions(self: RddJoinParam) extends Logging with Seriali
    *
    * @return key-value RDD whose values are results of inner-outer join
    */
-  def innerBroadcastJoin(other: RddJoinParam, broadcastJoinThreshold: Long): RDD[(Any, (Row, Row))] = {
+  def innerBroadcastJoin(other: RddJoinParam, broadcastJoinThreshold: Long): RDD[Row] = {
     val leftSizeInBytes = self.estimatedSizeInBytes.getOrElse(Long.MaxValue)
     val rightSizeInBytes = other.estimatedSizeInBytes.getOrElse(Long.MaxValue)
 
     val innerJoinedRDD = if (rightSizeInBytes <= broadcastJoinThreshold) {
-      //Use multi-map to handle duplicate keys
       val rightBroadcastVariable = JoinBroadcastVariable(other)
-      self.rdd.flatMap {
-        case (leftKey, leftValues) => {
-          val rightValueList = rightBroadcastVariable.get(leftKey).toList
-          rightValueList.flatMap(rightValues => {
-            for (values <- rightValues) yield (leftKey, (leftValues, values))
-          })
+      self.frame.flatMap(leftRow => {
+        val leftKey = leftRow.get(self.joinColumnIndex)
+        rightBroadcastVariable.get(leftKey) match {
+          case Some(rightRowSet) =>
+            for (rightRow <- rightRowSet) yield Row.merge(leftRow, rightRow)
+          case _ => Set.empty[Row]
         }
-      }
+      })
     }
     else if (leftSizeInBytes <= broadcastJoinThreshold) {
-      //Use multi-map to handle duplicate keys
       val leftBroadcastVariable = JoinBroadcastVariable(self)
-      other.rdd.flatMap {
-        case (rightKey, rightValues) => {
-          val leftValueList = leftBroadcastVariable.get(rightKey).toList
-          leftValueList.flatMap(leftValues => {
-            for (values <- leftValues) yield (rightKey, (values, rightValues))
-          })
+      other.frame.flatMap(rightRow => {
+        val rightKey = rightRow.get(other.joinColumnIndex)
+        leftBroadcastVariable.get(rightKey) match {
+          case Some(leftRowSet) =>
+            for (leftRow <- leftRowSet) yield Row.merge(leftRow, rightRow)
+          case _ => Set.empty[Row]
         }
-      }
+      })
     }
     else throw new IllegalArgumentException(s"Frame size exceeds broadcast-join-threshold: ${broadcastJoinThreshold}.")
     innerJoinedRDD

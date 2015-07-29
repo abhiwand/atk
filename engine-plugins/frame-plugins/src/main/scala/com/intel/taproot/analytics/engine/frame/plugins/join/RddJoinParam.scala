@@ -16,20 +16,24 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.join
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.DataFrame
 
 /**
  * Join parameters for RDD
  *
- * @param rdd RDD of (key, value) pairs used for join
+ * @param frame RDD of (key, value) pairs used for join
+ * @param joinColumn Join column name
+ * @param joinColumnIndex Join column index
  * @param columnCount Number of columns in value array
  * @param estimatedSizeInBytes Optional estimated size of RDD in bytes used to determine whether to use a broadcast join
  */
-case class RddJoinParam(rdd: RDD[(Any, Row)],
+case class RddJoinParam(frame: DataFrame,
+                        joinColumn: String,
+                        joinColumnIndex: Int,//TODO: Delete in Spark 1.4+ since row.getAs(columnName) supported
                         columnCount: Int,
                         estimatedSizeInBytes: Option[Long] = None) {
-  require(rdd != null, "join rdd should not be null")
+  require(frame != null, "join frame is required")
+  require(joinColumn != null, "join column is required")
   require(columnCount > 0, "column count should be greater than zero")
   require(estimatedSizeInBytes.isEmpty || estimatedSizeInBytes.get > 0,
     "Estimated rdd size in bytes should be empty or greater than zero")

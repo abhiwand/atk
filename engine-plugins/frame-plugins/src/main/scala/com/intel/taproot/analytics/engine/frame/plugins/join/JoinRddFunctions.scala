@@ -17,7 +17,6 @@
 package com.intel.taproot.analytics.engine.frame.plugins.join
 
 import com.intel.taproot.analytics.engine.frame.plugins.join.JoinRddImplicits._
-import com.intel.taproot.analytics.engine.partitioners.SparkCoresPartitioner
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
@@ -80,22 +79,14 @@ object JoinRddFunctions extends Serializable {
     val leftSizeInBytes = left.estimatedSizeInBytes.getOrElse(Long.MaxValue)
     val rightSizeInBytes = right.estimatedSizeInBytes.getOrElse(Long.MaxValue)
 
-    val innerJoinedRDD = if (leftSizeInBytes < broadcastJoinThreshold || rightSizeInBytes < broadcastJoinThreshold) {
+    if (leftSizeInBytes < broadcastJoinThreshold || rightSizeInBytes < broadcastJoinThreshold) {
       left.innerBroadcastJoin(right, broadcastJoinThreshold)
     }
-    else if (skewedJoinType.isDefined) {
-      left.innerSkewedBroadcastJoin(right)
-    }
     else {
-      left.rdd.join(
-        right.rdd,
-        SparkCoresPartitioner.getNumPartitions(left.rdd)
-      )
-    }
-    innerJoinedRDD.map {
-      case (key, (leftValues, rightValues)) => {
-        Row.merge(leftValues, rightValues)
-      }
+      left.frame.join(
+        right.frame,
+        left.frame(left.joinColumn).equalTo(right.frame(right.joinColumn))
+      ).rdd
     }
   }
 
@@ -111,22 +102,10 @@ object JoinRddFunctions extends Serializable {
    * @return Joined RDD
    */
   def fullOuterJoin(left: RddJoinParam, right: RddJoinParam): RDD[Row] = {
-    left.rdd.fullOuterJoin(
-      right.rdd,
-      SparkCoresPartitioner.getNumPartitions(left.rdd)
-    ).map {
-        case (_, outerJoinResult) =>
-          outerJoinResult match {
-            case (Some(leftValues), Some(rightValues)) =>
-              Row.merge(leftValues, rightValues)
-            case (Some(leftValues), None) =>
-              Row.fromSeq(leftValues.toSeq ++ (1 to right.columnCount).map(i => null))
-            case (None, Some(rightValues)) =>
-              Row.fromSeq((1 to left.columnCount).map(i => null) ++ rightValues.toSeq)
-            case (None, None) =>
-              throw new IllegalArgumentException("No join parameters were supplied")
-          }
-      }
+    left.frame.join(right.frame,
+      left.frame(left.joinColumn).equalTo(right.frame(right.joinColumn)),
+      joinType = "fullouter"
+    ).rdd
   }
 
   /**
@@ -147,25 +126,14 @@ object JoinRddFunctions extends Serializable {
     // Estimated size in bytes used to determine whether or not to use a broadcast join
     val leftSizeInBytes = left.estimatedSizeInBytes.getOrElse(Long.MaxValue)
 
-    val rightJoinedRDD = if (leftSizeInBytes < broadcastJoinThreshold) {
-      left.rightBroadcastJoin(right)
-    }
-    else if (skewedJoinType.isDefined) {
-      left.rightSkewedBroadcastJoin(right)
-    }
-    else {
-      left.rdd.rightOuterJoin(
-        right.rdd,
-        SparkCoresPartitioner.getNumPartitions(left.rdd)
-      )
-    }
-    rightJoinedRDD.map {
-      case (_, (leftValues, rightValues)) => {
-        leftValues match {
-          case s: Some[Row] => Row.merge(s.get, rightValues)
-          case None => Row.fromSeq((1 to left.columnCount).map(i => null) ++ rightValues.toSeq)
-        }
-      }
+    skewedJoinType match {
+      //case Some("skewedbroadcast") => left.leftSkewedBroadcastJoin(right)
+      //case Some("skewedhash") => left.leftSkewedHashJoin(right)
+      case x if leftSizeInBytes < broadcastJoinThreshold => left.rightBroadcastJoin(right)
+      case _ => left.frame.join(right.frame,
+        left.frame(left.joinColumn).equalTo(right.frame(right.joinColumn)),
+        joinType = "right"
+      ).rdd
     }
   }
 
@@ -185,19 +153,14 @@ object JoinRddFunctions extends Serializable {
                     broadcastJoinThreshold: Long,
                     skewedJoinType: Option[String] = None): RDD[Row] = {
     val rightSizeInBytes = right.estimatedSizeInBytes.getOrElse(Long.MaxValue)
-    val leftJoinedRDD = skewedJoinType match {
-      case Some("skewedbroadcast") => left.leftSkewedBroadcastJoin(right)
-      case Some("skewedhash") => left.leftSkewedHashJoin(right)
+    skewedJoinType match {
+      //case Some("skewedbroadcast") => left.leftSkewedBroadcastJoin(right)
+      //case Some("skewedhash") => left.leftSkewedHashJoin(right)
       case x if rightSizeInBytes < broadcastJoinThreshold => left.leftBroadcastJoin(right)
-      case _ => left.rdd.leftOuterJoin(right.rdd, SparkCoresPartitioner.getNumPartitions(left.rdd))
-    }
-    leftJoinedRDD.map {
-      case (_, (leftValues, rightValues)) => {
-        rightValues match {
-          case s: Some[Row] => Row.merge(leftValues, s.get)
-          case None => Row.fromSeq(leftValues.toSeq ++ (1 to right.columnCount).map(i => null))
-        }
-      }
+      case _ => left.frame.join(right.frame,
+        left.frame(left.joinColumn).equalTo(right.frame(right.joinColumn)),
+        joinType = "left"
+      ).rdd
     }
   }
 }

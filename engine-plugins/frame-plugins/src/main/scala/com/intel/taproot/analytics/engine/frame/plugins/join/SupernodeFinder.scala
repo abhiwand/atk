@@ -15,7 +15,7 @@ case class KeyFrequency(sampleSize: Long = 0, estimatedFrequency: Long = 0, esti
  * @param rdd Key-value RDD
  */
 case class SupernodeFinder[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
-
+ /*
   /**
    * Find supernodes in key-value RDD
    *
@@ -78,5 +78,5 @@ case class SupernodeFinder[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
       case d : Double => 4
 
     }
-  } */
+  } */  */
 }

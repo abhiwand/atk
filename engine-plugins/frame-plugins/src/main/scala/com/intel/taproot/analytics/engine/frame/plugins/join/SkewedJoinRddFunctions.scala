@@ -10,7 +10,7 @@ import org.apache.spark.util.ReservoirSampler
 import scala.util.hashing._
 
 class SkewedJoinRddFunctions(self: RddJoinParam) extends Logging with Serializable {
-
+/*
   /**
    * Perform skewed left outer-join using a broadcast variable
    *
@@ -19,15 +19,15 @@ class SkewedJoinRddFunctions(self: RddJoinParam) extends Logging with Serializab
    * @return key-value RDD whose values are results of left-outer join
    */
   def leftSkewedBroadcastJoin(other: RddJoinParam): RDD[(Any, (Row, Option[Row]))] = {
-    val sc = self.rdd.sparkContext
-    val leftSuperNodes = SupernodeFinder(self.rdd).findSuperNodes()
+    val sparkContext = self.frame.rdd.sparkContext
+    val leftSuperNodes = SupernodeFinder(self.frame).findSuperNodes()
 
-    val keyCountsBroadcastVar = sc.broadcast(leftSuperNodes)
+    val keyCountsBroadcastVar = sparkContext.broadcast(leftSuperNodes)
     val (leftSuperNode, leftRegularNode) = splitRddBySuperNodes(self, keyCountsBroadcastVar)
     val (rightSuperNode, rightRegularNode) = splitRddBySuperNodes(other, keyCountsBroadcastVar)
 
     val superNodeJoinedRdd = leftSuperNode.leftBroadcastJoin(rightSuperNode)
-    val regularNodeJoinedRdd = leftRegularNode.rdd.leftOuterJoin(rightRegularNode.rdd)
+    val regularNodeJoinedRdd = leftRegularNode.frame.leftOuterJoin(rightRegularNode.frame)
 
     regularNodeJoinedRdd.union(superNodeJoinedRdd)
   }
@@ -43,15 +43,15 @@ class SkewedJoinRddFunctions(self: RddJoinParam) extends Logging with Serializab
    */
   def leftSkewedHashJoin(other: RddJoinParam): RDD[(Any, (Row, Option[Row]))] = {
     //TODO: Fix garbage collection issues in shuffle (find way to determine how to split keys)
-    val sc = self.rdd.sparkContext
-    val leftSuperNodes = SupernodeFinder(self.rdd).findSuperNodes()
-    val rightSuperNodes = SupernodeFinder(other.rdd).findSuperNodes()
+    val sc = self.frame.sparkContext
+    val leftSuperNodes = SupernodeFinder(self.frame).findSuperNodes()
+    val rightSuperNodes = SupernodeFinder(other.frame).findSuperNodes()
 
     val sampledKeyCounts = mergeSampledKeys(leftSuperNodes, rightSuperNodes)
     val keyCountsBroadcastVar = sc.broadcast(sampledKeyCounts)
-    val repartitionedLeftRdd = splitKeys(self.rdd, keyCountsBroadcastVar, isRightRdd = false)
+    val repartitionedLeftRdd = splitKeys(self.frame, keyCountsBroadcastVar, isRightRdd = false)
 
-    val replicatedRightRdd = replicateKeys(other.rdd, keyCountsBroadcastVar, isRightRdd = true)
+    val replicatedRightRdd = replicateKeys(other.frame, keyCountsBroadcastVar, isRightRdd = true)
     repartitionedLeftRdd.leftOuterJoin(replicatedRightRdd).map {
       case ((key, i), ((leftValues, lr), rightValuesPair)) =>
         rightValuesPair match {
@@ -69,15 +69,15 @@ class SkewedJoinRddFunctions(self: RddJoinParam) extends Logging with Serializab
    * @return key-value RDD whose values are results of right-outer join
    */
   def rightSkewedBroadcastJoin(other: RddJoinParam): RDD[(Any, (Option[Row], Row))] = {
-    val sc = self.rdd.sparkContext
-    val rightSuperNodes = SupernodeFinder(other.rdd).findSuperNodes()
+    val sc = self.frame.sparkContext
+    val rightSuperNodes = SupernodeFinder(other.frame).findSuperNodes()
 
     val keyCountsBroadcastVar = sc.broadcast(rightSuperNodes)
     val (leftSuperNode, leftRegularNode) = splitRddBySuperNodes(self, keyCountsBroadcastVar)
     val (rightSuperNode, rightRegularNode) = splitRddBySuperNodes(other, keyCountsBroadcastVar)
 
     val superNodeJoinedRdd = leftSuperNode.rightBroadcastJoin(rightSuperNode)
-    val regularNodeJoinedRdd = leftRegularNode.rdd.rightOuterJoin(rightRegularNode.rdd)
+    val regularNodeJoinedRdd = leftRegularNode.frame.rightOuterJoin(rightRegularNode.frame)
 
     regularNodeJoinedRdd.union(superNodeJoinedRdd)
   }
@@ -90,10 +90,10 @@ class SkewedJoinRddFunctions(self: RddJoinParam) extends Logging with Serializab
    * @return key-value RDD whose values are results of inner join
    */
   def innerSkewedBroadcastJoin(other: RddJoinParam): RDD[(Any, (Row, Row))] = {
-    val sc = self.rdd.sparkContext
+    val sc = self.frame.sparkContext
 
-    val leftSuperNodes = SupernodeFinder(self.rdd).findSuperNodes()
-    val rightSuperNodes = SupernodeFinder(other.rdd).findSuperNodes()
+    val leftSuperNodes = SupernodeFinder(self.frame).findSuperNodes()
+    val rightSuperNodes = SupernodeFinder(other.frame).findSuperNodes()
     val allSuperNodes = leftSuperNodes ++ rightSuperNodes
 
     val keyCountsBroadcastVar = sc.broadcast(allSuperNodes)
@@ -101,7 +101,7 @@ class SkewedJoinRddFunctions(self: RddJoinParam) extends Logging with Serializab
     val (rightSuperNode, rightRegularNode) = splitRddBySuperNodes(other, keyCountsBroadcastVar)
 
     val superNodeJoinedRdd = leftSuperNode.innerBroadcastJoin(rightSuperNode, Long.MaxValue)
-    val regularNodeJoinedRdd = leftRegularNode.rdd.join(rightRegularNode.rdd)
+    val regularNodeJoinedRdd = leftRegularNode.frame.join(rightRegularNode.frame)
 
     regularNodeJoinedRdd.union(superNodeJoinedRdd)
   }
@@ -114,8 +114,8 @@ class SkewedJoinRddFunctions(self: RddJoinParam) extends Logging with Serializab
    */
   private def splitRddBySuperNodes(joinParam: RddJoinParam,
                                    superNodeCounts: Broadcast[Map[Any, KeyFrequency]]): (RddJoinParam, RddJoinParam) = {
-    val superNodeRdd = joinParam.rdd.filter { case (key, value) => superNodeCounts.value.contains(key) }
-    val regularNodeRdd = joinParam.rdd.filter { case (key, value) => !superNodeCounts.value.contains(key) }
+    val superNodeRdd = joinParam.frame.filter { case (key, value) => superNodeCounts.value.contains(key) }
+    val regularNodeRdd = joinParam.frame.filter { case (key, value) => !superNodeCounts.value.contains(key) }
     (RddJoinParam(superNodeRdd, joinParam.columnCount), RddJoinParam(regularNodeRdd, joinParam.columnCount))
   }
 
@@ -174,5 +174,5 @@ class SkewedJoinRddFunctions(self: RddJoinParam) extends Logging with Serializab
         }, 1)
         for (i <- 0 until numSplits) yield ((key, i), (value, numSplits.toInt))
     }
-  }
+  }*/
 }
