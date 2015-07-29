@@ -15,7 +15,7 @@ case class KeyFrequency(sampleSize: Long = 0, estimatedFrequency: Long = 0, esti
  * @param rdd Key-value RDD
  */
 case class SupernodeFinder[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
-  /*
+
   /**
    * Find supernodes in key-value RDD
    *
@@ -66,17 +66,4 @@ case class SupernodeFinder[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
     if (rows.size > 0) totalSize / rows.size else 0d
   }
 
-  /*private def getSizeInBytes(obj: Object) : Long = {
-    obj match {
-      case b: Boolean => 1
-      case b : Byte => 1
-      case s : Short => 1
-      case c : Char => 1
-      case i : Int => 2
-      case l : Long => 4
-      case f : Float => 2
-      case d : Double => 4
-
-    }
-  } */  */
-}
+ }
