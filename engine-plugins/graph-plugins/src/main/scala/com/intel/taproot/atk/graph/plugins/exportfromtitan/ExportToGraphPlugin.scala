@@ -16,6 +16,7 @@
 
 package com.intel.taproot.atk.graph.plugins.exportfromtitan
 
+import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ VertexSchemaAggregator, EdgeSchemaAggregator, EdgeHolder }
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.schema.DataTypes._

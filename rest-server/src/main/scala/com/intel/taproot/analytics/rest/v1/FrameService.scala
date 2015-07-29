@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.rest.v1
 
 import com.intel.taproot.analytics.DuplicateNameException
 import com.intel.taproot.analytics.domain._
-import com.intel.taproot.analytics.domain.frame.{ RowQueryArgs, QueryDataResult }
+import com.intel.taproot.analytics.domain.frame.{ RowQueryArgs, QueryResult }
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
 import spray.json._
@@ -129,7 +129,7 @@ class FrameService(commonDirectives: CommonDirectives, engine: Engine) extends D
                     import ViewModelJsonImplicits._
                     val queryArgs = RowQueryArgs[Long](id, offset, count)
                     onComplete(Future { engine.getRows(queryArgs) }) {
-                      case Success(r: QueryDataResult) => {
+                      case Success(r: QueryResult) => {
                         complete(GetQuery(id = None, error = None,
                           name = "getRows", arguments = None, complete = true,
                           result = Some(GetQueryPage(
