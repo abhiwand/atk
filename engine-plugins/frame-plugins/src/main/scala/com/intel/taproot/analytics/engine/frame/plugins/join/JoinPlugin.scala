@@ -51,7 +51,13 @@ class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
+
   override def name: String = "frame:/join"
+
+  /**
+   * Set the kryo class to use
+   */
+  override def kryoRegistrator: Option[String] = None
 
   override def apiMaturityTag = Some(ApiMaturityTag.Beta)
 
@@ -99,13 +105,8 @@ class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
   private def createRDDJoinParam(frame: SparkFrame,
                                  joinColumn: String,
                                  broadcastJoinThreshold: Long)(implicit invocation: Invocation): RddJoinParam = {
-    //TODO: Delete the conversion from GenericRowWithSchema to GenericRow once we upgrade to Spark1.4
-    //https://issues.apache.org/jira/browse/SPARK-6465
-    val genericRowRdd : RDD[Row]= frame.rdd.map(row => new GenericRow(row.toSeq.toArray))
-    val genericRowFrame = new FrameRdd(frame.rdd.frameSchema, genericRowRdd)
-
     val frameSize = if (broadcastJoinThreshold > 0) frame.sizeInBytes else None
-    RddJoinParam(genericRowFrame.toDataFrame,
+    RddJoinParam(frame.rdd.toDataFrame,
       joinColumn,
       frame.schema.columnIndex(joinColumn),
       frame.schema.columns.length,
