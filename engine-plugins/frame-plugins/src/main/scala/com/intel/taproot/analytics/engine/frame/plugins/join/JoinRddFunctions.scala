@@ -19,6 +19,7 @@ package com.intel.taproot.analytics.engine.frame.plugins.join
 import com.intel.taproot.analytics.engine.frame.plugins.join.JoinRddImplicits._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 //implicit conversion for PairRDD
 
@@ -160,7 +161,7 @@ object JoinRddFunctions extends Serializable {
       case _ => left.frame.join(right.frame,
         left.frame(left.joinColumn).equalTo(right.frame(right.joinColumn)),
         joinType = "left"
-      ).rdd
+      ).rdd.map(row => new GenericRow(row.toSeq.toArray))
     }
   }
 }
