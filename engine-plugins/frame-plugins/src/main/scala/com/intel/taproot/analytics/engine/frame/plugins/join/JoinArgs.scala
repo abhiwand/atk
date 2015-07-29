@@ -23,7 +23,6 @@ import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 /**
  * Arguments for Join plugin
  *
- */
 case class JoinArgs(@ArgDoc("""Join arguments for first data frame.""") leftFrame: JoinFrameArgs,
                     @ArgDoc("""Join arguments for first data frame.""") rightFrame: JoinFrameArgs,
                     @ArgDoc("""Methods of join (inner, left, right or outer).""") how: String,
@@ -33,12 +32,15 @@ case class JoinArgs(@ArgDoc("""Join arguments for first data frame.""") leftFram
   require(leftFrame.joinColumn != null, "left join column is required")
   require(rightFrame.joinColumn != null, "right join column is required")
   require(how != null, "join method is required")
+  require(skewedJoinType.isEmpty
+    || (skewedJoinType.get == "skewedhash" || skewedJoinType.get == "skewedbroadcast"),
+    "skewed join type should be 'skewedhash' or 'skewedbroadcast'")
 }
 
 /**
  * Join arguments for frame
  *
  * @param frame Data frame
- * @param joinColumn
+ * @param joinColumn Join column name
  */
 case class JoinFrameArgs(frame: FrameReference, joinColumn: String)

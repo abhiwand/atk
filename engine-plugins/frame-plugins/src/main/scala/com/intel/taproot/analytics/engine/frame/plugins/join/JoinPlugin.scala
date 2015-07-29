@@ -25,11 +25,14 @@ import com.intel.taproot.analytics.engine.EngineConfig
 import com.intel.taproot.analytics.engine.frame._
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 /** Json conversion for arguments and return value case classes */
 object JoinJsonFormat {
   implicit val JoinFrameFormat = jsonFormat2(JoinFrameArgs)
-  implicit val JoinArgsFormat = jsonFormat4(JoinArgs)
+  implicit val JoinArgsFormat = jsonFormat5(JoinArgs)
 }
 
 import JoinJsonFormat._
@@ -76,7 +79,9 @@ class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
     val joinResultRDD = JoinRddFunctions.joinRDDs(
       createRDDJoinParam(leftFrame, arguments.leftFrame.joinColumn, broadcastJoinThreshold),
       createRDDJoinParam(rightFrame, arguments.rightFrame.joinColumn, broadcastJoinThreshold),
-      arguments.how, broadcastJoinThreshold
+      arguments.how,
+      broadcastJoinThreshold,
+      arguments.skewedJoinType
     )
 
     val allColumns = Schema.join(leftFrame.schema.columns, rightFrame.schema.columns)
@@ -92,9 +97,17 @@ class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
   //Create parameters for join
   private def createRDDJoinParam(frame: SparkFrame,
                                  joinColumn: String,
-                                 broadcastJoinThreshold: Long)(implicit invocation: Invocation): RddJoinParam = {
+                                 broadcastJoinThreshold: Long): RddJoinParam = {
+    //TODO: Delete the conversion from GenericRowWithSchema to GenericRow once we upgrade to Spark1.3.1+
+    //https://issues.apache.org/jira/browse/SPARK-6465
+    val genericRowFrame = new FrameRdd(frame.rdd.frameSchema, JoinRddFunctions.toGenericRowRdd(frame.rdd))
+
     val frameSize = if (broadcastJoinThreshold > 0) frame.sizeInBytes else None
-    val pairRdd = frame.rdd.keyByRows(row => row.value(joinColumn))
-    RddJoinParam(pairRdd, frame.schema.columns.length, frameSize)
+    RddJoinParam(genericRowFrame.toDataFrame,
+      joinColumn,
+      frame.schema.columnIndex(joinColumn),
+      frame.schema.columns.length,
+      frameSize)
   }
+
 }

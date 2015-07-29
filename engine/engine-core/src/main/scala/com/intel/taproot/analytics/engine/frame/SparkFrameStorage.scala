@@ -338,10 +338,9 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
         Some(frameFileStorage.hdfs.size(absPath))
       case (Some(StorageFormats.FileSequence), Some(absPath)) =>
         Some(frameFileStorage.hdfs.size(absPath))
-      case _ => {
+      case _ =>
         warn(s"Could not get size of frame ${frameEntity.id} / ${frameEntity.name}")
         None
-      }
     }
   }
 

@@ -16,7 +16,6 @@
 
 package com.intel.taproot.atk.graph.plugins.communitydetection.kclique
 
-import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes
 import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.{ CliqueExtension, VertexSet, Edge }
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.Edge

@@ -18,8 +18,8 @@ package com.intel.taproot.analytics.engine.frame.plugins.topk
 
 import com.intel.taproot.analytics.domain.frame.{ TopKArgs, FrameEntity }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
-import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
-import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
+import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Column, DataTypes }
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 
@@ -77,9 +77,9 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
     val topRdd = TopKRddFunctions.topK(frame.rdd, columnIndex, Math.abs(arguments.k), useBottomK,
       weightsColumnIndexOption, weightsDataTypeOption)
 
-    val newSchema = Schema.fromTuples(List(
-      (arguments.columnName, valueDataType),
-      ("count", DataTypes.float64)
+    val newSchema = FrameSchema(List(
+      Column(arguments.columnName, valueDataType),
+      Column("count", DataTypes.float64)
     ))
 
     // save results
@@ -101,10 +101,9 @@ class TopKPlugin extends SparkCommandPlugin[TopKArgs, FrameEntity] {
   private def getColumnIndexAndType(frame: FrameEntity, columnName: Option[String]): (Option[Int], Option[DataType]) = {
 
     val (columnIndexOption, dataTypeOption) = columnName match {
-      case Some(columnIndex) => {
+      case Some(columnIndex) =>
         val weightsColumnIndex = frame.schema.columnIndex(columnIndex)
-        (Some(weightsColumnIndex), Some(frame.schema.columnTuples(weightsColumnIndex)._2))
-      }
+        (Some(weightsColumnIndex), Some(frame.schema.column(weightsColumnIndex).dataType))
       case None => (None, None)
     }
     (columnIndexOption, dataTypeOption)

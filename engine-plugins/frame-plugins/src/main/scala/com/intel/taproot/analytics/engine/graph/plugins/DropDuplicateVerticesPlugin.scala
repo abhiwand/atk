@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.engine.graph.{ SparkVertexFrame, VertexFrame 
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.frame.{ DropDuplicatesArgs, FrameEntity }
-import org.apache.spark.ia.graph.VertexFrameRdd
+import org.apache.spark.atk.graph.VertexFrameRdd
 import org.apache.spark.rdd.RDD
 import com.intel.taproot.analytics.engine.frame.{ SparkFrameStorage, MiscFrameFunctions }
 import com.intel.taproot.analytics.domain.graph.SeamlessGraphMeta

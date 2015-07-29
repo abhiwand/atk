@@ -26,7 +26,7 @@ import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, Gir
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Column, FrameSchema }
 import com.intel.taproot.analytics.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
-import org.apache.spark.sql.parquet.ia.giraph.frame.cf.{ CollaborativeFilteringVertexOutputFormat, CollaborativeFilteringEdgeInputFormat }
+import org.apache.spark.sql.parquet.atk.giraph.frame.cf.{ CollaborativeFilteringVertexOutputFormat, CollaborativeFilteringEdgeInputFormat }
 import CollaborativeFilteringJsonFormat._
 
 @PluginDoc(oneLine = "<TBD>",

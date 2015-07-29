@@ -32,7 +32,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 class GraphInfoPlugin extends CommandPlugin[GraphNoArgs, SeamlessGraphMeta] {
 
   /**
-   * The name of the command, e.g. graph/sampling/vertex_sample
+   * The name of the command, e.g. graph/vertex_sample
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.

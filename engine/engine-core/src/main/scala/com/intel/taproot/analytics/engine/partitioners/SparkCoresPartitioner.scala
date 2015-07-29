@@ -19,6 +19,8 @@ package com.intel.taproot.analytics.engine.partitioners
 import com.intel.taproot.analytics.engine.EngineConfig
 import org.apache.spark.rdd.RDD
 
+import scala.util.Try
+
 /**
  * Limits the number of partitions for an RDD based on the available spark cores.
  *
@@ -41,6 +43,24 @@ object SparkCoresPartitioner extends Serializable {
 
   // Get the maximum number of spark tasks to run
   private def getMaxSparkTasks[T](rdd: RDD[T]): Int = {
+    if (EngineConfig.isSparkOnYarn) {
+      getMaxExecutorsYarn
+    }
+    else {
+      getMaxExecutorsStandalone(rdd)
+    }
+  }
+
+  // Get the maximum number of executors for Spark Yarn
+  private def getMaxExecutorsYarn: Int = {
+    val coresPerExecutor = Try({
+      EngineConfig.sparkConfProperties("spark.executor.cores").toInt
+    }).getOrElse(1)
+    EngineConfig.sparkOnYarnNumExecutors * coresPerExecutor * EngineConfig.maxTasksPerCore
+  }
+
+  // Get the maximum number of executors for Spark stand-alone
+  private def getMaxExecutorsStandalone[T](rdd: RDD[T]): Int = {
     val numExecutors = Math.max(1, rdd.sparkContext.getExecutorStorageStatus.size - 1)
     val numSparkCores = {
       val maxSparkCores = rdd.sparkContext.getConf.getInt("spark.cores.max", 0)
