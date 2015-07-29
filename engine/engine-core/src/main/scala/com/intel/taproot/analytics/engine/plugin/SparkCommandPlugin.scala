@@ -156,13 +156,17 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
 
     /* Get extraClassPath for plugin including its parents' extra classpath */
     val extraClassPath = scala.collection.mutable.MutableList[String]()
-    for {
-      i <- jars
-      configPathKey = s"intel.taproot.analytics.component.archives.$i.config-path"
-      configPath = allEntries.get(configPathKey).get.unwrapped().toString
-      extraClassPathKey = s"$configPath.extra-classpath"
-      if allEntries.contains(extraClassPathKey)
-    } extraClassPath ++= allEntries.get(extraClassPathKey).get.asInstanceOf[ConfigList].unwrapped().map(_.toString)
+    for (i <- jars) {
+      val configPathKey = s"intel.taproot.analytics.component.archives.$i.config-path"
+      val key = allEntries.get(configPathKey)
+      if (key.isDefined) {
+        val configPath = key.get.unwrapped().toString
+        val extraClassPathKey = s"$configPath.extra-classpath"
+        if (allEntries.contains(extraClassPathKey)) {
+          extraClassPath ++= allEntries.get(extraClassPathKey).get.asInstanceOf[ConfigList].unwrapped().map(_.toString)
+        }
+      }
+    }
 
     /* Convert all configs to strings; override the archives entry with current plugin's archive name */
     /* We always need engine as in Engine.scala we add plugins via
@@ -180,7 +184,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     (jars.toList, extraClassPath.distinct.toList)
   }
 
-  def getArchiveName() = withMyClassLoader {
+  def archiveName: String = withMyClassLoader {
     Archive.system.lookupArchiveNameByLoader(Thread.currentThread().getContextClassLoader)
   }
 }

@@ -14,27 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.giraph.io.titan;
+package com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan
 
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
-import org.apache.log4j.Logger;
+import com.intel.taproot.graphbuilder.elements.GBEdge
 
-public class TitanTestGraph extends StandardTitanGraph {
-
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(TitanTestGraph.class);
-
-    public TitanTestGraph(final GraphDatabaseConfiguration configuration) {
-        super(configuration);
-        LOG.info("create TitanTestGraph");
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-    }
-
-}
+/**
+ * Holds an edge plus src and dest vertex labels.
+ */
+case class EdgeHolder(edge: GBEdge, srcLabel: String, destLabel: String)
