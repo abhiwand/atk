@@ -101,7 +101,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
    * @return A com.intel.taproot.analytics.domain.graphconstruction.VertexRule
    */
   private def getGBVertexRule(vertexRule: VertexRule): GBVertexRule = {
-    new GBVertexRule(getGBPropertyRule(vertexRule.id), (vertexRule.properties map getGBPropertyRule))
+    new GBVertexRule(getGBPropertyRule(vertexRule.id), vertexRule.properties.map(getGBPropertyRule))
   }
 
   /**
@@ -122,7 +122,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
    */
   private def getGBEdgeRule(edgeRule: EdgeRule): GBEdgeRule = {
     new GBEdgeRule(getGBPropertyRule(edgeRule.tail), getGBPropertyRule(edgeRule.head),
-      getGBValue(edgeRule.label), (edgeRule.properties map getGBPropertyRule), biDirectional = edgeRule.bidirectional)
+      getGBValue(edgeRule.label), edgeRule.properties.map(getGBPropertyRule), biDirectional = edgeRule.bidirectional)
   }
 
   /**

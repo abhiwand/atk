@@ -88,11 +88,8 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
   }
 
   def createSparkContextForCommand(arguments: Argument, sparkContextFactory: SparkContextFactory)(implicit invocation: SparkInvocation): SparkContext = {
-    val cmd = invocation.commandStorage.lookup(invocation.commandId)
-      .getOrElse(throw new IllegalArgumentException(s"Command ${invocation.commandId} does not exist"))
-    val commandId = cmd.id
-    val commandName = cmd.name
-    val context: SparkContext = sparkContextFactory.context(s"(id:$commandId,name:$commandName)", kryoRegistrator)
+    val cmd = invocation.commandStorage.expectCommand(invocation.commandId)
+    val context: SparkContext = sparkContextFactory.context(s"(id:${cmd.id},name:${cmd.name})", kryoRegistrator)
     if (!EngineConfig.reuseSparkContext) {
       try {
         val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, numberOfJobs(arguments)) // Pass number of Jobs here
@@ -105,7 +102,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
         case e: Exception => error("could not create progress listeners", exception = e)
       }
     }
-    SparkCommandPlugin.commandIdContextMapping += (commandId -> context)
+    SparkCommandPlugin.commandIdContextMapping += (cmd.id -> context)
     context
   }
 
@@ -159,13 +156,17 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
 
     /* Get extraClassPath for plugin including its parents' extra classpath */
     val extraClassPath = scala.collection.mutable.MutableList[String]()
-    for {
-      i <- jars
-      configPathKey = s"intel.taproot.analytics.component.archives.$i.config-path"
-      configPath = allEntries.get(configPathKey).get.unwrapped().toString
-      extraClassPathKey = s"$configPath.extra-classpath"
-      if allEntries.contains(extraClassPathKey)
-    } extraClassPath ++= allEntries.get(extraClassPathKey).get.asInstanceOf[ConfigList].unwrapped().map(_.toString)
+    for (i <- jars) {
+      val configPathKey = s"intel.taproot.analytics.component.archives.$i.config-path"
+      val key = allEntries.get(configPathKey)
+      if (key.isDefined) {
+        val configPath = key.get.unwrapped().toString
+        val extraClassPathKey = s"$configPath.extra-classpath"
+        if (allEntries.contains(extraClassPathKey)) {
+          extraClassPath ++= allEntries.get(extraClassPathKey).get.asInstanceOf[ConfigList].unwrapped().map(_.toString)
+        }
+      }
+    }
 
     /* Convert all configs to strings; override the archives entry with current plugin's archive name */
     /* We always need engine as in Engine.scala we add plugins via
@@ -183,7 +184,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
     (jars.toList, extraClassPath.distinct.toList)
   }
 
-  def getArchiveName() = withMyClassLoader {
+  def archiveName: String = withMyClassLoader {
     Archive.system.lookupArchiveNameByLoader(Thread.currentThread().getContextClassLoader)
   }
 }

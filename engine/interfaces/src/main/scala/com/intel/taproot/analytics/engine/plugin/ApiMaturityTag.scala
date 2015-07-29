@@ -17,7 +17,9 @@
 package com.intel.taproot.analytics.engine.plugin
 
 /**
- * Enumeration of the API Tags with which operations may tagged
+ * Enumeration of the API Tags with which operations may tagged.
+ *
+ * These tags get exposed in end-user documentation.
  */
 object ApiMaturityTag extends Enumeration {
   type ApiMaturityTag = Value
@@ -36,4 +38,9 @@ object ApiMaturityTag extends Enumeration {
    * API item is no longer in favor and is going away.
    */
   val Deprecated = Value
+
+  /** Implicit conversion to an Option */
+  implicit def toOption(apiMaturityTag: ApiMaturityTag.Value): Option[ApiMaturityTag.Value] = {
+    Some(apiMaturityTag)
+  }
 }

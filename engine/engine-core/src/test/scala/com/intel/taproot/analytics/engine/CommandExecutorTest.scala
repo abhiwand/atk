@@ -56,6 +56,7 @@ class FakeCommandStorage extends CommandStorage {
     commands += (id -> command)
     command
   }
+
 }
 
 class CommandExecutorTest extends FlatSpec with Matchers with MockitoSugar {

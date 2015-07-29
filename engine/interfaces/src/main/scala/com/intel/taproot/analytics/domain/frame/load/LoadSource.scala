@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.domain.frame.load
 
 import com.intel.taproot.analytics.domain.frame.FrameReference
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
-import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Schema }
+import com.intel.taproot.analytics.domain.schema.{ Column, FrameSchema, Schema }
 
 /**
  * The case classes in this file are used to parse the json submitted as part of a load or append call
@@ -125,6 +125,6 @@ case class SchemaArgs(columns: List[(String, DataType)]) {
    * Convert args to our internal format
    */
   def schema: Schema = {
-    Schema.fromTuples(columns)
+    new FrameSchema(columns.map { case (name: String, dataType: DataType) => Column(name, dataType) })
   }
 }

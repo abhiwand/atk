@@ -21,7 +21,7 @@ object FileUtil {
   /**
    * For debugging only
    */
-  private[analytics] def writeFile(fileName: String, content: String) {
+  private[intel] def writeFile(fileName: String, content: String) {
 
     val file = new java.io.File(fileName)
     val parent = file.getParentFile

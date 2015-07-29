@@ -113,7 +113,7 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
   import org.apache.spark.sql.Row
 
   override def expectFrame(frameRef: FrameReference)(implicit invocation: Invocation): FrameEntity = {
-    lookup(frameRef.frameId).getOrElse(throw new NotFoundException("frame", frameRef.frameId.toString))
+    lookup(frameRef.frameId).getOrElse(throw new NotFoundException("frame", frameRef.frameId))
   }
 
   /**
@@ -338,10 +338,9 @@ class SparkFrameStorage(val frameFileStorage: FrameFileStorage,
         Some(frameFileStorage.hdfs.size(absPath))
       case (Some(StorageFormats.FileSequence), Some(absPath)) =>
         Some(frameFileStorage.hdfs.size(absPath))
-      case _ => {
+      case _ =>
         warn(s"Could not get size of frame ${frameEntity.id} / ${frameEntity.name}")
         None
-      }
     }
   }
 
