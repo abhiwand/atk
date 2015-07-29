@@ -16,4 +16,6 @@
 
 package com.intel.taproot.analytics.domain.model
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 case class KMeansNewArgs(dummyModelRef: ModelReference, name: Option[String] = None)

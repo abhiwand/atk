@@ -1350,26 +1350,14 @@ API section on :ref:`titan_graph`.
 Graph Analytics
 ---------------
 
-*   `Clustering Coefficients`_
-*   `Connected Components (CC)`_
+*   `Clustering Coefficients <python_api/graphs/graph-/clustering_coefficient.html>`__
+*   `Connected Components (CC) <python_api/graphs/graph-titan/connected_components.html>`__
 *   `Degree Calculation`_
-*   `K-Clique Percolation`_
-*   `PageRank (PR)`_
-
-.. _Clustering Coefficients:
-.. include:: ds_gaal_clco.inc
-
-.. _Connected Components (CC):
-.. include:: ds_gaal_cc.inc
+*   `K-Clique Percolation <python_api/graphs/graph-/ml/kclique_percolation.html>`__
+*   `PageRank (PR) <python_api/graphs/graph-titan/page_rank.html>`__
 
 .. _Degree Calculation:
 .. include:: ds_gaal_dc.inc
-
-.. _K-Clique Percolation:
-.. include:: ds_gaal_k.inc
-
-.. _PageRank (PR):
-.. include:: ds_gaal_pr.inc
 
 .. toctree::
     :hidden:
@@ -1377,17 +1365,4 @@ Graph Analytics
     ds_apir
 
 .. rubric:: Footnotes
-
-.. [K1]
-    G. Palla, I. Derenyi, I. Farkas, and T. Vicsek. “Uncovering the overlapping
-    community structure of complex networks in nature and society”.
-    Nature, 435:814, 2005 (
-    See `http://hal.elte.hu/cfinder/wiki/papers/communitylettm.pdf`__ )
-
-.. [K2]
-    Varamesh, A.; Akbari, M.K.; Fereiduni, M.; Sharifian, S.; Bagheri, A.,
-    "Distributed Clique Percolation based community detection on social
-    networks using MapReduce,"
-    Information and Knowledge Technology (IKT), 2013 5th Conference on, vol.,
-    no., pp.478,483, 28-30 May 2013
 
