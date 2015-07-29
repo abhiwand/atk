@@ -45,7 +45,7 @@ popd
 
 #excluded jars are now combined in deploy.jar
 # giraph-plugins.jar graphon.jar
-jars=" rest-server.jar interfaces.jar engine-core.jar deploy.jar"
+jars=" rest-server.jar interfaces.jar engine-core.jar deploy.jar scoring-models.jar"
 
 pushd ..
 for jar in $jars

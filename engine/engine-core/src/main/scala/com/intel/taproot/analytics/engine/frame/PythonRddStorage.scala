@@ -36,8 +36,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.bson.types.BasicBSONList
 import org.bson.{ BSON, BasicBSONObject }
-import spray.json._
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import scala.collection.mutable.ArrayBuffer
 import com.google.common.io.Files
 
@@ -71,7 +69,7 @@ object PythonRddStorage {
 
   def mapWith(data: FrameRdd, udf: Udf, udfSchema: Schema = null, sc: SparkContext): FrameRdd = {
     val newSchema = if (udfSchema == null) { data.frameSchema } else { udfSchema }
-    val converter = DataTypes.parseMany(newSchema.columnTuples.map(_._2).toArray)(_)
+    val converter = DataTypes.parseMany(newSchema.columns.map(_.dataType).toArray)(_)
 
     val pyRdd = RDDToPyRDD(udf, data, sc)
     val frameRdd = getRddFromPythonRdd(pyRdd, converter)
@@ -82,7 +80,7 @@ object PythonRddStorage {
   def uploadFilesToSpark(uploads: List[String], sc: SparkContext): JArrayList[String] = {
     val pythonIncludes = new JArrayList[String]()
     if (uploads != null) {
-      for (k <- 0 until uploads.size) {
+      for (k <- uploads.indices) {
         sc.addFile(s"file://${EngineConfig.pythonUdfDependenciesDirectory}" + uploads(k))
         pythonIncludes.add(uploads(k))
       }
@@ -135,7 +133,7 @@ object PythonRddStorage {
         sparkPython / "lib" / "py4j-0.8.2.1-src.zip",
         //Support dev machines without installing python packages
         //TODO: Maybe hide behind a flag?
-        Directory.Current.get / "python").map(_.toString).mkString(":"))
+        Directory.Current.get / "python").map(_.toString()).mkString(":"))
 
     val accumulator = rdd.sparkContext.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
     val broadcastVars = new JArrayList[Broadcast[AtkPythonBroadcast]]()

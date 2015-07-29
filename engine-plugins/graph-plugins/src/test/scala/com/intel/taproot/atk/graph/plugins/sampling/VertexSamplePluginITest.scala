@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 /**
  * Integration testing for uniform vertex sampling
  */
-class VertexSampleITest extends TestingSparkContextWordSpec with Matchers {
+class VertexSamplePluginITest extends TestingSparkContextWordSpec with Matchers {
 
   // generate sample data
   val gbIds = Map((1, new Property("gbId", 1)),
