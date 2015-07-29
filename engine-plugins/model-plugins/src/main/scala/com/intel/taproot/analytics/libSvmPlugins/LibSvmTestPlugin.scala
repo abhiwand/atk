@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, P
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
-import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
+import org.apache.spark.libsvm.atk.plugins.LibSvmJsonProtocol._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 

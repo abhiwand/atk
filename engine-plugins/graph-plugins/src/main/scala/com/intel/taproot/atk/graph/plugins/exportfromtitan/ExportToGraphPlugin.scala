@@ -16,6 +16,7 @@
 
 package com.intel.taproot.atk.graph.plugins.exportfromtitan
 
+import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ VertexSchemaAggregator, EdgeSchemaAggregator, EdgeHolder }
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.schema.DataTypes._
@@ -29,7 +30,7 @@ import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.tinkerpop.blueprints.Vertex
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.ia.graph.{ VertexWrapper, EdgeWrapper }
+import org.apache.spark.atk.graph.{ VertexWrapper, EdgeWrapper }
 import org.apache.spark.rdd.RDD
 
 import scala.collection.immutable.Map

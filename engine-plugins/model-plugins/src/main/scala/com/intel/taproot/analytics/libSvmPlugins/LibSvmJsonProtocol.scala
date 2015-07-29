@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package org.apache.spark.libsvm.ia.plugins
+package org.apache.spark.libsvm.atk.plugins
 
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.intel.taproot.analytics.libSvmPlugins._

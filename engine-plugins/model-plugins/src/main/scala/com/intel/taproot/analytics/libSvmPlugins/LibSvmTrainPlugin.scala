@@ -27,7 +27,7 @@ import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import libsvm.{ svm_node, svm_problem, svm_parameter, svm }
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.libsvm.ia.plugins.LibSvmJsonProtocol._
+import org.apache.spark.libsvm.atk.plugins.LibSvmJsonProtocol._
 
 //Implicits needed for JSON conversion
 import spray.json._

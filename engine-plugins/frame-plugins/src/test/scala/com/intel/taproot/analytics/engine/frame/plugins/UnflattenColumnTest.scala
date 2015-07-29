@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.unflattencolumn
 
-import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
+import com.intel.taproot.analytics.domain.schema.{ Column, FrameSchema, DataTypes }
 import com.intel.taproot.analytics.engine.frame.plugins.UnflattenColumnFunctions
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
@@ -41,10 +41,10 @@ class UnflattenColumnTest extends FlatSpec with Matchers with BeforeAndAfterEach
     Array[Any]("Bob", "1/1/2015", "1", "60"))
 
   def executeTest(data: List[Array[Any]], rowsInResult: Int): Array[Row] = {
-    val schema = Schema.fromTuples(List((nameColumn, DataTypes.string),
-      (dateColumn, DataTypes.string),
-      ("minute", DataTypes.int32),
-      ("heartRate", DataTypes.int32)))
+    val schema = FrameSchema(List(Column(nameColumn, DataTypes.string),
+      Column(dateColumn, DataTypes.string),
+      Column("minute", DataTypes.int32),
+      Column("heartRate", DataTypes.int32)))
     val compositeKeyColumnNames = List(nameColumn, dateColumn)
     val compositeKeyIndices = List(0, 1)
 

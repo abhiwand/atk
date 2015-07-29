@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, Gir
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.{ FrameSchema, Column }
 import com.intel.taproot.analytics.engine.plugin.{ PluginDoc, CommandPlugin, Invocation }
-import org.apache.spark.sql.parquet.ia.giraph.frame.lbp.{ LoopyBeliefPropagationVertexInputFormat, LoopyBeliefPropagationVertexOutputFormat, LoopyBeliefPropagationEdgeInputFormat }
+import org.apache.spark.sql.parquet.atk.giraph.frame.lbp.{ LoopyBeliefPropagationVertexInputFormat, LoopyBeliefPropagationVertexOutputFormat, LoopyBeliefPropagationEdgeInputFormat }
 
 import LoopyBeliefPropagationJsonFormat._
 

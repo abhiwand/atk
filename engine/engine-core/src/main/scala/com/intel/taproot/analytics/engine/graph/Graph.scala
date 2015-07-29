@@ -22,7 +22,7 @@ import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, VertexSchema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import org.apache.spark.SparkContext
-import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
+import org.apache.spark.atk.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.rdd.RDD
 
 /**
