@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.join
 
-import com.intel.taproot.analytics.domain.schema.{Column, DataTypes, FrameSchema}
+import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.Row

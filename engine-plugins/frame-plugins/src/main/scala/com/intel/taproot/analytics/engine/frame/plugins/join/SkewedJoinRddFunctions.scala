@@ -10,7 +10,7 @@ import org.apache.spark.util.ReservoirSampler
 import scala.util.hashing._
 
 class SkewedJoinRddFunctions(self: RddJoinParam) extends Logging with Serializable {
-/*
+  /*
   /**
    * Perform skewed left outer-join using a broadcast variable
    *

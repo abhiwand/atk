@@ -21,7 +21,7 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql._
 
 import scala.collection.mutable.{ HashMap, MultiMap, Set }
-import scala.util.{Try, Random}
+import scala.util.{ Try, Random }
 
 /**
  * Broadcast variable for joins

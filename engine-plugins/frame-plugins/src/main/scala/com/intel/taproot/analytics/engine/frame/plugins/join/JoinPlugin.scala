@@ -25,6 +25,9 @@ import com.intel.taproot.analytics.engine.EngineConfig
 import com.intel.taproot.analytics.engine.frame._
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 /** Json conversion for arguments and return value case classes */
 object JoinJsonFormat {
@@ -96,8 +99,13 @@ class JoinPlugin extends SparkCommandPlugin[JoinArgs, FrameEntity] {
   private def createRDDJoinParam(frame: SparkFrame,
                                  joinColumn: String,
                                  broadcastJoinThreshold: Long)(implicit invocation: Invocation): RddJoinParam = {
+    //TODO: Delete the conversion from GenericRowWithSchema to GenericRow once we upgrade to Spark1.4
+    //https://issues.apache.org/jira/browse/SPARK-6465
+    val genericRowRdd : RDD[Row]= frame.rdd.map(row => new GenericRow(row.toSeq.toArray))
+    val genericRowFrame = new FrameRdd(frame.rdd.frameSchema, genericRowRdd)
+
     val frameSize = if (broadcastJoinThreshold > 0) frame.sizeInBytes else None
-    RddJoinParam(frame.rdd.toDataFrame,
+    RddJoinParam(genericRowFrame.toDataFrame,
       joinColumn,
       frame.schema.columnIndex(joinColumn),
       frame.schema.columns.length,

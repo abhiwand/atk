@@ -37,8 +37,8 @@ object ReservoirSampler {
    * @return (total row count, an array of partition samples)
    */
   def sampleAndCount[K: ClassTag](
-                                   rdd: RDD[K],
-                                   sampleSizePerPartition: Int): (Long, Array[PartitionSample[K]]) = {
+    rdd: RDD[K],
+    sampleSizePerPartition: Int): (Long, Array[PartitionSample[K]]) = {
     val (rowCount, sampleArray) = RangePartitioner.sketch(rdd, sampleSizePerPartition)
     val partitionSamples = sampleArray.map {
       case (partitionId, partitionLength, samples) =>

@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame.plugins.join
 
-import com.intel.taproot.analytics.domain.schema.{DataTypes, Column, FrameSchema}
+import com.intel.taproot.analytics.domain.schema.{ DataTypes, Column, FrameSchema }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.Row
@@ -74,7 +74,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
 
   "joinRDDs" should "join two RDD with inner join using broadcast variable" in {
     val countryCode = new FrameRdd(codeSchema, sparkContext.parallelize(idCountryCodes)).toDataFrame
-    val countryNames = new FrameRdd(countrySchema,sparkContext.parallelize(idCountryNames)).toDataFrame
+    val countryNames = new FrameRdd(countrySchema, sparkContext.parallelize(idCountryNames)).toDataFrame
 
     val leftJoinParam = RddJoinParam(countryCode, "col_0", 0, 2, Some(150))
     val rightJoinParam = RddJoinParam(countryNames, "col_0", 0, 2, Some(10000))
@@ -95,10 +95,10 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
 
   "joinRDDs" should "join two RDD with left join" in {
     val countryCode = new FrameRdd(codeSchema, sparkContext.parallelize(idCountryCodes)).toDataFrame
-    val countryNames = new FrameRdd(countrySchema,sparkContext.parallelize(idCountryNames)).toDataFrame
+    val countryNames = new FrameRdd(countrySchema, sparkContext.parallelize(idCountryNames)).toDataFrame
 
     val results = JoinRddFunctions.joinRDDs(RddJoinParam(countryCode, "col_0", 0, 2),
-      RddJoinParam(countryNames,"col_0", 0, 2), "left").collect()
+      RddJoinParam(countryNames, "col_0", 0, 2), "left").collect()
 
     val expectedResults = List(
       new GenericRow(Array[Any](1, 354, 1, "Iceland")),
@@ -115,10 +115,10 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
 
   "joinRDDs" should "join two RDD with left join using broadcast variable" in {
     val countryCode = new FrameRdd(codeSchema, sparkContext.parallelize(idCountryCodes)).toDataFrame
-    val countryNames = new FrameRdd(countrySchema,sparkContext.parallelize(idCountryNames)).toDataFrame
+    val countryNames = new FrameRdd(countrySchema, sparkContext.parallelize(idCountryNames)).toDataFrame
 
-    val leftJoinParam = RddJoinParam(countryCode,  "col_0", 0, 2, Some(1500L))
-    val rightJoinParam = RddJoinParam(countryNames, "col_0", 0, 2,  Some(100L + Int.MaxValue))
+    val leftJoinParam = RddJoinParam(countryCode, "col_0", 0, 2, Some(1500L))
+    val rightJoinParam = RddJoinParam(countryNames, "col_0", 0, 2, Some(100L + Int.MaxValue))
 
     // Test join wrapper function
     val results = JoinRddFunctions.joinRDDs(leftJoinParam, rightJoinParam, "left").collect()
@@ -137,7 +137,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
   }
   "joinRDDs" should "join two RDD with right join" in {
     val countryCode = new FrameRdd(codeSchema, sparkContext.parallelize(idCountryCodes)).toDataFrame
-    val countryNames = new FrameRdd(countrySchema,sparkContext.parallelize(idCountryNames)).toDataFrame
+    val countryNames = new FrameRdd(countrySchema, sparkContext.parallelize(idCountryNames)).toDataFrame
 
     val results = JoinRddFunctions.joinRDDs(
       RddJoinParam(countryCode, "col_0", 0, 2),
@@ -158,7 +158,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
 
   "joinRDDs" should "join two RDD with right join using broadcast variable" in {
     val countryCode = new FrameRdd(codeSchema, sparkContext.parallelize(idCountryCodes)).toDataFrame
-    val countryNames = new FrameRdd(countrySchema,sparkContext.parallelize(idCountryNames)).toDataFrame
+    val countryNames = new FrameRdd(countrySchema, sparkContext.parallelize(idCountryNames)).toDataFrame
 
     val broadcastJoinThreshold = 1000
     val leftJoinParam = RddJoinParam(countryCode, "col_0", 0, 2, Some(800))
@@ -181,7 +181,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
 
   "joinRDDs" should "join two RDD with outer join" in {
     val countryCode = new FrameRdd(codeSchema, sparkContext.parallelize(idCountryCodes)).toDataFrame
-    val countryNames = new FrameRdd(countrySchema,sparkContext.parallelize(idCountryNames)).toDataFrame
+    val countryNames = new FrameRdd(countrySchema, sparkContext.parallelize(idCountryNames)).toDataFrame
 
     val results = JoinRddFunctions.joinRDDs(RddJoinParam(countryCode, "col_0", 0, 2),
       RddJoinParam(countryNames, "col_0", 0, 2), "outer").collect()
@@ -203,7 +203,7 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
   "outer join with empty left RDD" should "preserve the result from the right RDD" in {
     val emptyIdCountryCodes = List.empty[Row]
     val countryCode = new FrameRdd(codeSchema, sparkContext.parallelize(emptyIdCountryCodes)).toDataFrame
-    val countryNames = new FrameRdd(countrySchema,sparkContext.parallelize(idCountryNames)).toDataFrame
+    val countryNames = new FrameRdd(countrySchema, sparkContext.parallelize(idCountryNames)).toDataFrame
 
     val results = JoinRddFunctions.joinRDDs(RddJoinParam(countryCode, "col_0", 0, 2),
       RddJoinParam(countryNames, "col_0", 0, 2), "outer").collect()
@@ -242,11 +242,11 @@ class SparkJoinITest extends TestingSparkContextFlatSpec with Matchers {
 
   "outer join large RDD" should "generate RDD contains all element from both RDD" in {
     val oneToOneHundredThousand: List[Row] = (1 to 100000).map(i => {
-       new GenericRow(Array[Any](i))
+      new GenericRow(Array[Any](i))
     }).toList
 
     val fiftyThousandToOneFiftyThousands: List[Row] = (50001 to 150000).map(i => {
-       new GenericRow(Array[Any](i))
+      new GenericRow(Array[Any](i))
     }).toList
 
     val inputSchema = FrameSchema(List(Column("col_0", DataTypes.int32)))

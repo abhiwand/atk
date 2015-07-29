@@ -29,7 +29,7 @@ import org.apache.spark.sql.DataFrame
  */
 case class RddJoinParam(frame: DataFrame,
                         joinColumn: String,
-                        joinColumnIndex: Int,//TODO: Delete in Spark 1.4+ since row.getAs(columnName) supported
+                        joinColumnIndex: Int, //TODO: Delete in Spark 1.4+ since row.getAs(columnName) supported
                         columnCount: Int,
                         estimatedSizeInBytes: Option[Long] = None) {
   require(frame != null, "join frame is required")
