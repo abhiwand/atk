@@ -1,0 +1,94 @@
+/*
+// Copyright (c) 2015 Intel Corporation 
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
+
+package com.intel.taproot.atk.graph.plugins.connectedcomponents
+
+import com.intel.taproot.analytics.engine.graph.SparkGraph
+import com.intel.taproot.graphbuilder.elements.Property
+import com.intel.taproot.analytics.domain.frame.FrameEntity
+import com.intel.taproot.analytics.domain.graph.GraphReference
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import com.intel.taproot.analytics.domain.{ CreateEntityArgs, DomainJsonProtocol }
+import org.apache.spark.frame.FrameRdd
+import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
+import org.apache.spark.rdd.RDD
+import spray.json._
+import DomainJsonProtocol._
+
+/**
+ * Parameters for executing connected components.
+ */
+case class ConnectedComponentsArgs(graph: GraphReference,
+                                   /*                                 @ArgDoc("""Name of the property to which connected components value will be stored on vertex and edge.""") outputProperty: String) { */
+                                   @ArgDoc("""The name of the column containing the connected component value.""") outputProperty: String) {
+  require(!outputProperty.isEmpty, "Output property label must be provided")
+}
+
+case class ConnectedComponentsReturn(frameDictionaryOutput: Map[String, FrameEntity])
+
+/** Json conversion for arguments and return value case classes */
+object ConnectedComponentsJsonFormat {
+  import DomainJsonProtocol._
+  implicit val CCArgsFormat = jsonFormat2(ConnectedComponentsArgs)
+  implicit val CCReturnFormat = jsonFormat1(ConnectedComponentsReturn)
+}
+
+import ConnectedComponentsJsonFormat._
+
+@PluginDoc(oneLine = "Implements the connected components computation on a graph by invoking graphx api.",
+  extended = """Pulls graph from underlying store, sends it off to the ConnectedComponentGraphXDefault,
+and then writes the output graph back to the underlying store.
+
+Right now it is using only Titan for graph storage. Other backends including Parquet will be supported later.""",
+  returns = """Dictionary containing the vertex type as the key and the corresponding
+  vertex's frame with a connected component column.
+  Call dictionary_name['label'] to get the handle to frame whose vertex type is label.""")
+class ConnectedComponentsPlugin extends SparkCommandPlugin[ConnectedComponentsArgs, ConnectedComponentsReturn] {
+  override def name: String = "graph/graphx_connected_components"
+
+  //TODO remove when we move to the next version of spark
+  override def kryoRegistrator: Option[String] = None
+
+  override def execute(arguments: ConnectedComponentsArgs)(implicit invocation: Invocation): ConnectedComponentsReturn = {
+
+    val graph: SparkGraph = arguments.graph
+    val (gbVertices, gbEdges) = graph.gbRdds
+
+    val inputVertices: RDD[Long] = gbVertices.map(gbvertex => gbvertex.physicalId.asInstanceOf[Long])
+    val inputEdges = gbEdges.map(gbedge => (gbedge.tailPhysicalId.asInstanceOf[Long], gbedge.headPhysicalId.asInstanceOf[Long]))
+
+    // Call ConnectedComponentsGraphXDefault to kick off ConnectedComponents computation on RDDs
+    val intermediateVertices = ConnectedComponentsGraphXDefault.run(inputVertices, inputEdges)
+    val connectedComponentRDD = intermediateVertices.map({
+      case (vertexId, componentId) => (vertexId, Property(arguments.outputProperty, componentId))
+    })
+
+    val outVertices = ConnectedComponentsGraphXDefault.mergeConnectedComponentResult(connectedComponentRDD, gbVertices)
+
+    val frameRddMap = FrameRdd.toFrameRddMap(outVertices)
+
+    new ConnectedComponentsReturn(frameRddMap.keys.map(label => {
+      val result = engine.frames.tryNewFrame(CreateEntityArgs(description = Some("created by connected components operation"))) { newOutputFrame: FrameEntity =>
+        val frameRdd = frameRddMap(label)
+        newOutputFrame.save(frameRdd)
+      }
+      (label, result)
+    }).toMap)
+
+  }
+
+}

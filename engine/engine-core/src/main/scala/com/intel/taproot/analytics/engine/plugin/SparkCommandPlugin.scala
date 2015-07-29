@@ -88,11 +88,8 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
   }
 
   def createSparkContextForCommand(arguments: Argument, sparkContextFactory: SparkContextFactory)(implicit invocation: SparkInvocation): SparkContext = {
-    val cmd = invocation.commandStorage.lookup(invocation.commandId)
-      .getOrElse(throw new IllegalArgumentException(s"Command ${invocation.commandId} does not exist"))
-    val commandId = cmd.id
-    val commandName = cmd.name
-    val context: SparkContext = sparkContextFactory.context(s"(id:$commandId,name:$commandName)", kryoRegistrator)
+    val cmd = invocation.commandStorage.expectCommand(invocation.commandId)
+    val context: SparkContext = sparkContextFactory.context(s"(id:${cmd.id},name:${cmd.name})", kryoRegistrator)
     if (!EngineConfig.reuseSparkContext) {
       try {
         val listener = new SparkProgressListener(SparkProgressListener.progressUpdater, cmd, numberOfJobs(arguments)) // Pass number of Jobs here
@@ -105,7 +102,7 @@ trait SparkCommandPlugin[Argument <: Product, Return <: Product]
         case e: Exception => error("could not create progress listeners", exception = e)
       }
     }
-    SparkCommandPlugin.commandIdContextMapping += (commandId -> context)
+    SparkCommandPlugin.commandIdContextMapping += (cmd.id -> context)
     context
   }
 
