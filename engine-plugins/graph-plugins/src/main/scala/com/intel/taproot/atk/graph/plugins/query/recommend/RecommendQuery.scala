@@ -122,7 +122,7 @@ Recommendations for the input vertex.""")
 class RecommendQuery extends SparkCommandPlugin[RecommendParams, RecommendResult] {
 
   /**
-   * The name of the command, e.g. graph/sampling/vertex_sample
+   * The name of the command, e.g. graph/vertex_sample
    */
   override def name: String = "graph:titan/query/recommend"
 
