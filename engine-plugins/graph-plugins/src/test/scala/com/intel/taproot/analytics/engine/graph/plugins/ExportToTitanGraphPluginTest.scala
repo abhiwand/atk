@@ -18,6 +18,7 @@ package com.intel.taproot.analytics.engine.graph.plugins
 
 import java.util
 
+import com.intel.taproot.atk.graph.plugins.ExportToTitanGraphPlugin
 import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.taproot.graphbuilder.parser.InputSchema
 import com.intel.taproot.analytics.domain.frame.FrameEntity

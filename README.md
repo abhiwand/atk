@@ -1,5 +1,5 @@
-Taproot Analytics
-=================
+ATK
+===
 
 # Folders Overview
 * bin/ - script for starting REST server, gremlin shell
