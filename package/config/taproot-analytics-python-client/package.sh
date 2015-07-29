@@ -34,10 +34,6 @@ cp -Rv  ../python-client/taprootanalytics/* ${BUILD_DIR}/usr/lib/taproot/analyti
 log "delete pyc files"
 find ../python-client/taprootanalytics -name *.pyc -type f -delete
 
-mkdir -p ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/examples/
-
-cp -Rv ../python-client/examples/end-user/* ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/examples/
-
 cp -Rv  ../python-client/cmdgen.py ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/
 
 cp -Rv ../doc/build/html ${BUILD_DIR}/usr/lib/taproot/analytics/python-client/doc/html/

@@ -1,6 +1,5 @@
 import unittest
 import taprootanalytics as ia
-from pprint import pprint
 
 # show full stack traces
 ia.errors.show_details = True
@@ -13,19 +12,6 @@ ia.connect()
 
 
 class UserExamples(unittest.TestCase):
-
-    #def test_collaborative_filtering(self):
-    #    import taprootanalytics.examples.collaborative_filtering as cf
-    #    frame = cf.run("/datasets/movie_data_random.csv", ia)
-        #assert frame.row_count == 799
-        #assert frame.name == "CF"
-    #    assert True
-
-    #def test_connected_components(self):
-    #    import taprootanalytics.examples.connected_components as cc
-    #    cc.run("/datasets/movie_data_random.csv", ia)
-    #    assert True
-
     def test_frame(self):
         import taprootanalytics.examples.frame as frame_test
         frame_test.run("/datasets/cities.csv", ia)

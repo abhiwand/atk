@@ -27,7 +27,7 @@ mkdir -p  ${BUILD_DIR}/usr/lib/taproot/analytics/lib
 
 #copy example scripts
 mkdir -p ${BUILD_DIR}/usr/lib/taproot/analytics/examples/
-cp -Rv ../python-client/examples/end-user/* ${BUILD_DIR}/usr/lib/taproot/analytics/examples/
+cp -Rv ../python-client/taprootanalytics/examples/* ${BUILD_DIR}/usr/lib/taproot/analytics/examples/
 
 if [ -d /home/agent/datasets ]; then
     #copy datasets from agent home if it exists into the rpm tar.gz source
