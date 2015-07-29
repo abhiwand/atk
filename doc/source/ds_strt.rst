@@ -29,15 +29,6 @@ Features
     new features through manipulating existing values
 *   Analysis and machine learning algorithms give deeper insight into the data
 
-------------
-Data Storage
-------------
-
-The |PACKAGE| stores data in either a traditional table-based format,
-or in a graph format.
-It provides the tools to allow to easily manipulate data in either of these
-data formats.
-
 ---------------
 Script Examples
 ---------------

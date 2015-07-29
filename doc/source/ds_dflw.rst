@@ -37,9 +37,9 @@ REST server:
 .. index::
     pair: data; type
 
-------------
-Data Sources
-------------
+--------
+Raw Data
+--------
 
 .. _valid_data_types:
 
@@ -48,10 +48,8 @@ integers, and floats) that can be organized as a collection of rows and
 columns, similar to a table or spreadsheet.
 Each row corresponds to the data associated with one observation, and each
 column corresponds to a variable being observed.
-
-.. TODO::
-
-    Make writeup for database connectivity.
+See the Python API `Data Types <python_api/datatypes/index.html>`_ for
+a current list of data types supported.
 
 Connect to the server:
 
@@ -86,7 +84,7 @@ You should see a list of variable types similar to this:
 
 .. note::
 
-    Although the |PACKAGE| utilizes the Numpy package, numpy values of positive
+    Although the |PACKAGE| utilizes the NumPy package, NumPy values of positive
     infinity (np.inf), negative infinity (-np.inf) or nan (np.nan) are treated
     as None.
     Results of any user-defined functions which deal with such values are
@@ -100,8 +98,8 @@ You should see a list of variable types similar to this:
     single: JSON
     single: LineFile
 
-Bringing in the Raw Data
-========================
+Ingesting the Raw Data
+======================
 
 See the API section `Data Sources <python_api/datasources/index.html>`_
 for the various methods of ingesting data.
@@ -240,6 +238,8 @@ There are several ways to create frames\:
 #.  with a schema and data
 #.  by copying (all or a part of) another frame
 #.  as a return value from a Frame-based method; this is part of the ETL data flow.
+
+See the Python API `Frames section <python_api/frame/index.html>`__ for more information.
 
 Examples:
 ---------
@@ -1382,7 +1382,7 @@ Graph Analytics
     G. Palla, I. Derenyi, I. Farkas, and T. Vicsek. “Uncovering the overlapping
     community structure of complex networks in nature and society”.
     Nature, 435:814, 2005 (
-    See http://hal.elte.hu/cfinder/wiki/papers/communitylettm.pdf )
+    See `http://hal.elte.hu/cfinder/wiki/papers/communitylettm.pdf`__ )
 
 .. [K2]
     Varamesh, A.; Akbari, M.K.; Fereiduni, M.; Sharifian, S.; Bagheri, A.,

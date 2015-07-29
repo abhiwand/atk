@@ -202,9 +202,9 @@ Note:
     * Short-term workaround: periodically delete these files
     * Long-term fix: Spark 1.0 will automatically clean up the files
 
-----------
-References
-----------
+    ----------
+    References
+    ----------
 
-`Spark Docs <https://spark.apache.org/documentation.html>`__
+    `Spark Docs <https://spark.apache.org/documentation.html>`__
 

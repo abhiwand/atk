@@ -27,8 +27,7 @@ import com.intel.taproot.analytics.domain.DomainJsonProtocol._
  * Latent Dirichlet allocation - create a 'new' instance of this model
  */
 @PluginDoc(oneLine = "<TBD>",
-  extended = """<TBD>""",
-  returns = """<TBD>""")
+  extended = """<TBD>""")
 class LdaNewPlugin extends CommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
    * The name of the command.

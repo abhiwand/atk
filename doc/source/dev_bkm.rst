@@ -1,6 +1,6 @@
-==========================
-Best Known Methods (Admin)
-==========================
+================================
+Best Known Methods (Development)
+================================
 
 .. contents:: Table of Contents
     :local:

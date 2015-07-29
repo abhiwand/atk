@@ -19,6 +19,8 @@ package com.intel.taproot.analytics.domain
 import com.intel.taproot.analytics.domain.frame.Udf
 import com.intel.taproot.analytics.domain.frame.FrameReference
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Command to drop rows from a given vertex type.
  * @param udf filter expression
