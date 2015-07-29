@@ -16,8 +16,6 @@
 
 package com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes
 
-import com.intel.taproot.atk.graph.plugins.communitydetection.kclique.datatypes.VertexSet
-
 /**
  * A set of vertices, all pairs of which are connected in the graph.
  * @param members The set of vertices comprising the members of this clique.

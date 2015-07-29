@@ -306,7 +306,7 @@ trait AbstractRow {
    * @return the row matching the new schema
    */
   def valuesForSchema(updatedSchema: Schema): Row = {
-    val content = new Array[Any](updatedSchema.columnTuples.length)
+    val content = new Array[Any](updatedSchema.columns.length)
     for (columnName <- updatedSchema.columnNames) {
       if (columnName == GraphSchema.labelProperty && updatedSchema.isInstanceOf[GraphElementSchema]) {
         content(updatedSchema.columnIndex(columnName)) = updatedSchema.asInstanceOf[GraphElementSchema].label

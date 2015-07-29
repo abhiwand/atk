@@ -38,4 +38,9 @@ object ApiMaturityTag extends Enumeration {
    * API item is no longer in favor and is going away.
    */
   val Deprecated = Value
+
+  /** Implicit conversion to an Option */
+  implicit def toOption(apiMaturityTag: ApiMaturityTag.Value): Option[ApiMaturityTag.Value] = {
+    Some(apiMaturityTag)
+  }
 }

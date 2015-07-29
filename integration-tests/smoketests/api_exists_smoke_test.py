@@ -235,12 +235,11 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'name',
                                      'page_rank',
                                      'query',
-                                     'sampling',
-                                     'status'], ia.TitanGraph)
+                                     'status',
+                                     'vertex_sample'], ia.TitanGraph)
 
     def test_expected_methods_exist_on_titangraphml(self):
-        self.assert_methods_defined(['belief_propagation',
-                                     'kclique_percolation'], ia.core.api.TitanGraphMl)
+        self.assert_methods_defined(['belief_propagation'], ia.core.api.TitanGraphMl)
 
     def test_expected_methods_exist_on_kmeans_model(self):
         self.assert_methods_defined(["name",
