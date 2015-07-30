@@ -2,8 +2,8 @@
 
 # Executes all of the tests defined in this doc folder, using Python's doctest
 
-if [[ -f /usr/lib/TapRootAnalytics/virtpy/bin/activate ]]; then
-    ACTIVATE_FILE=/usr/lib/TapRootAnalytics/virtpy/bin/activate
+if [[ -f /usr/lib/TrustedAnalytics/virtpy/bin/activate ]]; then
+    ACTIVATE_FILE=/usr/lib/TrustedAnalytics/virtpy/bin/activate
 else
     ACTIVATE_FILE=/usr/local/virtpy/bin/activate
 fi

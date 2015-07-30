@@ -1,4 +1,4 @@
-.. currentmodule:: taprootanalytics
+.. currentmodule:: trustedanalytics
 
 Data Sources
 ============
@@ -7,30 +7,30 @@ Data Sources
 
 CsvFile
 -------
-.. autoclass:: taprootanalytics.CsvFile
+.. autoclass:: trustedanalytics.CsvFile
     :members:
     :inherited-members:
 
 HiveQuery
 --------
-.. autoclass:: taprootanalytics.HiveQuery
+.. autoclass:: trustedanalytics.HiveQuery
     :members:
     :inherited-members:
 
 JsonFile
 --------
-.. autoclass:: taprootanalytics.JsonFile
+.. autoclass:: trustedanalytics.JsonFile
     :members:
     :inherited-members:
 
 LineFile
 --------
-.. autoclass:: taprootanalytics.LineFile
+.. autoclass:: trustedanalytics.LineFile
     :members:
     :inherited-members:
 
 Pandas
 ------
-.. autoclass:: taprootanalytics.Pandas
+.. autoclass:: trustedanalytics.Pandas
     :members:
     :inherited-members:

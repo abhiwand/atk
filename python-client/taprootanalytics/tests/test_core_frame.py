@@ -20,11 +20,11 @@ iatest.init()
 import unittest
 from mock import patch
 
-from taprootanalytics import connect
-from taprootanalytics.core.frame import Frame, _BaseFrame
-from taprootanalytics.core.column import Column
-from taprootanalytics.core.files import CsvFile
-from taprootanalytics.core.iatypes import *
+from trustedanalytics import connect
+from trustedanalytics.core.frame import Frame, _BaseFrame
+from trustedanalytics.core.column import Column
+from trustedanalytics.core.files import CsvFile
+from trustedanalytics.core.iatypes import *
 
 
 def get_simple_frame_abcde():
@@ -56,7 +56,7 @@ def fake_download(server):
     return "Test Stub", []
 
 
-@patch('taprootanalytics.meta.config.get_frame_backend')
+@patch('trustedanalytics.meta.config.get_frame_backend')
 class FrameConstruction(unittest.TestCase):
 
     def validate_column_names(self, frame, column_names):
@@ -64,7 +64,7 @@ class FrameConstruction(unittest.TestCase):
         for i in column_names:
             self.assertNotEqual(None,frame[i])
 
-    @patch("taprootanalytics.meta.installapi.download_server_details", fake_download)
+    @patch("trustedanalytics.meta.installapi.download_server_details", fake_download)
     def test_create(self, patched_be):
         connect()
         f = Frame()

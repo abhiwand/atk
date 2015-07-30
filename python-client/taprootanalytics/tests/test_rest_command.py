@@ -19,8 +19,8 @@ iatest.init()
 
 import unittest
 from mock import patch, Mock
-from taprootanalytics.rest.command import ProgressPrinter
-from taprootanalytics.rest.server import HostPortHelper
+from trustedanalytics.rest.command import ProgressPrinter
+from trustedanalytics.rest.server import HostPortHelper
 
 
 class TestServer(unittest.TestCase):
@@ -40,7 +40,7 @@ class TestServer(unittest.TestCase):
 
 class TestRestCommand(unittest.TestCase):
 
-    @patch('taprootanalytics.rest.command.sys.stdout')
+    @patch('trustedanalytics.rest.command.sys.stdout')
     def test_print_initialization(self, stdout):
         printer = ProgressPrinter()
         write_queue = []
@@ -52,7 +52,7 @@ class TestRestCommand(unittest.TestCase):
         self.assertEqual(len(write_queue), 1)
         self.assertEqual(write_queue[0], "\rinitializing...")
 
-    @patch('taprootanalytics.rest.command.sys.stdout')
+    @patch('trustedanalytics.rest.command.sys.stdout')
     def test_print_receive_progress(self, stdout):
         printer = ProgressPrinter()
         write_queue = []
@@ -67,7 +67,7 @@ class TestRestCommand(unittest.TestCase):
         self.assertEqual(write_queue[0], "\rinitializing...")
         self.assertEqual(write_queue[1], "\r[=======..................]  30.00% Tasks retries:0 Time 0:00:00")
 
-    @patch('taprootanalytics.rest.command.sys.stdout')
+    @patch('trustedanalytics.rest.command.sys.stdout')
     def test_print_next_progress(self, stdout):
         printer = ProgressPrinter()
         write_queue = []
@@ -90,7 +90,7 @@ class TestRestCommand(unittest.TestCase):
         self.assertEqual(write_queue[2], "\r[============.............]  50.00% Tasks retries:0 Time 0:00:00\n")
         self.assertEqual(write_queue[3], "\r[=========================] 100.00% Tasks retries:0 Time 0:00:00\n")
 
-    @patch('taprootanalytics.rest.command.sys.stdout')
+    @patch('trustedanalytics.rest.command.sys.stdout')
     def test_multiple_progress_come_right_after_initializing_stage(self, stdout):
         printer = ProgressPrinter()
         write_queue = []
@@ -109,7 +109,7 @@ class TestRestCommand(unittest.TestCase):
         self.assertEqual(write_queue[2], "\r[=========================] 100.00% Tasks retries:0 Time 0:00:00\n")
         self.assertEqual(write_queue[3], "\r[============.............]  50.00% Tasks retries:0 Time 0:00:00\n")
 
-    @patch('taprootanalytics.rest.command.sys.stdout')
+    @patch('trustedanalytics.rest.command.sys.stdout')
     def test_multiple_progress_come_as_finished(self, stdout):
         printer = ProgressPrinter()
         write_queue = []

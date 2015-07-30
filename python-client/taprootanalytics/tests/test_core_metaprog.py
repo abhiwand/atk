@@ -18,10 +18,10 @@ import iatest
 iatest.init()
 
 import unittest
-import taprootanalytics.core.iatypes as iatypes
-from taprootanalytics.meta.metaprog import CommandInstallable, CommandInstallation, ATTR_COMMAND_INSTALLATION
-from taprootanalytics.meta.names import entity_type_to_class_name
-from taprootanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
+import trustedanalytics.core.iatypes as iatypes
+from trustedanalytics.meta.metaprog import CommandInstallable, CommandInstallation, ATTR_COMMAND_INSTALLATION
+from trustedanalytics.meta.names import entity_type_to_class_name
+from trustedanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
 
 
 class Numbers(CommandInstallable):
@@ -73,29 +73,29 @@ def get_numbers(cmd_name, selfish, **args):
 class TestNaming(unittest.TestCase):
 
     def test_upper_first(self):
-        from taprootanalytics.meta.names import upper_first
+        from trustedanalytics.meta.names import upper_first
         self.assertEqual("Apple", upper_first('apple'))
         self.assertEqual("Apple", upper_first('Apple'))
         self.assertEqual('', upper_first(''))
         self.assertEqual('', upper_first(None))
 
     def test_lower_first(self):
-        from taprootanalytics.meta.names import lower_first
+        from trustedanalytics.meta.names import lower_first
         self.assertEqual("apple", lower_first('apple'))
         self.assertEqual("apple", lower_first('Apple'))
         self.assertEqual('', lower_first(''))
         self.assertEqual('', lower_first(None))
 
     def test_underscores_to_pascal(self):
-        from taprootanalytics.meta.names import underscores_to_pascal
+        from trustedanalytics.meta.names import underscores_to_pascal
         self.assertEqual("LogisticRegressionModel", underscores_to_pascal("logistic_regression_model"))
 
     def test_pascal_to_underscores(self):
-        from taprootanalytics.meta.names import pascal_to_underscores
+        from trustedanalytics.meta.names import pascal_to_underscores
         self.assertEqual("logistic_regression_model", pascal_to_underscores("LogisticRegressionModel"))
 
     def test_get_entity_type_from_class_name(self):
-        from taprootanalytics.meta.names import class_name_to_entity_type
+        from trustedanalytics.meta.names import class_name_to_entity_type
         self.assertEqual("model:logistic_regression", class_name_to_entity_type("LogisticRegressionModel"))
         self.assertEqual("model", class_name_to_entity_type("_BaseModel"))
         with self.assertRaises(ValueError) as cm:
@@ -103,7 +103,7 @@ class TestNaming(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Invalid empty class_name, expected non-empty string")
 
     def test_get_loadable_class_name_from_entity_type(self):
-        from taprootanalytics.meta.names import entity_type_to_class_name
+        from trustedanalytics.meta.names import entity_type_to_class_name
         self.assertEqual("LogisticRegressionModel", entity_type_to_class_name("model:logistic_regression"))
         self.assertEqual("_BaseModel", entity_type_to_class_name("model"))
         with self.assertRaises(ValueError) as cm:

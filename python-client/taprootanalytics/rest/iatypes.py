@@ -17,7 +17,7 @@
 """
 Conversion functions for data type to/from REST strings
 """
-from taprootanalytics.core.iatypes import valid_data_types
+from trustedanalytics.core.iatypes import valid_data_types
 
 
 def get_rest_str_from_data_type(data_type):

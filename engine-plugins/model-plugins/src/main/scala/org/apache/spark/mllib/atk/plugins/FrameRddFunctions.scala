@@ -1,6 +1,6 @@
 package org.apache.spark.mllib.atk.plugins
 
-import com.intel.taproot.analytics.domain.schema.DataTypes
+import org.trustedanalytics.atk.domain.schema.DataTypes
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.mllib.regression.{ LabeledPointWithFrequency, LabeledPoint }

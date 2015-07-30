@@ -22,8 +22,8 @@ export PYTHONPATH=$PYTHONPATH:$PYTHON_DIR
 
 # check if the python libraries are correctly installed by importing
 # them through python. If there is no output then the module exists.
-if [[ -e $(python2.7 -c "import taprootanalytics") ]]; then
-    echo "taprootanalytics cannot be found"
+if [[ -e $(python2.7 -c "import trustedanalytics") ]]; then
+    echo "trustedanalytics cannot be found"
     exit 1
 fi
 
@@ -51,7 +51,7 @@ if [ "$1" = "-x" ] ; then
 fi
 
 
-nosetests $TESTS_DIR --with-coverage --cover-package=taprootanalytics --cover-erase --cover-inclusive --cover-html --with-xunit  --xunit-file=$PYTHON_DIR/nosetests.xml $EXCLUDE_OPTION
+nosetests $TESTS_DIR --with-coverage --cover-package=trustedanalytics --cover-erase --cover-inclusive --cover-html --with-xunit  --xunit-file=$PYTHON_DIR/nosetests.xml $EXCLUDE_OPTION
 
 success=$?
 

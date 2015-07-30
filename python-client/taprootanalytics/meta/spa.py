@@ -19,7 +19,7 @@ Static Program Analysis (SPA) docstring lib
 """
 
 import re
-from taprootanalytics.meta.names import indent, get_type_name
+from trustedanalytics.meta.names import indent, get_type_name
 
 
 def get_spa_docstring(command_def, override_rtype=None):

@@ -22,8 +22,8 @@ import logging
 logger = logging.getLogger('meta')
 from collections import namedtuple
 
-from taprootanalytics.meta.installpath import InstallPath
-from taprootanalytics.meta.names import default_value_to_str, is_entity_constructor_command_name
+from trustedanalytics.meta.installpath import InstallPath
+from trustedanalytics.meta.names import default_value_to_str, is_entity_constructor_command_name
 
 
 Parameter = namedtuple("Parameter", ['name', 'data_type', 'use_self', 'optional', 'default', 'doc'])

@@ -12,8 +12,8 @@
     </description>
 
     <parent>
-        <groupId>com.intel.taproot.ia</groupId>
-        <artifactId>TapRootAnalytics</artifactId>
+        <groupId>com.trustedanalytics.ia</groupId>
+        <artifactId>TrustedAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
@@ -36,7 +36,7 @@
                             <workingDirectory>${basedir}</workingDirectory>
                             <arguments>
                                 <argument>+x</argument>
-                                <argument>taprootanalytics/tests/exec_all.sh</argument>
+                                <argument>trustedanalytics/tests/exec_all.sh</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -50,7 +50,7 @@
                             <executable>bash</executable>
                             <workingDirectory>${basedir}</workingDirectory>
                             <arguments>
-                                <argument>taprootanalytics/tests/exec_all.sh</argument>
+                                <argument>trustedanalytics/tests/exec_all.sh</argument>
                             </arguments>
                         </configuration>
                     </execution>

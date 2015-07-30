@@ -11,8 +11,8 @@
     </description>
 
     <parent>
-        <groupId>com.intel.taproot.ia</groupId>
-        <artifactId>TapRootAnalytics</artifactId>
+        <groupId>com.trustedanalytics.ia</groupId>
+        <artifactId>TrustedAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>

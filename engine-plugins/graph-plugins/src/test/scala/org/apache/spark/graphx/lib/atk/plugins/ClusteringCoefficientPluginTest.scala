@@ -16,7 +16,7 @@
 
 package org.apache.spark.graphx.lib.atk.plugins
 
-import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.graphx
 import org.apache.spark.graphx.{ Graph, PartitionStrategy }
 import org.scalatest.{ FlatSpec, Matchers }

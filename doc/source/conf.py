@@ -63,8 +63,8 @@ rst_epilog = """
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
 .. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`
 .. |PACKAGE|    replace:: TAProot Analytics
-.. |PACKAGE_1LC|    replace:: taprootanalytics
-.. |PACKAGE_DLC|    replace:: taproot-analytics
+.. |PACKAGE_1LC|    replace:: trustedanalytics
+.. |PACKAGE_DLC|    replace:: trustedanalytics
 .. |PACKAGE_SLC|    replace:: ta
 .. |PACKAGE_SUC|    replace:: TA
 .. |TOOLKIT|    replace:: |PACKAGE| Toolkit

@@ -15,7 +15,7 @@
 #
 
 """
-Connection to the TapRoot Analytics REST Server
+Connection to the Trusted Analytics REST Server
 """
 import os
 import requests
@@ -24,11 +24,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 from decorator import decorator
-from taprootanalytics.core.api import api_status
-import taprootanalytics.rest.config as config
-from taprootanalytics.rest.server import Server
-from taprootanalytics.rest.uaa import get_oauth_token, get_refreshed_oauth_token, get_oauth_server_uri
-from taprootanalytics.meta.installapi import install_api
+from trustedanalytics.core.api import api_status
+import trustedanalytics.rest.config as config
+from trustedanalytics.rest.server import Server
+from trustedanalytics.rest.uaa import get_oauth_token, get_refreshed_oauth_token, get_oauth_server_uri
+from trustedanalytics.meta.installapi import install_api
 
 
 def clean_file_path(file_path):
@@ -62,7 +62,7 @@ class IaServer(Server):
     """
     Server object for talking with ATK server
 
-    Defaults from taprootanalytics/rest/config.py are used but
+    Defaults from trustedanalytics/rest/config.py are used but
     they can be overridden by setting the values in this class.
 
     Properties can be overridden manually can be overridden manually
@@ -188,17 +188,17 @@ class IaServer(Server):
             r = requests.get(uri, timeout=config.requests_defaults.ping_timeout_secs)
             logger.debug("[HTTP Get Response] %s\n%s", r.text, r.headers)
             self._check_response(r)
-            if "TapRoot Analytics" != r.json()['name']:
+            if "Trusted Analytics" != r.json()['name']:
                 raise Exception("Invalid response payload: " + r.text)
-            print "Successful ping to TapRoot Analytics at " + uri
+            print "Successful ping to Trusted Analytics at " + uri
         except Exception as e:
-            message = "Failed to ping TapRoot Analytics at %s\n%s" % (uri, e)
+            message = "Failed to ping Trusted Analytics at %s\n%s" % (uri, e)
             logger.error(message)
             raise IOError(message)
 
     def connect(self, credentials_file=None):
         """
-        Connect to the taprootanalytics server.
+        Connect to the trustedanalytics server.
 
         This method calls the server, downloads its API information and dynamically generates and adds
         the appropriate Python code to the Python package for this python session.  Calling this method

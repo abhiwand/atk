@@ -16,8 +16,8 @@
 
 package org.apache.spark.mllib.atk.plugins.classification.glm
 
-import com.intel.taproot.analytics.domain.frame.FrameReference
-import com.intel.taproot.analytics.domain.model.ModelReference
+import org.trustedanalytics.atk.domain.frame.FrameReference
+import org.trustedanalytics.atk.domain.model.ModelReference
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ FlatSpec, Matchers }
 

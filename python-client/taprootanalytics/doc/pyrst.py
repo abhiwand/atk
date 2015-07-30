@@ -21,10 +21,10 @@ Library for creating pieces of rst text for the Python API, based on metaprog
 import re
 from collections import OrderedDict
 
-from taprootanalytics.meta.command import Doc
-from taprootanalytics.meta.metaprog import get_installation, get_intermediate_class
-from taprootanalytics.meta.names import is_name_private, indent, get_type_name
-from taprootanalytics.meta.reflect import get_args_text_from_function
+from trustedanalytics.meta.command import Doc
+from trustedanalytics.meta.metaprog import get_installation, get_intermediate_class
+from trustedanalytics.meta.names import is_name_private, indent, get_type_name
+from trustedanalytics.meta.reflect import get_args_text_from_function
 
 
 def get_command_def_rst(command_def):

@@ -1,25 +1,25 @@
 {
-    "taproot-analytics-config": {
+    "trustedanalytics-config": {
       "destination": "/etc/atk",
-      "source": "etc/taprootanalytics/rest-server",
+      "source": "etc/trustedanalytics/rest-server",
       "priority": 10,
       "isDirectory": true
     },
-    "taproot-analytics-logrotate.d": {
+    "trustedanalytics-logrotate.d": {
       "destination": "/etc/logrotate.d/atk",
-      "source": "etc/logrotate.d/taprootanalytics-rest-server",
+      "source": "etc/logrotate.d/trustedanalytics-rest-server",
       "priority": 10,
       "isDirectory": false
     },
-    "taproot-analytics-logs": {
+    "trustedanalytics-logs": {
       "destination": "/var/log/atk",
       "source": "log",
       "priority": 10,
       "isDirectory": true
     },
     "examples": {
-          "destination": "/var/lib/taprootanalytics/examples",
-          "source": "usr/lib/taprootanalytics/rest-server/examples",
+          "destination": "/var/lib/trustedanalytics/examples",
+          "source": "usr/lib/trustedanalytics/rest-server/examples",
           "priority": 10,
           "isDirectory": true
         }

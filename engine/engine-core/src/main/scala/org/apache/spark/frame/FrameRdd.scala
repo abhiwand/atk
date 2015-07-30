@@ -16,13 +16,13 @@
 
 package org.apache.spark.frame
 
-import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ VertexSchemaAggregator, EdgeSchemaAggregator, EdgeHolder }
+import org.trustedanalytics.atk.engine.graph.plugins.exportfromtitan.{ VertexSchemaAggregator, EdgeSchemaAggregator, EdgeHolder }
 import org.apache.spark.sql.Row
-import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.taproot.analytics.domain.schema.DataTypes._
-import com.intel.taproot.analytics.domain.schema._
+import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, GBVertex }
+import org.trustedanalytics.atk.domain.schema.DataTypes._
+import org.trustedanalytics.atk.domain.schema._
 import org.apache.spark.frame.ordering.MultiColumnOrdering
-import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, RowWrapper }
+import org.trustedanalytics.atk.engine.frame.{ MiscFrameFunctions, RowWrapper }
 import org.apache.spark.atk.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector }
@@ -347,7 +347,7 @@ object FrameRdd {
    */
   def toFrameRddMap(gbVertexRDD: RDD[GBVertex]): Map[String, FrameRdd] = {
 
-    import com.intel.taproot.analytics.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+    import org.trustedanalytics.atk.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
     // make sure all of the vertices have a label
     val labeledVertices = gbVertexRDD.labelVertices(Nil)
@@ -453,7 +453,7 @@ object FrameRdd {
    * Converts the spark DataTypes to our schema Datatypes
    * @return our schema DataType
    */
-  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.types.DataType): com.intel.taproot.analytics.domain.schema.DataTypes.DataType = {
+  def sparkDataTypeToSchemaDataType(dataType: org.apache.spark.sql.types.DataType): org.trustedanalytics.atk.domain.schema.DataTypes.DataType = {
     val intType = IntegerType.getClass
     val longType = LongType.getClass
     val floatType = FloatType.getClass

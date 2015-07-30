@@ -18,7 +18,7 @@ Python Path Setup
 
 .. _pythonpath:
 
-It is recommended that the location of the 'taprootanalytics' directory be added
+It is recommended that the location of the 'trustedanalytics' directory be added
 to the PYTHONPATH environmental variable prior to starting Python.
 This can be done from a shell script, like this::
 
@@ -31,7 +31,7 @@ REST server:
 
 .. code::
 
-    >>> import taprootanalytics as ta
+    >>> import trustedanalytics as ta
     >>> ta.connect()
 
 .. index::
@@ -57,7 +57,7 @@ Connect to the server:
 
 .. code::
 
-    >>> import taprootanalytics as ta
+    >>> import trustedanalytics as ta
     >>> ta.connect()
 
 .. note::

@@ -21,18 +21,18 @@ Model
 import logging
 import json
 logger = logging.getLogger(__name__)
-from taprootanalytics.meta.clientside import *
+from trustedanalytics.meta.clientside import *
 api = get_api_decorator(logger)
 
-from taprootanalytics.meta.namedobj import name_support
-from taprootanalytics.meta.metaprog import CommandInstallable as CommandLoadable
-from taprootanalytics.meta.docstub import doc_stubs_import
-from taprootanalytics.rest.iaserver import server
+from trustedanalytics.meta.namedobj import name_support
+from trustedanalytics.meta.metaprog import CommandInstallable as CommandLoadable
+from trustedanalytics.meta.docstub import doc_stubs_import
+from trustedanalytics.rest.iaserver import server
 
 # _BaseModel
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from taprootanalytics.core.docstubs1 import _DocStubs_BaseModel
+    from trustedanalytics.core.docstubs1 import _DocStubs_BaseModel
     doc_stubs_import.success(logger, "_DocStubs_BaseModel")
 except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubs_BaseModel", e)

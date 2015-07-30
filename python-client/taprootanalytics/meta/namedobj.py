@@ -20,9 +20,9 @@ Named objects - object that have 'names' and are stored server side
 import sys
 import logging
 
-from taprootanalytics.meta.clientside import get_api_decorator, arg, returns
-from taprootanalytics.meta.names import entity_type_to_collection_name, upper_first
-from taprootanalytics.meta.metaprog import get_entity_class_from_store, set_entity_collection
+from trustedanalytics.meta.clientside import get_api_decorator, arg, returns
+from trustedanalytics.meta.names import entity_type_to_collection_name, upper_first
+from trustedanalytics.meta.metaprog import get_entity_class_from_store, set_entity_collection
 
 
 def name_support(term):
@@ -34,8 +34,8 @@ def name_support(term):
 
 
 def add_named_object_support(obj_class, obj_term):
-    from taprootanalytics.rest.iaserver import server
-    from taprootanalytics.rest.command import execute_command
+    from trustedanalytics.rest.iaserver import server
+    from trustedanalytics.rest.command import execute_command
     _NamedObjectsFunctionFactory(obj_class, obj_term, server, execute_command)
     # the act of creation is sufficient, they'll get registered via decorations during install
 
@@ -118,7 +118,7 @@ class _NamedObjectsFunctionFactory(object):
             arguments = {obj_term: self._id, "new_name": value}
             execute_command(obj_term + "/rename", self, **arguments)
         set_name.__name__ = '__name'
-        from taprootanalytics.meta.context import get_api_context_decorator
+        from trustedanalytics.meta.context import get_api_context_decorator
         api_set_name = get_api_context_decorator(module_logger)(set_name)
 
         name_prop = property(fget=get_name, fset=api_set_name, fdel=None, doc=doc)

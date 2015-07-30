@@ -15,9 +15,9 @@
 */
 package org.apache.spark.mllib.atk.plugins.dimensionalityreduction
 
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
-import com.intel.taproot.analytics.domain.model.ModelReference
-import com.intel.taproot.analytics.engine.plugin.ArgDoc
+import org.trustedanalytics.atk.domain.frame.{ FrameEntity, FrameReference }
+import org.trustedanalytics.atk.domain.model.ModelReference
+import org.trustedanalytics.atk.engine.plugin.ArgDoc
 
 /**
  * Input arguments for principal components predict plugin

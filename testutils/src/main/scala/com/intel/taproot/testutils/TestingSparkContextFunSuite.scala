@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.testutils
+package com.trustedanalytics.testutils
 
 import org.apache.spark.SparkContext
 import org.scalatest.{ FunSuite, BeforeAndAfterAll }

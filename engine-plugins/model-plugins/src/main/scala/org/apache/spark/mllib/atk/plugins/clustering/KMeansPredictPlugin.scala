@@ -16,20 +16,20 @@
 
 package org.apache.spark.mllib.atk.plugins.clustering
 
-import com.intel.taproot.analytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.taproot.analytics.domain.frame._
-import com.intel.taproot.analytics.domain.schema.Column
-import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes }
-import com.intel.taproot.analytics.domain.schema.DataTypes._
-import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.model.Model
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
+import org.trustedanalytics.atk.domain.{ CreateEntityArgs, Naming }
+import org.trustedanalytics.atk.domain.frame._
+import org.trustedanalytics.atk.domain.schema.Column
+import org.trustedanalytics.atk.domain.schema.{ FrameSchema, DataTypes }
+import org.trustedanalytics.atk.domain.schema.DataTypes._
+import org.trustedanalytics.atk.engine.frame.SparkFrame
+import org.trustedanalytics.atk.engine.model.Model
+import org.trustedanalytics.atk.engine.plugin.{ ApiMaturityTag, ArgDoc, Invocation, PluginDoc }
 import org.apache.spark.frame.FrameRdd
-import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.Vectors
 import spray.json._
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.VectorUtils._
 

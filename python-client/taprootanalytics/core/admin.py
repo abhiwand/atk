@@ -18,7 +18,7 @@
 Admin commands, not part of public API
 """
 
-from taprootanalytics.rest.command import execute_command
+from trustedanalytics.rest.command import execute_command
 
 
 def _explicit_garbage_collection(age_to_delete_data = None, age_to_delete_meta_data = None):

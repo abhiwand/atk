@@ -16,7 +16,7 @@
 
 package org.apache.spark.atk.graph
 
-import com.intel.taproot.analytics.domain.schema.{ VertexSchema, Schema }
+import org.trustedanalytics.atk.domain.schema.{ VertexSchema, Schema }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 

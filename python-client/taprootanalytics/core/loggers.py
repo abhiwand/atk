@@ -23,7 +23,7 @@ import inspect
 
 # Constants
 API_LOGGER_NAME = 'IA Python API'
-HTTP_LOGGER_NAME = 'taprootanalytics.rest.http'
+HTTP_LOGGER_NAME = 'trustedanalytics.rest.http'
 LINE_FORMAT = '%(asctime)s|%(name)s|%(levelname)-5s|%(message)s'
 API_LINE_FORMAT = '|api| %(message)s'
 
@@ -138,14 +138,14 @@ class Loggers(object):
             If not specified, DEBUG is used
             To turn OFF the logger, set level to 0 or None
         logger_name: str, optional
-            The name of the logger.  If empty string, then the taprootanalytics root logger is set
+            The name of the logger.  If empty string, then the trustedanalytics root logger is set
         output: file or str, or list of such, optional
             The file object or name of the file to log to.  If empty, then stderr is used
 
         Examples
         --------
         # to enable INFO level logging to file 'log.txt' and no printing to stderr:
-        >>> loggers.set('INFO', 'taprootanalytics.rest.frame','log.txt', False)
+        >>> loggers.set('INFO', 'trustedanalytics.rest.frame','log.txt', False)
         """
         logger_name = logger_name if logger_name != 'root' else ''
         if not level:

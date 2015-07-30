@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from taprootanalytics.core.iatypes import valid_data_types
+from trustedanalytics.core.iatypes import valid_data_types
 
 class DataFile(object):
     annotation = "data_file"
@@ -82,7 +82,7 @@ class CsvFile(DataFile):
 
     .. code::
 
-        >>> import taprootanalytics as ia
+        >>> import trustedanalytics as ia
 
     Define the data:
 
@@ -250,7 +250,7 @@ class LineFile(DataFile):
         Name of data input file.
         File must be in the Hadoop file system.
         Relative paths are interpreted relative to the
-        ``intel.taproot.analytics.engine.fs.root`` configuration.
+        ``trustedanalytics.atk.engine.fs.root`` configuration.
         Absolute paths (beginning with ``hdfs://...``, for example) are also
         supported.
         See :ref:`Configure File System Root
@@ -273,7 +273,7 @@ class LineFile(DataFile):
 
     .. code::
 
-        >>> import taprootanalytics as ia
+        >>> import trustedanalytics as ia
         >>> ia.connect()
 
     Define the data:
@@ -324,7 +324,7 @@ class JsonFile(MultiLineFile):
         Name of data input file.
         File must be in the Hadoop file system.
         Relative paths are interpreted relative to the
-        ``intel.taproot.analytics.engine.fs.root`` configuration.
+        ``trustedanalytics.atk.engine.fs.root`` configuration.
         Absolute paths (beginning with ``hdfs://...``, for example) are also
         supported.
         See :ref:`Configure File System Root
@@ -366,7 +366,7 @@ class JsonFile(MultiLineFile):
 
     .. code::
 
-        >>> import taprootanalytics as ia
+        >>> import trustedanalytics as ia
         >>> ia.connect()
 
     Define the data:
@@ -462,7 +462,7 @@ class XmlFile(MultiLineFile):
         Name of data input file.
         File must be in the Hadoop file system.
         Relative paths are interpreted relative to the
-        ``intel.taproot.analytics.engine.fs.root`` configuration.
+        ``trustedanalytics.atk.engine.fs.root`` configuration.
         Absolute paths (beginning with ``hdfs://...``, for example) are also
         supported.
         See :ref:`Configure File System Root
@@ -510,7 +510,7 @@ class XmlFile(MultiLineFile):
 
     .. code::
 
-        >>> import taprootanalytics as ia
+        >>> import trustedanalytics as ia
         >>> ia.connect()
 
     Define the data:
@@ -612,7 +612,7 @@ class HiveQuery(DataFile):
     A simple query could be to get the query for the name and age
     .. code::
 
-        >>> import taprootanalytics as ia
+        >>> import trustedanalytics as ia
         >>> ia.connect()
 
     Define the data:

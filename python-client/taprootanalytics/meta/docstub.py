@@ -24,10 +24,10 @@ from decorator import decorator
 import logging
 logger = logging.getLogger('meta')
 
-from taprootanalytics.meta.names import indent, get_type_name
-from taprootanalytics.meta.clientside import DocStubCalledError
-from taprootanalytics.meta.spa import get_spa_docstring
-from taprootanalytics.meta.metaprog import CommandInstallable, CommandInstallation, get_installation
+from trustedanalytics.meta.names import indent, get_type_name
+from trustedanalytics.meta.clientside import DocStubCalledError
+from trustedanalytics.meta.spa import get_spa_docstring
+from trustedanalytics.meta.metaprog import CommandInstallable, CommandInstallation, get_installation
 
 
 ATTR_DOC_STUB = '_doc_stub'
@@ -60,7 +60,7 @@ def delete_docstubs():
         raise RuntimeError("Internal error, no docstub module")
 
     def _delete_docstubs(docstubs):
-        import taprootanalytics as ia
+        import trustedanalytics as ia
         items = _get_module_items(docstubs)
         for item in items:
             if inspect.isclass(item):
@@ -73,14 +73,14 @@ def delete_docstubs():
                     delattr(ia, item.__name__)
 
     try:
-        import taprootanalytics.core.docstubs1 as docstubs1
+        import trustedanalytics.core.docstubs1 as docstubs1
     except Exception:
         logger.info("No docstubs1.py found, nothing to delete")
     else:
         _delete_docstubs(docstubs1)
 
     try:
-        import taprootanalytics.core.docstubs2 as docstubs2
+        import trustedanalytics.core.docstubs2 as docstubs2
     except Exception:
         logger.info("No docstubs2.py found, nothing to delete")
     else:
@@ -256,7 +256,7 @@ def get_doc_stub_modules_text(class_to_member_text_dict, import_return_types):
                                                  "object",  # no inheritance for docstubs, just define all explicitly
                                                  "Auto-generated to contain doc stubs for static program analysis",
                                                  indent("\n\n".join(text))))
-        elif cls.__name__ == "taprootanalytics":
+        elif cls.__name__ == "trustedanalytics":
             module2_lines.extend(list(text))
             module2_all.extend(list(names))
 
@@ -265,7 +265,7 @@ def get_doc_stub_modules_text(class_to_member_text_dict, import_return_types):
     # Need to import any return type to enable SPA, like for get_frame, we need Frame
     for t in import_return_types:
         if test_import(t):
-            module2_lines.insert(0, "from taprootanalytics import %s" % t)
+            module2_lines.insert(0, "from trustedanalytics import %s" % t)
 
     module2_lines.insert(0, get_file_header_text())
 
@@ -279,7 +279,7 @@ def get_doc_stub_modules_text(class_to_member_text_dict, import_return_types):
 def test_import(name):
     """Determines if the name is importable from main module"""
     try:
-        import taprootanalytics as ia
+        import trustedanalytics as ia
         getattr(ia, name)
         return True
     except:

@@ -18,7 +18,7 @@ import iatest
 iatest.init()
 import unittest
 
-from taprootanalytics.meta.command import Doc
+from trustedanalytics.meta.command import Doc
 
 class DocExtraction(unittest.TestCase):
 

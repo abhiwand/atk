@@ -18,7 +18,7 @@
 Python reflection with inspect
 """
 import inspect
-from taprootanalytics.meta.names import is_name_private, default_value_to_str
+from trustedanalytics.meta.names import is_name_private, default_value_to_str
 
 
 def get_args_text_from_function(function, ignore_self=False, ignore_private_args=False):

@@ -15,11 +15,11 @@
 #
 
 """
-taprootanalytics frame aggregation functions
+trustedanalytics frame aggregation functions
 """
 import json
 
-from taprootanalytics.core.iatypes import valid_data_types
+from trustedanalytics.core.iatypes import valid_data_types
 
 class AggregationFunctions(object):
 

@@ -424,7 +424,7 @@ To run Giraph jobs, ensure that the memory settings in |CDH| match those in
 application.conf using one of the following approaches:
 
 #.  Modify the following YARN configuration in |CDH| to match the setting under
-    intel.taproot.analytics.giraph in application.conf.
+    trustedanalytics.atk.giraph in application.conf.
     Under the YARN section in |CDH|, click on *Configuration* and select *View
     and Edit*.
 
@@ -450,7 +450,7 @@ application.conf using one of the following approaches:
 #.  Limit the Giraph memory allocation in application.conf to match the
     configured |CDH| settings in YARN.
     The relevant settings in the |PACKAGE| application.conf file are in
-    intel.taproot.analytics.giraph:
+    trustedanalytics.atk.giraph:
 
     #.  mapreduce.map.memory.mb.
         This setting should match mapreduce.map.memory.mb in YARN.

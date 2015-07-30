@@ -25,13 +25,13 @@ logger = logging.getLogger('meta')
 import sys
 import inspect
 
-from taprootanalytics.core.api import api_globals, api_status
-from taprootanalytics.meta.installpath import InstallPath
-from taprootanalytics.meta.context import get_api_context_decorator
-from taprootanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
-from taprootanalytics.meta.spa import get_spa_docstring
-from taprootanalytics.meta.names import name_to_private, class_name_to_entity_type, entity_type_to_baseclass_name, entity_type_to_collection_name, get_entity_constructor_command_full_name
-from taprootanalytics.meta.clientside import mark_item_as_api, decorate_api_class
+from trustedanalytics.core.api import api_globals, api_status
+from trustedanalytics.meta.installpath import InstallPath
+from trustedanalytics.meta.context import get_api_context_decorator
+from trustedanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
+from trustedanalytics.meta.spa import get_spa_docstring
+from trustedanalytics.meta.names import name_to_private, class_name_to_entity_type, entity_type_to_baseclass_name, entity_type_to_collection_name, get_entity_constructor_command_full_name
+from trustedanalytics.meta.clientside import mark_item_as_api, decorate_api_class
 
 
 ATTR_COMMAND_INSTALLATION = "_command_installation"
@@ -85,7 +85,7 @@ class CommandInstallation(object):
 
     @staticmethod
     def _get_canned_property_doc(name, class_name):
-        return "Access to object's %s functionality (See :class:`~taprootanalytics.core.docstubs.%s`)" % (name, class_name)
+        return "Access to object's %s functionality (See :class:`~trustedanalytics.core.docstubs.%s`)" % (name, class_name)
 
 
 def is_intermediate_property(item):
@@ -466,7 +466,7 @@ def default_repr(self, collection_name):
     """Default __repr__ for a synthesized class"""
     entity = type(self).__name__
     try:
-        from taprootanalytics.rest.iaserver import server
+        from trustedanalytics.rest.iaserver import server
         uri = server.create_full_uri(collection_name + "/" + str(self._id))
         response = server.get(uri).json()
         name = response.get('name', None)

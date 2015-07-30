@@ -16,17 +16,17 @@
 
 package org.apache.spark.mllib.atk.plugins.classification.glm
 
-import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.FrameEntity
-import com.intel.taproot.analytics.domain.schema.DataTypes
-import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.model.Model
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.trustedanalytics.atk.domain.CreateEntityArgs
+import org.trustedanalytics.atk.domain.frame.FrameEntity
+import org.trustedanalytics.atk.domain.schema.DataTypes
+import org.trustedanalytics.atk.engine.frame.SparkFrame
+import org.trustedanalytics.atk.engine.model.Model
+import org.trustedanalytics.atk.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
+import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.atk.plugins.classification.ClassificationWithSGDPredictArgs
 import org.apache.spark.mllib.linalg.Vectors
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 
 @PluginDoc(oneLine = "Make a new frame with a column for label prediction.",

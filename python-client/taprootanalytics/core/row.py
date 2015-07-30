@@ -15,7 +15,7 @@
 #
 
 from collections import OrderedDict
-from taprootanalytics.core.iatypes import valid_data_types
+from trustedanalytics.core.iatypes import valid_data_types
 
 class Row(object):
 

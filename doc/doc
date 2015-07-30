@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Python_directory="taprootanalytics"
+Python_directory="trustedanalytics"
 
 # The primary purpose of this script file is to allow the Sphinx-Build program
 # to build in python 2.7 on a RedHat distribution of Linux.

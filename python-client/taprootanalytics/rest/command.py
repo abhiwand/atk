@@ -27,9 +27,9 @@ from requests import HTTPError
 
 logger = logging.getLogger(__name__)
 
-import taprootanalytics.rest.config as config
-from taprootanalytics.rest.iaserver import server
-from taprootanalytics.rest.progress import ProgressPrinter
+import trustedanalytics.rest.config as config
+from trustedanalytics.rest.iaserver import server
+from trustedanalytics.rest.progress import ProgressPrinter
 from collections import namedtuple
 
 
@@ -39,7 +39,7 @@ def execute_command(command_name, selfish, **arguments):
     command_info = executor.issue(command_request)
 
     # post-process the results
-    from taprootanalytics.meta.results import get_postprocessor
+    from trustedanalytics.meta.results import get_postprocessor
     is_frame = command_info.result.has_key('schema')
     parent = None
     if is_frame:
@@ -54,7 +54,7 @@ def execute_command(command_name, selfish, **arguments):
         result = command_info.result.get('value')
     elif is_frame:
         # TODO: remove this hack for plugins that return data frame
-        from taprootanalytics import get_frame
+        from trustedanalytics import get_frame
         if parent:
             result = selfish
         else:

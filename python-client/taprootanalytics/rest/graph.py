@@ -23,11 +23,11 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
-from taprootanalytics.core.graph import VertexRule, EdgeRule, Rule
-from taprootanalytics.core.column import Column
-from taprootanalytics.rest.iaserver import server
-from taprootanalytics.core.frame import VertexFrame, EdgeFrame
-from taprootanalytics.rest.command import executor
+from trustedanalytics.core.graph import VertexRule, EdgeRule, Rule
+from trustedanalytics.core.column import Column
+from trustedanalytics.rest.iaserver import server
+from trustedanalytics.core.frame import VertexFrame, EdgeFrame
+from trustedanalytics.rest.command import executor
 
 
 def initialize_graph(graph, graph_info):
@@ -196,7 +196,7 @@ class JsonRules(object):
     def _get_frame(rule, frames_dict):
         uri = rule.source_frame._id
         #validate the input frames
-        from taprootanalytics.meta.config import get_frame_backend
+        from trustedanalytics.meta.config import get_frame_backend
         frame_backend = get_frame_backend()
 
         try:

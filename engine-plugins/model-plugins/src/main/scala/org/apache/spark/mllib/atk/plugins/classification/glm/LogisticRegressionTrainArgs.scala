@@ -16,9 +16,9 @@
 
 package org.apache.spark.mllib.atk.plugins.classification.glm
 
-import com.intel.taproot.analytics.domain.frame.FrameReference
-import com.intel.taproot.analytics.domain.model.ModelReference
-import com.intel.taproot.analytics.engine.plugin.ArgDoc
+import org.trustedanalytics.atk.domain.frame.FrameReference
+import org.trustedanalytics.atk.domain.model.ModelReference
+import org.trustedanalytics.atk.engine.plugin.ArgDoc
 
 /**
  * Input arguments for logistic regression train plugin

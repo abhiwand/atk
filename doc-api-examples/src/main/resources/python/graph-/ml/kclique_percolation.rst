@@ -2,7 +2,7 @@ Examples
 --------
 .. code::
 
-    >>> import taprootanalytics as ia
+    >>> import trustedanalytics as ia
     >>> ia.connect()
     >>> dataset = r"datasets/kclique_edges.csv"
     >>> schema = [("source", int64), ("target", int64)]

@@ -13,8 +13,8 @@
     </description>
 
     <parent>
-        <groupId>com.intel.taproot.ia</groupId>
-        <artifactId>TapRootAnalytics</artifactId>
+        <groupId>com.trustedanalytics.ia</groupId>
+        <artifactId>TrustedAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
@@ -124,27 +124,27 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>com.trustedanalytics.ia</groupId>
             <artifactId>graphbuilder</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>com.trustedanalytics.ia</groupId>
             <artifactId>engine-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>com.trustedanalytics.ia</groupId>
             <artifactId>giraph-plugins</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>com.trustedanalytics.ia</groupId>
             <artifactId>frame-plugins</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>com.trustedanalytics.ia</groupId>
             <artifactId>graph-plugins</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>com.trustedanalytics.ia</groupId>
             <artifactId>model-plugins</artifactId>
         </dependency>
         <dependency>

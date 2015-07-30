@@ -16,8 +16,8 @@
 
 import logging
 logger = logging.getLogger(__name__)
-import taprootanalytics.rest.http as http
-from taprootanalytics.rest.server import Server
+import trustedanalytics.rest.http as http
+from trustedanalytics.rest.server import Server
 
 
 def get_oauth_server_uri(atk_uri):

@@ -19,17 +19,17 @@
   },
   "packages": [],
   "components": [
-    { "name":     "taproot-analytics-rest-server",
+    { "name":     "trustedanalytics-rest-server",
       "version":  "VERSION"
     }
-    ,{ "name":     "taproot-analytics-python-rest-client",
+    ,{ "name":     "trustedanalytics-python-rest-client",
       "version":  "VERSION"
     }
   ],
   "users": {
      "iauser": {
        "longname"    : "iauser",
-       "home"        : "/var/lib/taprootanalytics",
+       "home"        : "/var/lib/trustedanalytics",
        "shell"       : "/bin/bash",
        "extra_groups": ["hadoop"]
      }

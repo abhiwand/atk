@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from taprootanalytics.core.iatypes import valid_data_types
+from trustedanalytics.core.iatypes import valid_data_types
 
 
 class Pandas(object):
@@ -50,7 +50,7 @@ class Pandas(object):
 
     First bring in the stuff::
 
-        import taprootanalytics as ia
+        import trustedanalytics as ia
         import pandas
 
     At this point create a schema that defines the data::
@@ -93,7 +93,7 @@ class Pandas(object):
         """
         Schema field names.
 
-        List of field names from the schema stored in the taprootanalytics pandas dataframe object
+        List of field names from the schema stored in the trustedanalytics pandas dataframe object
 
         Returns
         -------
@@ -121,7 +121,7 @@ class Pandas(object):
         """
         Schema field types
 
-        List of field types from the schema stored in the taprootanalytics pandas dataframe object.
+        List of field types from the schema stored in the trustedanalytics pandas dataframe object.
 
         Returns
         -------

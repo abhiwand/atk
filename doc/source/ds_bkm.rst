@@ -20,7 +20,7 @@ Ping the server:
 
 .. code::
 
-    >>> import taprootanalytics as ta
+    >>> import trustedanalytics as ta
     >>> ta.server.ping()
     Successful ping to TAProot Analytics at http://localhost:9099/info
     >>> ta.connect()
@@ -73,7 +73,7 @@ property:
 
 .. code::
 
-    >>> import taprootanalytics as ta
+    >>> import trustedanalytics as ta
 
     # show full stack traces
     >>> ta.errors.show_details = True

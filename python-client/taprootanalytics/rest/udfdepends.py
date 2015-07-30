@@ -16,7 +16,7 @@
 
 import os
 import sys
-import taprootanalytics.rest.spark
+import trustedanalytics.rest.spark
 
 
 class udf(object):
@@ -53,7 +53,7 @@ class udf(object):
         :return: nothing
         """
         if dependencies is not None:
-            taprootanalytics.rest.spark.UdfDependencies = dependencies
+            trustedanalytics.rest.spark.UdfDependencies = dependencies
         else:
             raise ValueError ("The dependencies list to be installed on the cluster cannot be empty")
 
@@ -63,4 +63,4 @@ class udf(object):
         lists all the user files getting copied to the cluster
         :return: list of files to be copied to the cluster
         """
-        return taprootanalytics.rest.spark.UdfDependencies
+        return trustedanalytics.rest.spark.UdfDependencies

@@ -21,7 +21,7 @@ Windows Python Setup
 #.  Open a command prompt.
 
 #.  Run the command:
-    ``conda create -n taprootanalytics-python python=2.7 numpy=1.8 requests=2.3
+    ``conda create -n trustedanalytics-python python=2.7 numpy=1.8 requests=2.3
     ordereddict=1.1``.
     This creates a virtual Python environment that mimics the cluster's
     configuration.

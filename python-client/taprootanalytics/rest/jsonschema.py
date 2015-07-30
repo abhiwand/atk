@@ -22,16 +22,16 @@ logger = logging.getLogger(__name__)
 
 import json
 
-from taprootanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo, Doc, Version
-from taprootanalytics.core.iatypes import *
-from taprootanalytics.core.frame import Frame
-from taprootanalytics.core.graph import Graph
+from trustedanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo, Doc, Version
+from trustedanalytics.core.iatypes import *
+from trustedanalytics.core.frame import Frame
+from trustedanalytics.core.graph import Graph
 
 __all__ = ['get_command_def']
 
 
 # See http://json-schema.org/documentation.html
-# And source_code/engine/interfaces/src/main/scala/com/taproot/taprootanalytics/schema/JsonSchema.scala
+# And source_code/engine/interfaces/src/main/scala/com/trustedanalytics/trustedanalytics/schema/JsonSchema.scala
 
 json_type_id_to_data_type  = {
     "ia:int": int32,

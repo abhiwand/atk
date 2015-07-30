@@ -39,16 +39,16 @@ data to persist between restarts).
     ::
 
         metastore.connection-postgresql.host = "localhost"
-        metastore.connection.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.database}
+        metastore.connection.url = "jdbc:postgresql://"${trustedanalytics.atk.metastore.connection-postgresql.host}":"${trustedanalytics.atk.metastore.connection-postgresql.port}"/"${trustedanalytics.atk.metastore.connection-postgresql.database}
 
 .. only:: latex
 
     ::
 
         metastore.connection-postgresql.host = "localhost"
-        metastore.connection.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.
-            connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-
-            postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.
+        metastore.connection.url = "jdbc:postgresql://"${trustedanalytics.atk.metastore.
+            connection-postgresql.host}":"${trustedanalytics.atk.metastore.connection-
+            postgresql.port}"/"${trustedanalytics.atk.metastore.connection-postgresql.
             database}
 
     The ``metastore.connection.url`` line above was broken across multiple lines to assist display on various media.

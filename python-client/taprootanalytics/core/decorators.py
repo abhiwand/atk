@@ -17,4 +17,4 @@
 """
 API decorators
 """
-from taprootanalytics.meta.clientside import get_api_decorator, arg, returns, alpha, beta, deprecated
+from trustedanalytics.meta.clientside import get_api_decorator, arg, returns, alpha, beta, deprecated

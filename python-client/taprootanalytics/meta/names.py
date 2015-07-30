@@ -90,7 +90,7 @@ def entity_type_to_baseclass_name(entity_type):
     parts = entity_type.split(':')
     term = underscores_to_pascal(parts[0])
     if len(parts) == 1:
-        from taprootanalytics.meta.metaprog import CommandInstallable  # todo: refactor, remove circ dep
+        from trustedanalytics.meta.metaprog import CommandInstallable  # todo: refactor, remove circ dep
         return CommandInstallable.__name__
     return "_Base" + term
 

@@ -23,19 +23,19 @@ logger = logging.getLogger(__name__)
 from collections import defaultdict, namedtuple, OrderedDict
 import json
 import sys
-import taprootanalytics.rest.config as config
+import trustedanalytics.rest.config as config
 
-from taprootanalytics.core.frame import Frame
-from taprootanalytics.core.iapandas import Pandas
-from taprootanalytics.core.column import Column
-from taprootanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile, HiveQuery
-from taprootanalytics.core.iatypes import *
-from taprootanalytics.core.aggregation import agg
+from trustedanalytics.core.frame import Frame
+from trustedanalytics.core.iapandas import Pandas
+from trustedanalytics.core.column import Column
+from trustedanalytics.core.files import CsvFile, LineFile, MultiLineFile, XmlFile, HiveQuery
+from trustedanalytics.core.iatypes import *
+from trustedanalytics.core.aggregation import agg
 
-from taprootanalytics.rest.iaserver import server
-from taprootanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
-from taprootanalytics.rest.command import CommandRequest, executor
-from taprootanalytics.rest.spark import get_udf_arg, get_add_one_column_function, get_add_many_columns_function
+from trustedanalytics.rest.iaserver import server
+from trustedanalytics.rest.iatypes import get_data_type_from_rest_str, get_rest_str_from_data_type
+from trustedanalytics.rest.command import CommandRequest, executor
+from trustedanalytics.rest.spark import get_udf_arg, get_add_one_column_function, get_add_many_columns_function
 
 TakeResult = namedtuple("TakeResult", ['data', 'schema'])
 """
@@ -333,20 +333,20 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
             self._handle_error(result)
 
     def drop(self, frame, predicate):
-        from taprootanalytics.rest.spark import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
+        from trustedanalytics.rest.spark import ifilterfalse  # use the REST API filter, with a ifilterfalse iterator
         arguments = {'frame': self.get_ia_uri(frame),
                      'udf': get_udf_arg(frame, predicate, ifilterfalse)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter(self, frame, predicate):
-        from taprootanalytics.rest.spark import ifilter
+        from trustedanalytics.rest.spark import ifilter
         arguments = {'frame': self.get_ia_uri(frame),
                      'udf': get_udf_arg(frame, predicate, ifilter)}
         execute_update_frame_command("frame:/filter", arguments, frame)
 
     def filter_vertices(self, frame, predicate, keep_matching_vertices = True):
-        from taprootanalytics.rest.spark import ifilter
-        from taprootanalytics.rest.spark import ifilterfalse
+        from trustedanalytics.rest.spark import ifilter
+        from trustedanalytics.rest.spark import ifilterfalse
 
         if keep_matching_vertices:
             arguments = {'frame': self.get_ia_uri(frame),
@@ -389,7 +389,7 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
 
         def __repr__(self):
             # keep the import localized, as serialization doesn't like prettytable
-            import taprootanalytics.rest.prettytable as prettytable
+            import trustedanalytics.rest.prettytable as prettytable
             table = prettytable.PrettyTable()
             fields = OrderedDict([("{0}:{1}".format(key, valid_data_types.to_string(val)), self._align[val]) for key, val in self.schema])
             table.field_names = fields.keys()
@@ -409,7 +409,7 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
         data = result.data
         schema = result.schema
         if wrap:
-            from taprootanalytics.core.ui import RowsInspection
+            from trustedanalytics.core.ui import RowsInspection
             return RowsInspection(data, schema, offset=offset, wrap=wrap, truncate=truncate, round=round, width=width, margin=margin)
         return FrameBackendRest.InspectionTable(schema, data)
 
@@ -432,7 +432,7 @@ status = {status}""".format(type=frame_type, name=frame_name, graph_data=graph_d
                 column_names = columns.keys()
             else:
                 column_names = columns
-            from taprootanalytics.rest.spark import get_udf_arg_for_copy_columns
+            from trustedanalytics.rest.spark import get_udf_arg_for_copy_columns
             where = get_udf_arg_for_copy_columns(frame, where, column_names)
         else:
             where = None

@@ -18,7 +18,7 @@ import iatest
 iatest.init()
 
 import unittest
-import taprootanalytics.rest.jsonschema as js
+import trustedanalytics.rest.jsonschema as js
 import json
 
 

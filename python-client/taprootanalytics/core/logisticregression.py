@@ -29,7 +29,7 @@ class LogisticRegressionSummary(object):
     """ Defines the results of training a logistic regression model  """
 
     def __init__(self, json_result):
-        from taprootanalytics import get_frame
+        from trustedanalytics import get_frame
 
         self.num_features = json_result['num_features']
         self.num_classes = json_result['num_classes']

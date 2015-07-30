@@ -24,12 +24,12 @@ import warnings
 import logging
 logger = logging.getLogger('meta')
 
-from taprootanalytics.core.api import api_status, api_globals
-from taprootanalytics.meta.names import get_type_name
-from taprootanalytics.meta.docstub import delete_docstubs, is_doc_stub
-from taprootanalytics.meta.clientside import client_commands, clear_clientside_api_stubs, is_api, ClientCommandDefinition
-from taprootanalytics.meta.mute import muted_commands
-import taprootanalytics.meta.metaprog as metaprog
+from trustedanalytics.core.api import api_status, api_globals
+from trustedanalytics.meta.names import get_type_name
+from trustedanalytics.meta.docstub import delete_docstubs, is_doc_stub
+from trustedanalytics.meta.clientside import client_commands, clear_clientside_api_stubs, is_api, ClientCommandDefinition
+from trustedanalytics.meta.mute import muted_commands
+import trustedanalytics.meta.metaprog as metaprog
 
 
 def handle_client_server_build_id_mismatch(client_id, server_id):
@@ -39,7 +39,7 @@ def handle_client_server_build_id_mismatch(client_id, server_id):
     To turn this client/server build ID check OFF, change the value of 'build_id' to
     be None before connecting:
 
-    import taprootanalytics as ia
+    import trustedanalytics as ia
     ia.build_id = None
     ia.connect()
     """
@@ -61,10 +61,10 @@ def build_ids_match(client_id, server_id):
 
 def get_build_id(server_response):
     """Extract and returns server build ID from server response"""
-    # if taprootanalytics.build_id is not None (i.e. the cline build id is set),
+    # if trustedanalytics.build_id is not None (i.e. the cline build id is set),
     # then a check will be made against the build_server_id
     try:
-        from taprootanalytics import build_id as client_build_id
+        from trustedanalytics import build_id as client_build_id
     except:
         client_build_id = None
     try:
@@ -79,7 +79,7 @@ def get_build_id(server_response):
 
 def request_server_command_defs(server):
     logger.info("Requesting available commands from server")
-    from taprootanalytics.core.errorhandle import IaError
+    from trustedanalytics.core.errorhandle import IaError
     try:
         return server.get("/commands/definitions")
     except:
@@ -112,7 +112,7 @@ def dump_server_command_defs_to_file(server, file_name, where=None, select=None)
 def download_server_details(server):
     """Ask server for details about itself: the build ID and the API command defs"""
     logger.info("Requesting available commands from server")
-    from taprootanalytics.rest.jsonschema import get_command_def
+    from trustedanalytics.rest.jsonschema import get_command_def
     response = request_server_command_defs(server)
     server_build_id = get_build_id(response)
     commands_json_schema = response.json()
@@ -201,7 +201,7 @@ def check_loadable_class(cls, command_def):
 
 
 def install_server_commands(command_defs):
-    from taprootanalytics.rest.command import execute_command
+    from trustedanalytics.rest.command import execute_command
 
     # Unfortunately we need special logic to handle command_defs which define constructors
     # for entity classes.  We must install the constructor command_defs first, such that the
@@ -269,7 +269,7 @@ def install_api(server):
         delete_docstubs()
         install_client_commands()  # first do the client-side specific processing
         install_server_commands(server_commands)
-        from taprootanalytics import _refresh_api_namespace
+        from trustedanalytics import _refresh_api_namespace
         _refresh_api_namespace()
         api_status.declare_installed(server, server_build_id)
 
@@ -325,7 +325,7 @@ class ApiInfo(object):
     """Provides listing of Class objects and their command_defs"""
 
     def __init__(self, obj):
-        """obj should be the taprootanalytics module, or some API object"""
+        """obj should be the trustedanalytics module, or some API object"""
         self.command_defs_by_class = {}
         self._build(obj)
 

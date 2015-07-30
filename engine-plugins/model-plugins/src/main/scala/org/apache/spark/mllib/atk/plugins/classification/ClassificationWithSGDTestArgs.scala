@@ -16,8 +16,8 @@
 
 package org.apache.spark.mllib.atk.plugins.classification
 
-import com.intel.taproot.analytics.domain.frame.FrameReference
-import com.intel.taproot.analytics.domain.model.ModelReference
+import org.trustedanalytics.atk.domain.frame.FrameReference
+import org.trustedanalytics.atk.domain.model.ModelReference
 
 /**
  * Command for loading model data into existing model in the model database.

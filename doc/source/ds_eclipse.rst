@@ -80,7 +80,7 @@ Setup
     #)  Choose *Add source folder* button.
     #)  Browse for the |PACKAGE| Python REST Client libraries.
         On RedHat and Centos these are found under
-        '/usr/lib/taprootanalytics/rest-client/python'.
+        '/usr/lib/trustedanalytics/rest-client/python'.
     #)  Choose the *OK* button.
 
 #)  Right click your project folder, for example, "myproject".
@@ -95,7 +95,7 @@ Setup
     #)  Close the *Help keeping PyDev alive* dialog, if it appears.
     #)  Type the following code into test.py::
 
-            import taprootanalytics as ta
+            import trustedanalytics as ta
             ta.server.host = "correct host name or IP address"
             ta.connect()
             ta.server.ping()

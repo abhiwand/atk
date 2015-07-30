@@ -17,8 +17,8 @@
     </description>
 
     <parent>
-        <groupId>com.intel.taproot.ia</groupId>
-        <artifactId>TapRootAnalytics</artifactId>
+        <groupId>com.trustedanalytics.ia</groupId>
+        <artifactId>TrustedAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
@@ -95,15 +95,15 @@
     <dependencies>
         <!--START dependencies to our modules-->
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>com.trustedanalytics.ia</groupId>
             <artifactId>event</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>com.trustedanalytics.ia</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>com.trustedanalytics.ia</groupId>
             <artifactId>launcher</artifactId>
         </dependency>
         <!--END dependencies to our modules-->
