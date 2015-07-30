@@ -16,7 +16,7 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame
 
-import com.intel.taproot.giraph.io.{ LdaEdgeData, LdaVertexId }
+import com.intel.taproot.analytics.giraph.io.{ LdaEdgeData, LdaVertexId }
 import org.apache.commons.lang3.StringUtils
 import org.apache.giraph.io.formats.TextEdgeInputFormat
 import org.apache.giraph.io.{ EdgeReader, ReverseEdgeDuplicator }

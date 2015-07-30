@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.plugins.testutils
 
 import com.intel.taproot.analytics.plugins.VectorMath
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex }
 
 /**
  * Provides methods for comparing vertices and sets of vertices when approximate equality is acceptable in a

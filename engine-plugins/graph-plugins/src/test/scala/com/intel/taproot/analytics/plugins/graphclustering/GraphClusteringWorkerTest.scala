@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.graphclustering
 
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.scalatest.{ FlatSpec, Matchers }
 import org.apache.spark.rdd.RDD

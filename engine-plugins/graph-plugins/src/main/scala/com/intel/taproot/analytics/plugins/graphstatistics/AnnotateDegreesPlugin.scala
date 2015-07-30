@@ -16,10 +16,10 @@
 
 package com.intel.taproot.analytics.plugins.graphstatistics
 
-import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
-import com.intel.taproot.graphbuilder.parser.InputSchema
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.analytics.graphbuilder.parser.InputSchema
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.{ CreateEntityArgs, StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphTemplate, GraphReference }
@@ -33,7 +33,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{ SparkConf, SparkContext }
 import java.util.UUID
-import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.analytics.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
 import scala.concurrent.Await
 

@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.graph
 
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.taproot.testutils.{ LogUtils, TestingSparkContextWordSpec, TestingTitan }
 import org.scalatest.BeforeAndAfter
 

@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.graphstatistics
 
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }

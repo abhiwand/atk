@@ -16,8 +16,8 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame.lbp
 
-import com.intel.taproot.giraph.io.VertexData4LBPWritable
-import com.intel.taproot.giraph.lbp.LoopyBeliefPropagationConfiguration
+import com.intel.taproot.analytics.giraph.io.VertexData4LBPWritable
+import com.intel.taproot.analytics.giraph.lbp.LoopyBeliefPropagationConfiguration
 import com.intel.taproot.analytics.engine.frame.RowWrapper
 import org.apache.giraph.io.{ VertexValueReader, VertexValueInputFormat }
 import org.apache.hadoop.conf.Configuration

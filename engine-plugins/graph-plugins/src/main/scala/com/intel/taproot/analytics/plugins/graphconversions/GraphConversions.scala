@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.graphconversions
 
-import com.intel.taproot.graphbuilder.elements.GBEdge
+import com.intel.taproot.analytics.graphbuilder.elements.GBEdge
 import org.apache.spark.graphx.{ Edge => GraphXEdge }
 
 object GraphConversions {

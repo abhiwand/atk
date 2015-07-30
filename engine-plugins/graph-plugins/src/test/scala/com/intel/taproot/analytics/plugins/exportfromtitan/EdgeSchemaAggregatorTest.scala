@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.plugins.exportfromtitan
 
 import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ EdgeSchemaAggregator, EdgeHolder }
-import com.intel.taproot.graphbuilder.elements.{ Property, GBEdge }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBEdge }
 import org.scalatest.WordSpec
 import EdgeSchemaAggregator.zeroValue
 

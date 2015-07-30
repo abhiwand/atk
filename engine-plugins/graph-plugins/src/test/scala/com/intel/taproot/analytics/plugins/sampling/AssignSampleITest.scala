@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.sampling
 
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex }
 import com.intel.taproot.testutils.TestingSparkContextWordSpec
 import org.scalatest.Matchers
 import com.intel.taproot.testutils.{ TestingSparkContextWordSpec, TestingTitan }

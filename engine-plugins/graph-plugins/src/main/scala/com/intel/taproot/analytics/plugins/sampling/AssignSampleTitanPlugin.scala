@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.plugins.sampling
 
 import com.intel.taproot.analytics.engine.frame.plugins.MLDataSplitter
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import com.intel.taproot.analytics.UnitReturn
 import com.intel.taproot.analytics.domain.graph.{ AssignSampleTitanArgs, GraphEntity }
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }

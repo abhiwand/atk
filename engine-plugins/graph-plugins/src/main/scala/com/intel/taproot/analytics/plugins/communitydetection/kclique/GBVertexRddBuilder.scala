@@ -17,10 +17,10 @@
 package com.intel.taproot.analytics.plugins.communitydetection.kclique
 
 import com.intel.taproot.analytics.plugins.communitydetection.ScalaToJavaCollectionConverter
-import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBVertex, Property }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
-import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReader
+import com.intel.taproot.analytics.graphbuilder.driver.spark.titan.reader.TitanReader
 
 /**
  * Class to set the vertex Ids as required by Graph Builder, by formatting as (physicalId, gbId, propertyList)

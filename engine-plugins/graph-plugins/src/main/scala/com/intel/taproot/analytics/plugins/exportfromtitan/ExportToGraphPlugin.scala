@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.plugins.exportfromtitan
 
 import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ VertexSchemaAggregator, EdgeSchemaAggregator, EdgeHolder }
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import com.intel.taproot.analytics.domain.graph._
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema.{ Column, VertexSchema, _ }
@@ -43,7 +43,7 @@ import scala.collection.JavaConversions._
 
 import org.apache.spark.SparkContext._
 
-import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.analytics.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
 /**
  * holds 3 labels

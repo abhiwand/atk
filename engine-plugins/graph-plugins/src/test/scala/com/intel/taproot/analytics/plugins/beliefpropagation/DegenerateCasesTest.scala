@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.plugins.testutils.ApproximateVertexEquality
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.rdd.RDD
 
 /**

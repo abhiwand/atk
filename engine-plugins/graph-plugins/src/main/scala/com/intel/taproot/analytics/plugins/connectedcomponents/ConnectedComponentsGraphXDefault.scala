@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.connectedcomponents
 
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex }
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{ Edge => GraphXEdge }

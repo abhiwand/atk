@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.query.recommend
 
-import com.intel.taproot.graphbuilder.elements.GraphElement
+import com.intel.taproot.analytics.graphbuilder.elements.GraphElement
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 import org.jblas.DoubleMatrix

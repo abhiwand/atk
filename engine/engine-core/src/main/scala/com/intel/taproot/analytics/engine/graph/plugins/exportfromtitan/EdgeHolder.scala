@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan
 
-import com.intel.taproot.graphbuilder.elements.GBEdge
+import com.intel.taproot.analytics.graphbuilder.elements.GBEdge
 
 /**
  * Holds an edge plus src and dest vertex labels.

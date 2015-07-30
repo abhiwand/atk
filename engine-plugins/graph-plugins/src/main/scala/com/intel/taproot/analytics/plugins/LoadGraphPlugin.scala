@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.graph.{ GraphEntity, LoadGraphArgs }
 import com.intel.taproot.analytics.engine.frame.SparkFrameStorage
 import com.intel.taproot.analytics.engine.graph.GraphBuilderConfigFactory
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc, SparkCommandPlugin }
-import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilder
+import com.intel.taproot.analytics.graphbuilder.driver.spark.titan.GraphBuilder
 import org.apache.spark.rdd.RDD
 
 // Implicits needed for JSON conversion

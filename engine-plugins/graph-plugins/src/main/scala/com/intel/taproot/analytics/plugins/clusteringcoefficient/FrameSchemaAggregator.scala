@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.clusteringcoefficient
 
-import com.intel.taproot.graphbuilder.elements.GBVertex
+import com.intel.taproot.analytics.graphbuilder.elements.GBVertex
 import com.intel.taproot.analytics.domain.schema._
 
 /**

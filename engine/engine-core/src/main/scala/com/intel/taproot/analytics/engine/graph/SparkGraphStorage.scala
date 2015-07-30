@@ -17,11 +17,11 @@
 package com.intel.taproot.analytics.engine.graph
 
 import com.intel.taproot.analytics.event.EventLogging
-import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReader
-import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, GraphElement }
-import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.taproot.graphbuilder.parser.InputSchema
+import com.intel.taproot.analytics.graphbuilder.driver.spark.titan.reader.TitanReader
+import com.intel.taproot.analytics.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex, GraphElement }
+import com.intel.taproot.analytics.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.analytics.graphbuilder.parser.InputSchema
 import com.intel.taproot.analytics.NotFoundException
 import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
@@ -309,7 +309,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     else {
       // load from Titan
       val titanReaderRdd: RDD[GraphElement] = getTitanReaderRdd(sc, graph)
-      import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+      import com.intel.taproot.analytics.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
       val gbVertices: RDD[GBVertex] = titanReaderRdd.filterVertices()
       gbVertices
     }
@@ -324,7 +324,7 @@ class SparkGraphStorage(metaStore: MetaStore,
     else {
       // load from Titan
       val titanReaderRDD: RDD[GraphElement] = getTitanReaderRdd(sc, graph)
-      import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+      import com.intel.taproot.analytics.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
       val gbEdges: RDD[GBEdge] = titanReaderRDD.filterEdges()
       gbEdges
     }
@@ -382,7 +382,7 @@ class SparkGraphStorage(metaStore: MetaStore,
    */
   def loadFromTitan(sc: SparkContext, graph: GraphEntity): (RDD[GBVertex], RDD[GBEdge]) = {
     val titanReaderRDD: RDD[GraphElement] = getTitanReaderRdd(sc, graph)
-    import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+    import com.intel.taproot.analytics.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
     //Cache data to prevent Titan reader from scanning HBase/Cassandra table twice to read vertices and edges
     titanReaderRDD.persist(StorageLevel.MEMORY_ONLY)

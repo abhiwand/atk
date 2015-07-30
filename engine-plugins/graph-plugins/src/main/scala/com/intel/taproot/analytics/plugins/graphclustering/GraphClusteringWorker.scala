@@ -17,8 +17,8 @@
 package com.intel.taproot.analytics.plugins.graphclustering
 
 import com.intel.taproot.analytics.event.EventLogging
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex }
 import org.apache.spark.rdd.RDD
 import java.io.Serializable
 import org.apache.spark.SparkContext._

@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.frame
 
-import com.intel.taproot.graphbuilder.elements.GBVertex
+import com.intel.taproot.analytics.graphbuilder.elements.GBVertex
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
 import com.intel.taproot.analytics.domain.schema._
 import org.apache.hadoop.io._

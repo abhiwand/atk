@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.plugins.VectorMath
 import com.intel.taproot.analytics.atkpregel.{ AverageDeltaSuperStepStatusGenerator, BasicCountsInitialReport, AtkPregel, DeltaProvider }
 import org.apache.spark.graphx._
 import com.intel.taproot.analytics.atkpregel._
-import com.intel.taproot.graphbuilder.elements.GBVertex
+import com.intel.taproot.analytics.graphbuilder.elements.GBVertex
 
 /**
  * Internal state of a vertex during the progress of the belief propagation algorithm.

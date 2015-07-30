@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.plugins.query.recommend
 
 import com.intel.taproot.analytics.domain.UserPrincipal
-import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.analytics.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }

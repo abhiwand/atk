@@ -16,7 +16,7 @@
 
 package org.apache.spark.atk.graph
 
-import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property => GBProperty }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBVertex, Property => GBProperty }
 import com.intel.taproot.analytics.domain.schema.{ GraphSchema, VertexSchema, DataTypes }
 import com.intel.taproot.analytics.engine.frame.AbstractRow
 import org.apache.spark.sql.Row

@@ -16,7 +16,7 @@
 
 package com.intel.taproot.spark.graphon.sampling.examples;
 
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration;
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.example.GraphOfTheGodsFactory;

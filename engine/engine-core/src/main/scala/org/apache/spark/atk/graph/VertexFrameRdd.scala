@@ -16,7 +16,7 @@
 
 package org.apache.spark.atk.graph
 
-import com.intel.taproot.graphbuilder.elements.GBVertex
+import com.intel.taproot.analytics.graphbuilder.elements.GBVertex
 import com.intel.taproot.analytics.domain.schema.{ VertexSchema, GraphSchema, Schema }
 import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
 import org.apache.spark.frame.FrameRdd
