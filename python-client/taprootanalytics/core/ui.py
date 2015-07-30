@@ -1,4 +1,4 @@
-import taprootanalytics as ta
+import trustedanalytics as ta
 
 spaces_between_cols = 2  # consts
 ellipses = '...'

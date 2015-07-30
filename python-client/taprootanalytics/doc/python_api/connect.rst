@@ -1,4 +1,4 @@
-.. currentmodule:: taprootanalytics
+.. currentmodule:: trustedanalytics
 
 .. index::
        single: connect
@@ -13,7 +13,7 @@ Connect to the Server
 Before the Python API can be used, the user must "connect" to the server, such
 that the Python client can download the API and configure itself:
 
-.. autofunction:: taprootanalytics.connect
+.. autofunction:: trustedanalytics.connect
 
 Basic connecting
 ----------------
@@ -22,14 +22,14 @@ To use the default settings provided by the environment and/or configuration:
 
 .. code::
 
-    >>> import taprootanalytics as ta
+    >>> import trustedanalytics as ta
     >>> ta.connect()
 
 To connect to a specific server:
 
 .. code::
 
-    >>> import taprootanalytics as ta
+    >>> import trustedanalytics as ta
     >>> ta.server.uri = 'myhost-name:port'
     >>> ta.connect()
 
@@ -51,7 +51,7 @@ provide answers to its prompt.
 
     $ python2.7
 
-    >>> import taprootanalytics as ta
+    >>> import trustedanalytics as ta
     >>> ta.create_connect_file('~/.ta/demo.creds')
     OAuth server URI: uaa.my-dp2-domain.com
     user name: dscientist9
@@ -104,7 +104,7 @@ With these two variables set, the simple connect sequence works.
 
 .. code::
 
-    >>> import taprootanalytics as ta
+    >>> import trustedanalytics as ta
     >>> ta.connect()
 
 Troubleshooting

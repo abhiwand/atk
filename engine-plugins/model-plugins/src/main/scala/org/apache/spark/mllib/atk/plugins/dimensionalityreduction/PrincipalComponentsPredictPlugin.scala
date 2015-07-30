@@ -15,16 +15,16 @@
 */
 package org.apache.spark.mllib.atk.plugins.dimensionalityreduction
 
-import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
-import com.intel.taproot.analytics.domain.model.ModelReference
-import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes }
-import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
-import com.intel.taproot.analytics.engine.PluginDocAnnotation
-import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.model.Model
-import com.intel.taproot.analytics.engine.plugin.{ PluginDoc, Invocation, ApiMaturityTag }
-import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.trustedanalytics.atk.domain.CreateEntityArgs
+import org.trustedanalytics.atk.domain.frame.{ FrameEntity, FrameReference }
+import org.trustedanalytics.atk.domain.model.ModelReference
+import org.trustedanalytics.atk.domain.schema.{ Column, DataTypes }
+import org.trustedanalytics.atk.domain.schema.DataTypes.DataType
+import org.trustedanalytics.atk.engine.PluginDocAnnotation
+import org.trustedanalytics.atk.engine.frame.SparkFrame
+import org.trustedanalytics.atk.engine.model.Model
+import org.trustedanalytics.atk.engine.plugin.{ PluginDoc, Invocation, ApiMaturityTag }
+import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.mllib.linalg.distributed.{ IndexedRow, IndexedRowMatrix, RowMatrix }
 import org.apache.spark.rdd.RDD

@@ -9,7 +9,7 @@
         "group": "iauser",
         "permissions": "0755"
     },
-    "etc/taprootanalytics/rest-server": {
+    "etc/trustedanalytics/rest-server": {
         "user": "iauser",
         "group": "iauser",
         "permissions": "0755"
@@ -19,7 +19,7 @@
         "group": "iauser",
         "permissions": "0744"
     },
-    "usr/lib/taprootanalytics/graphbuilder/lib": {
+    "usr/lib/trustedanalytics/graphbuilder/lib": {
         "user": "iauser",
         "group": "iauser",
         "permissions": "0775"

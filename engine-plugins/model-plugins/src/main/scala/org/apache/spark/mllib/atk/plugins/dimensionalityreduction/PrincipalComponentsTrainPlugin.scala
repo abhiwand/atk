@@ -17,19 +17,19 @@
 package org.apache.spark.mllib.atk.plugins.dimensionalityreduction
 
 import breeze.numerics._
-import com.intel.taproot.analytics.domain.frame._
-import com.intel.taproot.analytics.domain.schema.{ DataTypes, Schema }
-import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.model.Model
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
-import com.intel.taproot.analytics.domain.schema.DataTypes.vector
+import org.trustedanalytics.atk.domain.frame._
+import org.trustedanalytics.atk.domain.schema.{ DataTypes, Schema }
+import org.trustedanalytics.atk.engine.frame.SparkFrame
+import org.trustedanalytics.atk.engine.model.Model
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import org.trustedanalytics.atk.engine.plugin.{ SparkCommandPlugin, SparkInvocation }
+import org.trustedanalytics.atk.domain.schema.DataTypes.vector
 import org.apache.spark.mllib.linalg.Matrix
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 
 // Implicits needed for JSON conversion
 import spray.json._
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 
 @PluginDoc(oneLine = "Build principal components model.",

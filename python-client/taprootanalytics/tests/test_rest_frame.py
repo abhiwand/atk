@@ -19,13 +19,13 @@ iatest.init()
 
 import unittest
 
-from taprootanalytics.core.iatypes import *
-from taprootanalytics.rest.frame import FrameSchema, FrameData
+from trustedanalytics.core.iatypes import *
+from trustedanalytics.rest.frame import FrameSchema, FrameData
 
 class TestConnect(unittest.TestCase):
 
     def test_meta(self):
-        import taprootanalytics as ia
+        import trustedanalytics as ia
         ia.connect()
 
 class TestInspectionTable(unittest.TestCase):

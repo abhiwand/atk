@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-import taprootanalytics.rest.http as http
-import taprootanalytics.rest.config as config
-from taprootanalytics.core.api import api_status
+import trustedanalytics.rest.http as http
+import trustedanalytics.rest.config as config
+from trustedanalytics.core.api import api_status
 import json
 
 

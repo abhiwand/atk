@@ -5,7 +5,7 @@ Appendix A |EM| Sample Application Configuration File
 
     # BEGIN REQUIRED SETTINGS
 
-    intel.taproot.analytics {
+    trustedanalytics.atk {
     #bind address - change to 0.0.0.0 to listen on all interfaces
     //api.host = "127.0.0.1"
 
@@ -19,22 +19,22 @@ Appendix A |EM| Sample Application Configuration File
     metastore.connection-postgresql.username = "taproot"
     metastore.connection-postgresql.password = "MyPassword"
     metastore.connection-postgresql.url = 
-        "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":
-        "${intel.taproot.analytics.metastore.connection-postgresql.port}"/
-        "${intel.taproot.analytics.metastore.connection-postgresql.database}
+        "jdbc:postgresql://"${trustedanalytics.atk.metastore.connection-postgresql.host}":
+        "${trustedanalytics.atk.metastore.connection-postgresql.port}"/
+        "${trustedanalytics.atk.metastore.connection-postgresql.database}
 
     # This allows for the use of postgres for a metastore.
     # Service restarts will not affect the data stored in postgres.
-    metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
+    metastore.connection = ${trustedanalytics.atk.metastore.connection-postgresql}
 
     # This allows the use of an in memory data store.
     # Restarting the REST server will create a fresh database and any
     # data in the h2 DB will be lost
-    //metastore.connection = ${intel.taproot.analytics.metastore.connection-h2}
+    //metastore.connection = ${trustedanalytics.atk.metastore.connection-h2}
 
     engine {
 
-        # The hdfs URL where the taprootanalytics folder will be created
+        # The hdfs URL where the trustedanalytics folder will be created
         # and which will be used as the starting point for any relative URLs
         fs.root = "hdfs://master.silvern.gao.cluster:8020/user/taproot"
 
@@ -71,7 +71,7 @@ Appendix A |EM| Sample Application Configuration File
     # Some may need to be configured depending on the
     # specifics of your cluster and workload.
 
-    intel.taproot.analytics {
+    trustedanalytics.atk {
       engine {
         auto-partitioner {
           # auto-partitioning spark based on the file size
@@ -281,9 +281,9 @@ Appendix A |EM| Sample Application Configuration File
           query {
             storage {
               # query does use the batch load settings in titan.load
-              backend = ${intel.taproot.analytics.engine.titan.load.storage.backend}
-              hostname =  ${intel.taproot.analytics.engine.titan.load.storage.hostname}
-              port =  ${intel.taproot.analytics.engine.titan.load.storage.port}
+              backend = ${trustedanalytics.atk.engine.titan.load.storage.backend}
+              hostname =  ${trustedanalytics.atk.engine.titan.load.storage.hostname}
+              port =  ${trustedanalytics.atk.engine.titan.load.storage.port}
             }
             cache {
               # Adjust cache size parameters if you experience OutOfMemory

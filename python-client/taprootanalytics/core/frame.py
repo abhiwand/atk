@@ -21,29 +21,29 @@ Frame entity types
 import logging
 logger = logging.getLogger(__name__)
 
-from taprootanalytics.meta.context import api_context
-from taprootanalytics.core.decorators import *
+from trustedanalytics.meta.context import api_context
+from trustedanalytics.core.decorators import *
 api = get_api_decorator(logger)
 
-from taprootanalytics.core.api import api_status
-from taprootanalytics.core.iatypes import valid_data_types
-from taprootanalytics.core.column import Column
-from taprootanalytics.core.errorhandle import IaError
-from taprootanalytics.meta.udf import has_udf_arg
-from taprootanalytics.meta.namedobj import name_support
-from taprootanalytics.meta.metaprog import CommandInstallable as CommandLoadable
-from taprootanalytics.meta.docstub import doc_stubs_import
+from trustedanalytics.core.api import api_status
+from trustedanalytics.core.iatypes import valid_data_types
+from trustedanalytics.core.column import Column
+from trustedanalytics.core.errorhandle import IaError
+from trustedanalytics.meta.udf import has_udf_arg
+from trustedanalytics.meta.namedobj import name_support
+from trustedanalytics.meta.metaprog import CommandInstallable as CommandLoadable
+from trustedanalytics.meta.docstub import doc_stubs_import
 
 
 def _get_backend():
-    from taprootanalytics.meta.config import get_frame_backend
+    from trustedanalytics.meta.config import get_frame_backend
     return get_frame_backend()
 
 
 # BaseFrame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from taprootanalytics.core.docstubs1 import _DocStubs_BaseFrame
+    from trustedanalytics.core.docstubs1 import _DocStubs_BaseFrame
     doc_stubs_import.success(logger, "_DocStubsBaseFrame")
 except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubsBaseFrame", e)
@@ -53,7 +53,7 @@ except Exception as e:
 # Frame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from taprootanalytics.core.docstubs1 import _DocStubsFrame
+    from trustedanalytics.core.docstubs1 import _DocStubsFrame
     doc_stubs_import.success(logger, "_DocStubsFrame")
 except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubsFrame", e)
@@ -63,7 +63,7 @@ except Exception as e:
 # VertexFrame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from taprootanalytics.core.docstubs1 import _DocStubsVertexFrame
+    from trustedanalytics.core.docstubs1 import _DocStubsVertexFrame
     doc_stubs_import.success(logger, "_DocStubsVertexFrame")
 except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubsVertexFrame", e)
@@ -73,7 +73,7 @@ except Exception as e:
 # EdgeFrame
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from taprootanalytics.core.docstubs1 import _DocStubsEdgeFrame
+    from trustedanalytics.core.docstubs1 import _DocStubsEdgeFrame
     doc_stubs_import.success(logger, "_DocStubsEdgeFrame")
 except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubsEdgeFrame", e)
@@ -493,7 +493,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         """
         Download a frame from the server into client workspace.
 
-        Copies an taprootanalytics Frame into a Pandas DataFrame.
+        Copies an trustedanalytics Frame into a Pandas DataFrame.
 
 
         Examples

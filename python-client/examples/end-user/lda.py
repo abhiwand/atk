@@ -16,7 +16,7 @@
 
 
 #!/usr/bin/python2.7
-import taprootanalytics as ia
+import trustedanalytics as ia
 
 ia.connect();
 

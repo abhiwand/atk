@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import taprootanalytics as ia
+import trustedanalytics as ia
 ia.server.port = 19099
 ia.connect()
 
@@ -28,7 +28,7 @@ current_module = sys.modules[__name__]
 import os
 #print "examples=%s" % examples
 here = os.path.dirname(os.path.abspath(__file__))
-path_to_examples = os.path.join(here, "../../python/taprootanalytics/doc/examples")
+path_to_examples = os.path.join(here, "../../python/trustedanalytics/doc/examples")
 import fnmatch
 
 __test__ = {}
@@ -70,7 +70,7 @@ run_tests()
 # option 4
 # def run_example(relative_path, verbose=False):
 #     here = os.path.dirname(os.path.abspath(__file__))
-#     path_to_examples = os.path.join(here, "../../python/taprootanalytics/doc/examples")
+#     path_to_examples = os.path.join(here, "../../python/trustedanalytics/doc/examples")
 #
 #     __test__['bin_column'] = content
 #     print "Running examples in %s" % relative_path
@@ -106,7 +106,7 @@ run_tests()
 
 # option 2
 #connection_header = """
-#>>> import taprootanalytics as ia
+#>>> import trustedanalytics as ia
 #>>> ia.server.port = 19099
 #>>> ia.connect()
 #-etc-

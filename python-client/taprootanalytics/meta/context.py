@@ -23,9 +23,9 @@ logger = logging.getLogger('meta')
 
 from decorator import decorator
 
-from taprootanalytics.core.errorhandle import IaError
-from taprootanalytics.core.loggers import log_api_call
-from taprootanalytics.core.api import api_status
+from trustedanalytics.core.errorhandle import IaError
+from trustedanalytics.core.loggers import log_api_call
+from trustedanalytics.core.api import api_status
 
 
 class _ApiCallStack(object):
@@ -73,7 +73,7 @@ class ApiCallLoggingContext(object):
             error = IaError(self.logger)
 
 
-            raise error  # see taprootanalytics.errors.last for details
+            raise error  # see trustedanalytics.errors.last for details
 
 
 
@@ -100,7 +100,7 @@ def get_api_context_decorator(execution_logger, call_depth=4):
 
 
 
-                raise error  # see taprootanalytics.errors.last for python details
+                raise error  # see trustedanalytics.errors.last for python details
 
 
 

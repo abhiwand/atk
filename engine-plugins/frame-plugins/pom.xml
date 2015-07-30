@@ -7,8 +7,8 @@
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>com.intel.taproot.ia</groupId>
-        <artifactId>TapRootAnalytics</artifactId>
+        <groupId>org.trustedanalytics.atk</groupId>
+        <artifactId>TrustedAnalytics</artifactId>
         <relativePath>../../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
@@ -86,19 +86,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>org.trustedanalytics.atk</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>org.trustedanalytics.atk</groupId>
             <artifactId>launcher</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>org.trustedanalytics.atk</groupId>
             <artifactId>engine-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>org.trustedanalytics.atk</groupId>
             <artifactId>testutils</artifactId>
             <scope>test</scope>
         </dependency>

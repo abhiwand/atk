@@ -58,12 +58,12 @@ def add_return_none_postprocessor(command_full_name):
                'graph:titan/annotate_degrees', 'graph:titan/annotate_weighted_degrees', 'graph/copy')
 def return_graph(selfish, json_result):
 
-    from taprootanalytics import get_graph
+    from trustedanalytics import get_graph
     return get_graph(json_result['id'])
 
 @postprocessor('frame/classification_metrics', 'model:logistic_regression/test', 'model:svm/test')
 def return_metrics(selfish, json_result):
-     from taprootanalytics.core.classifymetrics import ClassificationMetricsResult
+     from trustedanalytics.core.classifymetrics import ClassificationMetricsResult
      return ClassificationMetricsResult(json_result)
 
 @postprocessor('frame/tally', 'frame/tally_percent', 'frame/cumulative_sum', 'frame/cumulative_percent', 'frame:/drop_columns',
@@ -73,13 +73,13 @@ def return_none(selfish, json_result):
 
 @postprocessor('frame/histogram')
 def return_histogram(selfish, json_result):
-    from taprootanalytics.core.histogram import Histogram
+    from trustedanalytics.core.histogram import Histogram
     return Histogram(json_result["cutoffs"], json_result["hist"], json_result["density"])
 
 @postprocessor('graph/clustering_coefficient')
 def return_clustering_coefficient(selfish, json_result):
-    from taprootanalytics import get_frame
-    from taprootanalytics.core.clusteringcoefficient import  ClusteringCoefficient
+    from trustedanalytics import get_frame
+    from trustedanalytics.core.clusteringcoefficient import  ClusteringCoefficient
     if json_result.has_key('frame'):
         frame = get_frame(json_result['frame']['id'])
     else:
@@ -93,44 +93,44 @@ def return_bin_result(selfish, json_result):
 
 @postprocessor('model:lda/train')
 def return_lda_train(selfish, json_result):
-    from taprootanalytics import get_frame
+    from trustedanalytics import get_frame
     doc_frame = get_frame(json_result['doc_results']['id'])
     word_frame= get_frame(json_result['word_results']['id'])
     return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }
 
 @postprocessor('model:logistic_regression/train')
 def return_logistic_regression_train(selfish, json_result):
-    from taprootanalytics.core.logisticregression import LogisticRegressionSummary
+    from trustedanalytics.core.logisticregression import LogisticRegressionSummary
     return LogisticRegressionSummary(json_result)
 
 @postprocessor('frame:/label_propagation')
 def return_label_propagation(selfish, json_result):
-    from taprootanalytics import get_frame
+    from trustedanalytics import get_frame
     frame = get_frame(json_result['output_frame']['id'])
     return { 'frame': frame, 'report': json_result['report'] }
 
 @postprocessor('frame:/loopy_belief_propagation')
 def return_loopy_belief_propagation(selfish, json_result):
-    from taprootanalytics import get_frame
+    from trustedanalytics import get_frame
     frame = get_frame(json_result['output_frame']['id'])
     return { 'frame': frame, 'report': json_result['report'] }
 
 @postprocessor('frame:/collaborative_filtering')
 def return_collaborative_filtering(selfish, json_result):
-    from taprootanalytics import get_frame
+    from trustedanalytics import get_frame
     user_frame = get_frame(json_result['user_frame']['id'])
     item_frame= get_frame(json_result['item_frame']['id'])
     return { 'user_frame': user_frame, 'item_frame': item_frame, 'report': json_result['report'] }
 
 @postprocessor('graph/graphx_connected_components','graph/annotate_weighted_degrees','graph/annotate_degrees','graph/graphx_triangle_count')
 def return_connected_components(selfish, json_result):
-    from taprootanalytics import get_frame
+    from trustedanalytics import get_frame
     dictionary = json_result["frame_dictionary_output"]
     return dict([(k,get_frame(v["id"])) for k,v in dictionary.items()])
 
 @postprocessor('graph/graphx_pagerank')
 def return_page_ank(selfish, json_result):
-    from taprootanalytics import get_frame
+    from trustedanalytics import get_frame
     vertex_json = json_result["vertex_dictionary_output"]
     edge_json = json_result["edge_dictionary_output"]
     vertex_dictionary = dict([(k,get_frame(v["id"])) for k,v in vertex_json.items()])
@@ -139,14 +139,14 @@ def return_page_ank(selfish, json_result):
 
 @postprocessor('graph/ml/belief_propagation','graph:/ml/kclique_percolation')
 def return_belief_propagation(selfish, json_result):
-    from taprootanalytics import get_frame
+    from trustedanalytics import get_frame
     vertex_json = json_result['frame_dictionary_output']
     vertex_dictionary = dict([(k,get_frame(v["id"])) for k,v in vertex_json.items()])
     return {'vertex_dictionary': vertex_dictionary, 'time': json_result['time']}
 
 @postprocessor('model:principal_components/predict')
 def return_principal_components_predict(selfish, json_result):
-    from taprootanalytics import get_frame
+    from trustedanalytics import get_frame
     train_output = {'output_frame': get_frame(json_result['output_frame']['id']) }
     if json_result.get('t_squared_index', None) is not None:
         train_output['t_squared_index'] = json_result['t_squared_index']

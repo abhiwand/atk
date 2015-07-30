@@ -17,7 +17,7 @@
 """
 Formatting for numpydoc docstrings
 """
-from taprootanalytics import valid_data_types
+from trustedanalytics import valid_data_types
 
 
 def get_numpy_doc(command_def, one_line, extended_summary=''):

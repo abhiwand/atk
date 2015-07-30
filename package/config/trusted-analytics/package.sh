@@ -27,18 +27,18 @@ echo $SCRIPTPATH
 
 log "packageName: $packageName"
 #call package.sh for rest-server
-package taprootanalytics-rest-server
+package trustedanalytics-rest-server
 packageName=$1
-cp ${BUILD_DIR}/etc/taprootanalytics/rest-server/parcel.conf.tpl  ${BUILD_DIR}/etc/taprootanalytics/rest-server/application.conf
+cp ${BUILD_DIR}/etc/trustedanalytics/rest-server/parcel.conf.tpl  ${BUILD_DIR}/etc/trustedanalytics/rest-server/application.conf
 
 log "packageName: $packageName"
 #call package.sh for rest server
-package taprootanalytics-python-rest-client
+package trustedanalytics-python-rest-client
 packageName=$1
 
 log "packageName: $packageName"
 #call package.sh for spark-deps
-package taprootanalytics-spark-deps
+package trustedanalytics-spark-deps
 packageName=$1
 
 

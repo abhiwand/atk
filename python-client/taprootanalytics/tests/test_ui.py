@@ -18,8 +18,8 @@ import iatest
 iatest.init()
 
 import unittest
-import taprootanalytics as ta
-import taprootanalytics.core.ui as ui
+import trustedanalytics as ta
+import trustedanalytics.core.ui as ui
 
 
 

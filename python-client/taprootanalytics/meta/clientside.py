@@ -22,12 +22,12 @@ import inspect
 import warnings
 from decorator import decorator
 
-from taprootanalytics.core.api import api_globals
-from taprootanalytics.meta.names import class_name_to_entity_type
-from taprootanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
-from taprootanalytics.meta.context import get_api_context_decorator
-from taprootanalytics.meta.reflect import get_args_spec_from_function, get_args_text_from_function
-from taprootanalytics.meta.spa import get_spa_docstring
+from trustedanalytics.core.api import api_globals
+from trustedanalytics.meta.names import class_name_to_entity_type
+from trustedanalytics.meta.command import CommandDefinition, Parameter, ReturnInfo
+from trustedanalytics.meta.context import get_api_context_decorator
+from trustedanalytics.meta.reflect import get_args_spec_from_function, get_args_text_from_function
+from trustedanalytics.meta.spa import get_spa_docstring
 
 
 client_commands = []  # list of tuples (class_name, command_def) defined in the python client code (not from server)

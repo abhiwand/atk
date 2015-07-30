@@ -38,7 +38,7 @@ Returns server information and API versions.
 ::
 
    {
-    "name": "TapRoot Analytics",
+    "name": "Trusted Analytics",
     "identifier": "ia",
     "versions": [
         "v1"

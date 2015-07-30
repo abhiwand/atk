@@ -18,8 +18,8 @@
 Library for creating pieces of rst text for the REST API, based on metaprog
 """
 
-from taprootanalytics.meta.names import indent, get_type_name
-from taprootanalytics.doc.pyrst import get_maturity_rst, is_name_private
+from trustedanalytics.meta.names import indent, get_type_name
+from trustedanalytics.doc.pyrst import get_maturity_rst, is_name_private
 
 
 def get_command_def_rest_rst(command_def):
@@ -244,6 +244,6 @@ def _get_args_warning(command_def):
 This function must be especially prepared (wrapped/serialized) in order for it to run
 in the engine.  **If this argument is needed for your call (i.e. it may be optional),
 then this particular command usage is NOT practically available as a REST API.**
-Today, the taprootanalytics Python client does the special function preparation and calls this API.
+Today, the trustedanalytics Python client does the special function preparation and calls this API.
 """)
     return ''

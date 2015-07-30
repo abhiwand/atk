@@ -18,7 +18,7 @@
 def get_frame_backend():
     global _frame_backend
     if _frame_backend is None:
-        from taprootanalytics.rest.frame import FrameBackendRest
+        from trustedanalytics.rest.frame import FrameBackendRest
         _frame_backend = FrameBackendRest()
     return _frame_backend
 _frame_backend = None
@@ -27,7 +27,7 @@ _frame_backend = None
 def get_graph_backend():
     global _graph_backend
     if _graph_backend is None:
-        from taprootanalytics.rest.graph import GraphBackendRest
+        from trustedanalytics.rest.graph import GraphBackendRest
         _graph_backend = GraphBackendRest()
     return _graph_backend
 _graph_backend = None

@@ -16,7 +16,7 @@
 
 package org.apache.spark.engine
 
-import com.intel.taproot.analytics.domain.command.Command
+import org.trustedanalytics.atk.domain.command.Command
 import org.apache.spark.SparkConf
 import org.apache.spark.scheduler._
 import org.apache.spark.ui.jobs.JobProgressListener
@@ -24,8 +24,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.scheduler.SparkListenerTaskEnd
 import org.apache.spark.scheduler.SparkListenerJobStart
-import com.intel.taproot.analytics.engine.CommandProgressUpdater
-import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
+import org.trustedanalytics.atk.engine.CommandProgressUpdater
+import org.trustedanalytics.atk.engine.{ ProgressInfo, TaskProgressInfo }
 
 /**
  * Listens to progress on Spark Jobs.

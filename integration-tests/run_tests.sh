@@ -35,15 +35,15 @@ NOSE="nosetests $DIR/tests --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2
 
 if [ "$1" = "-c" ] ; then
     echo "$NAME Running with coverage ENABLED.  (runs in a single process, takes a bit longer)"
-    COVERAGE_ARGS_BASE="--with-coverage --cover-package=taprootanalytics --cover-erase --cover-inclusive --cover-html"
+    COVERAGE_ARGS_BASE="--with-coverage --cover-package=trustedanalytics --cover-erase --cover-inclusive --cover-html"
     COVERAGE_ARGS_SMOKE="$COVERAGE_ARGS_BASE --cover-html-dir=$TARGET_DIR/surefire-reports/cover-smoke"
     COVERAGE_ARGS="$COVERAGE_ARGS_BASE --cover-html-dir=$TARGET_DIR/surefire-reports/cover"
     NOSE_SMOKE="nosetests $DIR/smoketests $COVERAGE_ARGS_SMOKE --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT1"
     NOSE="nosetests $DIR/tests $COVERAGE_ARGS --nologcapture --with-xunitmp --xunitmp-file=$OUTPUT2"
 fi
 
-echo "$NAME remove old taprootanalytics"
-rm -rf $TARGET_DIR/fs-root/taprootanalytics
+echo "$NAME remove old trustedanalytics"
+rm -rf $TARGET_DIR/fs-root/trustedanalytics
 
 echo "$NAME Starting REST server... "
 $DIR/rest-server-start.sh

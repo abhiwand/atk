@@ -16,7 +16,7 @@ The edge column name should be passed in as an argument to the plug-in.
 
 .. code::
 
-    >>> import taprootanalytics as ia
+    >>> import trustedanalytics as ia
     >>> ia.connect()
     >>> my_graph = ia.TitanGraph([src, dest, dist], "sample_graph")
     >>> my_graph.graph_clustering("dist")

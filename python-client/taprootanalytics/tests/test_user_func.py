@@ -15,24 +15,24 @@
 #
 
 import iatest
-from taprootanalytics.meta.udf import has_udf_arg
+from trustedanalytics.meta.udf import has_udf_arg
 
 iatest.init()
 
 import unittest
 
-sample_worker_message = """Job aborted due to stage failure: Task 0.0:87 failed 4 times, most recent failure: Exception failure in TID 181 on host gao-wsb.jf.intel.taproot.com: org.apache.spark.api.python.PythonException: Traceback (most recent call last):
+sample_worker_message = """Job aborted due to stage failure: Task 0.0:87 failed 4 times, most recent failure: Exception failure in TID 181 on host gao-wsb.jf.trustedanalytics.com: org.apache.spark.api.python.PythonException: Traceback (most recent call last):
   File \"/opt/cloudera/parcels/CDH-5.1.0-1.cdh5.1.0.p0.53/lib/spark/python/pyspark/worker.py\", line 77, in main
     serializer.dump_stream(func(split_index, iterator), outfile)
-  File \"/opt/cloudera/parcels/CDH-5.1.0-1.cdh5.1.0.p0.53/lib/spark/python/taprootanalytics/rest/spark.py\", line 138, in dump_stream
+  File \"/opt/cloudera/parcels/CDH-5.1.0-1.cdh5.1.0.p0.53/lib/spark/python/trustedanalytics/rest/spark.py\", line 138, in dump_stream
     self.dump_stream_as_json(self._batched(iterator), stream)
-  File \"/opt/cloudera/parcels/CDH-5.1.0-1.cdh5.1.0.p0.53/lib/spark/python/taprootanalytics/rest/spark.py\", line 141, in dump_stream_as_json
+  File \"/opt/cloudera/parcels/CDH-5.1.0-1.cdh5.1.0.p0.53/lib/spark/python/trustedanalytics/rest/spark.py\", line 141, in dump_stream_as_json
     for obj in iterator:
-  File \"/opt/cloudera/parcels/CDH-5.1.0-1.cdh5.1.0.p0.53/lib/spark/python/taprootanalytics/rest/serializers.py\", line 180, in _batched
+  File \"/opt/cloudera/parcels/CDH-5.1.0-1.cdh5.1.0.p0.53/lib/spark/python/trustedanalytics/rest/serializers.py\", line 180, in _batched
     for item in iterator:
-  File \"taprootanalytics/rest/spark.py\", line 106, in row_func
+  File \"trustedanalytics/rest/spark.py\", line 106, in row_func
     return row_function(row_wrapper)
-  File \"taprootanalytics/rest/spark.py\", line 51, in add_one_column
+  File \"trustedanalytics/rest/spark.py\", line 51, in add_one_column
     result = row_function(row)
   File \"<ipython-input-8-e6a5608355ef>\", line 1, in <lambda>
 ZeroDivisionError: integer division or modulo by zero
@@ -49,7 +49,7 @@ ZeroDivisionError: integer division or modulo by zero
         org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:262)
         org.apache.spark.rdd.RDD.iterator(RDD.scala:229)
         org.apache.spark.rdd.MappedRDD.compute(MappedRDD.scala:31)
-        com.intel.taproot.analytics.engine.frame.FrameRDD.compute(FrameRDD.scala:15)
+        org.trustedanalytics.atk.engine.frame.FrameRDD.compute(FrameRDD.scala:15)
         org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:262)
         org.apache.spark.rdd.RDD.iterator(RDD.scala:229)
         org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:35)

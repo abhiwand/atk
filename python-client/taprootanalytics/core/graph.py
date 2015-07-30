@@ -14,24 +14,24 @@
 # limitations under the License.
 #
 
-from taprootanalytics.core.errorhandle import IaError
+from trustedanalytics.core.errorhandle import IaError
 
 f, f2 = {}, {}
 
 import logging
 logger = logging.getLogger(__name__)
-from taprootanalytics.core.decorators import *
+from trustedanalytics.core.decorators import *
 api = get_api_decorator(logger)
 
-from taprootanalytics.meta.metaprog import CommandInstallable as CommandLoadable
-from taprootanalytics.meta.docstub import doc_stubs_import
-from taprootanalytics.meta.namedobj import name_support
+from trustedanalytics.meta.metaprog import CommandInstallable as CommandLoadable
+from trustedanalytics.meta.docstub import doc_stubs_import
+from trustedanalytics.meta.namedobj import name_support
 import uuid
 import json
 
-from taprootanalytics.core.column import Column
+from trustedanalytics.core.column import Column
 
-from taprootanalytics.meta.clientside import raise_deprecation_warning
+from trustedanalytics.meta.clientside import raise_deprecation_warning
 
 titan_rule_deprecation = """
 EdgeRule and VertexRule graph construction objects are deprecated.
@@ -40,7 +40,7 @@ edges directly.  export_to_titan is available to obtain a TitanGraph.
 
 Example:
 
->>> import taprootanalytics as ia
+>>> import trustedanalytics as ia
 >>> g = ia.Graph()
 >>> g.define_vertex_type('users')
 >>> g.define_vertex_type('machines')
@@ -54,7 +54,7 @@ Example:
 __all__ = ["drop_frames", "drop_graphs", "EdgeRule", "Frame", "get_frame", "get_frame_names", "get_graph", "get_graph_names", "TitanGraph", "VertexRule"]
 
 def _get_backend():
-    from taprootanalytics.meta.config import get_graph_backend
+    from trustedanalytics.meta.config import get_graph_backend
     return get_graph_backend()
 
 
@@ -352,7 +352,7 @@ class EdgeRule(Rule):
 # _BaseGraph
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from taprootanalytics.core.docstubs1 import _DocStubsBaseGraph
+    from trustedanalytics.core.docstubs1 import _DocStubsBaseGraph
     doc_stubs_import.success(logger, "_DocStubsBaseGraph")
 except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubsBaseGraph", e)
@@ -362,7 +362,7 @@ except Exception as e:
 # TitanGraph
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from taprootanalytics.core.docstubs1 import _DocStubsTitanGraph
+    from trustedanalytics.core.docstubs1 import _DocStubsTitanGraph
     doc_stubs_import.success(logger, "_DocStubsTitanGraph")
 except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubsTitanGraph", e)
@@ -372,7 +372,7 @@ except Exception as e:
 # Graph
 try:
     # boilerplate required here for static analysis to pick up the inheritance (the whole point of docstubs)
-    from taprootanalytics.core.docstubs1 import _DocStubsGraph
+    from trustedanalytics.core.docstubs1 import _DocStubsGraph
     doc_stubs_import.success(logger, "_DocStubsGraph")
 except Exception as e:
     doc_stubs_import.failure(logger, "_DocStubsGraph", e)
@@ -617,7 +617,7 @@ class Graph(_DocStubsGraph, _BaseGraph):
     def __init__(self, name=None, _info=None):
         if not hasattr(self, '_backend'):
             self._backend = _get_backend()
-        from taprootanalytics.rest.graph import GraphInfo
+        from trustedanalytics.rest.graph import GraphInfo
         if isinstance(_info, dict):
             _info = GraphInfo(_info)
         if isinstance(_info, GraphInfo):

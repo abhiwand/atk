@@ -43,9 +43,9 @@ rest_api = "rest_api"
 dst_python_api_dir = os.path.join(doc_source_dir, python_api)
 dst_rest_api_dir = os.path.join(doc_source_dir, rest_api)
 dst_rest_api_commands_dir = os.path.join(dst_rest_api_dir, "v1/commands")
-dst_docstubs_dir = os.path.join(source_code_dir, r'python-client/taprootanalytics/core')
+dst_docstubs_dir = os.path.join(source_code_dir, r'python-client/trustedanalytics/core')
 
-# override the python path so that 'this' taprootanalytics package is used
+# override the python path so that 'this' trustedanalytics package is used
 sys.path.insert(0, os.path.join(source_code_dir, "python-client"))
 
 
@@ -63,17 +63,17 @@ def delete_existing_docstubs():
 delete_existing_docstubs()
 
 # Connect to running server
-import taprootanalytics as ia
+import trustedanalytics as ia
 print "Using package: %s" % ia.__file__
 ia.connect()
 
 
-from taprootanalytics.meta.metaprog import get_installation, has_entity_collection, get_entity_collection, get_function_text
-from taprootanalytics.meta.docstub import get_doc_stub_modules_text, get_doc_stub_init_text
-from taprootanalytics.meta.names import upper_first, entity_type_to_class_name, indent, get_type_name
-from taprootanalytics.meta.installapi import download_server_details
-from taprootanalytics.doc.pyrst import  get_command_def_rst, get_class_rst
-from taprootanalytics.doc.restrst import get_command_def_rest_rst, get_commands_rest_index_content, get_command_rest_rst_file_name
+from trustedanalytics.meta.metaprog import get_installation, has_entity_collection, get_entity_collection, get_function_text
+from trustedanalytics.meta.docstub import get_doc_stub_modules_text, get_doc_stub_init_text
+from trustedanalytics.meta.names import upper_first, entity_type_to_class_name, indent, get_type_name
+from trustedanalytics.meta.installapi import download_server_details
+from trustedanalytics.doc.pyrst import  get_command_def_rst, get_class_rst
+from trustedanalytics.doc.restrst import get_command_def_rest_rst, get_commands_rest_index_content, get_command_rest_rst_file_name
 
 COLLECTION_MARKER_FILE_NAME = ".collection"  # name of an empty file we create in a folder to mark it as a collection
 

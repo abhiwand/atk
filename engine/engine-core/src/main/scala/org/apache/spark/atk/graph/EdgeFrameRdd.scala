@@ -16,8 +16,8 @@
 
 package org.apache.spark.atk.graph
 
-import com.intel.taproot.analytics.graphbuilder.elements.GBEdge
-import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, GraphSchema, Schema }
+import org.trustedanalytics.atk.graphbuilder.elements.GBEdge
+import org.trustedanalytics.atk.domain.schema.{ EdgeSchema, GraphSchema, Schema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row

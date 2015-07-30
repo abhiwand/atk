@@ -18,8 +18,8 @@ import iatest
 iatest.init()
 
 import unittest
-from taprootanalytics.core.files import *
-from taprootanalytics.core.iatypes import *
+from trustedanalytics.core.files import *
+from trustedanalytics.core.iatypes import *
 
 
 class TestCsvFile(unittest.TestCase):

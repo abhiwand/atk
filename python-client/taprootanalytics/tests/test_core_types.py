@@ -18,7 +18,7 @@ import iatest
 iatest.init()
 
 import unittest
-from taprootanalytics.core.iatypes import *
+from trustedanalytics.core.iatypes import *
 
 
 class ValidDataTypes(unittest.TestCase):

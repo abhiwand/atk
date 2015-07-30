@@ -19,8 +19,8 @@ iatest.init()
 
 import unittest
 
-from taprootanalytics.tests.sources import SimpleDataSource
-from taprootanalytics.core.iatypes import *
+from trustedanalytics.tests.sources import SimpleDataSource
+from trustedanalytics.core.iatypes import *
 
 expected_repr_123 = """   a      b
 0  1    one

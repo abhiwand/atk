@@ -27,7 +27,7 @@ from types import ModuleType
 
 spark_home = os.getenv('SPARK_HOME')
 if not spark_home:
-    spark_home = '~/TapRootAnalytics/spark'
+    spark_home = '~/TrustedAnalytics/spark'
     os.environ['SPARK_HOME'] = spark_home
 
 spark_python = os.path.join(spark_home, 'python')
@@ -37,8 +37,8 @@ if spark_python not in sys.path:
 
 from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
 
-from taprootanalytics.core.row import Row
-from taprootanalytics.core.iatypes import valid_data_types, numpy_to_bson_friendly
+from trustedanalytics.core.row import Row
+from trustedanalytics.core.iatypes import valid_data_types, numpy_to_bson_friendly
 
 import bson
 

@@ -48,7 +48,7 @@ various features of the platform.
 The default location for the example scripts is *taproot*'s home directory
 '/home/taproot'.
 
-The examples are located in '/home/taproot/examples'::
+The examples are located in '/home/trustedanalytics/examples'::
 
     -rwxr-xr-- 1 taproot taproot  904 Jul 30 04:20 als.py
     -rwxr-xr-- 1 taproot taproot  921 Jul 30 04:20 cgd.py
@@ -59,19 +59,19 @@ The examples are located in '/home/taproot/examples'::
     -rwxr-xr-- 1 taproot taproot  861 Jul 30 04:20 movie_graph_small.py
     -rwxr-xr-- 1 taproot taproot  563 Jul 30 04:20 pr.py
 
-The datasets are located in '/home/taproot/examples/datasets' and
-'hdfs://user/taproot/datasets/'::
+The datasets are located in '/home/trustedanalytics/examples/datasets' and
+'hdfs://user/trustedanalytics/datasets/'::
 
-    -rw-r--r--  ...  /user/taproot/datasets/README
-    -rw-r--r--  ...  /user/taproot/datasets/apl.csv
-    -rw-r--r--  ...  /user/taproot/datasets/lbp_edge.csv
-    -rw-r--r--  ...  /user/taproot/datasets/lp_edge.csv
-    -rw-r--r--  ...  /user/taproot/datasets/movie_sample_data_5mb.csv
-    -rw-r--r--  ...  /user/taproot/datasets/movie_sample_data_small.csv
-    -rw-r--r--  ...  /user/taproot/datasets/recommendation_raw_input.csv
-    -rw-r--r--  ...  /user/taproot/datasets/test_lda.csv
+    -rw-r--r--  ...  /user/trustedanalytics/datasets/README
+    -rw-r--r--  ...  /user/trustedanalytics/datasets/apl.csv
+    -rw-r--r--  ...  /user/trustedanalytics/datasets/lbp_edge.csv
+    -rw-r--r--  ...  /user/trustedanalytics/datasets/lp_edge.csv
+    -rw-r--r--  ...  /user/trustedanalytics/datasets/movie_sample_data_5mb.csv
+    -rw-r--r--  ...  /user/trustedanalytics/datasets/movie_sample_data_small.csv
+    -rw-r--r--  ...  /user/trustedanalytics/datasets/recommendation_raw_input.csv
+    -rw-r--r--  ...  /user/trustedanalytics/datasets/test_lda.csv
 
-The datasets in '/home/taproot/examples/datasets' are for reference.
+The datasets in '/home/trustedanalytics/examples/datasets' are for reference.
 The actual data that is being used by the Python examples and the |PACKAGE| server
 is in the |HDFS| system.
 
@@ -79,7 +79,7 @@ To get access to the scripts, login as *taproot* and go to the example scripts
 directory::
 
     $ sudo su taproot
-    $ cd /home/taproot/examples
+    $ cd /home/trustedanalytics/examples
 
 To run any of the Python example scripts type::
 
