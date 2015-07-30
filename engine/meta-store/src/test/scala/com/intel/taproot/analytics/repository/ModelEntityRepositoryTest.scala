@@ -16,8 +16,6 @@
 
 package com.intel.taproot.analytics.repository
 
-import com.intel.taproot.event.EventContext
-import com.intel.taproot.analytics.domain.graph.GraphTemplate
 import com.intel.taproot.analytics.domain.model.ModelTemplate
 import org.joda.time.DateTime
 import org.scalatest.Matchers

@@ -26,7 +26,7 @@ import com.intel.taproot.analytics.engine.util.{ JvmMemory, KerberosAuthenticato
 import com.intel.taproot.analytics.EventLoggingImplicits
 import com.intel.taproot.analytics.domain.command.Command
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 
 /**
  * Our wrapper for calling SparkSubmit to run a plugin.

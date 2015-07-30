@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine.plugin
 
 import com.intel.taproot.analytics.domain.UserPrincipal
-import com.intel.taproot.event.EventContext
+import com.intel.taproot.analytics.event.EventContext
 import com.intel.taproot.analytics.engine.{ CommandProgressUpdater, EngineImpl }
 import com.intel.taproot.analytics.engine.{ CommandStorageProgressUpdater, CommandStorage }
 import spray.json.JsObject

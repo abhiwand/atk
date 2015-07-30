@@ -23,7 +23,7 @@ import spray.json.JsObject
 import com.intel.taproot.analytics.domain.command.{ CommandTemplate, Command }
 import com.intel.taproot.analytics.engine.{ ProgressInfo, CommandStorage }
 import com.intel.taproot.analytics.repository.SlickMetaStoreComponent
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventContext, EventLogging }
 
 /**
  * Methods for modifying command records stored in Meta-Store

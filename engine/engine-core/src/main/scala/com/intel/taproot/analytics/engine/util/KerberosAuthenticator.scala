@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.util
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.EventLoggingImplicits
 import com.intel.taproot.analytics.engine.EngineConfig
 import org.apache.hadoop.conf.Configuration

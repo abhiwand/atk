@@ -16,7 +16,7 @@
 
 package com.intel.taproot.atk.graph.plugins.graphclustering
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import org.apache.spark.rdd.RDD

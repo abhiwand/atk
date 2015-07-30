@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.command
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.yarn.client.api.YarnClient
 import org.apache.hadoop.yarn.conf.YarnConfiguration

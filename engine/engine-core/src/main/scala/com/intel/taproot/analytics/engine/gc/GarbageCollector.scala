@@ -20,7 +20,7 @@ import java.lang.management.ManagementFactory
 import java.net.InetAddress
 import java.util.concurrent.{ Executors, TimeUnit, ScheduledFuture }
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollectionTemplate, GarbageCollection }
 import com.intel.taproot.analytics.engine.{ EngineExecutionContext, GraphBackendStorage, EngineConfig }

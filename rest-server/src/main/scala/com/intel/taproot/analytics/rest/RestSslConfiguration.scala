@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.rest
 import java.security.KeyStore
 import javax.net.ssl._
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import spray.io.ServerSSLEngineProvider
 
 /**

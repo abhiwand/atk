@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.shared
 
 import java.net.URI
 
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventContext, EventLogging }
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, FrameReference }
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.PluginDocAnnotation

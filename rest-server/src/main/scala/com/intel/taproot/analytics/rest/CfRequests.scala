@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.rest
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.EventLoggingImplicits
 import org.apache.commons.httpclient.{ HttpURL, HttpsURL }
 import org.apache.http.HttpHost

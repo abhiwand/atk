@@ -25,7 +25,7 @@ import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, CommandPlugin }
-import com.intel.taproot.analytics.engine.util.{ JvmMemory, KerberosAuthenticator }
+import com.intel.taproot.analytics.engine.util.{ JvmMemory }
 import com.intel.taproot.analytics.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
 import scala.concurrent._
@@ -34,7 +34,7 @@ import ru._
 import scala.util.Try
 import com.intel.taproot.analytics.domain.command.{ CommandDefinition, CommandTemplate, Execution, Command }
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventContext, EventLogging }
 import EngineExecutionContext.global
 
 case class CommandContext(

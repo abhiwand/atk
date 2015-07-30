@@ -20,7 +20,7 @@ import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.pattern.ask
 import akka.io.IO
 import akka.util.Timeout
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.engine.Engine
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.rest.RestServerConfig

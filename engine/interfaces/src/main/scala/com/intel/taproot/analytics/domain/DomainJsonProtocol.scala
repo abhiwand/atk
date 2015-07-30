@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.domain
 import java.net.URI
 import java.util
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.domain.command.{ CommandDoc, CommandPost, CommandDefinition }
 import com.intel.taproot.analytics.domain.frame.{ UdfDependency, Udf }
 import com.intel.taproot.analytics.domain.frame.load.{ LoadFrameArgs, LineParser, LoadSource, LineParserArguments }

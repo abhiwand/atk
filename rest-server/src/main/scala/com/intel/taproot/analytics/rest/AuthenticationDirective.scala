@@ -32,7 +32,7 @@ import scala.concurrent._
 import spray.routing._
 import org.apache.commons.lang.StringUtils
 import com.intel.taproot.analytics.engine.Engine
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import scala.util.{ Failure, Success, Try }
 import com.intel.taproot.analytics.rest.CfRequests.TokenUserInfo
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext.global

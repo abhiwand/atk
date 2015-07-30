@@ -20,8 +20,8 @@ import org.scalatest.{ Matchers, FlatSpec }
 import org.scalatest.mock.MockitoSugar
 import spray.testkit.ScalatestRouteTest
 import spray.routing.HttpService
-import com.intel.taproot.event.EventLogger
-import com.intel.taproot.event.adapter.SLF4JLogAdapter
+import com.intel.taproot.analytics.event.EventLogger
+import com.intel.taproot.analytics.event.adapter.SLF4JLogAdapter
 
 /**
  * Parent class for ServiceSpecs

@@ -16,7 +16,6 @@
 
 package com.intel.taproot.analytics.repository
 
-import com.intel.taproot.event.EventContext
 import com.intel.taproot.analytics.domain.command.CommandTemplate
 import org.scalatest.Matchers
 import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }

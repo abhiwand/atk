@@ -29,7 +29,7 @@ import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
-import com.intel.taproot.event.{ EventLogging, EventLogger }
+import com.intel.taproot.analytics.event.{ EventLogging, EventLogger }
 import com.intel.taproot.analytics.component.{ Boot, ArchiveDefinition, Archive }
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.reflect.ClassTag

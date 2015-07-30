@@ -16,7 +16,7 @@
 
 package com.intel.taproot.atk.graph.plugins.query
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 import com.intel.taproot.analytics.domain.DomainJsonProtocol._
 import com.tinkerpop.blueprints.util.io.graphson._

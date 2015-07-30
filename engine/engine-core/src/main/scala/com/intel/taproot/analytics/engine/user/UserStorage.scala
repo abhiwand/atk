@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.repository.SlickMetaStoreComponent
 import org.apache.commons.lang.StringUtils
 import com.intel.taproot.analytics.domain.{ UserPrincipal, UserTemplate, User }
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import scala.util.{ Try, Failure, Success }
 
 /**

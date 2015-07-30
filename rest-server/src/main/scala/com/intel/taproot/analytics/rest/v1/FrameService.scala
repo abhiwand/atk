@@ -34,7 +34,7 @@ import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
 import com.intel.taproot.analytics.rest.v1.decorators.FrameDecorator
 
 import scala.util.matching.Regex
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 
 import SprayExecutionContext.global
 

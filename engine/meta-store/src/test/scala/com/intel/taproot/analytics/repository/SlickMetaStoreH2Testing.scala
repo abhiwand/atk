@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.repository
 
-import com.intel.taproot.event.EventContext
+import com.intel.taproot.analytics.event.EventContext
 import org.scalatest.{ BeforeAndAfter, FlatSpec }
 
 import scala.slick.driver.H2Driver

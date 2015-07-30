@@ -16,14 +16,14 @@
 
 package com.intel.taproot.analytics.domain.schema
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import org.apache.commons.lang3.StringUtils
 import spray.json.DefaultJsonProtocol._
 import spray.json.{ JsValue, _ }
 
 import scala.collection.immutable.Set
 import scala.collection.mutable
-import scala.util.{ Try, Success, Failure }
+import scala.util.{ Try }
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.JavaConversions._
 

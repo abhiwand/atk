@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.rest
 import com.intel.taproot.analytics.engine.plugin.{ Call, Invocation }
 import com.intel.taproot.analytics.rest.threading.SprayExecutionContext
 import scala.concurrent.duration._
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.component.{ Boot, ArchiveDefinition, Archive }
 import com.intel.taproot.analytics.engine.Engine
 import com.typesafe.config.Config

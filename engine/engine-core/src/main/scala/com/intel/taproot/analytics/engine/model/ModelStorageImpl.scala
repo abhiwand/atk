@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.model
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.{ DuplicateNameException, EventLoggingImplicits, NotFoundException }
 import com.intel.taproot.analytics.domain.model._
 import com.intel.taproot.analytics.domain.{ Status, CreateEntityArgs }

@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.command
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.domain.User
 import com.intel.taproot.analytics.engine.plugin.{ Invocation, Call }
 import com.intel.taproot.analytics.engine._

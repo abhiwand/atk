@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.rest
 
-import com.intel.taproot.event.EventContext
+import com.intel.taproot.analytics.event.EventContext
 import com.intel.taproot.analytics.NotFoundException
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import spray.http.HttpHeaders.RawHeader
