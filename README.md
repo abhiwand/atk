@@ -27,7 +27,7 @@ ATK
 * testutils/ - some test utility code that gets reused between tests in different modules
 
 # Building
-* Install Python dependencies
+* Install Python dependencies (it is easiest to install them via the RPM)
 * Run 'mvn install' for dependencies found under misc (event, event-api, titan-shaded)
 * Run 'mvn install' at top level
 

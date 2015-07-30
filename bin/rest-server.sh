@@ -2,14 +2,7 @@
 #set -o errexit
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-
-if [[ -f $DIR/../misc/launcher/target/launcher.jar ]]; then
-	LAUNCHER=$DIR/../misc/launcher/target/launcher.jar:.
-fi
-
-if [ -f $DIR/../conf/application.conf ]; then
-    LAUNCHER=$DIR/../conf/application.conf:$LAUNCHER
-fi
+LAUNCHER=$DIR/../conf/:$DIR/../misc/launcher/target/launcher.jar:.
 
 pushd $DIR/..
 pwd

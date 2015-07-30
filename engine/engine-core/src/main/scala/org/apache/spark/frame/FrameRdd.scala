@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema._
 import org.apache.spark.frame.ordering.MultiColumnOrdering
 import com.intel.taproot.analytics.engine.frame.{ MiscFrameFunctions, RowWrapper }
-import org.apache.spark.ia.graph.{ EdgeWrapper, VertexWrapper }
+import org.apache.spark.atk.graph.{ EdgeWrapper, VertexWrapper }
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 import org.apache.spark.mllib.linalg.{ Vectors, Vector }
 import org.apache.spark.rdd.{ NewHadoopPartition, RDD }

@@ -24,7 +24,7 @@ import com.intel.taproot.analytics.engine.{ GraphStorage, FrameStorage }
 import com.intel.taproot.analytics.engine.frame._
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
-import org.apache.spark.ia.graph.EdgeFrameRdd
+import org.apache.spark.atk.graph.EdgeFrameRdd
 
 /**
  * Interface for working with EdgeFrames for plugin authors

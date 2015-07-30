@@ -34,7 +34,7 @@ import com.intel.taproot.analytics.engine.{ GraphBackendStorage, GraphStorage }
 import com.intel.taproot.analytics.repository.MetaStore
 import com.thinkaurelius.titan.core.TitanGraph
 import org.apache.spark.SparkContext
-import org.apache.spark.ia.graph.{ EdgeFrameRdd, VertexFrameRdd }
+import org.apache.spark.atk.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.joda.time.DateTime
