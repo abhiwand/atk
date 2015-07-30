@@ -17,7 +17,6 @@
 package com.intel.taproot.analytics.graphbuilder.titan.cache
 
 import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
-import SerializableBaseConfiguration
 import com.thinkaurelius.titan.hadoop.config.ModifiableHadoopConfiguration
 import org.apache.hadoop.conf.Configuration
 import org.mockito.Mockito._

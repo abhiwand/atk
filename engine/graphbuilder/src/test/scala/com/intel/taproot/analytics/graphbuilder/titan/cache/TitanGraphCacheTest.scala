@@ -17,7 +17,6 @@
 package com.intel.taproot.analytics.graphbuilder.titan.cache
 
 import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
-import SerializableBaseConfiguration
 import org.scalatest.{ FlatSpec, Matchers }
 
 class TitanGraphCacheTest extends FlatSpec with Matchers {
