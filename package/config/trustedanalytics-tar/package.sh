@@ -1,5 +1,5 @@
 #!/bin/bash
-package="trustedanalytics-scoring-tar"
+package="trustedanalytics-tar"
 workDir=$(pwd)
 baseDir=${workDir##*/}
 gitRoot="."
@@ -22,15 +22,16 @@ rm $package-source.tar.gz
 mkdir -p  tarballs/$package/bin
 mkdir -p  tarballs/$package/conf
 mkdir -p  tarballs/$package/lib
-mkdir -p  tarballs/$package/data
 
+
+cp -v  config/$package/application.conf tarballs/$package/conf
 cp -v  config/$package/logback.xml tarballs/$package/conf
+cp -Rv config/trustedanalytics/assets/etc/trustedanalytics/rest-server/* tarballs/$package/conf
+cp -v  config/$package/rest-server.sh tarballs/$package/bin/
+cp -v  config/$package/jq tarballs/$package/
 
-cp -v config/$package/scoring-server.sh tarballs/$package/bin/
-cp -v config/$package/application.conf tarballs/$package/conf
 
-
-jars="scoring-engine.jar interfaces.jar"
+jars="rest-server.jar  engine-core.jar  interfaces.jar  deploy.jar scoring-models.jar"
 
 #popd
 
@@ -54,8 +55,8 @@ popd
 
 
 pushd tarballs/$package
-    tar -pczf ../../trustedanalytics-scoring.tar.gz .
-pop
+    tar -pczf ../../trustedanalytics.tar.gz .
+popd
 
 
 rm -rf tarballs
