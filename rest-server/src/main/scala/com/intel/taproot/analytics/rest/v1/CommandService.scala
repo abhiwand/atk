@@ -35,7 +35,7 @@ import com.intel.taproot.analytics.domain.command.{ CommandPost, Execution, Comm
 import com.intel.taproot.analytics.rest.{ RestServerConfig, CommonDirectives }
 import com.intel.taproot.analytics.rest.v1.decorators.CommandDecorator
 import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 
 import SprayExecutionContext.global
 

@@ -21,7 +21,7 @@ import com.intel.taproot.analytics.domain.frame.FrameEntity
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.HdfsFileStorage
 import org.apache.hadoop.fs.Path
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventLogging }
 
 /**
  * Frame storage in HDFS.

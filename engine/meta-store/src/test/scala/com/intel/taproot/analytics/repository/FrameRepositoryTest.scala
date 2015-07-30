@@ -16,13 +16,9 @@
 
 package com.intel.taproot.analytics.repository
 
-import java.util.concurrent.TimeUnit
-
-import com.intel.taproot.analytics.domain.StorageFormats
 import com.intel.taproot.analytics.domain.frame.DataFrameTemplate
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphTemplate }
-import com.typesafe.config.ConfigFactory
-import org.joda.time.{ Duration, DateTime }
+import org.joda.time.{ DateTime }
 import org.scalatest.Matchers
 
 class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {

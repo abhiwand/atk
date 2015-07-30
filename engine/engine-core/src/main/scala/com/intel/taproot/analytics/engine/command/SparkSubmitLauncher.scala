@@ -30,7 +30,7 @@ import scala.reflect.runtime.{ universe => ru }
 import ru._
 import com.intel.taproot.analytics.domain.command.Command
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 
 /**
  * Launches SparkSubmit commands

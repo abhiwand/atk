@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine
 import java.io.{ InputStream, OutputStream }
 
 import com.intel.taproot.analytics.engine.util.KerberosAuthenticator
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventContext, EventLogging }
 import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, LocalFileSystem, Path }

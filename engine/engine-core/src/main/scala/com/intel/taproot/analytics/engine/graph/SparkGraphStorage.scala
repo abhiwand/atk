@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.engine.graph
 
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.graphbuilder.driver.spark.titan.reader.TitanReader
 import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
 import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, GraphElement }

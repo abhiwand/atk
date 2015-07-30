@@ -27,7 +27,7 @@ import org.flywaydb.core.Flyway
 import spray.json._
 import scala.util.Try
 import com.intel.taproot.analytics.domain.Status
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventContext, EventLogging }
 
 import com.intel.taproot.analytics.domain.frame.DataFrameTemplate
 import com.intel.taproot.analytics.engine.ProgressInfo

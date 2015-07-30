@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics
 
 import com.intel.taproot.analytics.domain.UserPrincipal
-import com.intel.taproot.event.EventContext
+import com.intel.taproot.analytics.event.EventContext
 import com.intel.taproot.analytics.engine.plugin.Invocation
 
 /**

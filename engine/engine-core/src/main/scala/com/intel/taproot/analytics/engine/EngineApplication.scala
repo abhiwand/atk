@@ -21,7 +21,7 @@ import com.typesafe.config.Config
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 
 class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: ClassLoader, config: Config)
     extends Archive(archiveDefinition, classLoader, config) with EventLogging with ClassLoaderAware {

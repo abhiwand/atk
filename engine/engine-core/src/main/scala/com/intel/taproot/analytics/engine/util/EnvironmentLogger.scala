@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.engine.util
 import java.text.NumberFormat
 import java.util.Locale
 
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventContext, EventLogging }
 
 /**
  * Make sure some settings get logged that are useful for debugging on clusters

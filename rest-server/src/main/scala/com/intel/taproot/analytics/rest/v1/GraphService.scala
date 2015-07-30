@@ -32,7 +32,7 @@ import com.intel.taproot.analytics.rest.v1.decorators.{ FrameDecorator, GraphDec
 import com.intel.taproot.analytics.rest.v1.viewmodels.ViewModelJsonImplicits
 import com.intel.taproot.analytics.rest.v1.viewmodels.Rel
 import com.intel.taproot.analytics.spray.json.AtkDefaultJsonProtocol
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import spray.json._
 
 import SprayExecutionContext.global

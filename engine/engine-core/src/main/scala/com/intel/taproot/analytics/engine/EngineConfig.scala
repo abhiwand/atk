@@ -20,7 +20,7 @@ import java.io.File
 import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventContext, EventLogging }
 import com.intel.taproot.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.taproot.analytics.engine.partitioners.{ FileSizeToPartitionSize, SparkAutoPartitionStrategy }

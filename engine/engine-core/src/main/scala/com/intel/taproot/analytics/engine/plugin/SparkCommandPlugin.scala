@@ -29,7 +29,7 @@ import com.intel.taproot.analytics.component.Archive
 import com.typesafe.config.{ ConfigList, ConfigValue }
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig, EngineImpl }
 
 /**

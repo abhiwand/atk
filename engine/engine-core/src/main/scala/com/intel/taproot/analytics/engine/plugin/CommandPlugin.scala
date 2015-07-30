@@ -23,7 +23,7 @@ import com.intel.taproot.analytics.domain.model.{ ModelEntity, ModelReference }
 import com.intel.taproot.analytics.engine.frame.{ FrameImpl, Frame }
 import com.intel.taproot.analytics.domain.UserPrincipal
 import com.intel.taproot.analytics.engine.model.{ ModelImpl, Model }
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventContext, EventLogging }
 import spray.json.{ JsObject, _ }
 
 import scala.reflect.runtime.{ universe => ru }

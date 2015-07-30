@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.engine
 
 import com.intel.taproot.analytics.engine.gc.GarbageCollectionPlugin
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import com.intel.taproot.analytics.EventLoggingImplicits
 import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.engine.plugin.Call

@@ -17,7 +17,6 @@
 package com.intel.taproot.analytics.repository
 
 import com.intel.taproot.analytics.domain.gc.{ GarbageCollection, GarbageCollectionTemplate }
-import com.intel.taproot.analytics.domain.model.ModelTemplate
 import org.joda.time.DateTime
 import org.scalatest.Matchers
 

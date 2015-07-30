@@ -16,19 +16,14 @@
 
 package com.intel.taproot.analytics.engine.frame
 
-import com.intel.taproot.analytics.domain.schema.{ Schema, FrameSchema }
+import com.intel.taproot.analytics.domain.schema.{ Schema }
 import com.intel.taproot.analytics.domain._
 import com.intel.taproot.analytics.component.ClassLoaderAware
-import com.intel.taproot.analytics.domain.frame._
-import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.domain.frame.{ FrameReference, DataFrameTemplate, FrameEntity }
 import com.intel.taproot.analytics.engine.FrameStorage
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine._
-import com.intel.taproot.analytics.engine.command
-import com.intel.taproot.analytics.engine.frame
 import com.intel.taproot.analytics.engine.frame.parquet.ParquetReader
-import com.intel.taproot.analytics.engine.graph
 import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
 import com.intel.taproot.analytics.repository.SlickMetaStoreComponent
 import com.intel.taproot.analytics.{ EventLoggingImplicits, DuplicateNameException, NotFoundException }
@@ -36,7 +31,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
-import com.intel.taproot.event.{ EventContext, EventLogging }
+import com.intel.taproot.analytics.event.{ EventLogging }
 import org.joda.time.DateTime
 import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal

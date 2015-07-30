@@ -32,7 +32,7 @@ import com.intel.taproot.analytics.engine.partitioners.SparkAutoPartitioner
 import EngineExecutionContext.global
 import com.intel.taproot.analytics.engine.user.UserStorage
 import com.intel.taproot.analytics.{ EventLoggingImplicits, NotFoundException }
-import com.intel.taproot.event.EventLogging
+import com.intel.taproot.analytics.event.EventLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.engine.SparkProgressListener
 import org.apache.spark.frame.FrameRdd
