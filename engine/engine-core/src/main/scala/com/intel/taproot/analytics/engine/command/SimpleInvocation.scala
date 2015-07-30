@@ -35,5 +35,16 @@ case class SimpleInvocation(engine: Engine,
                             commandId: Long,
                             user: UserPrincipal,
                             eventContext: EventContext) extends CommandInvocation {
+
+  def this(engine: Engine, commandStorage: CommandStorage, commandContext: CommandContext) = {
+    this(engine,
+      commandStorage,
+      commandContext.executionContext,
+      commandContext.command.arguments,
+      commandContext.command.id,
+      commandContext.user,
+      commandContext.eventContext)
+  }
+
   override val progressUpdater: CommandProgressUpdater = new CommandStorageProgressUpdater(commandStorage)
 }

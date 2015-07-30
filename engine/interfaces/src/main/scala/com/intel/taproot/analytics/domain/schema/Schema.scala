@@ -129,15 +129,6 @@ trait GraphElementSchema extends Schema {
 object Schema {
 
   /**
-   * A lot of code was using Tuples before we introduced column objects
-   */
-  @deprecated("use column objects and the other constructors")
-  def fromTuples(columnTuples: List[(String, DataType)]): Schema = {
-    val columns = columnTuples.map { case (name, dataType) => Column(name, dataType) }
-    new FrameSchema(columns)
-  }
-
-  /**
    * Join two lists of columns.
    *
    * Join resolves naming conflicts when both left and right columns have same column names
@@ -235,8 +226,8 @@ trait Schema {
    */
   def requireColumnsOfNumericPrimitives(columnNames: Iterable[String]) = {
     columnNames.foreach(columnName => {
-      require(hasColumn(columnName), s"column ${columnName} was not found")
-      require(columnDataType(columnName).isNumerical, s"column ${columnName} should be of type numeric")
+      require(hasColumn(columnName), s"column $columnName was not found")
+      require(columnDataType(columnName).isNumerical, s"column $columnName should be of type numeric")
     })
   }
 
@@ -310,7 +301,7 @@ trait Schema {
    */
   def columnIndices(columnNames: Seq[String]): Seq[Int] = {
     if (columnNames.isEmpty)
-      (0 to (columns.length - 1)).toList
+      columns.indices.toList
     else {
       columnNames.map(columnName => columnIndex(columnName))
     }
@@ -504,7 +495,7 @@ trait Schema {
     val remainingColumns = {
       columnIndices match {
         case singleColumn if singleColumn.length == 1 =>
-          columnTuples.take(singleColumn(0)) ++ columnTuples.drop(singleColumn(0) + 1)
+          columnTuples.take(singleColumn.head) ++ columnTuples.drop(singleColumn.head + 1)
         case _ =>
           columnTuples.zipWithIndex.filter(elem => !columnIndices.contains(elem._2)).map(_._1)
       }

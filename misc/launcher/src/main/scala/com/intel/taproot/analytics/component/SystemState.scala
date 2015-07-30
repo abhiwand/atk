@@ -53,7 +53,7 @@ class SystemState(val systemConfig: SystemConfig = new SystemConfig(),
   def lookupArchiveNameByLoader(loader: ClassLoader): String = {
     val archiveName = for {
       archive <- archives
-      if (loader == archive._2.classLoader)
+      if loader == archive._2.classLoader
     } yield archive._1
     archiveName.head
   }

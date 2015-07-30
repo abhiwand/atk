@@ -19,14 +19,8 @@ package com.intel.taproot.analytics.domain.frame
 import com.intel.taproot.analytics.domain.schema.Schema
 
 /**
- * Response for a query from an RDD. Subclassed for either Parquet or Sequence file storage.
- * @param schema schema to describe the data
- */
-class QueryResult(schema: Option[Schema])
-
-/**
  * Result returned by query
  * @param data data from the query
  * @param schema schema to describe the data
  */
-case class QueryDataResult(data: Iterable[Array[Any]], schema: Option[Schema]) extends QueryResult(schema)
+case class QueryResult(data: Iterable[Array[Any]], schema: Option[Schema])

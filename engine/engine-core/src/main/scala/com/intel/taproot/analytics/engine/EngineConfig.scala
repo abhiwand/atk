@@ -16,7 +16,6 @@
 
 package com.intel.taproot.analytics.engine
 
-import java.io.File
 import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
@@ -29,7 +28,6 @@ import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import scala.util.Try
 
 /**
  * Configuration Settings for the SparkEngine,
@@ -144,7 +142,7 @@ trait EngineConfig extends EventLogging {
    *
    * At present, auto-partitioner for graph construction only sets HBase pre-splits.
    *
-   * @param titanConfiguration
+   * @param titanConfiguration the config to be modified
    * @return Updated Titan configuration
    */
   def setTitanAutoPartitions(titanConfiguration: SerializableBaseConfiguration): SerializableBaseConfiguration = {
@@ -152,11 +150,10 @@ trait EngineConfig extends EventLogging {
     val storageBackend = titanConfiguration.getString("storage.backend")
 
     storageBackend.toLowerCase match {
-      case "hbase" => {
+      case "hbase" =>
         val hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create())
         titanAutoPartitioner.setHBasePreSplits(hBaseAdmin)
         info("Setting Titan/HBase pre-splits for  to: " + titanConfiguration.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT))
-      }
       case _ => info("No auto-configuration settings for storage backend: " + storageBackend)
     }
 

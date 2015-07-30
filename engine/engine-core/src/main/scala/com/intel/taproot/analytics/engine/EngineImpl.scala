@@ -146,7 +146,7 @@ class EngineImpl(val sparkContextFactory: SparkContextFactory,
     withMyClassLoader {
       val frame = frames.lookup(arguments.id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
       val rows = frames.getRows(frame, arguments.offset, arguments.count)
-      QueryDataResult(rows, Some(frame.schema))
+      QueryResult(rows, Some(frame.schema))
     }
   }
 

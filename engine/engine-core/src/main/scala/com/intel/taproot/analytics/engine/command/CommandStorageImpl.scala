@@ -69,33 +69,36 @@ class CommandStorageImpl(val metaStore: SlickMetaStoreComponent#SlickMetaStore) 
     updateResult(id, result, markComplete = false)
   }
 
-  private def updateResult(id: Long, result: Try[JsObject], markComplete: Boolean): Unit = {
+  private def updateResult(commandId: Long, result: Try[JsObject], markComplete: Boolean): Unit = {
     metaStore.withSession("se.command.updateResult") {
       implicit session =>
-        val command = repo.lookup(id).getOrElse(throw new IllegalArgumentException(s"Command $id not found"))
+        val command = repo.lookup(commandId).getOrElse(throw new IllegalArgumentException(s"Command $commandId not found"))
         val corId = EventContext.getCurrent.getCorrelationId
         if (command.complete) {
-          warn(s"Ignoring completion attempt for command $id, already completed")
+          warn(s"Completion attempt for command $commandId, already completed")
         }
         import com.intel.taproot.analytics.domain.throwableToError
         val changed = result match {
           case Failure(ex) =>
-            error(s"command completed with error, id: $id, name: ${command.name}, args: ${command.compactArgs} ", exception = ex)
-
+            error(s"command completed with error, id: $commandId, name: ${command.name}, args: ${command.compactArgs} ", exception = ex)
             command.copy(complete = markComplete,
               error = Some(throwableToError(ex)),
               correlationId = corId)
-          case Success(r) => {
+          case Success(r) =>
             // update progress to 100 since the command is complete. This step is necessary
             // because the actually progress notification events are sent to SparkProgressListener.
             // The exact timing of the events arrival can not be determined.
-            val progress = command.progress.map(info => info.copy(progress = 100f))
+            val progress = if (command.progress.nonEmpty) {
+              command.progress.map(info => info.copy(progress = 100f))
+            }
+            else {
+              List(ProgressInfo(100f, None))
+            }
             command.copy(complete = markComplete,
-              progress = if (progress.nonEmpty) progress else List(ProgressInfo(100f, None)),
+              progress = progress,
               result = Some(r),
               error = None,
               correlationId = corId)
-          }
         }
         repo.update(changed)
     }

@@ -30,7 +30,7 @@ cp -v config/$package/scoring-server.sh tarballs/$package/bin/
 cp -v config/$package/application.conf tarballs/$package/conf
 
 
-jars="scoring-models.jar  interfaces.jar"
+jars="scoring-engine.jar interfaces.jar"
 
 #popd
 

@@ -130,12 +130,11 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPl
    * @return plugin return value as JSON
    */
   private def executeCommandContext[R <: Product: TypeTag, A <: Product: TypeTag](commandContext: CommandContext)(implicit invocation: Invocation): JsObject = withContext("cmdExcector") {
+
     info(s"command id:${commandContext.command.id}, name:${commandContext.command.name}, args:${commandContext.command.compactArgs}, ${JvmMemory.memory}")
-    val plugin = expectCommandPlugin[A, R](commandContext.command)
-    val arguments = plugin.parseArguments(commandContext.command.arguments.get)
-    implicit val commandInvocation = getInvocation(plugin, arguments, commandContext)
     debug(s"System Properties are: ${sys.props.keys.mkString(",")}")
 
+    val plugin = expectCommandPlugin[A, R](commandContext.command)
     plugin match {
       case sparkCommandPlugin: SparkCommandPlugin[A, R] if !sys.props.contains("SPARK_SUBMIT") && EngineConfig.isSparkOnYarn =>
         val archiveName = commandPluginRegistry.getArchiveNameFromPlugin(plugin.name)
@@ -153,25 +152,12 @@ class CommandExecutor(engine: => EngineImpl, commands: CommandStorage, commandPl
           throw new scala.Exception(s"Error submitting command to yarn-cluster.")
         }
       case _ =>
-        val cmd = commandContext.command
-        info(s"Invoking command ${cmd.name}")
+        val commandInvocation = new SimpleInvocation(engine, commands, commandContext)
+        val arguments = plugin.parseArguments(commandContext.command.arguments.get)
+        info(s"Invoking command ${commandContext.command.name}")
         val returnValue = plugin(commandInvocation, arguments)
         plugin.serializeReturn(returnValue)
     }
-  }
-
-  private def getInvocation[R <: Product: TypeTag, A <: Product: TypeTag](command: CommandPlugin[A, R],
-                                                                          arguments: A,
-                                                                          commandContext: CommandContext)(implicit invocation: Invocation): Invocation with Product with Serializable = {
-
-    SimpleInvocation(engine,
-      commandStorage = commands,
-      commandId = commandContext.command.id,
-      arguments = commandContext.command.arguments,
-      user = commandContext.user,
-      executionContext = commandContext.executionContext,
-      eventContext = commandContext.eventContext
-    )
   }
 
   /**

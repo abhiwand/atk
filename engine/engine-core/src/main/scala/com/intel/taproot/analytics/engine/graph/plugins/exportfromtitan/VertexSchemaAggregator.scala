@@ -14,11 +14,11 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.atk.graph.plugins.exportfromtitan
+package com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan
 
-import com.intel.taproot.graphbuilder.elements.GBVertex
 import com.intel.taproot.analytics.domain.schema
 import com.intel.taproot.analytics.domain.schema._
+import com.intel.taproot.graphbuilder.elements.GBVertex
 
 import scala.collection.immutable.Map
 

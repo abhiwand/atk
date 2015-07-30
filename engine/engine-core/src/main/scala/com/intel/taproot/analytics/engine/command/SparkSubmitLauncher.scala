@@ -19,21 +19,21 @@ package com.intel.taproot.analytics.engine.command
 import java.io.File
 import java.nio.file.{ FileSystems, Files }
 
-import sys.process._
-
 import com.intel.taproot.analytics.component.ClassLoaderAware
 import com.intel.taproot.analytics.engine._
 import com.intel.taproot.analytics.engine.plugin.Invocation
 import com.intel.taproot.analytics.engine.util.{ JvmMemory, KerberosAuthenticator }
 import com.intel.taproot.analytics.EventLoggingImplicits
-import scala.reflect.runtime.{ universe => ru }
-import ru._
 import com.intel.taproot.analytics.domain.command.Command
 import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
 import com.intel.taproot.analytics.event.EventLogging
 
 /**
- * Launches SparkSubmit commands
+ * Our wrapper for calling SparkSubmit to run a plugin.
+ *
+ * First, SparkSubmitLauncher starts a SparkSubmit process.
+ * Next, SparkSubmit starts a SparkCommandJob.
+ * Finally, SparkCommandJob executes a SparkCommandPlugin.
  */
 class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with ClassLoaderAware {
 
@@ -41,9 +41,9 @@ class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with C
     withContext("executeCommandOnYarn") {
 
       val tempConfFileName = s"/tmp/application_${command.id}.conf"
-      val pluginArchiveName = archiveName.getOrElse(plugin.getArchiveName())
+      val pluginArchiveName = archiveName.getOrElse(plugin.archiveName)
 
-      /* Serialize current config for the plugin so as to pass to Spark Submit */
+      // Serialize current config for the plugin so as to pass to Spark Submit
       val (pluginJarsList, pluginExtraClasspath) = plugin.serializePluginConfiguration(pluginArchiveName, tempConfFileName)
 
       try {
@@ -59,7 +59,7 @@ class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with C
 
           val sparkMaster = Array(s"--master", s"${EngineConfig.sparkMaster}")
           val jobName = Array(s"--name", s"${command.getJobName}")
-          val pluginExecutionDriverClass = Array("--class", "com.intel.taproot.analytics.engine.command.CommandDriver")
+          val pluginExecutionDriverClass = Array("--class", "com.intel.taproot.analytics.engine.command.SparkCommandJob")
 
           val pluginDependencyJars = EngineConfig.sparkAppJarsLocal match {
             case true => Array[String]() /* Expect jars to installed locally and available */
@@ -98,12 +98,12 @@ class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with C
           }.flatMap(identity).toArray
 
           val verbose = Array("--verbose")
-          /* Using engine-core.jar (or deploy.jar) here causes issue due to duplicate copying of the resource.
-          So we hack to submit the job as if we are spark-submit shell script */
+          // Using engine-core.jar (or deploy.jar) here causes issue due to duplicate copying of the resource.
+          // So we hack to submit the job as if we are spark-submit shell script
           val sparkInternalDriverClass = Array("spark-internal")
           val pluginArguments = Array(s"${command.id}")
 
-          /* Prepare input arguments for Spark Submit; Do not change the order */
+          // Prepare input arguments for Spark Submit; Do not change the order
           val inputArgs = sparkMaster ++
             jobName ++
             pluginExecutionDriverClass ++
@@ -115,7 +115,7 @@ class SparkSubmitLauncher extends EventLogging with EventLoggingImplicits with C
             sparkInternalDriverClass ++
             pluginArguments
 
-          /* Launch Spark Submit */
+          // Launch Spark Submit 
           info(s"Launching Spark Submit with InputArgs: ${inputArgs.mkString(" ")}")
           val pluginDependencyJarsStr = s"${SparkContextFactory.jarPath("engine-core")}:${pluginExtraClasspath.mkString(":")}"
           val javaArgs = Array("java", "-cp", s"$pluginDependencyJarsStr", "org.apache.spark.deploy.SparkSubmit") ++ inputArgs

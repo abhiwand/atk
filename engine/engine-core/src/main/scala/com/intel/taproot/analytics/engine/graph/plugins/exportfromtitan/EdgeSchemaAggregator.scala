@@ -14,9 +14,8 @@
 // limitations under the License.
 */
 
-package com.intel.taproot.atk.graph.plugins.exportfromtitan
+package com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan
 
-import com.intel.taproot.graphbuilder.elements.GBEdge
 import com.intel.taproot.analytics.domain.schema._
 
 /**
