@@ -179,7 +179,7 @@ object JoinRddFunctions extends Serializable {
       //case Some("skewedhash") => left.leftSkewedHashJoin(right)
       case x if rightSizeInBytes < broadcastJoinThreshold => left.leftBroadcastJoin(right)
       case _ => {
-        val joinedFrame =left.frame.join(right.frame,
+        val joinedFrame = left.frame.join(right.frame,
           left.frame(left.joinColumn).equalTo(right.frame(right.joinColumn)),
           joinType = "left"
         )

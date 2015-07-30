@@ -16,12 +16,12 @@
 
 package com.intel.taproot.analytics.algorithm.frames
 
-import com.intel.taproot.giraph.algorithms.als.AlternatingLeastSquaresComputation
-import com.intel.taproot.giraph.algorithms.als.AlternatingLeastSquaresComputation.{ AlternatingLeastSquaresAggregatorWriter, AlternatingLeastSquaresMasterCompute }
-import com.intel.taproot.giraph.algorithms.cgd.ConjugateGradientDescentComputation
-import com.intel.taproot.giraph.algorithms.cgd.ConjugateGradientDescentComputation.{ ConjugateGradientDescentAggregatorWriter, ConjugateGradientDescentMasterCompute }
-import com.intel.taproot.giraph.io.{ VertexData4CGDWritable, VertexData4CFWritable }
-import com.intel.taproot.giraph.cf._
+import com.intel.taproot.analytics.giraph.algorithms.als.AlternatingLeastSquaresComputation
+import com.intel.taproot.analytics.giraph.algorithms.als.AlternatingLeastSquaresComputation.{ AlternatingLeastSquaresAggregatorWriter, AlternatingLeastSquaresMasterCompute }
+import com.intel.taproot.analytics.giraph.algorithms.cgd.ConjugateGradientDescentComputation
+import com.intel.taproot.analytics.giraph.algorithms.cgd.ConjugateGradientDescentComputation.{ ConjugateGradientDescentAggregatorWriter, ConjugateGradientDescentMasterCompute }
+import com.intel.taproot.analytics.giraph.io.{ VertexData4CGDWritable, VertexData4CFWritable }
+import com.intel.taproot.analytics.giraph.cf._
 import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobManager }
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Column, FrameSchema }
