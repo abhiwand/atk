@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.giraph.io.titan;
 
-import com.intel.taproot.graphbuilder.titan.cache.TitanGraphCache;
+import com.intel.taproot.analytics.graphbuilder.titan.cache.TitanGraphCache;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.diskstorage.configuration.backend.CommonsConfiguration;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;

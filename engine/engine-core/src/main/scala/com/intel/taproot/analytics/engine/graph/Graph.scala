@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.domain.StorageFormats
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphReference }
 import com.intel.taproot.analytics.domain.schema.{ EdgeSchema, VertexSchema }
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex }
 import org.apache.spark.SparkContext
 import org.apache.spark.atk.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.rdd.RDD

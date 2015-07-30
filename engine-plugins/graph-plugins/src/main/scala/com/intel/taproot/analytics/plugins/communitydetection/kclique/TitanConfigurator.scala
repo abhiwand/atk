@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.communitydetection.kclique
 
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
 import com.typesafe.config.Config
 
 class TitanConfigurator(config: Config) {

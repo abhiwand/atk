@@ -20,8 +20,8 @@ import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
 import com.intel.taproot.analytics.event.{ EventContext, EventLogging }
-import com.intel.taproot.graphbuilder.graph.titan.TitanAutoPartitioner
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.graph.titan.TitanAutoPartitioner
 import com.intel.taproot.analytics.engine.partitioners.{ FileSizeToPartitionSize, SparkAutoPartitionStrategy }
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.hadoop.hbase.HBaseConfiguration

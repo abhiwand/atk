@@ -17,17 +17,17 @@
 package com.intel.taproot.analytics.engine.graph.plugins
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBVertex, Property }
 import com.intel.taproot.analytics.domain.schema.Column
 import com.intel.taproot.analytics.domain.schema.DataTypes._
-import com.intel.taproot.graphbuilder.parser.{ ColumnDef, InputSchema }
-import com.intel.taproot.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
-import com.intel.taproot.graphbuilder.parser.rule.RuleParserDSL._
-import com.intel.taproot.graphbuilder.parser.InputSchema
-import com.intel.taproot.graphbuilder.parser.ColumnDef
+import com.intel.taproot.analytics.graphbuilder.parser.{ ColumnDef, InputSchema }
+import com.intel.taproot.analytics.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
+import com.intel.taproot.analytics.graphbuilder.parser.rule.RuleParserDSL._
+import com.intel.taproot.analytics.graphbuilder.parser.InputSchema
+import com.intel.taproot.analytics.graphbuilder.parser.ColumnDef
 import com.intel.taproot.analytics.domain.schema.Column
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
+import com.intel.taproot.analytics.graphbuilder.driver.spark.titan.{ GraphBuilder, GraphBuilderConfig }
 import com.thinkaurelius.titan.core.TitanGraph
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._

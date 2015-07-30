@@ -18,10 +18,10 @@ package com.intel.taproot.analytics.plugins.graphclustering
 
 import java.io.Serializable
 
-import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.taproot.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
-import com.intel.taproot.graphbuilder.write.titan.TitanSchemaWriter
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.analytics.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
+import com.intel.taproot.analytics.graphbuilder.write.titan.TitanSchemaWriter
 import com.intel.taproot.analytics.domain.schema.GraphSchema
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.{ Edge, Vertex }

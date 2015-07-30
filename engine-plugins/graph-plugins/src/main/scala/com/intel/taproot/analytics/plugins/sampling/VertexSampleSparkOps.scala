@@ -16,12 +16,12 @@
 
 package com.intel.taproot.analytics.plugins.sampling
 
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.taproot.analytics.plugins.graphstatistics.UnweightedDegrees
-import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
-import com.intel.taproot.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
-import com.intel.taproot.graphbuilder.parser.InputSchema
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+import com.intel.taproot.analytics.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.parser.InputSchema
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 

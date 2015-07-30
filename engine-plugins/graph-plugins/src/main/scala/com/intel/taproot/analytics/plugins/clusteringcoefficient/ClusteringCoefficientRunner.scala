@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.plugins.clusteringcoefficient
 
 import com.intel.taproot.analytics.plugins.graphconversions.GraphConversions
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import com.intel.taproot.analytics.domain.schema.DataTypes
 import com.intel.taproot.analytics.engine.frame.RowWrapper
 import org.apache.spark.frame.FrameRdd

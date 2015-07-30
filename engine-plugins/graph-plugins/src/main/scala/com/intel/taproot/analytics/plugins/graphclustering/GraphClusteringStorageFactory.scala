@@ -16,8 +16,8 @@
 
 package com.intel.taproot.analytics.plugins.graphclustering
 
-import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.graph.titan.TitanGraphConnector
 
 case class GraphClusteringStorageFactory(dbConnectionConfig: SerializableBaseConfiguration)
     extends GraphClusteringStorageFactoryInterface {

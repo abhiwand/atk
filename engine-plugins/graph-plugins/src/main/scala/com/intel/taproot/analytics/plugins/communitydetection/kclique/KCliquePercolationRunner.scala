@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.plugins.communitydetection.kclique
 
 import com.intel.taproot.analytics.plugins.communitydetection.kclique.datatypes.{ CliqueExtension, VertexSet, Edge }
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.plugins.communitydetection.kclique.datatypes.Edge
 import org.apache.spark.rdd.RDD
 

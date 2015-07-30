@@ -18,7 +18,7 @@ package org.apache.spark.frame
 
 import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.{ VertexSchemaAggregator, EdgeSchemaAggregator, EdgeHolder }
 import org.apache.spark.sql.Row
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.domain.schema._
 import org.apache.spark.frame.ordering.MultiColumnOrdering
@@ -347,7 +347,7 @@ object FrameRdd {
    */
   def toFrameRddMap(gbVertexRDD: RDD[GBVertex]): Map[String, FrameRdd] = {
 
-    import com.intel.taproot.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
+    import com.intel.taproot.analytics.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 
     // make sure all of the vertices have a label
     val labeledVertices = gbVertexRDD.labelVertices(Nil)

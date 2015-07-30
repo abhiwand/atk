@@ -19,7 +19,7 @@ package com.intel.taproot.analytics.plugins.beliefpropagation
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 
 /**
  * This test makes sure that we do not get underflow errors which cause some posteriors to become all zero vectors.

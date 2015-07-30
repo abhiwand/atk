@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.giraph.io.titan.formats;
 
-import com.intel.taproot.graphbuilder.titan.io.GBTitanHBaseInputFormat;
+import com.intel.taproot.analytics.graphbuilder.titan.io.GBTitanHBaseInputFormat;
 import com.thinkaurelius.titan.hadoop.formats.cassandra.TitanCassandraInputFormat;
 import com.thinkaurelius.titan.hadoop.formats.util.TitanInputFormat;
 import org.apache.hadoop.conf.Configuration;

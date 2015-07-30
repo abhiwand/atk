@@ -21,7 +21,7 @@ import com.intel.taproot.analytics.domain.schema.Schema
 import com.intel.taproot.analytics.engine.frame.plugins.ClassificationMetrics
 import org.apache.spark.sql.Row
 import com.intel.taproot.analytics.engine.frame.MiscFrameFunctions
-import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
+import com.intel.taproot.analytics.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.serializer.KryoRegistrator
 

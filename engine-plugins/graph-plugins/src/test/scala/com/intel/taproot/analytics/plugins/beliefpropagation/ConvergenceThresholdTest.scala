@@ -19,9 +19,9 @@ package com.intel.taproot.analytics.plugins.beliefpropagation
 import com.intel.taproot.analytics.plugins.testutils.ApproximateVertexEquality
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 
 /**
  * "Convergence threshold" in our system:

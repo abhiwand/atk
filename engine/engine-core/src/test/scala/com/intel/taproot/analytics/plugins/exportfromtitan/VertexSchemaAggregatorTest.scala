@@ -17,7 +17,7 @@
 package com.intel.taproot.analytics.plugins.exportfromtitan
 
 import com.intel.taproot.analytics.engine.graph.plugins.exportfromtitan.VertexSchemaAggregator
-import com.intel.taproot.graphbuilder.elements.{ GBVertex, Property }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBVertex, Property }
 import com.intel.taproot.analytics.domain.schema.GraphSchema
 import org.scalatest.WordSpec
 

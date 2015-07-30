@@ -16,10 +16,10 @@
 
 package com.intel.taproot.analytics.engine.graph
 
-import com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderConfig
-import com.intel.taproot.graphbuilder.parser.rule.{ ConstantValue, ParsedValue, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule, Value => GBValue, VertexRule => GBVertexRule }
-import com.intel.taproot.graphbuilder.parser.{ ColumnDef, InputSchema }
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.driver.spark.titan.GraphBuilderConfig
+import com.intel.taproot.analytics.graphbuilder.parser.rule.{ ConstantValue, ParsedValue, EdgeRule => GBEdgeRule, PropertyRule => GBPropertyRule, Value => GBValue, VertexRule => GBVertexRule }
+import com.intel.taproot.analytics.graphbuilder.parser.{ ColumnDef, InputSchema }
 import com.intel.taproot.analytics.domain.frame.FrameName
 import com.intel.taproot.analytics.domain.graph.construction.{ EdgeRule, PropertyRule, ValueRule, VertexRule, _ }
 import com.intel.taproot.analytics.domain.graph.{ GraphName, GraphEntity, LoadGraphArgs }
@@ -30,7 +30,7 @@ import com.typesafe.config.Config
 
 /**
  * Converter that produces the graphbuilder3 consumable
- * com.intel.taproot.graphbuilder.driver.spark.titan.GraphBuilderConfig object from a GraphLoad command,
+ * com.intel.taproot.analytics.graphbuilder.driver.spark.titan.GraphBuilderConfig object from a GraphLoad command,
  * the schema of the source dataframe, and the metadata of the graph being written to.
  *
  * @param schema Schema of the source dataframe.
@@ -57,9 +57,9 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
   }
 
   /**
-   * Converts com.intel.taproot.analytics.domain.schema.Schema into com.intel.taproot.graphbuilder.parser.InputSchema
+   * Converts com.intel.taproot.analytics.domain.schema.Schema into com.intel.taproot.analytics.graphbuilder.parser.InputSchema
    * @param schema The dataframe schema to be converted.
-   * @return Dataframe schema as a com.intel.taproot.graphbuilder.parser.InputSchema
+   * @return Dataframe schema as a com.intel.taproot.analytics.graphbuilder.parser.InputSchema
    */
   private def getInputSchema(schema: Schema): InputSchema = {
 
@@ -70,10 +70,10 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
 
   /**
    * Converts com.intel.taproot.analytics.domain.graphconstruction.Value into the GraphBuilder3 consumable
-   * com.intel.taproot.graphbuilder.parser.rule.Value
+   * com.intel.taproot.analytics.graphbuilder.parser.rule.Value
    *
    * @param value A value from a graph load's parsing rules.
-   * @return A com.intel.taproot.graphbuilder.parser.rule.Value
+   * @return A com.intel.taproot.analytics.graphbuilder.parser.rule.Value
    */
   private def getGBValue(value: ValueRule): GBValue = {
     if (value.source == GBValueSourcing.CONSTANT) {
@@ -86,9 +86,9 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
 
   /**
    * Converts {com.intel.taproot.analytics.domain.graphconstruction.Property} into the GraphBuilder3 consumable
-   * com.intel.taproot.graphbuilder.parser.rule.PropertyRule
+   * com.intel.taproot.analytics.graphbuilder.parser.rule.PropertyRule
    * @param property A property rule from a graph load's parsing rules.
-   * @return A com.intel.taproot.graphbuilder.parser.rule.PropertyRule
+   * @return A com.intel.taproot.analytics.graphbuilder.parser.rule.PropertyRule
    */
   private def getGBPropertyRule(property: PropertyRule): GBPropertyRule = {
     new GBPropertyRule(getGBValue(property.key), getGBValue(property.value))
@@ -96,7 +96,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
 
   /**
    * Converts com.intel.taproot.analytics.domain.graphconstruction.VertexRule to GraphBuilder3 consumable
-   * com.intel.taproot.graphbuilder.parser.rule.VertexRule
+   * com.intel.taproot.analytics.graphbuilder.parser.rule.VertexRule
    * @param vertexRule A vertex rule from a graph load's parsing rules.
    * @return A com.intel.taproot.analytics.domain.graphconstruction.VertexRule
    */
@@ -106,7 +106,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
 
   /**
    * Converts a list of com.intel.taproot.analytics.domain.graphconstruction.VertexRule's into a list of
-   * GraphBuilder3 consumable com.intel.taproot.graphbuilder.parser.rule.VertexRule's
+   * GraphBuilder3 consumable com.intel.taproot.analytics.graphbuilder.parser.rule.VertexRule's
    * @param vertexRules A list of vertex rules from a graph load's parsing rules.
    * @return A list of com.intel.taproot.analytics.domain.graphconstruction.VertexRule
    */
@@ -116,7 +116,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
 
   /**
    * Converts com.intel.taproot.analytics.domain.graphconstruction.EdgeRule to GraphBuilder3 consumable
-   * com.intel.taproot.graphbuilder.parser.rule.EdgeRule
+   * com.intel.taproot.analytics.graphbuilder.parser.rule.EdgeRule
    * @param edgeRule An edge rule from a graph load's parsing rules.
    * @return A com.intel.taproot.analytics.domain.graphconstruction.EdgeRule
    */
@@ -127,7 +127,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
 
   /**
    * Converts a list of com.intel.taproot.analytics.domain.graphconstruction.EdgeRule's into a list of
-   * GraphBuilder3 consumable com.intel.taproot.graphbuilder.parser.rule.EdgeRule's
+   * GraphBuilder3 consumable com.intel.taproot.analytics.graphbuilder.parser.rule.EdgeRule's
    * @param edgeRules A list of edge rules from a graph load's parsing rules.
    * @return A list of com.intel.taproot.analytics.domain.graphconstruction.EdgeRule
    */
@@ -139,11 +139,11 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphLoad: LoadGraphArgs
 
 object GraphBuilderConfigFactory {
   /**
-   * Produces graphbuilder3 consumable com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration from
+   * Produces graphbuilder3 consumable com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration from
    * a graph name and a com.intel.taproot.analytics.domain.graphconstruction.outputConfiguration
    * @param backendStorageName Name of the graph to be written to.
    *
-   * @return GraphBuilder3 consumable com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+   * @return GraphBuilder3 consumable com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
    */
   def getTitanConfiguration(backendStorageName: String): SerializableBaseConfiguration = {
 
@@ -156,13 +156,13 @@ object GraphBuilderConfigFactory {
   }
 
   /**
-   * Produces graphbuilder3 consumable com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration from
+   * Produces graphbuilder3 consumable com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration from
    * a graph name and a com.intel.taproot.analytics.domain.graphconstruction.outputConfiguration
    * @param commandConfig Configuration object for command.
    * @param titanPath Dot-separated expressions with Titan config, e.g., titan.load
    * @param backendStorageName Name of the graph to be written to.
    *
-   * @return GraphBuilder3 consumable com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+   * @return GraphBuilder3 consumable com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
    */
   def getTitanConfiguration(commandConfig: Config, titanPath: String, backendStorageName: String): SerializableBaseConfiguration = {
 
@@ -175,10 +175,10 @@ object GraphBuilderConfigFactory {
   }
 
   /**
-   * Produces graphbuilder3 consumable com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration from
+   * Produces graphbuilder3 consumable com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration from
    * a graph entity
    * @param graph Graph Entity
-   * @return GraphBuilder3 consumable com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+   * @return GraphBuilder3 consumable com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
    */
   def getTitanConfiguration(graph: GraphEntity): SerializableBaseConfiguration = {
     val backendStorageName = graph.storage

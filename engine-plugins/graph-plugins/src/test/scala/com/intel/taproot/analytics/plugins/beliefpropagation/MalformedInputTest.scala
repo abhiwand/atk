@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.plugins.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkException
 

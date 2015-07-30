@@ -16,7 +16,6 @@
 
 package com.intel.taproot.analytics.plugins.sampling
 
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.taproot.analytics.component.Boot
 import com.intel.taproot.analytics.domain.frame.FrameName
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
@@ -25,6 +24,7 @@ import com.intel.taproot.analytics.engine.{ SparkContextFactory, EngineConfig }
 import com.intel.taproot.analytics.engine.plugin.{ SparkInvocation, SparkCommandPlugin }
 import com.intel.taproot.analytics.domain.{ UserPrincipal, StorageFormats, DomainJsonProtocol }
 import com.intel.taproot.analytics.domain.graph.{ GraphTemplate, GraphReference }
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
 import spray.json._
 import scala.concurrent._
 import java.util.UUID

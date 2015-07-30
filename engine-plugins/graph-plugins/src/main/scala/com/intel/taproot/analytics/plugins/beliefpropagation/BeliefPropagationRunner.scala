@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.plugins.beliefpropagation
 
 import com.intel.taproot.analytics.plugins.VectorMath
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.graphx.{ PartitionStrategy, Graph, Edge }
 import com.intel.taproot.analytics._
 

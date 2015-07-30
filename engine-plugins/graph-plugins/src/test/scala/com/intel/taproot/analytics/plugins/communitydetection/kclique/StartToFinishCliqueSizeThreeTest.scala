@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.communitydetection.kclique
 
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD

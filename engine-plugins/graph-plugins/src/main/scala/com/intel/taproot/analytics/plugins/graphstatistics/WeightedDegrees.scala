@@ -16,7 +16,7 @@
 
 package com.intel.taproot.analytics.plugins.graphstatistics
 
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, GBVertex, Property }
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD

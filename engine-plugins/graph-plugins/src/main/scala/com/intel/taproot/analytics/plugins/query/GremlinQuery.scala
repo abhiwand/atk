@@ -18,7 +18,7 @@ package com.intel.taproot.analytics.plugins.query
 
 import javax.script.Bindings
 
-import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.taproot.analytics.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.taproot.analytics.domain.graph.GraphReference
 import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, CommandInvocation, CommandPlugin, Invocation, PluginDoc }
 import com.intel.taproot.analytics.engine.graph.{ SparkGraphHBaseBackend, GraphBackendName, GraphBuilderConfigFactory }

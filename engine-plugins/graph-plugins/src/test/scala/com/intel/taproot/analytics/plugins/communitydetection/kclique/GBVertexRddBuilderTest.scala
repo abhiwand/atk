@@ -20,7 +20,7 @@ import com.intel.taproot.analytics.plugins.communitydetection.ScalaToJavaCollect
 import org.scalatest.{ Matchers, FlatSpec }
 import com.intel.taproot.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
-import com.intel.taproot.graphbuilder.elements.{ Property, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.elements.{ Property, GBVertex }
 
 class GBVertexRddBuilderTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

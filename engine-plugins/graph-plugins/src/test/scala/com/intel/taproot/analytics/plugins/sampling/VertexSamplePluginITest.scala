@@ -16,9 +16,9 @@
 
 package com.intel.taproot.analytics.plugins.sampling
 
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property, GBVertex }
-import com.intel.taproot.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.taproot.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.taproot.analytics.graphbuilder.elements.{ GBEdge, Property, GBVertex }
+import com.intel.taproot.analytics.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.taproot.testutils.{ TestingSparkContextWordSpec, TestingTitan }
 import org.scalatest.{ BeforeAndAfter, Matchers }
 
