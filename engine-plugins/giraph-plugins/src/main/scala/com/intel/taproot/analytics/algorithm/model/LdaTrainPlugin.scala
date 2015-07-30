@@ -16,9 +16,9 @@
 
 package com.intel.taproot.analytics.algorithm.model
 
-import com.intel.taproot.giraph.algorithms.lda.CVB0LDAComputation
-import com.intel.taproot.giraph.algorithms.lda.CVB0LDAComputation.{ CVB0LDAAggregatorWriter, CVB0LDAMasterCompute }
-import com.intel.taproot.giraph.lda._
+import com.intel.taproot.analytics.giraph.algorithms.lda.CVB0LDAComputation
+import com.intel.taproot.analytics.giraph.algorithms.lda.CVB0LDAComputation.{ CVB0LDAAggregatorWriter, CVB0LDAMasterCompute }
+import com.intel.taproot.analytics.giraph.lda._
 import com.intel.taproot.analytics.algorithm.util.{ GiraphConfigurationUtil, GiraphJobManager }
 import com.intel.taproot.analytics.domain.CreateEntityArgs
 import com.intel.taproot.analytics.domain.schema.{ DataTypes, Column, FrameSchema }
