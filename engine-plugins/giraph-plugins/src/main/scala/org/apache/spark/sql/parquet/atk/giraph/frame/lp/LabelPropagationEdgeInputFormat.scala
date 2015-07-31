@@ -49,7 +49,7 @@ class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LongWritable, Doub
   override def createEdgeReader(split: InputSplit, context: TaskAttemptContext): EdgeReader[LongWritable, DoubleWritable] = {
     val edgeReader = new LabelPropagationEdgeReader(new LabelPropagationConfiguration(context.getConfiguration))
     // algorithm expects edges that go both ways (seems to be how undirected is modeled in Giraph)
-    new ReverseEdgeDuplicator(edgeReader)
+    new ReverseEdgeDuplicator[LongWritable, DoubleWritable](edgeReader)
   }
 
   /**

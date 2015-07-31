@@ -20,7 +20,7 @@
         <module>frame-plugins</module>
         <module>graph-plugins</module>
         <module>model-plugins</module>
-        <!--<module>giraph-plugins</module>-->
+        <module>giraph-plugins</module>
     </modules>
 
     <profiles>

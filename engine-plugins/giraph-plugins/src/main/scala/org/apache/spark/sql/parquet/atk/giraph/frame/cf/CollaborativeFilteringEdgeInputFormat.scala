@@ -47,7 +47,7 @@ class CollaborativeFilteringEdgeInputFormat extends EdgeInputFormat[CFVertexId, 
     val edgeReader = new CollaborativeFilteringEdgeReader(new CollaborativeFilteringConfiguration(context.getConfiguration))
 
     // algorithm expects edges that go both ways (seems to be how undirected is modeled in Giraph)
-    new ReverseEdgeDuplicator(edgeReader)
+    new ReverseEdgeDuplicator[CFVertexId, EdgeData4CFWritable](edgeReader)
   }
 
   override def getSplits(context: JobContext, minSplitCountHint: Int): util.List[InputSplit] = {

@@ -123,8 +123,8 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
         <dev.spark.hive.version>1.3.0-${dep.cdh.version}</dev.spark.hive.version>
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.trustedanalytics.com -->
-        <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
-        <dep.giraph-hbase.version>1.1.0-SNAPSHOT-20140317</dep.giraph-hbase.version>
+        <dep.giraph-core.version>1.1.0-hadoop2</dep.giraph-core.version>
+        <dep.giraph-hbase.version>1.1.0-hadoop2</dep.giraph-hbase.version>
         <!--END GAO MAVEN -->
 
         <scala.long.version>2.10.4</scala.long.version>
