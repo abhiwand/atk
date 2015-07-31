@@ -1,5 +1,5 @@
 import unittest
-import taprootanalytics as ia
+import trustedanalytics as ia
 
 # show full stack traces
 ia.errors.show_details = True
@@ -13,12 +13,12 @@ ia.connect()
 
 class UserExamples(unittest.TestCase):
     def test_frame(self):
-        import taprootanalytics.examples.frame as frame_test
+        import trustedanalytics.examples.frame as frame_test
         frame_test.run("/datasets/cities.csv", ia)
         assert True
 
     def test_movie_graph_small(self):
-        import taprootanalytics.examples.movie_graph_small as mgs
+        import trustedanalytics.examples.movie_graph_small as mgs
         vars = mgs.run("/datasets/movie_data_random.csv", ia)
 
         assert vars["frame"].row_count == 2
@@ -28,7 +28,7 @@ class UserExamples(unittest.TestCase):
 
 
     def test_pr(self):
-        import taprootanalytics.examples.pr as pr
+        import trustedanalytics.examples.pr as pr
         vars = pr.run("/datasets/movie_data_random.csv")
 
         assert vars["frame"].row_count == 20

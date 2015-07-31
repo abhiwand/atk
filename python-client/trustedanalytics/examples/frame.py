@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from taprootanalytics import examples
+from trustedanalytics import examples
 
 def run(path=r"datasets/cities.csv", ta=None):
     """
