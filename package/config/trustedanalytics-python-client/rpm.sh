@@ -24,7 +24,7 @@ POST="
    rm /usr/lib/python2.7/site-packages/trustedanalytics
  fi
 
- ln -s /usr/lib/trustedanalytics/analytics/python-client  /usr/lib/python2.7/site-packages/trustedanalytics
+ ln -s /usr/lib/trustedanalytics/python-client  /usr/lib/python2.7/site-packages/trustedanalytics
 "
 
 #delete the sym link only if we are uninstalling not updating
@@ -35,8 +35,8 @@ POSTUN="
 "
 
 FILES="
-/usr/lib/trustedanalytics/analytics/python-client
-%config /usr/lib/trustedanalytics/analytics/python-client/rest/config.py
+/usr/lib/trustedanalytics/python-client
+%config /usr/lib/trustedanalytics/python-client/rest/config.py
 "
 
 mkdir -p $SCRIPTPATH/rpm/SPECS

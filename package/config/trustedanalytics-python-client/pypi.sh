@@ -18,7 +18,7 @@ mkdir -p trustedanalytics/trustedanalytics
 
 tar -xvf $tarFile -C trustedanalytics/
 
-cp -Rv ${BUILD_DIR}/usr/lib/trustedanalytics/analytics/python-client/* trustedanalytics/trustedanalytics
+cp -Rv ${BUILD_DIR}/usr/lib/trustedanalytics/python-client/* trustedanalytics/trustedanalytics
 
 rm -rf usr
 

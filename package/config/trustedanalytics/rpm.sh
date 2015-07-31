@@ -80,8 +80,8 @@ PREUN="
 "
 
 FILES="
-/etc/trustedanalytics/analytics
-/usr/lib/trustedanalytics/analytics
+/etc/trustedanalytics/rest-server
+/usr/lib/trustedanalytics/rest-server
 "
 
 
