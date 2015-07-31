@@ -49,7 +49,7 @@ Setup
     #)  Choose *Add Content Root* and browse to the |PACKAGE| Python REST Client
         libraries.
         On RedHat or Centos these are found under
-        '/usr/lib/taprootanalytics/rest-client/python'.
+        '/usr/lib/trustedanalytics/rest-client/python'.
     #)  Choose *Apply* button.
     #)  Choose *OK* button.
 
@@ -58,7 +58,7 @@ Setup
 
     a)  Name the file "test" and type in the following code::
 
-            import taprootanalytics as ta
+            import trustedanalytics as ta
             ta.server.host = "correct host name or IP address"
             ta.connect()
             ta.server.ping()

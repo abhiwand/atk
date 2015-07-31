@@ -55,10 +55,10 @@ echo "$NAME Api Server logging going to $LOG"
 echo "starting"
 java $@ -XX:MaxPermSize=256m -Xss10m -cp "$CONF:$LAUNCHER" \
     -Dconfig.resource=integration-test.conf \
-    -Dintel.taproot.analytics.engine.fs.root=file:$FS_ROOT \
-    -Dintel.taproot.analytics.engine.spark.conf.properties.spark.sql.parquet.useDataSourceApi=false \
-    -Dintel.taproot.analytics.engine.spark.conf.properties.spark.eventLog.dir=file:$SPARK_EVENTS_DIR\
-    com.intel.taproot.analytics.component.Boot rest-server com.intel.taproot.analytics.rest.RestServerApplication > $LOG 2>&1 &
+    -Dtrustedanalytics.atk.engine.fs.root=file:$FS_ROOT \
+    -Dtrustedanalytics.atk.engine.spark.conf.properties.spark.sql.parquet.useDataSourceApi=false \
+    -Dtrustedanalytics.atk.engine.spark.conf.properties.spark.eventLog.dir=file:$SPARK_EVENTS_DIR\
+    org.trustedanalytics.atk.component.Boot rest-server org.trustedanalytics.atk.rest.RestServerApplication > $LOG 2>&1 &
 
 API_SERVER_PID=$!
 

@@ -31,7 +31,7 @@ export PWD=`pwd`
 export PATH=$PWD/.java-buildpack/open_jdk_jre/bin:$PATH
 export JAVA_HOME=$PWD/.java-buildpack/open_jdk_jre
 
-echo java $@ -XX:MaxPermSize=384m -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot scoring-models
-java $@ -XX:MaxPermSize=384m -cp "$LAUNCHER" com.intel.taproot.analytics.component.Boot scoring-models
+echo java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" org.trustedanalytics.atk.component.Boot scoring-engine
+java $@ -XX:MaxPermSize=256m -cp "$LAUNCHER" org.trustedanalytics.atk.component.Boot scoring-engine
 
 popd

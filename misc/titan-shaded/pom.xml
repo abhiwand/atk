@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.intel.taproot.ia</groupId>
+    <groupId>org.trustedanalytics.atk</groupId>
     <artifactId>titan-shaded</artifactId>
     <version>0.5.4-SNAPSHOT</version>
 
@@ -79,7 +79,7 @@
                                     <!-- original package -->
                                     <pattern>com.esotericsoftware</pattern>
                                     <!-- new package -->
-                                    <shadedPattern>com.intel.taproot.shaded.com.esotericsoftware</shadedPattern>
+                                    <shadedPattern>com.trustedanalytics.shaded.com.esotericsoftware</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

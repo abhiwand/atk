@@ -2,7 +2,7 @@ Consider the following sample data set in *frame* with actual data labels
 specified in the *labels* column and the predicted labels in the
 *predictions* column:
 
->>> import taprootanalytics as ia
+>>> import trustedanalytics as ia
 >>> import pandas as p
 >>> f = ia.Frame(ia.Pandas(p.DataFrame([1, 3, 1, 0]), [('numbers', ia.int32)]))
   [==Job Progress...]
