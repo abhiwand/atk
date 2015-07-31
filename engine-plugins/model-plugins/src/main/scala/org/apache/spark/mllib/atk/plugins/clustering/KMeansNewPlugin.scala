@@ -16,14 +16,14 @@
 
 package org.apache.spark.mllib.atk.plugins.clustering
 
-import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.model.{ KMeansNewArgs, ModelEntity }
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.trustedanalytics.atk.domain.CreateEntityArgs
+import org.trustedanalytics.atk.domain.model.{ KMeansNewArgs, ModelEntity }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
 
 //Implicits needed for JSON conversion
 import spray.json._
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 @PluginDoc(oneLine = "",
   extended = "")

@@ -132,7 +132,10 @@ public class NameMigration {
                         boolean b = new File(newName).mkdirs();
                         if (b) {
                             Files.move(Paths.get(currentName), Paths.get(newName), StandardCopyOption.REPLACE_EXISTING);
-                            FileUtils.deleteDirectory(new File(rootPath));
+                            File rootDir = new File(rootPath);
+                            if (rootDir.list().length == 0) {
+                                FileUtils.deleteDirectory(rootDir);
+                            }
                         }
                     }
                     catch (Exception e) {

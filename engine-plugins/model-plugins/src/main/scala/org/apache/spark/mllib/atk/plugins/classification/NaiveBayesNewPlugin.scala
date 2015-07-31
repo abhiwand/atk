@@ -23,12 +23,12 @@
 
 package org.apache.spark.mllib.atk.plugins.classification
 
-import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.model.{ GenericNewModelArgs, ModelEntity }
-import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.trustedanalytics.atk.domain.CreateEntityArgs
+import org.trustedanalytics.atk.domain.model.{ GenericNewModelArgs, ModelEntity }
+import org.trustedanalytics.atk.engine.plugin.Invocation
+import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
 import spray.json._
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 /**
  * Create a 'new' instance of this model

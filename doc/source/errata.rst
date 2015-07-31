@@ -18,7 +18,7 @@ Errata
 *   Attempting to create a frame with a parenthesis in the name will raise the
     error::
 
-        taprootanalytics.rest.command.CommandServerError: Job aborted due to
+        trustedanalytics.rest.command.CommandServerError: Job aborted due to
         stage failure: Task 7.0:5 failed 4 times, most recent failure:
         Exception failure in TID 426 on host node03.zonda.cluster:
         java.lang.IllegalArgumentException: No enum constant parquet

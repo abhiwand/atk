@@ -16,16 +16,16 @@
 
 package org.apache.spark.mllib.atk.plugins.classification
 
-import com.intel.taproot.analytics.UnitReturn
-import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.model.Model
-import com.intel.taproot.analytics.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
+import org.trustedanalytics.atk.UnitReturn
+import org.trustedanalytics.atk.engine.frame.SparkFrame
+import org.trustedanalytics.atk.engine.model.Model
+import org.trustedanalytics.atk.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc }
+import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
 import org.apache.spark.mllib.optimization.{ SquaredL2Updater, L1Updater }
 import org.apache.spark.mllib.regression.{ LinearRegressionWithSGD, LabeledPoint }
 import org.apache.spark.rdd.RDD
 import spray.json._
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.FrameRddImplicits._
 

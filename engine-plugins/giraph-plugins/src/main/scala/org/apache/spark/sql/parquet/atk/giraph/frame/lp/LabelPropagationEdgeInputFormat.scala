@@ -16,8 +16,8 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame.lp
 
-import com.intel.taproot.analytics.giraph.lp.LabelPropagationConfiguration
-import com.intel.taproot.analytics.engine.frame.RowWrapper
+import org.trustedanalytics.atk.giraph.lp.LabelPropagationConfiguration
+import org.trustedanalytics.atk.engine.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
@@ -49,7 +49,7 @@ class LabelPropagationEdgeInputFormat extends EdgeInputFormat[LongWritable, Doub
   override def createEdgeReader(split: InputSplit, context: TaskAttemptContext): EdgeReader[LongWritable, DoubleWritable] = {
     val edgeReader = new LabelPropagationEdgeReader(new LabelPropagationConfiguration(context.getConfiguration))
     // algorithm expects edges that go both ways (seems to be how undirected is modeled in Giraph)
-    new ReverseEdgeDuplicator(edgeReader)
+    new ReverseEdgeDuplicator[LongWritable, DoubleWritable](edgeReader)
   }
 
   /**

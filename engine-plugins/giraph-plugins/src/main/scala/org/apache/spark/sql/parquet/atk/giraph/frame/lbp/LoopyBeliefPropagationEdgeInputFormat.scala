@@ -16,8 +16,8 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame.lbp
 
-import com.intel.taproot.analytics.giraph.lbp.LoopyBeliefPropagationConfiguration
-import com.intel.taproot.analytics.engine.frame.RowWrapper
+import org.trustedanalytics.atk.giraph.lbp.LoopyBeliefPropagationConfiguration
+import org.trustedanalytics.atk.engine.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
@@ -50,7 +50,7 @@ class LoopyBeliefPropagationEdgeInputFormat extends EdgeInputFormat[LongWritable
   override def createEdgeReader(split: InputSplit, context: TaskAttemptContext): EdgeReader[LongWritable, DoubleWritable] = {
     val edgeReader = new LoopyBeliefPropagationEdgeReader(new LoopyBeliefPropagationConfiguration(context.getConfiguration))
     // algorithm expects edges that go both ways (seems to be how undirected is modeled in Giraph)
-    new ReverseEdgeDuplicator(edgeReader)
+    new ReverseEdgeDuplicator[LongWritable, DoubleWritable](edgeReader)
   }
 
   /**

@@ -16,8 +16,8 @@
 
 package com.thinkaurelius.titan.hadoop.formats.titan_054.hbase;
 
-import com.intel.taproot.analytics.graphbuilder.titan.cache.TitanHadoopCacheConfiguration;
-import com.intel.taproot.analytics.graphbuilder.titan.cache.TitanHadoopGraphCache;
+import org.trustedanalytics.atk.graphbuilder.titan.cache.TitanHadoopCacheConfiguration;
+import org.trustedanalytics.atk.graphbuilder.titan.cache.TitanHadoopGraphCache;
 import com.thinkaurelius.titan.hadoop.FaunusVertex;
 import com.thinkaurelius.titan.hadoop.FaunusVertexQueryFilter;
 import com.thinkaurelius.titan.hadoop.config.ModifiableHadoopConfiguration;

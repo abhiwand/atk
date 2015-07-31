@@ -23,7 +23,7 @@ LICENSE="Apache"
 #SUMMARY="$packageName$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION="$SUMMARY "
 
-REQUIRES=" java-1.7.0-openjdk, trustedanalytics-analytics-python-client >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api, postgresql-server"
+REQUIRES=" java-1.7.0-openjdk, trustedanalytics-python-client >= ${version}-${BUILD_NUMBER}, python-argparse, python-cm-api, postgresql-server"
 
 PRE="
 restUser=atkuser
@@ -80,8 +80,8 @@ PREUN="
 "
 
 FILES="
-/etc/trustedanalytics/analytics
-/usr/lib/trustedanalytics/analytics
+/etc/trustedanalytics/rest-server
+/usr/lib/trustedanalytics/rest-server
 "
 
 

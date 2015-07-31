@@ -18,9 +18,9 @@ package org.apache.spark.sql.parquet.atk.giraph.frame.lda
 
 import java.util
 
-import com.intel.taproot.analytics.engine.frame.RowWrapper
-import com.intel.taproot.analytics.giraph.io.{ LdaEdgeData, LdaVertexId }
-import com.intel.taproot.analytics.giraph.lda.LdaConfiguration
+import org.trustedanalytics.atk.engine.frame.RowWrapper
+import org.trustedanalytics.atk.giraph.io.{ LdaEdgeData, LdaVertexId }
+import org.trustedanalytics.atk.giraph.lda.LdaConfiguration
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration
@@ -44,7 +44,7 @@ class LdaParquetFrameEdgeInputFormat extends EdgeInputFormat[LdaVertexId, LdaEdg
   override def createEdgeReader(split: InputSplit, context: TaskAttemptContext): EdgeReader[LdaVertexId, LdaEdgeData] = {
     val ldaEdgeReader = new LdaParquetFrameEdgeReader(new LdaConfiguration(context.getConfiguration))
     // algorithm expects edges that go both ways (seems to be how undirected is modeled in Giraph)
-    new ReverseEdgeDuplicator(ldaEdgeReader)
+    new ReverseEdgeDuplicator[LdaVertexId, LdaEdgeData](ldaEdgeReader)
   }
 
   override def getSplits(context: JobContext, minSplitCountHint: Int): util.List[InputSplit] = {
