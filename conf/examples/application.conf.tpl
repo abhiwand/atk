@@ -18,8 +18,8 @@ trustedanalytics.atk {
     # The host name for the Postgresql database in which the metadata will be stored
     //metastore.connection-postgresql.host = "invalid-postgresql-host"
     //metastore.connection-postgresql.port = 5432
-    //metastore.connection-postgresql.database = "ia-metastore"
-    //metastore.connection-postgresql.username = "iauser"
+    //metastore.connection-postgresql.database = "atk-metastore"
+    //metastore.connection-postgresql.username = "atkuser"
     //metastore.connection-postgresql.password = "myPassword"
     metastore.connection-postgresql.url = "jdbc:postgresql://"${trustedanalytics.atk.metastore.connection-postgresql.host}":"${trustedanalytics.atk.metastore.connection-postgresql.port}"/"${trustedanalytics.atk.metastore.connection-postgresql.database}
 
@@ -34,7 +34,7 @@ trustedanalytics.atk {
 
         # The hdfs URL where the trustedanalytics folder will be created
         # and which will be used as the starting point for any relative URLs
-        fs.root = "hdfs://invalid-fsroot-host/user/iauser"
+        fs.root = "hdfs://invalid-fsroot-host/user/atkuser"
 
         # The (comma separated, no spaces) Zookeeper hosts that
         # Comma separated list of host names with zookeeper role assigned
@@ -59,7 +59,7 @@ trustedanalytics.atk {
         //hadoop.kerberos {
         //  enabled = false
         //  principal-name = "my-user@MY.REALM.COM"
-        //  keytab-file = "/path/to/keytab" #readable by iauser
+        //  keytab-file = "/path/to/keytab" #readable by atkuser
         //}
     }
 
