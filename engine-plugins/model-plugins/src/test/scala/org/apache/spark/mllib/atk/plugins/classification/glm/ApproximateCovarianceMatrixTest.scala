@@ -17,7 +17,7 @@
 package org.apache.spark.mllib.atk.plugins.classification.glm
 
 import breeze.linalg.{ DenseMatrix, inv }
-import org.trustedanalytics.atk.testutils.{TestingSparkContextFlatSpec, MatcherUtils}
+import org.trustedanalytics.atk.testutils.{ TestingSparkContextFlatSpec, MatcherUtils }
 import MatcherUtils._
 import org.scalatest.Matchers
 

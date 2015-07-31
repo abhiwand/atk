@@ -22,7 +22,7 @@ import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
-import org.trustedanalytics.atk.testutils.{TestingSparkContextFlatSpec, MatcherUtils}
+import org.trustedanalytics.atk.testutils.{ TestingSparkContextFlatSpec, MatcherUtils }
 import MatcherUtils._
 
 import scala.math.BigDecimal.RoundingMode

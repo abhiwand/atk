@@ -24,7 +24,7 @@ import org.trustedanalytics.atk.graphbuilder.parser.InputSchema
 import org.trustedanalytics.atk.domain.frame.FrameEntity
 import org.trustedanalytics.atk.domain.schema._
 import org.trustedanalytics.atk.engine.graph.{ GraphBuilderConfigFactory, TestingTitanWithSparkWordSpec, SparkGraphStorage }
-import com.trustedanalytics.testutils.TestingSparkContextWordSpec
+import org.trustedanalytics.atk.testutils.TestingSparkContextWordSpec
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.atk.graph.{ EdgeFrameRdd, VertexFrameRdd }
 import org.apache.spark.sql.Row

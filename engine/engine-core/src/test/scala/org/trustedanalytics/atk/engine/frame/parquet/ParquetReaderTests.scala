@@ -19,7 +19,7 @@ package org.trustedanalytics.atk.engine.frame.parquet
 import java.io.File
 
 import org.trustedanalytics.atk.engine.HdfsFileStorage
-import com.trustedanalytics.testutils.TestingSparkContextWordSpec
+import org.trustedanalytics.atk.testutils.TestingSparkContextWordSpec
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.spark.SparkContext

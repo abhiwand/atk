@@ -17,7 +17,7 @@
 package org.trustedanalytics.atk.testutils
 
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 
 trait TestingSparkContextFunSuite extends FunSuite with BeforeAndAfterAll {
 

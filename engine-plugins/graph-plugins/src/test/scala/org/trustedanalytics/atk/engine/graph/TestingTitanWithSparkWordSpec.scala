@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.engine.graph
 
 import org.trustedanalytics.atk.graphbuilder.util.SerializableBaseConfiguration
-import com.trustedanalytics.testutils.TestingTitan
+import org.trustedanalytics.atk.testutils.TestingTitan
 import org.scalatest.BeforeAndAfter
-import org.trustedanalytics.atk.testutils.{TestingTitan, TestingSparkContextWordSpec, LogUtils}
+import org.trustedanalytics.atk.testutils.{ TestingTitan, TestingSparkContextWordSpec, LogUtils }
 
 trait TestingTitanWithSparkWordSpec extends TestingSparkContextWordSpec with BeforeAndAfter with TestingTitan {
   LogUtils.silenceTitan()

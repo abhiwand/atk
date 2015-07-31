@@ -17,7 +17,7 @@
 package org.trustedanalytics.atk.testutils
 
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec}
+import org.scalatest.{ BeforeAndAfter, FlatSpec }
 
 trait TestingSparkContextFlatSpec extends FlatSpec with BeforeAndAfter {
 

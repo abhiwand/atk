@@ -16,7 +16,7 @@
 
 package org.trustedanalytics.atk.testutils
 
-import org.apache.log4j.{Level, Logger}
+import org.apache.log4j.{ Level, Logger }
 
 /**
  * Utility methods related to logging in Unit testing.

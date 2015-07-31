@@ -19,13 +19,13 @@ package org.trustedanalytics.atk.engine.frame.plugins.load
 import java.io.File
 import java.nio.charset.Charset
 
-import com.trustedanalytics.testutils.TestingSparkContextWordSpec
+import org.trustedanalytics.atk.testutils.TestingSparkContextWordSpec
 import org.apache.commons.codec.Charsets
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.io.{ Text, LongWritable }
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ BeforeAndAfter, Matchers }
-import org.trustedanalytics.atk.testutils.{TestingSparkContextWordSpec, DirectoryUtils}
+import org.trustedanalytics.atk.testutils.{ TestingSparkContextWordSpec, DirectoryUtils }
 
 class MultiLineTaggedInputFormatTest extends TestingSparkContextWordSpec with Matchers with BeforeAndAfter {
   var tmpDir: File = null

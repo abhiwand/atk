@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.plugins.query
 
 import java.util
 
-import org.trustedanalytics.atk.testutils.{TestingTitan, MatcherUtils}
+import org.trustedanalytics.atk.testutils.{ TestingTitan, MatcherUtils }
 import MatcherUtils._
 import com.tinkerpop.blueprints.{ Edge, Element, Vertex }
 import com.tinkerpop.pipes.util.structures.Row

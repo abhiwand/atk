@@ -18,9 +18,9 @@ package org.trustedanalytics.atk.testutils
 
 import java.io.File
 
-import com.thinkaurelius.titan.core.{TitanFactory, TitanGraph}
+import com.thinkaurelius.titan.core.{ TitanFactory, TitanGraph }
 import com.tinkerpop.blueprints.util.wrappers.id.IdGraph
-import com.tinkerpop.blueprints.{Graph, Vertex}
+import com.tinkerpop.blueprints.{ Graph, Vertex }
 import org.apache.commons.configuration.BaseConfiguration
 
 /**

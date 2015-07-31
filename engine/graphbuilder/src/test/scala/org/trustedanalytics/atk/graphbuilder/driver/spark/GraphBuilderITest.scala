@@ -23,11 +23,11 @@ import org.trustedanalytics.atk.graphbuilder.parser.rule.RuleParserDSL._
 import org.trustedanalytics.atk.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
 import org.trustedanalytics.atk.graphbuilder.parser.{ ColumnDef, InputSchema }
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, GBVertex, Property }
-import com.trustedanalytics.testutils.TestingTitan
+import org.trustedanalytics.atk.testutils.TestingTitan
 import com.tinkerpop.blueprints.Direction
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ BeforeAndAfter, Matchers }
-import org.trustedanalytics.atk.testutils.{TestingTitan, TestingSparkContextWordSpec}
+import org.trustedanalytics.atk.testutils.{ TestingTitan, TestingSparkContextWordSpec }
 
 import scala.collection.JavaConversions._
 

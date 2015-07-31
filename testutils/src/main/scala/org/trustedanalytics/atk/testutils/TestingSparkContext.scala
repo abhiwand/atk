@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.testutils
 
 import java.util.Date
 
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 
 import scala.concurrent.Lock
 

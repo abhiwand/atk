@@ -17,7 +17,7 @@
 package org.trustedanalytics.atk.testutils
 
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfterAll, WordSpec}
+import org.scalatest.{ BeforeAndAfterAll, WordSpec }
 
 trait TestingSparkContextWordSpec extends WordSpec with BeforeAndAfterAll {
 
