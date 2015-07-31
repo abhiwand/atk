@@ -22,10 +22,10 @@ import org.trustedanalytics.atk.graphbuilder.elements.GBEdge
 import org.trustedanalytics.atk.graphbuilder.util.SerializableBaseConfiguration
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, GBVertex, Property }
 import org.trustedanalytics.atk.graphbuilder.graph.titan.TitanGraphConnector
-import com.trustedanalytics.testutils.DirectoryUtils
 import com.thinkaurelius.titan.core.TitanVertex
 import org.apache.hadoop.io.NullWritable
 import org.scalatest.{ BeforeAndAfterAll, Suite }
+import org.trustedanalytics.atk.testutils.DirectoryUtils
 
 import scala.collection.JavaConversions._
 

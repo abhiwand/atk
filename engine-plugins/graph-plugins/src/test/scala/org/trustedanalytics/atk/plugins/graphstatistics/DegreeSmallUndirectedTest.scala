@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.plugins.graphstatistics
 
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, Property, GBVertex }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ Matchers, FlatSpec }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * Tests the calculation of undirected degrees on a simple undirected graph.

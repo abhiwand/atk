@@ -17,12 +17,12 @@
 package org.trustedanalytics.atk.graphbuilder.write.titan
 
 import org.trustedanalytics.atk.graphbuilder.schema.{ EdgeLabelDef, GraphSchema, PropertyDef, PropertyType }
-import com.trustedanalytics.testutils.TestingTitan
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints.{ Direction, Edge, Vertex }
 import org.mockito.Mockito._
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfter, Matchers, WordSpec }
 import org.scalatest.mock.MockitoSugar
+import org.trustedanalytics.atk.testutils.TestingTitan
 
 class TitanSchemaWriterTest extends WordSpec with Matchers with MockitoSugar with TestingTitan with BeforeAndAfter {
 

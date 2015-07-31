@@ -20,8 +20,8 @@ import org.trustedanalytics.atk.graphbuilder.elements.Property
 import org.trustedanalytics.atk.graphbuilder.write.titan.TitanIdUtils
 import org.trustedanalytics.atk.graphbuilder.elements._
 import org.trustedanalytics.atk.graphbuilder.write.titan.TitanIdUtils
-import com.trustedanalytics.testutils.TestingTitan
 import org.scalatest.{ BeforeAndAfter, Matchers, WordSpec }
+import org.trustedanalytics.atk.testutils.TestingTitan
 
 class VertexDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAndAfter {
 

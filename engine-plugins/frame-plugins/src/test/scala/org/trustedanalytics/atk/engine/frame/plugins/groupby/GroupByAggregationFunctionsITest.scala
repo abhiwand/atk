@@ -19,11 +19,11 @@ package org.trustedanalytics.atk.engine.frame.plugins.groupby
 import org.trustedanalytics.atk.domain.frame.GroupByAggregationArgs
 import org.trustedanalytics.atk.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
-import com.trustedanalytics.testutils.MatcherUtils._
+import org.trustedanalytics.atk.testutils.{TestingSparkContextFlatSpec, MatcherUtils}
+import MatcherUtils._
 
 import scala.math.BigDecimal.RoundingMode
 

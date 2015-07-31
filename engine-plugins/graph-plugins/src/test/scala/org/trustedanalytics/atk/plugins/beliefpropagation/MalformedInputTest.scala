@@ -17,10 +17,10 @@
 package org.trustedanalytics.atk.plugins.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkException
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * Tests that check that bad inputs and arguments will raise the appropriate exceptions.

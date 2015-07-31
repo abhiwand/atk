@@ -17,12 +17,12 @@
 package org.trustedanalytics.atk.engine.frame.plugins
 
 import org.trustedanalytics.atk.engine.frame.MiscFrameFunctions
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql
 import org.apache.spark.sql.Row
 import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Matchers }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class DropDuplicatesArgsITest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContextFlatSpec {
   "removeDuplicatesByKey" should "keep only 1 rows per key" in {

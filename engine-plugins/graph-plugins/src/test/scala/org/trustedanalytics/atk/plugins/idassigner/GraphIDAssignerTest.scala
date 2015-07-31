@@ -20,7 +20,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class GraphIDAssignerTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

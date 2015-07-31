@@ -19,8 +19,8 @@ package org.trustedanalytics.atk.graphbuilder.driver.spark.rdd
 import org.trustedanalytics.atk.graphbuilder.elements.GBEdge
 import org.trustedanalytics.atk.graphbuilder.driver.spark.rdd.GraphBuilderRddImplicits._
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, GBVertex, _ }
-import com.trustedanalytics.testutils.TestingSparkContextWordSpec
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextWordSpec
 
 class GraphElementRddFunctionsITest extends TestingSparkContextWordSpec with Matchers {
 

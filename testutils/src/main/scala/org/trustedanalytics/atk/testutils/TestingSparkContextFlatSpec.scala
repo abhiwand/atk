@@ -14,23 +14,23 @@
 // limitations under the License.
 */
 
-package com.trustedanalytics.testutils
+package org.trustedanalytics.atk.testutils
 
 import org.apache.spark.SparkContext
-import org.scalatest.{ FunSuite, BeforeAndAfterAll }
+import org.scalatest.{BeforeAndAfter, FlatSpec}
 
-trait TestingSparkContextFunSuite extends FunSuite with BeforeAndAfterAll {
+trait TestingSparkContextFlatSpec extends FlatSpec with BeforeAndAfter {
 
   var sparkContext: SparkContext = null
 
-  override def beforeAll() = {
+  before {
     sparkContext = TestingSparkContext.sparkContext
   }
 
   /**
    * Clean up after the test is done
    */
-  override def afterAll() = {
+  after {
     TestingSparkContext.cleanUp()
     sparkContext = null
   }

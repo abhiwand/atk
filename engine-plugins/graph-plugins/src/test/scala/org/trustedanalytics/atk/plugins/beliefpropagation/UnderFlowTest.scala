@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.plugins.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.trustedanalytics.atk.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * This test makes sure that we do not get underflow errors which cause some posteriors to become all zero vectors.

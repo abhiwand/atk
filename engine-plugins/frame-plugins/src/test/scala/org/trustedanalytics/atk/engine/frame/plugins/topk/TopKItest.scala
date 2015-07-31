@@ -18,9 +18,9 @@ package org.trustedanalytics.atk.engine.frame.plugins.topk
 
 import org.trustedanalytics.atk.domain.schema.DataTypes
 import org.trustedanalytics.atk.engine.frame.plugins.topk.TopKRddFunctions.CountPair
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql.Row
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class TopKItest extends TestingSparkContextFlatSpec with Matchers {
   val inputList = List(

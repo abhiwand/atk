@@ -17,10 +17,10 @@
 package org.trustedanalytics.atk.engine.graph.plugins
 
 import org.trustedanalytics.atk.domain.schema._
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class FilterVerticesTest extends TestingSparkContextFlatSpec with Matchers {
 

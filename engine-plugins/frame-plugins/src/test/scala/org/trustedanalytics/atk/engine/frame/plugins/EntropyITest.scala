@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.engine.frame.plugins
 
 import org.trustedanalytics.atk.domain.schema.{ Column, DataTypes }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql.Row
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * Tests the entropy functions.

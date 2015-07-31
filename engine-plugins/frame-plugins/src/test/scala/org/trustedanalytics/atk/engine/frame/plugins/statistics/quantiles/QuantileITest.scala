@@ -16,11 +16,11 @@
 
 package org.trustedanalytics.atk.engine.frame.plugins.statistics.quantiles
 
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class QuantileITest extends TestingSparkContextFlatSpec with Matchers {
   "Calculation quantile in small data set" should "return the correct values" in {

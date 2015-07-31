@@ -17,8 +17,8 @@
 package org.trustedanalytics.atk.engine.frame.plugins.statistics
 
 import org.scalatest.{ BeforeAndAfter, Matchers }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * Exercises the order statistics engine through some happy paths and a few corner cases (primarily for the case of

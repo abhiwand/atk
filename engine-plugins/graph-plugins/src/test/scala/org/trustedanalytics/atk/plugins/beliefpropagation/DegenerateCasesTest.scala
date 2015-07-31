@@ -19,9 +19,9 @@ package org.trustedanalytics.atk.plugins.beliefpropagation
 import org.trustedanalytics.atk.plugins.testutils.ApproximateVertexEquality
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.trustedanalytics.atk.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.apache.spark.rdd.RDD
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * These tests make sure that belief propagation can correctly handle graphs with no edges and even graphs with

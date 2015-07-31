@@ -18,10 +18,10 @@ package org.trustedanalytics.atk.engine.frame.plugins.statistics.correlation
 
 import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema, DataTypes }
 import org.apache.spark.frame.FrameRdd
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class CorrelationMatrixTest extends TestingSparkContextFlatSpec with Matchers {
   "correlation matrix calculations" should "return the correct values" in {

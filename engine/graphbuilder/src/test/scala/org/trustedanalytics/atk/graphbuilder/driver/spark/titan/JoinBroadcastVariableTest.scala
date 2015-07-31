@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.graphbuilder.driver.spark.titan
 
 import org.trustedanalytics.atk.graphbuilder.elements.Property
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class JoinBroadcastVariableTest extends TestingSparkContextFlatSpec with Matchers with MockitoSugar {
   val personIds: List[(Property, AnyRef)] = List(

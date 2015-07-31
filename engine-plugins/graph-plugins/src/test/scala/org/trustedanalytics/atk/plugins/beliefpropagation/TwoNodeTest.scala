@@ -19,8 +19,8 @@ package org.trustedanalytics.atk.plugins.beliefpropagation
 import org.trustedanalytics.atk.plugins.testutils.ApproximateVertexEquality
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ Matchers, FlatSpec }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.trustedanalytics.atk.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * These tests validate loopy belief propagation on two node graphs.

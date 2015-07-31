@@ -18,10 +18,10 @@ package org.trustedanalytics.atk.engine.frame.plugins.statistics.covariance
 
 import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema, DataTypes }
 import org.apache.spark.frame.FrameRdd
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
 import org.apache.spark.sql.Row
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class CovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {
   val inputArray: Array[Array[Double]] = Array(Array(90.0, 60.0, 90.0), Array(90.0, 90.0, 30.0),

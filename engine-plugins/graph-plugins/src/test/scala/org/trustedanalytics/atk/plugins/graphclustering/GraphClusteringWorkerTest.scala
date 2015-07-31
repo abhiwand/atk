@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.plugins.graphclustering
 
 import org.trustedanalytics.atk.graphbuilder.util.SerializableBaseConfiguration
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.scalatest.{ FlatSpec, Matchers }
 import org.apache.spark.rdd.RDD
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 case class GraphClusteringStorageMock() extends GraphClusteringStorageInterface {
   val mockNodeId = 100

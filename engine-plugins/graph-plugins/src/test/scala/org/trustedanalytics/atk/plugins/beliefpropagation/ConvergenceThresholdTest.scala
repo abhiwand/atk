@@ -18,10 +18,10 @@ package org.trustedanalytics.atk.plugins.beliefpropagation
 
 import org.trustedanalytics.atk.plugins.testutils.ApproximateVertexEquality
 import org.scalatest.{ Matchers, FlatSpec }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
 import org.trustedanalytics.atk.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * "Convergence threshold" in our system:

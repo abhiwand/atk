@@ -16,12 +16,12 @@
  */
 package org.apache.spark.mllib.classification
 
-import com.trustedanalytics.testutils.TestingSparkContextFunSuite
 import org.apache.spark.mllib.linalg.{ Vector, Vectors }
 import org.apache.spark.mllib.regression.LabeledPointWithFrequency
 import org.apache.spark.mllib.util.TestingUtils._
 import org.apache.spark.util.Utils
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFunSuite
 
 import scala.collection.JavaConversions._
 import scala.util.Random

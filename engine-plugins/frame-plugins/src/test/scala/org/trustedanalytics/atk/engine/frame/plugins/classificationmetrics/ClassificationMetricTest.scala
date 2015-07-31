@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.engine.frame.plugins.classificationmetrics
 
 import org.trustedanalytics.atk.engine.frame.plugins.ClassificationMetrics
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql.Row
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class ClassificationMetricTest extends TestingSparkContextFlatSpec with Matchers {
 

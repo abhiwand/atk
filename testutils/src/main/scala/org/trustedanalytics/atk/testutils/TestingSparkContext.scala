@@ -14,11 +14,13 @@
 // limitations under the License.
 */
 
-package com.trustedanalytics.testutils
+package org.trustedanalytics.atk.testutils
+
+import java.util.Date
+
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.concurrent.Lock
-import org.apache.spark.{ SparkConf, SparkContext }
-import java.util.Date
 
 /**
  * Don't use this class directly!!  Use the FlatSpec or WordSpec version for your tests

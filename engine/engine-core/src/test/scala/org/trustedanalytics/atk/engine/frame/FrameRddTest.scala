@@ -17,10 +17,10 @@
 package org.trustedanalytics.atk.engine.frame
 
 import org.trustedanalytics.atk.domain.schema._
-import com.trustedanalytics.testutils.TestingSparkContextWordSpec
 import org.apache.spark.sql.types.{ StringType, IntegerType }
 import org.scalatest.Matchers
 import org.apache.spark.frame.FrameRdd
+import org.trustedanalytics.atk.testutils.TestingSparkContextWordSpec
 
 import scala.collection.JavaConversions._
 

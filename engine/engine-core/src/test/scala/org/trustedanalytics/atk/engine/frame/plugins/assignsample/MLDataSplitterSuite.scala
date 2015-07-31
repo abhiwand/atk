@@ -17,8 +17,8 @@
 package org.trustedanalytics.atk.engine.frame.plugins.assignsample
 
 import org.trustedanalytics.atk.engine.frame.plugins.MLDataSplitter
-import com.trustedanalytics.testutils.TestingSparkContextFunSuite
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFunSuite
 
 import scala.util.Random
 

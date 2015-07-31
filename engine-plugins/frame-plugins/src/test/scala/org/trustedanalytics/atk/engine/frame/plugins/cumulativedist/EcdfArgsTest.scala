@@ -16,10 +16,10 @@
 
 package org.trustedanalytics.atk.engine.frame.plugins.cumulativedist
 
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.sql.Row
 import org.scalatest.Matchers
 import org.trustedanalytics.atk.domain.schema.{ DataTypes, Column }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class EcdfArgsTest extends TestingSparkContextFlatSpec with Matchers {
 

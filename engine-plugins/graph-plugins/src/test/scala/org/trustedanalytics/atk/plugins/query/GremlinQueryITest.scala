@@ -16,8 +16,8 @@
 
 package org.trustedanalytics.atk.plugins.query
 
-import com.trustedanalytics.testutils.MatcherUtils._
-import com.trustedanalytics.testutils.TestingTitan
+import org.trustedanalytics.atk.testutils.{TestingTitan, MatcherUtils}
+import MatcherUtils._
 import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
 import spray.json.JsNumber
 

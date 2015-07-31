@@ -20,10 +20,10 @@ import org.trustedanalytics.atk.graphbuilder.driver.spark.rdd.GraphBuilderRddImp
 import org.trustedanalytics.atk.graphbuilder.parser.rule.RuleParserDSL._
 import org.trustedanalytics.atk.graphbuilder.parser.rule.{ EdgeRule, EdgeRuleParser, VertexRule, VertexRuleParser }
 import org.trustedanalytics.atk.graphbuilder.parser.{ ColumnDef, CombinedParser, InputSchema }
-import com.trustedanalytics.testutils.TestingSparkContextWordSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
+import org.trustedanalytics.atk.testutils.TestingSparkContextWordSpec
 
 class ParserRddFunctionsITest extends TestingSparkContextWordSpec with Matchers with MockitoSugar {
 

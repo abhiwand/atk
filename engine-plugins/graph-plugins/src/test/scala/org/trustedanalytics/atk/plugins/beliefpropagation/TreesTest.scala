@@ -20,8 +20,8 @@ import org.trustedanalytics.atk.plugins.VectorMath
 import org.trustedanalytics.atk.plugins.testutils.ApproximateVertexEquality
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ Matchers, FlatSpec }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.trustedanalytics.atk.graphbuilder.elements.{ Property, GBVertex, GBEdge }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * For graphs that are trees, belief propagation is known to converge to the exact solution with a number of iterations

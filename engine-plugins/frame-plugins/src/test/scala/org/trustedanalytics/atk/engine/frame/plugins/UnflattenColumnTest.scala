@@ -18,10 +18,10 @@ package org.trustedanalytics.atk.engine.frame.plugins.unflattencolumn
 
 import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema, DataTypes }
 import org.trustedanalytics.atk.engine.frame.plugins.UnflattenColumnFunctions
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.Row
 import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Matchers }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class UnflattenColumnTest extends FlatSpec with Matchers with BeforeAndAfterEach with TestingSparkContextFlatSpec {
   private val nameColumn = "name"

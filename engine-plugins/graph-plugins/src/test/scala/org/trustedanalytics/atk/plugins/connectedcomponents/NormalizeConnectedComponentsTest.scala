@@ -20,10 +20,10 @@ import org.scalatest.Matchers
 
 import java.util.Date
 import org.apache.spark.SparkContext
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 import scala.concurrent.Lock
 import org.scalatest.{ FlatSpec, BeforeAndAfter }
 import org.apache.log4j.{ Logger, Level }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 
 class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

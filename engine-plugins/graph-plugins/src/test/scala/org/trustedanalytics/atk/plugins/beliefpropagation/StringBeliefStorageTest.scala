@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.plugins.beliefpropagation
 
 import org.scalatest.{ Matchers, FlatSpec }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.apache.spark.rdd.RDD
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * This test verifies that the priors and posteriors can be read and stored as comma delimited lists in properties.

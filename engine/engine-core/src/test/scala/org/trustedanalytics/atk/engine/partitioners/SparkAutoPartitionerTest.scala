@@ -18,10 +18,10 @@ package org.trustedanalytics.atk.engine.partitioners
 
 import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema, DataTypes, Schema }
 import org.trustedanalytics.atk.engine.HdfsFileStorage
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class SparkAutoPartitionerTest extends TestingSparkContextFlatSpec with MockitoSugar {
 

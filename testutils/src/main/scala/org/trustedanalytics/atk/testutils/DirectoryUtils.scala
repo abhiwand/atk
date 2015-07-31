@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package com.trustedanalytics.testutils
+package org.trustedanalytics.atk.testutils
 
 import java.io.File
 

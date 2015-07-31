@@ -14,12 +14,12 @@
 // limitations under the License.
 */
 
-package com.trustedanalytics.testutils
+package org.trustedanalytics.atk.testutils
 
-import org.scalatest.{ BeforeAndAfterAll, WordSpec }
 import org.apache.spark.SparkContext
+import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
-trait TestingSparkContextWordSpec extends WordSpec with BeforeAndAfterAll {
+trait TestingSparkContextFunSuite extends FunSuite with BeforeAndAfterAll {
 
   var sparkContext: SparkContext = null
 

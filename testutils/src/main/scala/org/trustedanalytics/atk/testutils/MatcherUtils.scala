@@ -14,14 +14,15 @@
 // limitations under the License.
 */
 
-package com.trustedanalytics.testutils
+package org.trustedanalytics.atk.testutils
 
 import breeze.linalg.DenseMatrix
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONTokens
-import com.tinkerpop.blueprints.{ Direction, Edge, Vertex }
+import com.tinkerpop.blueprints.{Direction, Edge, Vertex}
 import org.scalatest.Matchers
-import org.scalatest.matchers.{ MatchResult, Matcher }
+import org.scalatest.matchers.{MatchResult, Matcher}
 import spray.json._
+
 import scala.collection.JavaConverters._
 
 object MatcherUtils extends Matchers {

@@ -18,8 +18,8 @@ package org.trustedanalytics.atk.engine.frame.plugins.dotproduct
 
 import org.trustedanalytics.atk.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
-import com.trustedanalytics.testutils.MatcherUtils._
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
+import org.trustedanalytics.atk.testutils.{TestingSparkContextFlatSpec, MatcherUtils}
+import MatcherUtils._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers

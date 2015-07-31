@@ -17,8 +17,8 @@
 package org.trustedanalytics.atk.engine.frame.plugins.statistics
 
 import org.scalatest.Matchers
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * Tests the frequency statistics package through several corner cases and bad-data cases, as well as "happy path"

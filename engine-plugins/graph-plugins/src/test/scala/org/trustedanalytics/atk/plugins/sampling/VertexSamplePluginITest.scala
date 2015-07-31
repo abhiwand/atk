@@ -19,8 +19,9 @@ package org.trustedanalytics.atk.plugins.sampling
 import org.trustedanalytics.atk.graphbuilder.util.SerializableBaseConfiguration
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.trustedanalytics.atk.graphbuilder.graph.titan.TitanGraphConnector
-import com.trustedanalytics.testutils.{ TestingSparkContextWordSpec, TestingTitan }
+import com.trustedanalytics.testutils.TestingTitan
 import org.scalatest.{ BeforeAndAfter, Matchers }
+import org.trustedanalytics.atk.testutils.{TestingTitan, TestingSparkContextWordSpec}
 
 import scala.collection.JavaConversions._
 

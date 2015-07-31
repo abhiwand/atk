@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.plugins.communitydetection.kclique
 
 import org.trustedanalytics.atk.plugins.communitydetection.kclique.datatypes.VertexSet
 import org.scalatest.{ Matchers, FlatSpec, FunSuite }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class VertexCommunityAssignerTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

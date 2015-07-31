@@ -18,8 +18,8 @@ package org.trustedanalytics.atk.plugins.query
 
 import java.util
 
-import com.trustedanalytics.testutils.MatcherUtils._
-import com.trustedanalytics.testutils.TestingTitan
+import org.trustedanalytics.atk.testutils.{TestingTitan, MatcherUtils}
+import MatcherUtils._
 import com.tinkerpop.blueprints.{ Edge, Element, Vertex }
 import com.tinkerpop.pipes.util.structures.Row
 import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }

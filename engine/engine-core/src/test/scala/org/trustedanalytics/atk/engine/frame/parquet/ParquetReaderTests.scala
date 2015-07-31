@@ -19,7 +19,7 @@ package org.trustedanalytics.atk.engine.frame.parquet
 import java.io.File
 
 import org.trustedanalytics.atk.engine.HdfsFileStorage
-import com.trustedanalytics.testutils.{ TestingSparkContext, TestingSparkContextWordSpec }
+import com.trustedanalytics.testutils.TestingSparkContextWordSpec
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.spark.SparkContext
@@ -29,6 +29,7 @@ import org.mockito.stubbing.Answer
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
+import org.trustedanalytics.atk.testutils.DirectoryUtils
 import parquet.column.page.PageReadStore
 import parquet.column.{ ColumnDescriptor, ColumnReadStore, ColumnReader }
 import parquet.hadoop.{ Footer, ParquetFileReader }
@@ -36,7 +37,7 @@ import parquet.hadoop.metadata.{ FileMetaData, ParquetMetadata, BlockMetaData }
 import parquet.schema.{ MessageType, PrimitiveType, OriginalType }
 import parquet.schema.PrimitiveType.PrimitiveTypeName
 import scala.collection.JavaConverters._
-import com.trustedanalytics.testutils.DirectoryUtils._
+import DirectoryUtils._
 
 import org.mockito.Matchers._
 

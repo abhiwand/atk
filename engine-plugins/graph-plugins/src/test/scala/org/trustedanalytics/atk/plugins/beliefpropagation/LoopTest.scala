@@ -19,8 +19,8 @@ package org.trustedanalytics.atk.plugins.beliefpropagation
 import org.trustedanalytics.atk.plugins.testutils.ApproximateVertexEquality
 import org.trustedanalytics.atk.graphbuilder.elements.{ Property, GBVertex, GBEdge }
 import org.scalatest.{ Matchers, FlatSpec }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * These test cases validate that belief propagation works correctly on (very simple) graphs that contain loops.

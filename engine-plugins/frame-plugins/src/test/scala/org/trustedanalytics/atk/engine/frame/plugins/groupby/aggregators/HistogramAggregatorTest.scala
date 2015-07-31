@@ -17,7 +17,8 @@
 package org.trustedanalytics.atk.engine.frame.plugins.groupby.aggregators
 
 import org.trustedanalytics.atk.domain.schema.DataTypes
-import com.trustedanalytics.testutils.MatcherUtils._
+import org.trustedanalytics.atk.testutils.MatcherUtils
+import MatcherUtils._
 
 import org.scalatest.{ Matchers, FlatSpec }
 

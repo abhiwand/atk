@@ -18,9 +18,9 @@ package org.trustedanalytics.atk.plugins.communitydetection.kclique
 
 import org.trustedanalytics.atk.plugins.communitydetection.kclique.datatypes.{ Clique, CliqueExtension, VertexSet }
 import org.trustedanalytics.atk.plugins.communitydetection.kclique.datatypes.Clique
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * This test validates that the GraphGenerator correctly constructs a clique-shadow graph as follows:

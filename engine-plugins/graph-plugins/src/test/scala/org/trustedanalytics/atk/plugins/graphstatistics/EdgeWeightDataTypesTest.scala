@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.plugins.graphstatistics
 
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, GBVertex, Property }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.scalatest.{ FlatSpec, Matchers }
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * This test checks that edge weight calculations can be performed correctly when the edge properties contain

@@ -16,11 +16,11 @@
 
 package org.trustedanalytics.atk.engine.frame.plugins.bincolumn
 
-import com.trustedanalytics.testutils.TestingSparkContextWordSpec
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextWordSpec
 
 class HistogramTests extends TestingSparkContextWordSpec with Matchers {
   "Histogram" should {

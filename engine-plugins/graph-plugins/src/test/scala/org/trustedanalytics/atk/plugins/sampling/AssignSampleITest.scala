@@ -17,9 +17,9 @@
 package org.trustedanalytics.atk.plugins.sampling
 
 import org.trustedanalytics.atk.graphbuilder.elements.{ Property, GBVertex }
-import com.trustedanalytics.testutils.TestingSparkContextWordSpec
 import org.scalatest.Matchers
-import com.trustedanalytics.testutils.{ TestingSparkContextWordSpec, TestingTitan }
+import com.trustedanalytics.testutils.TestingTitan
+import org.trustedanalytics.atk.testutils.TestingSparkContextWordSpec
 
 class AssignSampleITest extends TestingSparkContextWordSpec with Matchers {
 

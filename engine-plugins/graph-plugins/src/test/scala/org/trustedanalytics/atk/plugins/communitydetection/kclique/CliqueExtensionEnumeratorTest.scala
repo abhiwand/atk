@@ -18,9 +18,9 @@ package org.trustedanalytics.atk.plugins.communitydetection.kclique
 
 import org.trustedanalytics.atk.plugins.communitydetection.kclique.datatypes.{ Clique, CliqueExtension, Edge }
 import org.scalatest.{ Matchers, FlatSpec }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.trustedanalytics.atk.plugins.communitydetection.kclique.datatypes.Clique
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class CliqueExtensionEnumeratorTest extends FlatSpec with Matchers with TestingSparkContextFlatSpec {
 

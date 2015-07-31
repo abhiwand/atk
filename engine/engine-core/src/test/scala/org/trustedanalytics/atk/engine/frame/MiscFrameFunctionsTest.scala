@@ -16,8 +16,8 @@
 
 package org.trustedanalytics.atk.engine.frame
 
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 import scala.collection.mutable.ArrayBuffer
 

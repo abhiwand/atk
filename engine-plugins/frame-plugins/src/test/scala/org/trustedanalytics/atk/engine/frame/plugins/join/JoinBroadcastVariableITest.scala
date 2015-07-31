@@ -17,11 +17,11 @@
 package org.trustedanalytics.atk.engine.frame.plugins.join
 
 import org.trustedanalytics.atk.domain.schema.{ Column, DataTypes, FrameSchema }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class JoinBroadcastVariableITest extends TestingSparkContextFlatSpec with Matchers {
   val idCountryNames: List[Row] = List(

@@ -18,10 +18,10 @@ package org.trustedanalytics.atk.engine.frame.plugins.statistics.descriptives
 
 import org.trustedanalytics.atk.domain.frame.{ ColumnFullStatisticsReturn, ColumnMedianReturn, ColumnSummaryStatisticsReturn }
 import org.trustedanalytics.atk.domain.schema.DataTypes
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.scalatest.Matchers
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 /**

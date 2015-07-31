@@ -16,8 +16,8 @@
 
 package org.trustedanalytics.atk.plugins.query
 
-import com.trustedanalytics.testutils.TestingTitan
-import com.trustedanalytics.testutils.MatcherUtils._
+import org.trustedanalytics.atk.testutils.{TestingTitan, MatcherUtils}
+import MatcherUtils._
 import com.tinkerpop.blueprints.util.io.graphson.GraphSONMode
 import com.tinkerpop.blueprints.{ Edge, Element, Vertex }
 import com.tinkerpop.pipes.util.structures.Row

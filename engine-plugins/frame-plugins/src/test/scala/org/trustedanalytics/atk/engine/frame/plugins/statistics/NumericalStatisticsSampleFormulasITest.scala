@@ -17,8 +17,8 @@
 package org.trustedanalytics.atk.engine.frame.plugins.statistics
 
 import org.scalatest.Matchers
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.trustedanalytics.atk.engine.frame.plugins.statistics.numericalstatistics.NumericalStatistics
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 class NumericalStatisticsSampleFormulasITest extends TestingSparkContextFlatSpec with Matchers {
 

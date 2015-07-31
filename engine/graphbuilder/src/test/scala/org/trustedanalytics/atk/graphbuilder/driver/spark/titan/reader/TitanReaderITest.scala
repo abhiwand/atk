@@ -20,13 +20,13 @@ import org.trustedanalytics.atk.graphbuilder.driver.spark.rdd.GraphBuilderRddImp
 import org.trustedanalytics.atk.graphbuilder.driver.spark.rdd.TitanReaderRdd
 import org.trustedanalytics.atk.graphbuilder.driver.spark.titan.reader.TitanReaderTestData._
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBVertex, GBEdge, GraphElement }
-import com.trustedanalytics.testutils.TestingSparkContextWordSpec
 import com.thinkaurelius.titan.hadoop.FaunusVertex
 import org.apache.hadoop.hbase.CellUtil
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.io.NullWritable
 import org.scalatest.{ Matchers, WordSpec }
+import org.trustedanalytics.atk.testutils.TestingSparkContextWordSpec
 
 import scala.collection.JavaConversions._
 

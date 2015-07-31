@@ -19,9 +19,9 @@ package org.trustedanalytics.atk.graphbuilder.write.dao
 import org.trustedanalytics.atk.graphbuilder.elements.GBEdge
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.trustedanalytics.atk.graphbuilder.write.titan.TitanIdUtils.titanId
-import com.trustedanalytics.testutils.TestingTitan
 import com.tinkerpop.blueprints.Direction
 import org.scalatest.{ BeforeAndAfter, Matchers, WordSpec }
+import org.trustedanalytics.atk.testutils.TestingTitan
 
 class EdgeDAOTest extends WordSpec with Matchers with TestingTitan with BeforeAndAfter {
 

@@ -18,9 +18,9 @@ package org.trustedanalytics.atk.plugins.communitydetection.kclique
 
 import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, Property, GBVertex }
 import org.scalatest.{ Matchers, FlatSpec }
-import com.trustedanalytics.testutils.TestingSparkContextFlatSpec
 import org.apache.spark.rdd.RDD
 import org.trustedanalytics.atk.plugins.communitydetection.kclique.datatypes.Clique
+import org.trustedanalytics.atk.testutils.TestingSparkContextFlatSpec
 
 /**
  * This test checks that end-to-end run of k-clique percolation works with k = 3 on a small graph consisting of
