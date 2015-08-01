@@ -66,4 +66,4 @@ case class SupernodeFinder[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
     if (rows.size > 0) totalSize / rows.size else 0d
   }
 
- }
+}

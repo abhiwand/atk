@@ -10,8 +10,12 @@ Best Known Methods (Admin)
 Configuration information
 -------------------------
 
-.. include:: ad_gitune.inc
-.. include:: ad_hbtune.inc
+.. toctree::
+    :maxdepth: 1
+
+    ad_cluster_configuration
+    ad_gitune
+    ad_hbtune
 
 .. Outdated 20150728::
 
