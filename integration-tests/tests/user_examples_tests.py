@@ -29,7 +29,7 @@ class UserExamples(unittest.TestCase):
 
     def test_pr(self):
         import trustedanalytics.examples.pr as pr
-        vars = pr.run("/datasets/movie_data_random.csv")
+        vars = pr.run("/datasets/movie_data_random.csv", ia)
 
         assert vars["frame"].row_count == 20
         assert vars["frame"].name == "PR" and vars["graph"].name == "PR"

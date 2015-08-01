@@ -1,5 +1,5 @@
 def connect():
-    import taprootanalytics as ta
+    import trustedanalytics as ta
 
     ta.connect()
 
