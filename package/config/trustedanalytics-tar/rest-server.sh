@@ -12,6 +12,7 @@ echo $DIR
 
 LAUNCHER=$DIR/../launcher.jar
 LAUNCHER=$DIR/../conf/logback.xml:$LAUNCHER
+LAUNCHER=$DIR/../conf:$LAUNCHER
 echo "Downloading jquery exectuable to parse environment variables"
 
 jq=$DIR/../jq
