@@ -24,13 +24,6 @@ import spray.json._
 import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
- * Parameters
- * ----------
- * name : str (optional)
- *   The name for the copy of the graph.
- *   Default is None.
- */
-/**
  * Makes a copy of the existing graph
  */
 @PluginDoc(oneLine = "Make a copy of the current graph.",

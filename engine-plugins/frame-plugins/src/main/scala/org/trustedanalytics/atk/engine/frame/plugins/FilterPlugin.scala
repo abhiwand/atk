@@ -29,9 +29,9 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Select all rows which satisfy a predicate
  */
-@PluginDoc(oneLine = "<TBD>",
-  extended = "<TBD>",
-  returns = "<TBD>")
+@PluginDoc(oneLine = "Select all rows which satisfy a predicate.",
+  extended = """Modifies the current frame to save defined rows and
+delete everything else.""")
 class FilterPlugin extends SparkCommandPlugin[FilterArgs, FrameEntity] {
 
   /**

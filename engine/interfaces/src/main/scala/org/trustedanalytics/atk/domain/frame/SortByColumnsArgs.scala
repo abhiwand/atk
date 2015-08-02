@@ -20,10 +20,10 @@ import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Arguments for SortByColumns - a list of columns to sort on
- * @param frame the frame to modify
- * @param columnNamesAndAscending column names to sort by, true for ascending, false for descending
  */
-case class SortByColumnsArgs(frame: FrameReference, columnNamesAndAscending: List[(String, Boolean)]) {
+case class SortByColumnsArgs(@ArgDoc("""The frame to modify.""") frame: FrameReference,
+                             @ArgDoc("""Column names to sort by, true for ascending,
+false for descending.""") columnNamesAndAscending: List[(String, Boolean)]) {
   require(frame != null, "frame is required")
   require(columnNamesAndAscending != null && columnNamesAndAscending.nonEmpty, "one or more columnNames is required")
 }

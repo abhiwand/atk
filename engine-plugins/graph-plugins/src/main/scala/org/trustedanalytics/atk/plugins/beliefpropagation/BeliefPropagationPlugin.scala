@@ -74,8 +74,8 @@ import BeliefPropagationJsonFormat._
 /**
  * Launches "loopy" belief propagation.
  *
- * Pulls graph from underlying store, sends it off to the LBP runner, and then sends results back to the underlying
- * store.
+ * Pulls graph from underlying store, sends it off to the LBP runner, and then sends results
+ * back to the underlying store.
  *
  * Right now it is using only Titan for graph storage. In time we will hopefully make this more flexible.
  *
@@ -86,12 +86,8 @@ This algorithm analyzes a graphical model with prior beliefs using sum product m
 The priors are read from a property in the graph, the posteriors are written to another property in the graph.
 This is the GraphX-based implementation of belief propagation.
 
-.. index::
-    single: label propagation
-    single: LP
-
-Label Propagation (LP)
-======================
+|
+**Label Propagation (LP)**
 
 Label propagation (LP) is a message passing technique for inputing or
 :term:`smoothing` labels in partially-labelled datasets.
@@ -104,20 +100,15 @@ closer points having a higher weight (stronger influence
 on posterior estimates) than points farther away.
 LP has been used for many problems, particularly those involving a similarity
 measure between data points.
-Our implementation is based on Zhu and Ghahramani's 2002 paper, "Learning from
-labeled and unlabeled data" [#LP1]_.
+Our implementation is based on Zhu and Ghahramani's 2002 paper,
+`Learning from labeled and unlabeled data. <http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf>`__.
 
-.. index::
-    pair: algorithm; label propagation
-
-The Label Propagation Algorithm:
---------------------------------
+**The Label Propagation Algorithm**
 
 In LP, all nodes start with a prior distribution of states and the initial
 messages vertices pass to their neighbors are simply their prior beliefs.
 If certain observations have states that are known deterministically, they can
-be given a prior probability of 100% for their true state and 0% for
-all others.
+be given a prior probability of 100% for their true state and 0% for all others.
 Unknown observations should be given uninformative priors.
 
 Each node, :math:`i`, receives messages from its :math:`k` neighbors and
@@ -164,18 +155,11 @@ The cost function for a node is given by:
     - prior_{i} \big) ^{2} \Big]
 
 
-Convergence is a local phenomenon; not all nodes will converge at the same
-time.
-It is also possible that some (most) nodes will converge and others will not
-converge.
-The algorithm requires all nodes to converge before declaring global
-convergence.
+Convergence is a local phenomenon; not all nodes will converge at the same time.
+It is also possible that some (most) nodes will converge and others will not converge.
+The algorithm requires all nodes to converge before declaring global convergence.
 If this condition is not met, the algorithm will continue up to the maximum
 number of :term:`supersteps`.
-
-.. rubric:: footnotes
-.. [#LP1] http://www.cs.cmu.edu/~zhuxj/pub/CMU-CALD-02-107.pdf
-
 """,
   returns = "Progress report for belief propagation in the format of a multiple-line string.")
 class BeliefPropagationPlugin extends SparkCommandPlugin[BeliefPropagationArgs, BeliefPropagationResult] {

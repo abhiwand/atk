@@ -22,9 +22,7 @@ import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Command for dropping duplicates rows per uniqueness criteria match
- * @param frame data frame
- * @param unique_columns the key columns for identifying duplicates
  */
-case class DropDuplicatesArgs(frame: FrameReference,
+case class DropDuplicatesArgs(@ArgDoc("""<TBD>""") frame: FrameReference,
                               @ArgDoc("""Column name(s) to identify duplicates.
 Default is the entire row is compared.""") unique_columns: Option[SingletonOrListValue[String]] = None)
