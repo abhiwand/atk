@@ -16,9 +16,9 @@
 
 package org.apache.spark.atk.graph
 
-import com.intel.taproot.graphbuilder.elements.{ GBEdge, Property => GBProperty, GBVertex }
-import com.intel.taproot.analytics.domain.schema.{ GraphSchema, EdgeSchema, DataTypes, Schema }
-import com.intel.taproot.analytics.engine.frame.{ AbstractRow, RowWrapper }
+import org.trustedanalytics.atk.graphbuilder.elements.{ GBEdge, Property => GBProperty, GBVertex }
+import org.trustedanalytics.atk.domain.schema.{ GraphSchema, EdgeSchema, DataTypes, Schema }
+import org.trustedanalytics.atk.engine.frame.{ AbstractRow, RowWrapper }
 import org.apache.spark.sql.Row
 
 /**

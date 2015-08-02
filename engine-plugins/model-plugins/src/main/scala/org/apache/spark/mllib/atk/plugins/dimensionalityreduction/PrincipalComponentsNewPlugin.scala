@@ -15,11 +15,11 @@
 */
 package org.apache.spark.mllib.atk.plugins.dimensionalityreduction
 
-import com.intel.taproot.analytics.domain.CreateEntityArgs
-import com.intel.taproot.analytics.domain.model.{ GenericNewModelArgs, ModelEntity }
-import com.intel.taproot.analytics.engine.plugin.{ Invocation, PluginDoc }
-import com.intel.taproot.analytics.engine.plugin.SparkCommandPlugin
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.domain.CreateEntityArgs
+import org.trustedanalytics.atk.domain.model.{ GenericNewModelArgs, ModelEntity }
+import org.trustedanalytics.atk.engine.plugin.{ Invocation, PluginDoc }
+import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 
 @PluginDoc(oneLine = "Create a 'new' instance of principal component model.",

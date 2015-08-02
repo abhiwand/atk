@@ -16,8 +16,8 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame.cf
 
-import com.intel.taproot.giraph.io.{ VertexData4CFWritable, CFVertexId }
-import com.intel.taproot.giraph.cf.CollaborativeFilteringConfiguration
+import org.trustedanalytics.atk.giraph.io.{ VertexData4CFWritable, CFVertexId }
+import org.trustedanalytics.atk.giraph.cf.CollaborativeFilteringConfiguration
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.fs.Path

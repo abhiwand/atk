@@ -18,7 +18,7 @@ package org.apache.spark.mllib.atk.plugins
 
 import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 import org.apache.spark.mllib.atk.plugins.classification.glm.LogisticRegressionData
 import org.apache.spark.mllib.atk.plugins.classification.{ LinearRegressionData, SVMData }

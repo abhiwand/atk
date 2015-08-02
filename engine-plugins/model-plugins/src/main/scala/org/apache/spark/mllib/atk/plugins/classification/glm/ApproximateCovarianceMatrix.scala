@@ -16,7 +16,7 @@
 package org.apache.spark.mllib.atk.plugins.classification.glm
 
 import breeze.linalg.{ DenseMatrix, inv }
-import com.intel.taproot.analytics.domain.schema.{ Column, DataTypes, FrameSchema }
+import org.trustedanalytics.atk.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow

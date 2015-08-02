@@ -16,7 +16,7 @@
 
 package org.apache.spark.engine.spark
 
-import com.intel.taproot.analytics.domain.command.Command
+import org.trustedanalytics.atk.domain.command.Command
 import org.joda.time.DateTime
 import org.scalatest.{ Matchers, WordSpec }
 
@@ -26,9 +26,9 @@ import org.apache.spark.scheduler.SparkListenerStageSubmitted
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.TaskContext
-import com.intel.taproot.analytics.engine.CommandProgressUpdater
+import org.trustedanalytics.atk.engine.CommandProgressUpdater
 import org.apache.spark.engine.SparkProgressListener
-import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
+import org.trustedanalytics.atk.engine.{ ProgressInfo, TaskProgressInfo }
 import org.scalatest.mock.MockitoSugar
 
 import scala.collection.immutable.HashMap

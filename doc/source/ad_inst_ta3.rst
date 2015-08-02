@@ -50,7 +50,7 @@ Configuration Script
         Starting postgresql service:                               [  OK  ]
         0
         initctl: Unknown instance:
-        taprootanalytics-rest-server start/running, process 17484
+        trustedanalytics-rest-server start/running, process 17484
         0
         Waiting for TAProot Analytics server to restart
          .   .   .   .
@@ -118,7 +118,7 @@ Configuration Script
         Starting postgresql service:                               [  OK  ]
         0
         initctl: Unknown instance:
-        taprootanalytics-rest-server start/running, process 17484
+        trustedanalytics-rest-server start/running, process 17484
         0
         Waiting for TAProot Analytics server to restart
          .   .   .   .

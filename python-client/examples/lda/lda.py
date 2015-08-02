@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import taprootanalytics as ia
+import trustedanalytics as ia
 
 ia.connect()
 

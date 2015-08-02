@@ -59,7 +59,7 @@ Setup
     #)  Choose the plus sign *+*.
     #)  Choose *Java* and browse to the |PACKAGE| Python REST Client libraries.
         On RedHat and Centos these are found under
-        '/usr/lib/taprootanalytics/rest-client/python'.
+        '/usr/lib/trustedanalytics/rest-client/python'.
     #)  Choose *classes*.
     #)  Choose *myproject* and click *OK* button.
     #)  Name the library "ta-python-client".
@@ -68,7 +68,7 @@ Setup
 #)  Choose :menuselection:`File --> New --> Python File`.
 #)  Name the file 'test' and type in the following code::
 
-        import taprootanalytics as ta
+        import trustedanalytics as ta
         ta.server.host = "correct host name or IP address"
         ta.connect()
         ta.server.ping()

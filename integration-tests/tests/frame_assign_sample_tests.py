@@ -15,9 +15,9 @@
 #
 
 import unittest
-import taprootanalytics as ia
+import trustedanalytics as ia
 import math
-from taprootanalytics.rest.command import CommandServerError
+from trustedanalytics.rest.command import CommandServerError
 
 # show full stack traces
 ia.errors.show_details = True

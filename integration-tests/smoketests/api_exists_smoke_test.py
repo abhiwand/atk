@@ -15,7 +15,7 @@
 #
 
 import unittest
-import taprootanalytics as ia
+import trustedanalytics as ia
 
 # show full stack traces
 ia.errors.show_details = True
@@ -56,7 +56,7 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'bin_column_equal_depth',
                                       'bin_column_equal_width',
                                       'classification_metrics',
-                                      'collaborative_filtering',
+                                      'collaborative_filtering', 
                                       'column_median',
                                       'column_mode',
                                       'column_names',
@@ -85,8 +85,8 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'histogram',
                                       'inspect',
                                       'join',
-                                      'label_propagation',
-                                      'loopy_belief_propagation',
+                                      'label_propagation', 
+                                      'loopy_belief_propagation', 
                                       'name',
                                       'quantiles',
                                       'rename_columns',
@@ -243,7 +243,6 @@ class ApiExistsSmokeTest(unittest.TestCase):
         self.assert_methods_defined(["name",
                                      "predict",
                                      "train"], ia.KMeansModel)
-
     def test_expected_methods_exist_on_lda_model(self):
         self.assert_methods_defined(["name",
                                     "train"], ia.LdaModel)

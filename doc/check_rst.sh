@@ -11,7 +11,7 @@
 #  REQUIREMENTS: ---
 #          BUGS: ---
 #         NOTES: ---
-#        AUTHOR: Mark Aldrich (rma), robertx.m.aldrich@intel.taproot.com
+#        AUTHOR: Mark Aldrich (rma), robertx.m.aldrich@trustedanalytics.com
 #  ORGANIZATION: 
 #       CREATED: 02/15/2015 14:24
 #      REVISION:  ---

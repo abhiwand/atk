@@ -1,5 +1,5 @@
 #!/bin/bash
-package="taproot-scoring-tar"
+package="trustedanalytics-scoring-tar"
 workDir=$(pwd)
 baseDir=${workDir##*/}
 gitRoot="."
@@ -54,8 +54,8 @@ popd
 
 
 pushd tarballs/$package
-    tar -pczf ../../atk-scoring.tar.gz .
-popd
+    tar -pczf ../../trustedanalytics-scoring.tar.gz .
+pop
 
 
 rm -rf tarballs

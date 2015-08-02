@@ -16,12 +16,12 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame
 
-import com.intel.taproot.giraph.algorithms.lda.CVB0LDAComputation
-import com.intel.taproot.giraph.algorithms.lda.CVB0LDAComputation.{ CVB0LDAAggregatorWriter, CVB0LDAMasterCompute }
-import com.intel.taproot.giraph.lda._
-import com.intel.taproot.analytics.domain.frame.FrameReference
-import com.intel.taproot.analytics.domain.model.ModelReference
-import com.intel.taproot.analytics.domain.schema.FrameSchema
+import org.trustedanalytics.atk.giraph.algorithms.lda.CVB0LDAComputation
+import org.trustedanalytics.atk.giraph.algorithms.lda.CVB0LDAComputation.{ CVB0LDAAggregatorWriter, CVB0LDAMasterCompute }
+import org.trustedanalytics.atk.giraph.lda._
+import org.trustedanalytics.atk.domain.frame.FrameReference
+import org.trustedanalytics.atk.domain.model.ModelReference
+import org.trustedanalytics.atk.domain.schema.FrameSchema
 import org.apache.giraph.utils.InternalVertexRunner
 import org.apache.mahout.math.Vector
 import org.scalatest.WordSpec

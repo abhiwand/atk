@@ -16,7 +16,7 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame
 
-import com.intel.taproot.giraph.io.{ LdaEdgeData, LdaVertexData, LdaVertexId }
+import org.trustedanalytics.atk.giraph.io.{ LdaEdgeData, LdaVertexData, LdaVertexId }
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.mapreduce.{ JobContext, OutputCommitter, TaskAttemptContext }

@@ -17,8 +17,8 @@
 package org.apache.spark.mllib.atk.plugins.classification.glm
 
 import breeze.linalg.{ DenseMatrix, inv }
-import com.intel.taproot.testutils.MatcherUtils._
-import com.intel.taproot.testutils.TestingSparkContextFlatSpec
+import org.trustedanalytics.atk.testutils.{ TestingSparkContextFlatSpec, MatcherUtils }
+import MatcherUtils._
 import org.scalatest.Matchers
 
 class ApproximateCovarianceMatrixTest extends TestingSparkContextFlatSpec with Matchers {

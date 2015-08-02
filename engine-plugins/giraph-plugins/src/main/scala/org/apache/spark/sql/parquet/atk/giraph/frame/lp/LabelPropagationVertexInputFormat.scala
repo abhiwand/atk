@@ -16,9 +16,9 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame.lp
 
-import com.intel.taproot.giraph.io.VertexData4LPWritable
-import com.intel.taproot.giraph.lp.LabelPropagationConfiguration
-import com.intel.taproot.analytics.engine.frame.RowWrapper
+import org.trustedanalytics.atk.giraph.io.VertexData4LPWritable
+import org.trustedanalytics.atk.giraph.lp.LabelPropagationConfiguration
+import org.trustedanalytics.atk.engine.frame.RowWrapper
 import org.apache.giraph.io.{ VertexValueReader, VertexValueInputFormat }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.LongWritable
