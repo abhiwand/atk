@@ -16,23 +16,24 @@
 
 package org.apache.spark.mllib.ia.plugins.clustering
 
-import com.intel.taproot.analytics.UnitReturn
-import com.intel.taproot.analytics.component.Archive
-import com.intel.taproot.analytics.domain.model.ModelReference
-import com.intel.taproot.analytics.domain.{ CreateEntityArgs, Naming }
-import com.intel.taproot.analytics.domain.frame._
-import com.intel.taproot.analytics.domain.schema.Column
-import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes }
-import com.intel.taproot.analytics.domain.schema.DataTypes._
-import com.intel.taproot.analytics.engine.frame.SparkFrame
-import com.intel.taproot.analytics.engine.model.Model
-import com.intel.taproot.analytics.engine.plugin._
-import org.trustedanalytics.atk.engine.model.plugins.scoring.{ModelPublish, ModelPublishArgs}
+import org.apache.spark.mllib.atk.plugins.clustering.KMeansData
+import org.trustedanalytics.atk.UnitReturn
+import org.trustedanalytics.atk.component.Archive
+import org.trustedanalytics.atk.domain.model.ModelReference
+import org.trustedanalytics.atk.domain.{ CreateEntityArgs, Naming }
+import org.trustedanalytics.atk.domain.frame._
+import org.trustedanalytics.atk.domain.schema.Column
+import org.trustedanalytics.atk.domain.schema.{ FrameSchema, DataTypes }
+import org.trustedanalytics.atk.domain.schema.DataTypes._
+import org.trustedanalytics.atk.engine.frame.SparkFrame
+import org.trustedanalytics.atk.engine.model.Model
+import org.trustedanalytics.atk.engine.plugin._
+import org.trustedanalytics.atk.engine.model.plugins.scoring.{ ModelPublish, ModelPublishArgs }
 import scala.collection.mutable.ListBuffer
-import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
+import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 // Implicits needed for JSON conversion
 import spray.json._
-import com.intel.taproot.analytics.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
  * Rename columns of a frame
@@ -83,7 +84,7 @@ class KMeansPublishPlugin extends CommandPlugin[ModelPublishArgs, UnitReturn] {
     val kmeansModel = kmeansData.kMeansModel
     val jsvalue: JsValue = kmeansModel.toJson
 
-    ModelPublish.createTarForScoringEngine(jsvalue.toString(), arguments.serviceName, "scoring-models", arguments.filePath, "com.intel.taproot.analytics.scoring.models.LibKMeansModelReaderPlugin")
+    ModelPublish.createTarForScoringEngine(jsvalue.toString(), arguments.serviceName, "scoring-models", arguments.filePath, "org.trustedanalytics.atk.scoring.models.LibKMeansModelReaderPlugin")
 
   }
 }
