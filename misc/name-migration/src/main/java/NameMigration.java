@@ -20,6 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -93,8 +96,8 @@ public class NameMigration {
             if (rootDirectory.exists() && (null != patternTuples) && (patternTuples.length > 0)) {
 
                 //file and directory names
-                //String fileAndDirectoryPatterns = configValues.get(this.fileAndDirectoryPatterns);
-                //sanitizeFilesAndDirs(configValues.get(root), fileAndDirectoryPatterns.split(patternSeparator));
+                String fileAndDirectoryPatterns = configValues.get(this.fileAndDirectoryPatterns);
+                sanitizeDirectories(configValues.get(root), fileAndDirectoryPatterns.split(patternSeparator));
 
                 //file content
                 sanitizeFileContent(filenames, configValues, patternTuples);
@@ -103,27 +106,41 @@ public class NameMigration {
         }
     }
 
-    void sanitizeFilesAndDirs(String directoryFilename, String[] fileAndDirPatterns) {
+    void sanitizeDirectories(String directoryFilename, String[] fileAndDirPatterns) {
 
         File currentDirectory = new File(directoryFilename);
         File[] currentDirectoryFiles = currentDirectory.listFiles();
         for (File file : currentDirectoryFiles) {
             String fullName = file.getAbsolutePath();
             if (file.isDirectory()) {
-                sanitizeFilesAndDirs(fullName, fileAndDirPatterns);
+                sanitizeDirectories(fullName, fileAndDirPatterns);
             }
 
-            renameFileOrDir(fullName.toLowerCase(), file, fileAndDirPatterns);
+            renameOrMoveDirectories(fullName, fileAndDirPatterns);
         }
     }
 
-    void renameFileOrDir(String currentName, File currentFileOrDir, String[] fileAndDirPatterns) {
+    void renameOrMoveDirectories(String currentName, String[] fileAndDirPatterns) {
         for (int i = 0; i < fileAndDirPatterns.length; i++) {
             String[] pairs = fileAndDirPatterns[i].split(valueSeparator);
-            if (pairs.length > 1) {
+            if ((pairs.length > 1) && (currentName.endsWith(pairs[0]))) {
                 String newName = currentName.replace(pairs[0].trim(), pairs[1].trim());
+                String rootPath = currentName.replace(pairs[0].trim(), StringUtils.EMPTY) +
+                                  pairs[0].split(File.separator)[0];
                 if (currentName.equals(newName) == false) {
-                    currentFileOrDir.renameTo(new File(newName));
+                    try {
+                        boolean b = new File(newName).mkdirs();
+                        if (b) {
+                            Files.move(Paths.get(currentName), Paths.get(newName), StandardCopyOption.REPLACE_EXISTING);
+                            File rootDir = new File(rootPath);
+                            if (rootDir.list().length == 0) {
+                                FileUtils.deleteDirectory(rootDir);
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        int k = 0;
+                    }
                     return;
                 }
             }

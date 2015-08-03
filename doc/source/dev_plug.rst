@@ -106,7 +106,7 @@ Configuration details are discussed in the "Configuration" section below.
 Plugins have access to the configuration, but only the section of it that
 contains settings that are relevant.
 For example, the Loopy Belief Propagation plugin gets its configuration from
-'intel.taproot.analytics.giraph-plugins.command.graph.ml.loopy_belief_propagation.config'.
+'trustedanalytics.atk.giraph-plugins.command.graph.ml.loopy_belief_propagation.config'.
 Values that appear in this section are available to the plugin, and are passed
 to it during execution.
 The plugin does not have convenient access to other configuration parameters of
@@ -178,8 +178,8 @@ Frame and Graph References
 
 Usually, the commands associated with a frame or graph need to accept the frame
 or graph on which they should operate as a parameter.
-Use the class com.intel.taproot.analytics.domain.frame.FrameReference to represent
-frames, and com.intel.taproot.analytics.domain.graph.GraphReference to represent
+Use the class org.trustedanalytics.atk.domain.frame.FrameReference to represent
+frames, and org.trustedanalytics.atk.domain.graph.GraphReference to represent
 graphs.
 
 Self Arguments
@@ -254,7 +254,7 @@ The first section of the reference.conf should be the declaration of how the
 archive should be activated.
 This configuration should look like the following::
 
-    intel.taproot.analytics.component.archives {
+    trustedanalytics.atk.component.archives {
         <archive-name> {
             class = "<archive-class>"
             parent = "<parent-archive>"
@@ -294,30 +294,30 @@ less nested config files.
 
 Here is a sample config file for an archive that provides a single plugin.
 Note that it relies on the engine archive, and re-maps its configuration
-to "intel.taproot.graphon" rather than including the configuration in the
-intel.taproot.analytics.component.archives.graphon section.
+to "trustedanalytics.graphon" rather than including the configuration in the
+trustedanalytics.atk.component.archives.graphon section.
 
 Also note the $-substitutions that allow configuration options from other
 sections to be pulled in so they're available to the plugin.
 ::
 
-    intel.taproot.analytics.component.archives {
+    trustedanalytics.atk.component.archives {
         graphon {
             parent = "engine-core"
-            config-path = "intel.taproot.graphon"
+            config-path = "trustedanalytics.graphon"
         }
     }
 
-    intel.taproot.graphon {
+    trustedanalytics.graphon {
         command {
             available = ["graphs.sampling.vertex_sample"]
             graphs {
                 sampling {
                     vertex_sample {
-                        class = "com.intel.taproot.spark.graphon.sampling.VertexSample"
+                        class = "com.trustedanalytics.spark.graphon.sampling.VertexSample"
                         config {
-                            default-timeout = ${intel.taproot.analytics.engine.default-timeout}
-                            titan = ${intel.taproot.analytics.engine.titan}
+                            default-timeout = ${trustedanalytics.atk.engine.default-timeout}
+                            titan = ${trustedanalytics.atk.engine.titan}
                         }
                     }
                 }
@@ -327,7 +327,7 @@ sections to be pulled in so they're available to the plugin.
 
     #included so that conf file can be read during unit tests,
     #these will not be used when the application is actually running
-    intel.taproot.analytics.engine {
+    trustedanalytics.atk.engine {
         default-timeout = 30s
         titan {}
     }
@@ -337,7 +337,7 @@ Enabling the Archive
 --------------------
 
 The command executor uses the config key
-"intel.taproot.analytics.engine.plugin.command.archives" to determine which archives it
+"trustedanalytics.atk.engine.plugin.command.archives" to determine which archives it
 should check for command plugins.
 This setting is built into the reference.conf that is embedded in the engine
 archive (at the time of writing).

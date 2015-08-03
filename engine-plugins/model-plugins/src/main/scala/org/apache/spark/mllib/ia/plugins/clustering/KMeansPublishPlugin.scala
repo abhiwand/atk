@@ -26,8 +26,8 @@ import com.intel.taproot.analytics.domain.schema.{ FrameSchema, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes._
 import com.intel.taproot.analytics.engine.frame.SparkFrame
 import com.intel.taproot.analytics.engine.model.Model
-import com.intel.taproot.analytics.engine.model.scoring.{ ModelPublish, ModelPublishArgs }
 import com.intel.taproot.analytics.engine.plugin._
+import org.trustedanalytics.atk.engine.model.plugins.scoring.{ModelPublish, ModelPublishArgs}
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.mllib.ia.plugins.MLLibJsonProtocol._
 // Implicits needed for JSON conversion
