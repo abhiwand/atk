@@ -26,6 +26,7 @@ import org.apache.spark.mllib.atk.plugins.dimensionalityreduction._
 import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector, Matrix, DenseMatrix }
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import spray.json._
+import org.trustedanalytics.atk.engine.model.plugins.scoring.ModelPublishArgs
 
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON
@@ -359,6 +360,7 @@ object MLLibJsonProtocol {
   implicit val pcaTrainFormat = jsonFormat4(PrincipalComponentsTrainArgs)
   implicit val pcaPredictReturnFormat = jsonFormat2(PrincipalComponentsPredictReturn)
   implicit val pcaTrainReturnFormat = jsonFormat4(PrincipalComponentsTrainReturn)
+  implicit val modelPublishFormat = jsonFormat3(ModelPublishArgs)
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)
