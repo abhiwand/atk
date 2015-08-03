@@ -16,7 +16,7 @@
 
 package org.trustedanalytics.atk.domain.frame
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 case class CopyFrameArgs(frame: FrameReference,
                          @ArgDoc("""<TBD>""") columns: Option[Map[String, String]] = None,

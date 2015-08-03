@@ -16,7 +16,7 @@
 
 package org.trustedanalytics.atk.domain.frame
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Command for calculating summary statistics for a dataframe column.

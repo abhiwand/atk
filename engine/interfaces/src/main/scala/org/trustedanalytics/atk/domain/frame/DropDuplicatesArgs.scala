@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.domain.frame
 
 import org.trustedanalytics.atk.domain.SingletonOrListValue
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Command for dropping duplicates rows per uniqueness criteria match

@@ -16,7 +16,7 @@
 
 package org.trustedanalytics.atk.domain.graph
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * The args for any graph plugin that takes "no args" except the graph

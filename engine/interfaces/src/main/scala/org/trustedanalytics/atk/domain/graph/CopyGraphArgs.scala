@@ -16,7 +16,7 @@
 
 package org.trustedanalytics.atk.domain.graph
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Data needed to export a graph.

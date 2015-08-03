@@ -16,7 +16,7 @@
 
 package org.trustedanalytics.atk.domain.frame
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Command to flatten the specified column of the data frame and store the result to a

@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.engine.frame.plugins.dotproduct
 
 import org.trustedanalytics.atk.domain.frame.FrameReference
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Arguments for dot-product plugin

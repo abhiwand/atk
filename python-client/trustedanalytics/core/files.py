@@ -72,7 +72,7 @@ class CsvFile(DataFile):
     Examples
     --------
     Given a raw data file named 'raw_data.csv', located at
-    'hdfs://localhost.localdomain/user/taproot/data/'.
+    'hdfs://localhost.localdomain/user/trusted/data/'.
     It consists of three columns, *a*, *b*, and *c*.
     The columns have the data types *int32*, *int32*, and *str* respectively.
     The fields of data are separated by commas.
@@ -266,7 +266,7 @@ class LineFile(DataFile):
     Examples
     --------
     Given a raw data file 'rawline_data.txt' located at
-    'hdfs://localhost.localdomain/user/taproot/data/'.
+    'hdfs://localhost.localdomain/user/trusted/data/'.
     It consists of multiple lines separated by new line character.
 
     Import the |TA|:
@@ -340,7 +340,7 @@ class JsonFile(MultiLineFile):
     Examples
     --------
     Given a raw data file named 'raw_data.json' located at
-    'hdfs://localhost.localdomain/user/taproot/data/'.
+    'hdfs://localhost.localdomain/user/trusted/data/'.
     It consists of a 3 top level json objects with a single value each called
     obj. Each object contains the attributes color, size, and shape.
 
@@ -480,7 +480,7 @@ class XmlFile(MultiLineFile):
     Examples
     --------
     Given a raw data file named 'raw_data.xml' located at
-    'hdfs://localhost.localdomain/user/taproot/data/'.
+    'hdfs://localhost.localdomain/user/trusted/data/'.
     It consists of a root element called *shapes* with subelements with the
     tag names *square* and *triangle*.
     Each of these subelements has two potential subelements called *name* and

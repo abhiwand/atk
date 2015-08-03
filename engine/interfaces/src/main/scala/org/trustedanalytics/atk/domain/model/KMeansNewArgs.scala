@@ -16,6 +16,6 @@
 
 package org.trustedanalytics.atk.domain.model
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 case class KMeansNewArgs(dummyModelRef: ModelReference, name: Option[String] = None)

@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.engine.frame.plugins
 
 import org.trustedanalytics.atk.domain.FilterArgs
 import org.trustedanalytics.atk.domain.frame.FrameEntity
-import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import org.trustedanalytics.atk.engine.plugin.{ Invocation, PluginDoc }
 import org.trustedanalytics.atk.engine.frame.{ SparkFrame, PythonRddStorage }
 import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
 

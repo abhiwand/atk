@@ -16,7 +16,7 @@
 
 package org.trustedanalytics.atk.domain.frame
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /** Arguments to GroupByPlugin (see Spark API) */
 case class GroupByArgs(frame: FrameReference,

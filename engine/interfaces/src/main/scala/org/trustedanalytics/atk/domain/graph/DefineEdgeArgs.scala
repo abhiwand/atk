@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.domain.graph
 
 import org.trustedanalytics.atk.domain.schema.{ GraphSchema, EdgeSchema }
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Arguments for defining an edge

@@ -19,7 +19,7 @@ package org.trustedanalytics.atk.domain.graph.construction
 import org.trustedanalytics.atk.domain.frame.FrameReference
 import org.trustedanalytics.atk.domain.schema.GraphSchema
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Arguments for adding Vertices to a Vertex Frame

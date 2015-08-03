@@ -20,9 +20,8 @@ import org.trustedanalytics.atk.domain.UserPrincipal
 import org.trustedanalytics.atk.domain.frame.{ FrameReference, FrameEntity }
 import org.trustedanalytics.atk.domain.frame.load.LoadFrameArgs
 import org.trustedanalytics.atk.engine.frame.SparkFrame
-import org.trustedanalytics.atk.engine.plugin.Invocation
+import org.trustedanalytics.atk.engine.plugin.{ PluginDoc, Invocation }
 import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
-import org.trustedanalytics.atk.engine.plugin.PluginDoc
 import org.apache.spark.frame.FrameRdd
 
 import spray.json._

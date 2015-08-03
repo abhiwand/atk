@@ -18,8 +18,7 @@ package org.trustedanalytics.atk.domain
 
 import org.trustedanalytics.atk.domain.frame.FrameReference
 import org.trustedanalytics.atk.domain.frame.Udf
-
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 case class FilterArgs(@ArgDoc("""<TBD>""") frame: FrameReference,
                       @ArgDoc("""UDF which evaluates a row to a boolean;

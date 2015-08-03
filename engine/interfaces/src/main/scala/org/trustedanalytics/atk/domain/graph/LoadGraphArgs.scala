@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.domain.graph
 
 import org.trustedanalytics.atk.domain.graph.construction.FrameRule
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Command for loading  graph data into existing graph in the graph database. Source is tabular data from a dataframe

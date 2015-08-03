@@ -19,6 +19,7 @@ package org.trustedanalytics.atk.domain.frame.load
 import org.trustedanalytics.atk.domain.frame.FrameReference
 import org.trustedanalytics.atk.domain.schema.DataTypes.DataType
 import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema, Schema }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * The case classes in this file are used to parse the json submitted as part of a load or append call

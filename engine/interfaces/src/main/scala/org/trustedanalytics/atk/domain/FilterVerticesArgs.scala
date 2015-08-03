@@ -19,7 +19,7 @@ package org.trustedanalytics.atk.domain
 import org.trustedanalytics.atk.domain.frame.Udf
 import org.trustedanalytics.atk.domain.frame.FrameReference
 
-import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * Command to drop rows from a given vertex type.
