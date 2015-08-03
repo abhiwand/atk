@@ -15,7 +15,7 @@
 #
 
 import unittest
-import taprootanalytics as ia
+import trustedanalytics as ia
 import math
 import numpy
 

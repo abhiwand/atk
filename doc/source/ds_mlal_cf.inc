@@ -9,7 +9,7 @@ Collaborative filtering is a technique that is widely used in recommendation
 systems to suggest items (for example, products, movies,
 articles) to potential users based on historical records of items that users
 have purchased, rated, or viewed.
-The IA Toolkit provides implementations of collaborative filtering with either
+The |PACKAGE| provides implementations of collaborative filtering with either
 Alternating Least Squares (ALS) or Conjugate Gradient Descent (CGD)
 optimization methods.
 Both methods optimize the cost function found in Y. Koren,

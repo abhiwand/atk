@@ -20,27 +20,27 @@ Ping the server:
 
 .. code::
 
-    >>> import taprootanalytics as ia
-    >>> ia.server.ping()
-    Successful ping to TapRoot Analytics at http://localhost:9099/info
-    >>> ia.connect()
+    >>> import trustedanalytics as ta
+    >>> ta.server.ping()
+    Successful ping to TAProot Analytics at http://localhost:9099/info
+    >>> ta.connect()
 
 View and edit the server connection:
 
 .. code::
 
-    >>> print ia.server
+    >>> print ta.server
     host:    localhost
     port:    9099
     scheme:  http
     version: v1
 
-    >>> ia.server.host
+    >>> ta.server.host
     'localhost'
 
-    >>> ia.server.host = '10.54.99.99'
-    >>> ia.server.port = None
-    >>> print ia.server
+    >>> ta.server.host = '10.54.99.99'
+    >>> ta.server.port = None
+    >>> print ta.server
     host:    10.54.99.99
     port:    None
     scheme:  http
@@ -50,8 +50,8 @@ Reset configuration back to defaults:
 
 .. code::
 
-    >>> ia.server.reset()
-    >>> print ia.server
+    >>> ta.server.reset()
+    >>> print ta.server
     host:    localhost
     port:    9099
     scheme:  http
@@ -66,19 +66,19 @@ To see the full Python stack trace of the last (i.e. most recent) exception:
 
 .. code::
 
-    >>> ia.errors.last
+    >>> ta.errors.last
 
 To enable always printing the full Python stack trace, set the *show_details*
 property:
 
 .. code::
 
-    >>> import taprootanalytics as ia
+    >>> import trustedanalytics as ta
 
     # show full stack traces
-    >>> ia.errors.show_details = True
+    >>> ta.errors.show_details = True
 
-    >>> ia.connect()
+    >>> ta.connect()
 
     # … the rest of your script …
 

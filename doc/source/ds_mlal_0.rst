@@ -14,7 +14,9 @@ The graph machine learning algorithms currently supported fall into these
 categories:
 *Collaborative Filtering*, *Graphical Models*, and *Topic Modeling*.
 
-* `Collaborative_Filtering`_
+-----------------------
+Collaborative Filtering
+-----------------------
     * `ALS`_
     * `CGD`_
 
@@ -25,9 +27,6 @@ categories:
 * `Topic_Modeling`_
     * `LDA`_
 
-
-.. _Collaborative_Filtering:
-.. include:: ds_mlal_cf.inc
 
 .. _ALS:
 .. include:: ds_mlal_als.inc
@@ -44,14 +43,8 @@ Graphical Models
 
 
 The graphical models find more insights from structured noisy data.
-We currently support `LP`_ and `LBP`_.
-
-.. _LP:
-.. include:: ds_mlal_lp.inc
-
-
-.. _LBP:
-.. include:: ds_mlal_lbp.inc
+See `graph API <python_api/graphs/index>`_ for details of the
+**Label Propagation (LP)** and **Loopy Belief Propagation (LBP)**.
 
 
 .. _Topic_Modeling:

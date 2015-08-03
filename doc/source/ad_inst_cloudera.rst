@@ -221,7 +221,7 @@ Click *Finish*
 Choose the |CDH| 5 services to install on your cluster.
 The following windows will show the process of installing services
 and roles on each node in the cluster.
-This is the |IAT| default setup.
+This is the |PACKAGE| default setup.
 
 In the "Choose a combination of services to install" dialogue, select the
 "Custom Services" button.
@@ -410,7 +410,7 @@ Test functionality of |HDFS|.
 Tweaks
 ------
 
-The graph machine learning algorithms in the |IAT| use the Giraph
+The graph machine learning algorithms in the |PACKAGE| use the Giraph
 graph-processing framework.
 Giraph is designed to run the whole graph computation in memory, and requires
 large amounts of memory to process big graphs.
@@ -424,7 +424,7 @@ To run Giraph jobs, ensure that the memory settings in |CDH| match those in
 application.conf using one of the following approaches:
 
 #.  Modify the following YARN configuration in |CDH| to match the setting under
-    intel.taproot.analytics.giraph in application.conf.
+    trustedanalytics.atk.giraph in application.conf.
     Under the YARN section in |CDH|, click on *Configuration* and select *View
     and Edit*.
 
@@ -449,8 +449,8 @@ application.conf using one of the following approaches:
 
 #.  Limit the Giraph memory allocation in application.conf to match the
     configured |CDH| settings in YARN.
-    The relevant settings in the |IAT| application.conf file are in
-    intel.taproot.analytics.giraph:
+    The relevant settings in the |PACKAGE| application.conf file are in
+    trustedanalytics.atk.giraph:
 
     #.  mapreduce.map.memory.mb.
         This setting should match mapreduce.map.memory.mb in YARN.

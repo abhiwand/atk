@@ -4,8 +4,8 @@
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 
-URL="intel.taproot.com"
-MAINTAINER="BDA <BDA@intel.taproot.com>"
+URL="trustedanalytics.com"
+MAINTAINER="BDA <BDA@trustedanalytics.com>"
 
 #deb build defaults
 #some sensible defaults for some of the fields in all these control files

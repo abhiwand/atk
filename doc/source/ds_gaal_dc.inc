@@ -15,7 +15,7 @@ The toolkit provides a routine ``annotate_degrees`` for calculating the degrees
 of vertices. This calculation could be performed with a Gremlin query on
 smaller datasets because Gremlin queries cannot be executed on a distributed
 scale.
-The |IAT| routine ``annotate_degrees`` can be executed at distributed scale.
+The |PACKAGE| routine ``annotate_degrees`` can be executed at distributed scale.
 
 In the presence of edge weights, vertices can have weighted degrees: The
 weighted degree of a vertex is the sum of weights of edges adjacent to it.

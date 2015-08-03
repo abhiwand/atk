@@ -13,9 +13,9 @@ Virtual Machines
 Introduction
 ------------
 
-This guide goes through the download and import of the |IAT| beta on a virtual
+This guide goes through the download and import of the |PACKAGE| beta on a virtual
 machine (VM).
-Currently the |IAT| |VM| only supports
+Currently the |PACKAGE| |VM| only supports
 `Virtual Box <https://www.virtualbox.org/>`_.
 These instructions do not cover the installation of Virtual Box.
 Virtual Box supports many platforms and can be `downloaded for free
@@ -78,15 +78,15 @@ When prompted for the "Default output format", use "json".
 
 List the files in the directory::
 
-    $ aws s3 ls s3://taproot-analytics-repo/release/latest/vm/
+    $ aws s3 ls s3://trustedanalytics-repo/release/latest/vm/
     2014-08-19 12:57:03           0
-    2014-11-25 16:22:57          70 TapRootAnalytics-VM.md5
-    2014-11-25 16:22:57 14656025025 TapRootAnalytics-VM.tar.gz
+    2014-11-25 16:22:57          70 TAProotAnalytics-VM.md5
+    2014-11-25 16:22:57 14656025025 TAProotAnalytics-VM.tar.gz
 
 Download the tar.gz file.
-In this case, it's 'TapRootAnalytics-VM.tar.gz'::
+In this case, it's 'TAProotAnalytics-VM.tar.gz'::
 
-    $ aws s3 cp s3://taproot-analytics-repo/release/latest/vm/TapRootAnalytics-VM.tar.gz ./
+    $ aws s3 cp s3://trustedanalytics-repo/release/latest/vm/TAProotAnalytics-VM.tar.gz ./
 
 [:ref:`Skip section about Windows GUI Client <extract_archive>`].
 
@@ -181,7 +181,7 @@ If you are on a Windows machine, and you prefer a GUI client, use the
 
             Add External Bucket
 
-#)  Add the bucket url "taproot-analytics-repo/release",
+#)  Add the bucket url "trustedanalytics-repo/release",
     then click **Add External bucket**.
     See :ref:`Fig. 15.4 <fig_15_04>`.
 
@@ -261,7 +261,7 @@ Extracting On Linux
 ===================
 After acquiring the |VM|, extract the archive::
 
-    $ tar -xvf TapRootAnalytics-VM.tar.gz
+    $ tar -xvf TAProotAnalytics-VM.tar.gz
 
 After extraction, there should be two (2) files,
 one with the extension 'vmdk', and another with the extension 'ovf'.
@@ -314,7 +314,7 @@ To import the |VM| image, do the following steps in Virtual Box.
 
             Appliance to Import
 
-#)  Import the |IAT| |VM|.
+#)  Import the |PACKAGE| |VM|.
     See :ref:`Fig. 15.9 <fig_15_09>`.
 
     .. _fig_15_09:
@@ -379,16 +379,16 @@ To import the |VM| image, do the following steps in Virtual Box.
             Boot the VM
 
 ------------------------
-Running |IAT| |VM| Image
+Running |PACKAGE| |VM| Image
 ------------------------
 
 Before starting
 ===============
 
-After every reboot of the |VM|, the |IAT| server must also be restarted.
+After every reboot of the |VM|, the |PACKAGE| server must also be restarted.
 ::
 
-    $ sudo service taprootanalytics restart
+    $ sudo service trustedanalytics restart
 
 Upon restart, if the service wasn't running before it was told to stop,
 the system reports::
@@ -401,9 +401,9 @@ This message can be safely ignored.
 Sample Scripts
 ==============
 
-The |VM| is pre-configured and installed with the |IAT|.
+The |VM| is pre-configured and installed with the |PACKAGE|.
 Several examples and datasets are included to get people
-familiar with the coding and behavior of the |IAT|.
+familiar with the coding and behavior of the |PACKAGE|.
 
 The examples are located in '/home/cloudera/examples'.
 ::
@@ -414,18 +414,18 @@ The examples are located in '/home/cloudera/examples'.
     -rw-r--r-- 1 cloudera cloudera  930 Aug  1 00:53 lp.py
 
 The datasets are located in '/home/cloudera/examples/datasets' and
-'hdfs://user/iauser/datasets/'.
+'hdfs://user/trustedanalytics/datasets/'.
 ::
 
-    -rw-r--r--   1 iauser iauser        122 2014-08-01 /user/iauser/datasets/README
-    -rw-r--r--   1 iauser iauser     617816 2014-08-01 /user/iauser/datasets/apl.csv
-    -rw-r--r--   1 iauser iauser    8162836 2014-08-01 /user/iauser/datasets/lbp_edge.csv
-    -rw-r--r--   1 iauser iauser     188470 2014-08-01 /user/iauser/datasets/lp_edge.csv
-    -rw-r--r--   1 iauser iauser  311641390 2014-08-01 /user/iauser/datasets/test_lda.csv
+    -rw-r--r--   1 taproot taproot        122 2014-08-01 /user/trustedanalytics/datasets/README
+    -rw-r--r--   1 taproot taproot     617816 2014-08-01 /user/trustedanalytics/datasets/apl.csv
+    -rw-r--r--   1 taproot taproot    8162836 2014-08-01 /user/trustedanalytics/datasets/lbp_edge.csv
+    -rw-r--r--   1 taproot taproot     188470 2014-08-01 /user/trustedanalytics/datasets/lp_edge.csv
+    -rw-r--r--   1 taproot taproot  311641390 2014-08-01 /user/trustedanalytics/datasets/test_lda.csv
 
 The datasets in '/home/cloudera/examples/datasets' are for reference.
-The actual data that is being used by the Python examples and the |IAT| server
-is in 'hdfs://user/iauser/datasets'.
+The actual data that is being used by the Python examples and the |PACKAGE| server
+is in 'hdfs://user/trustedanalytics/datasets'.
 
 To run any of the Python example scripts, start in the examples directory and
 start Python with the script name::
@@ -550,10 +550,10 @@ Logs
 ----
 
 To debug changes to the scripts (or to peek behind the curtain), the log
-file is '/var/log/taprootanalytics/rest-server/output.log'.
+file is '/var/log/trustedanalytics/rest-server/output.log'.
 To show the log as it is generated, run ``tail -f``::
 
-    $ sudo tail -f /var/log/taprootanalytics/rest-server/output.log
+    $ sudo tail -f /var/log/trustedanalytics/rest-server/output.log
 
 More details can be found in the :doc:`section on log files </ad_log>`.
 
@@ -561,7 +561,7 @@ More details can be found in the :doc:`section on log files </ad_log>`.
 Updating
 --------
 
-Upon receipt of access and secret tokens, edit '/etc/yum.repos.d/ia.repo' and
+Upon receipt of access and secret tokens, edit '/etc/yum.repos.d/ta.repo' and
 replace *myKey* and *mySecret*.
 Afterwards, it is recommended to run ``yum`` commands to check for and perform
 updates.
@@ -570,11 +570,11 @@ updates.
 
     ::
 
-        $ sudo [vi|vim] /etc/yum.repos.d/ia.repo
+        $ sudo [vi|vim] /etc/yum.repos.d/ta.repo
 
-        [TapRoot Analytics repo]
-        name=TapRoot Analytics yum repo
-        baseurl=https://s3-us-west-2.amazonaws.com/taproot-analytics-repo/release/latest/yum/dists/rhel/6
+        [TAProot Analytics repo]
+        name=TAProot Analytics yum repo
+        baseurl=https://s3-us-west-2.amazonaws.com/trustedanalytics-repo/release/latest/yum/dists/rhel/6
         gpgcheck=0
         priority=1
         #enabled=0
@@ -586,11 +586,11 @@ updates.
 
     ::
 
-        $ sudo [vi/vim] /etc/yum.repos.d/ia.repo
+        $ sudo [vi/vim] /etc/yum.repos.d/ta.repo
 
-        [TapRoot Analytics repo]
-        name=TapRoot Analytics yum repo
-        baseurl=https://s3-us-west-2.amazonaws.com/taproot-analytics-repo/
+        [TAProot Analytics repo]
+        name=TAProot Analytics yum repo
+        baseurl=https://s3-us-west-2.amazonaws.com/trustedanalytics-repo/
             release/latest/yum/dists/rhel/6
         gpgcheck=0
         priority=1
@@ -606,15 +606,15 @@ updates.
 To check for new updates and see the difference between the new and installed
 version::
 
-    $ sudo yum info taprootanalytics-rest-server
+    $ sudo yum info trustedanalytics-rest-server
 
 To update::
 
-    $ sudo yum update taprootanalytics-rest-server
+    $ sudo yum update trustedanalytics-rest-server
 
 ------------------
 Common VM problems
 ------------------
 *   The VM doesn't have enough memory allocated.
-*   The IA REST server wasn't restarted after restart or boot.
+*   The TA REST server wasn't restarted after restart or boot.
 

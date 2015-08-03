@@ -1,4 +1,4 @@
-# This (application.conf.tpl) is a configuration template for the TapRoot Analytics Toolkit.
+# This (application.conf.tpl) is a configuration template for the Trusted Analytics Toolkit.
 # Copy this to application.conf and edit to suit your system.
 # Comments begin with a '#' character.
 # Default values are 'commented' out with //.
@@ -8,7 +8,7 @@
 
 # BEGIN REQUIRED SETTINGS
 
-intel.taproot.analytics {
+trustedanalytics.atk {
     #bind address - change to 0.0.0.0 to listen on all interfaces
     //api.host = "127.0.0.1"
 
@@ -21,18 +21,18 @@ intel.taproot.analytics {
     //metastore.connection-postgresql.database = "ia-metastore"
     //metastore.connection-postgresql.username = "iauser"
     //metastore.connection-postgresql.password = "myPassword"
-    //metastore.connection-postgresql.url = "jdbc:postgresql://"${intel.taproot.analytics.metastore.connection-postgresql.host}":"${intel.taproot.analytics.metastore.connection-postgresql.port}"/"${intel.taproot.analytics.metastore.connection-postgresql.database}
+    //metastore.connection-postgresql.url = "jdbc:postgresql://"${trustedanalytics.atk.metastore.connection-postgresql.host}":"${trustedanalytics.atk.metastore.connection-postgresql.port}"/"${trustedanalytics.atk.metastore.connection-postgresql.database}
 
     # This allows for the use of postgres for a metastore. Service restarts will not affect the data stored in postgres
-    //metastore.connection = ${intel.taproot.analytics.metastore.connection-postgresql}
+    //metastore.connection = ${trustedanalytics.atk.metastore.connection-postgresql}
 
     # This allows the use of an in memory data store. Restarting the rest server will create a fresh database and any
     # data in the h2 DB will be lost
-    metastore.connection = ${intel.taproot.analytics.metastore.connection-h2}
+    metastore.connection = ${trustedanalytics.atk.metastore.connection-h2}
 
     engine {
 
-        # The hdfs URL where the taprootanalytics folder will be created
+        # The hdfs URL where the trustedanalytics folder will be created
         # and which will be used as the starting point for any relative URLs
         fs.root = "file://tmp"
 
@@ -70,7 +70,7 @@ intel.taproot.analytics {
 # The settings below are all optional. Some may need to be configured depending on the
 # specifics of your cluster and workload.
 
-intel.taproot.analytics {
+trustedanalytics.atk {
   engine {
     auto-partitioner {
         # auto-partitioning spark based on the file size
@@ -96,7 +96,7 @@ intel.taproot.analytics {
     }
   }
 
-  # Configuration for the TapRoot Analytics REST server
+  # Configuration for the Trusted Analytics REST server
   api {
       #this is reported by the REST server in the /info results - it can be used to identify
       #a particular server or cluster
@@ -263,13 +263,13 @@ intel.taproot.analytics {
       query {
         storage {
           # query does use the batch load settings in titan.load
-          backend = ${intel.taproot.analytics.engine.titan.load.storage.backend}
-          hostname =  ${intel.taproot.analytics.engine.titan.load.storage.hostname}
-          port =  ${intel.taproot.analytics.engine.titan.load.storage.port}
+          backend = ${trustedanalytics.atk.engine.titan.load.storage.backend}
+          hostname =  ${trustedanalytics.atk.engine.titan.load.storage.hostname}
+          port =  ${trustedanalytics.atk.engine.titan.load.storage.port}
         }
         cache {
           # Adjust cache size parameters if you experience OutOfMemory errors during Titan queries
-          # Either increase heap allocation for TapRootAnalytics Engine, or reduce db-cache-size
+          # Either increase heap allocation for TrustedAnalytics Engine, or reduce db-cache-size
           # Reducing db-cache will result in cache misses and increased reads from disk
           //db-cache = true
           //db-cache-clean-wait = 20

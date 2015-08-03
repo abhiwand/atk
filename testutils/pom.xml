@@ -6,7 +6,7 @@
     <artifactId>testutils</artifactId>
     <packaging>jar</packaging>
     <version>master-SNAPSHOT</version>
-    <name>TapRootAnalytics Common Test Utilities</name>
+    <name>TrustedAnalytics Common Test Utilities</name>
 
     <description>
         This module contains test utility code that needs to be shared between modules to prevent duplication.
@@ -14,8 +14,8 @@
     </description>
 
     <parent>
-        <groupId>com.intel.taproot.ia</groupId>
-        <artifactId>TapRootAnalytics</artifactId>
+        <groupId>org.trustedanalytics.atk</groupId>
+        <artifactId>TrustedAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>master-SNAPSHOT</version>
     </parent>
@@ -46,7 +46,7 @@
             <artifactId>blueprints-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.intel.taproot.ia</groupId>
+            <groupId>org.trustedanalytics.atk</groupId>
             <artifactId>titan-shaded</artifactId>
         </dependency>
         <dependency>

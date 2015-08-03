@@ -1,5 +1,5 @@
 #!/bin/bash
-package="taproot-scoring-tar"
+package="trustedanalytics-scoring-tar"
 workDir=$(pwd)
 baseDir=${workDir##*/}
 gitRoot="."
@@ -30,7 +30,7 @@ cp -v config/$package/scoring-server.sh tarballs/$package/bin/
 cp -v config/$package/application.conf tarballs/$package/conf
 
 
-jars="scoring-models.jar  interfaces.jar"
+jars="scoring-engine.jar interfaces.jar"
 
 #popd
 
@@ -54,8 +54,8 @@ popd
 
 
 pushd tarballs/$package
-    tar -pczf ../../atk-scoring.tar.gz .
-popd
+    tar -pczf ../../trustedanalytics-scoring.tar.gz .
+pop
 
 
 rm -rf tarballs
