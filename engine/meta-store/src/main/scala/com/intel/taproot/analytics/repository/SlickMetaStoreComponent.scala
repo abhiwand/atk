@@ -16,14 +16,13 @@
 
 package com.intel.taproot.analytics.repository
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp.BasicDataSource
 import com.github.tototoshi.slick.GenericJodaSupport
 
 import com.intel.taproot.analytics.domain.gc.{ GarbageCollectionEntryTemplate, GarbageCollectionEntry, GarbageCollection, GarbageCollectionTemplate }
-import com.intel.taproot.analytics.domain.query.{ Query => QueryRecord }
 import com.intel.taproot.analytics.domain.schema.Schema
 import org.joda.time.DateTime
-import scala.slick.driver.{ JdbcDriver }
+import scala.slick.driver.JdbcDriver
 import org.flywaydb.core.Flyway
 import spray.json._
 import scala.util.Try

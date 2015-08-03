@@ -26,7 +26,7 @@ import org.apache.spark.scheduler.SparkListenerStageSubmitted
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.TaskContext
-import com.intel.taproot.analytics.engine.spark.CommandProgressUpdater
+import com.intel.taproot.analytics.engine.CommandProgressUpdater
 import org.apache.spark.engine.SparkProgressListener
 import com.intel.taproot.analytics.engine.{ ProgressInfo, TaskProgressInfo }
 import org.scalatest.mock.MockitoSugar

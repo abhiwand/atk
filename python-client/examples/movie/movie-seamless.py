@@ -33,11 +33,10 @@ import taprootanalytics as ia
 
 # show full stack traces
 ia.errors.show_details = True
-ia.loggers.set_api()
+#ia.loggers.set_api()
+#ialoggers.set_http()
 
 ia.connect()
-
-# loggers.set_http()
 
 print("server ping")
 ia.server.ping()

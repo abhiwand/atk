@@ -20,10 +20,8 @@ import com.intel.taproot.event.EventContext
 import com.intel.taproot.analytics.domain.frame.{ FrameEntity, DataFrameTemplate, _ }
 import com.intel.taproot.analytics.domain.schema.{ Schema, DataTypes }
 import com.intel.taproot.analytics.domain.schema.DataTypes.DataType
-import com.intel.taproot.analytics.engine.Rows._
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.security.UserPrincipal
-import com.intel.taproot.analytics.domain.CreateEntityArgs
+import com.intel.taproot.analytics.domain.{ UserPrincipal, CreateEntityArgs }
 
 trait FrameStorage {
 
@@ -39,7 +37,7 @@ trait FrameStorage {
   def create(arguments: CreateEntityArgs)(implicit invocation: Invocation): FrameEntity
   def renameFrame(frame: FrameEntity, newName: String)(implicit invocation: Invocation): FrameEntity
   def renameColumns(frame: FrameEntity, name_pairs: Seq[(String, String)])(implicit invocation: Invocation): FrameEntity
-  def getRows(frame: FrameEntity, offset: Long, count: Long)(implicit invocation: Invocation): Iterable[Row]
+  def getRows(frame: FrameEntity, offset: Long, count: Long)(implicit invocation: Invocation): Iterable[Array[Any]]
   def drop(frame: FrameEntity)(implicit invocation: Invocation)
   def loadFrameData(context: Context, frame: FrameEntity)(implicit invocation: Invocation): Data
   def saveFrameData(frame: FrameReference, data: Data)(implicit invocation: Invocation): FrameEntity

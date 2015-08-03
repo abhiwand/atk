@@ -135,15 +135,14 @@ class LdaTrainPlugin
     val docOut = frames.prepareForSave(CreateEntityArgs(description = Some("LDA doc results")))
     val wordOut = frames.prepareForSave(CreateEntityArgs(description = Some("LDA word results")))
 
-    val inputFormatConfig = new LdaInputFormatConfig(frame.storageLocation.get, frame.schema)
-    val outputFormatConfig = new LdaOutputFormatConfig(docOut.storageLocation.get, wordOut.storageLocation.get)
+    val inputFormatConfig = new LdaInputFormatConfig(frame.getStorageLocation, frame.schema)
+    val outputFormatConfig = new LdaOutputFormatConfig(docOut.getStorageLocation, wordOut.getStorageLocation)
     val ldaConfig = new LdaConfig(inputFormatConfig, outputFormatConfig, arguments)
 
     giraphConf.setLdaConfig(ldaConfig)
     GiraphConfigurationUtil.set(giraphConf, "giraphjob.maxSteps", arguments.maxIterations)
     GiraphConfigurationUtil.set(giraphConf, "mapreduce.input.fileinputformat.inputdir", Some(inputFormatConfig.parquetFileLocation))
 
-    //giraphConf.setVertexInputFormatClass(classOf[LdaParquetFrameVertexValueInputFormat])
     giraphConf.setEdgeInputFormatClass(classOf[LdaParquetFrameEdgeInputFormat])
     giraphConf.setVertexOutputFormatClass(classOf[LdaParquetFrameVertexOutputFormat])
     giraphConf.setMasterComputeClass(classOf[CVB0LDAMasterCompute])

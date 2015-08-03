@@ -23,5 +23,5 @@ import scala.concurrent.forkjoin.ForkJoinPool
 
 object SprayExecutionContext {
   implicit val global: ExecutionContext =
-    ExecutionContext.fromExecutorService(new ForkJoinPool((RestServerConfig.maxThreadsPerExecutionContext)))
+    ExecutionContext.fromExecutorService(new ForkJoinPool(RestServerConfig.maxThreadsPerExecutionContext))
 }

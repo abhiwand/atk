@@ -21,9 +21,8 @@ import com.intel.taproot.analytics.domain.command.{ Command, CommandDefinition, 
 import com.intel.taproot.analytics.domain.frame._
 import com.intel.taproot.analytics.domain.graph.{ GraphEntity, GraphTemplate }
 import com.intel.taproot.analytics.domain.model.ModelEntity
-import com.intel.taproot.analytics.domain.query.{ QueryResult, RowQuery }
+import com.intel.taproot.analytics.domain.frame.RowQueryArgs
 import com.intel.taproot.analytics.engine.plugin.Invocation
-import com.intel.taproot.analytics.security.UserPrincipal
 
 import scala.concurrent.Future
 
@@ -64,7 +63,7 @@ trait Engine {
 
   def getFrame(id: Identifier)(implicit invocation: Invocation): Future[Option[FrameEntity]]
 
-  def getRows(arguments: RowQuery[Identifier])(implicit invocation: Invocation): QueryResult
+  def getRows(arguments: RowQueryArgs[Identifier])(implicit invocation: Invocation): QueryResult
 
   @deprecated("use engine.graphs.createFrame()")
   def createFrame(arguments: CreateEntityArgs)(implicit invocation: Invocation): Future[FrameEntity]

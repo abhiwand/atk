@@ -86,6 +86,12 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_${scala.short.version}</artifactId>
+            <exclusions>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.short.version}</artifactId>
             <scope>compile</scope>

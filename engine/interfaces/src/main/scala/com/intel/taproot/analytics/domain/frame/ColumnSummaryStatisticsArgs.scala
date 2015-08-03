@@ -16,8 +16,6 @@
 
 package com.intel.taproot.analytics.domain.frame
 
-import spray.json.JsValue
-
 /**
  * Command for calculating summary statistics for a dataframe column.
  * @param frame Identifier for the input dataframe.

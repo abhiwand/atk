@@ -99,14 +99,9 @@ def return_lda_train(selfish, json_result):
     return { 'doc_results': doc_frame, 'word_results': word_frame, 'report': json_result['report'] }
 
 @postprocessor('model:logistic_regression/train')
-def return_lda_train(selfish, json_result):
-    from taprootanalytics import get_frame
-    train_dictionary = {'num_features': json_result['num_features'],
-                        'num_classes': json_result['num_classes'],
-                        'coefficients': json_result['coefficients']}
-    if json_result.get('covariance_matrix', None) is not None:
-        train_dictionary['covariance_matrix'] = get_frame(json_result['covariance_matrix']['id'])
-    return train_dictionary
+def return_logistic_regression_train(selfish, json_result):
+    from taprootanalytics.core.logisticregression import LogisticRegressionSummary
+    return LogisticRegressionSummary(json_result)
 
 @postprocessor('frame:/label_propagation')
 def return_label_propagation(selfish, json_result):

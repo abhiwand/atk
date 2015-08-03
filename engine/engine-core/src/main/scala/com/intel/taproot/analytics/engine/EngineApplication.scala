@@ -36,7 +36,7 @@ class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: Class
   EventLogging.profiling = configuration.getBoolean("intel.taproot.analytics.engine.logging.profile")
   info(s"Engine profiling: ${EventLogging.profiling}")
 
-  var engine: EngineComponent with FrameComponent with CommandComponent = null
+  var engine: EngineComponent = null
 
   override def getAll[T: ClassTag](descriptor: String) = {
     descriptor match {
@@ -54,8 +54,8 @@ class EngineApplication(archiveDefinition: ArchiveDefinition, classLoader: Class
     try {
       //TODO: when Engine moves to its own process, it will need to start its own Akka actor system.
       engine = com.intel.taproot.analytics.component.Boot.getArchive("engine-core")
-        .load("com.intel.taproot.analytics.engine.spark.SparkEngineComponent")
-        .asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
+        .load("com.intel.taproot.analytics.engine.SparkEngineComponent")
+        .asInstanceOf[EngineComponent]
     }
     catch {
       case NonFatal(e) =>

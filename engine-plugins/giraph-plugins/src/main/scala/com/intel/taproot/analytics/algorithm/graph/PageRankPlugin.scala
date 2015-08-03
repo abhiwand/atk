@@ -90,6 +90,7 @@ class PageRankPlugin
 
     GiraphConfigurationUtil.initializeTitanConfig(hConf, config, graph)
 
+    val argSeparator = ","
     GiraphConfigurationUtil.set(hConf, "input.edge.label.list", Some(arguments.inputEdgeLabelList.mkString(argSeparator)))
     GiraphConfigurationUtil.set(hConf, "output.vertex.property.key.list", Some(arguments.outputVertexPropertyList.mkString(argSeparator)))
 
