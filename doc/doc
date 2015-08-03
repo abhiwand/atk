@@ -468,7 +468,7 @@ function pdf_build() {
 
 ############################################################################################################
 function server_running() {
-    ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.*.component.Boot" | grep -v "grep" > /dev/null
+    ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*.component.Boot" | grep -v "grep" > /dev/null
     Return=$?
     if [ "$Return" != "0" ]; then
         return $Return
@@ -547,7 +547,7 @@ function server_stop() {
     server_running
     Looping=$?
     while [ "$Looping" == "0" ]; do
-        Servers=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.*.component.Boot" | grep -v "grep")
+        Servers=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.*component.Boot" | grep -v "grep")
         if [ "$?" == "0" ]; then
             Process_ID=$(echo $Servers | head -n 1 |  awk '{print $2}')
             echo -n "Stop server $Process_ID"
