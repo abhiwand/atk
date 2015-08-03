@@ -1,6 +1,6 @@
-==========================
-Best Known Methods (Admin)
-==========================
+================================
+Best Known Methods (Development)
+================================
 
 .. contents:: Table of Contents
     :local:
@@ -13,85 +13,87 @@ Configuration information
 .. include:: ad_gitune.inc
 .. include:: ad_hbtune.inc
 
-.. index::
-    single: Spark
+.. Outdated 20150727::
 
------
-Spark
------
+    .. index::
+        single: Spark
 
-.. index::
-    single: disk full
-    single: Red Hat
-    single: CentOS
-    single: Fedora
+    -----
+    Spark
+    -----
 
-Resolving disk full issue while running Spark jobs
-==================================================
+    .. index::
+        single: disk full
+        single: Red Hat
+        single: CentOS
+        single: Fedora
 
-Situation: On a Red Hat or an CentOS cluster, while running spark jobs, the
-/tmp drive becomes full and causes the jobs to fail.
+    Resolving disk full issue while running Spark jobs
+    ==================================================
 
-Cause: Spark and other |CDH| services, by default use /tmp as the temporary
-location to store files required during run time including but not limited to
-shuffle data.
+    Situation: On a Red Hat or an CentOS cluster, while running spark jobs, the
+    /tmp drive becomes full and causes the jobs to fail.
 
-Resolution:
+    Cause: Spark and other |CDH| services, by default use /tmp as the temporary
+    location to store files required during run time including but not limited to
+    shuffle data.
 
 1)  Stop the trustedanalytics service::
 
         sudo service trustedanalytics stop
 
-#)  From |CDH| Web UI: first stop "Cloudera Management Service",
-    and then stop the |CDH|.
-#)  Now run the following steps on each node:
+            sudo service taproot-analytics stop
 
-    a)  Find the largest partition::
+    #)  From |CDH| Web UI: first stop "Cloudera Management Service",
+        and then stop the |CDH|.
+    #)  Now run the following steps on each node:
 
-            df -h
+        a)  Find the largest partition::
 
-    #)  Assuming /mnt is the largest partition, create the folder
-        "/mnt/.bda/tmp", if it isn't already present::
+                df -h
 
-            sudo mkdir -p /mnt/.bda/tmp
+        #)  Assuming /mnt is the largest partition, create the folder
+            "/mnt/.bda/tmp", if it isn't already present::
 
-    #)  Set the permissions on this directory for total access::
+                sudo mkdir -p /mnt/.bda/tmp
 
-            sudo chmod 1777 /mnt/.bda/tmp
+        #)  Set the permissions on this directory for total access::
 
-    #)  Add the following line to the /etc/fstab file and save it::
+                sudo chmod 1777 /mnt/.bda/tmp
 
-            /mnt/.bda/tmp    /tmp    none   bind   0   0
+        #)  Add the following line to the /etc/fstab file and save it::
 
-    #)  Reboot the machine
+                /mnt/.bda/tmp    /tmp    none   bind   0   0
 
-#)  After all the nodes are rebooted, from |CDH| Web UI: first start "Cloudera
-    Management Service", and then start the |CDH|.
+        #)  Reboot the machine
 
-Spark space concerns
-====================
+    #)  After all the nodes are rebooted, from |CDH| Web UI: first start "Cloudera
+        Management Service", and then start the |CDH|.
 
-Whenever a Spark application is run, redundant jars and logs go to
-/va/run/spark/work (or other location configured in Cloudera Manager).
-These can occupy over 140MB per command.
+    Spark space concerns
+    ====================
 
-* Short-term workarounds:
+    Whenever a Spark application is run, redundant jars and logs go to
+    /va/run/spark/work (or other location configured in Cloudera Manager).
+    These can occupy over 140MB per command.
 
-    *   Periodically delete these files
-    *   Create a cron job to delete these files on a periodic basis.
-        An example where the files are deleted eveyday at 2 am is::
+    * Short-term workarounds:
 
-            00 02 * * * sudo rm -rf /var/run/spark/work/app*
+        *   Periodically delete these files
+        *   Create a cron job to delete these files on a periodic basis.
+            An example where the files are deleted eveyday at 2 am is::
 
-* Long-term fix:
+                00 02 * * * sudo rm -rf /var/run/spark/work/app*
 
-    *   Spark 1.0 will automatically clean up the files
+    * Long-term fix:
 
-.. include:: ad_how.inc
+        *   Spark 1.0 will automatically clean up the files
 
-----------
-References
-----------
+    .. include:: ad_how.inc
 
-`Spark Docs <https://spark.apache.org/documentation.html>`__
+    ----------
+    References
+    ----------
+
+    `Spark Docs <https://spark.apache.org/documentation.html>`__
 

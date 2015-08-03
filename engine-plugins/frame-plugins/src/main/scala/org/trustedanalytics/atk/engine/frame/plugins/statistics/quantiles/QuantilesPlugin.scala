@@ -30,12 +30,6 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
  * Calculate quantiles on the given column
- * Parameters
- * ----------
- * column_name : str
- *   The column to calculate quantiles.
- * quantiles : [ float | list of float ]
- *   What is being requested.
  */
 @PluginDoc(oneLine = "New frame with Quantiles and their values.",
   extended = "Calculate quantiles on the given column.",

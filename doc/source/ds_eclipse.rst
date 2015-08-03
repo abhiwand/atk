@@ -105,7 +105,7 @@ Setup
     #)  Choose *Python Run* and choose the *OK* button, you should see the
         output::
 
-            Successful ping to TAProot Analytics at http://localhost:9099/info
+            Successful ping to Taproot Analytics ATK at http://localhost:9099/info
 
 #)  Next take a look at the included examples.
 

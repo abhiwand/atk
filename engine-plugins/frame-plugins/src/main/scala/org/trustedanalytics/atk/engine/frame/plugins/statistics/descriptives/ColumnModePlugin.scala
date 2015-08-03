@@ -28,18 +28,6 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
  * Calculate modes of a column.
- * Parameters
- * ----------
- * data_column : str
- *   The column whose mode is to be calculated.
- * weights_column : str (optional)
- *   The name of the column that provides weights (frequencies) for the mode
- *   calculation.
- *   Must contain numerical data.
- *   Default is all items have weight of 1.
- * max_modes_returned : int (optional)
- *   Maximum number of modes returned.
- *   Default is 1.
  */
 @PluginDoc(oneLine = "Evaluate the weights assigned to rows.",
   extended = """Calculate the modes of a column.

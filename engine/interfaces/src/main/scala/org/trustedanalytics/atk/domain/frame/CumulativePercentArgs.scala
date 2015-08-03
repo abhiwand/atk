@@ -16,14 +16,16 @@
 
 package org.trustedanalytics.atk.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Represents a CumulativePercentSum object
  *
- * @param sampleCol name of the column from which to compute a cumulative distribution
- * @param frame identifier for the input dataframe
  */
 
-case class CumulativePercentArgs(frame: FrameReference, sampleCol: String) {
+case class CumulativePercentArgs(frame: FrameReference,
+                                 @ArgDoc("""The name of the column from which to compute
+the cumulative percent sum.""") sampleCol: String) {
   require(frame != null, "frame is required")
   require(sampleCol != null, "column name for sample is required")
 }

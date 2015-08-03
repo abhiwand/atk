@@ -16,7 +16,11 @@
 
 package org.trustedanalytics.atk.domain.frame
 
-case class RenameColumnsArgs(frame: FrameReference, names: Map[String, String]) {
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
+case class RenameColumnsArgs(
+    @ArgDoc("""<TBD>""") frame: FrameReference,
+    @ArgDoc("""<TBD>""") names: Map[String, String]) {
   require(frame != null, "frame is required")
   require(names != null, "names is required")
 }

@@ -33,16 +33,6 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Calculate the top (or bottom) K distinct values by count for specified data column.
  *
- * Parameters
- * ----------
- * data_column : str
- * The column whose top (or bottom) K distinct values are to be calculated.
- * k : int
- * Number of entries to return (If k is negative, return bottom k).
- * weights_column : str (optional)
- * The column that provides weights (frequencies) for the topK calculation.
- * Must contain numerical data.
- * Default is 1 for all items.
  */
 @PluginDoc(oneLine = "Most or least frequent column values.",
   extended = """Calculate the top (or bottom) K distinct values by count of a column.

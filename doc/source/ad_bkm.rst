@@ -10,88 +10,88 @@ Best Known Methods (Admin)
 Configuration information
 -------------------------
 
-.. include:: ad_gitune.inc
-.. include:: ad_hbtune.inc
+.. toctree::
+    :maxdepth: 1
 
-.. index::
-    single: Spark
+    ad_cluster_configuration
+    ad_gitune
+    ad_hbtune
 
------
-Spark
------
+.. Outdated 20150728::
 
-.. index::
-    single: disk full
-    single: Red Hat
-    single: CentOS
-    single: Fedora
+    .. index::
+        single: Spark
 
-Resolving disk full issue while running Spark jobs
-==================================================
+    -----
+    Spark
+    -----
 
-Situation: On a Red Hat or an CentOS cluster, while running spark jobs, the
-/tmp drive becomes full and causes the jobs to fail.
+    .. index::
+        single: disk full
+        single: Red Hat
+        single: CentOS
+        single: Fedora
 
-Cause: Spark and other |CDH| services, by default use /tmp as the temporary
-location to store files required during run time including but not limited to
-shuffle data.
+    Resolving disk full issue while running Spark jobs
+    ==================================================
 
-Resolution:
+    Situation: On a Red Hat or an CentOS cluster, while running spark jobs, the
+    /tmp drive becomes full and causes the jobs to fail.
 
 1)  Stop the trustedanalytics service::
 
         sudo service trustedanalytics stop
 
-#)  From |CDH| Web UI: first stop "Cloudera Management Service",
-    and then stop the |CDH|.
-#)  Now run the following steps on each node:
+    #)  From |CDH| Web UI: first stop "Cloudera Management Service",
+        and then stop the |CDH|.
+    #)  Now run the following steps on each node:
 
-    a)  Find the largest partition::
+        a)  Find the largest partition::
 
-            df -h
+                df -h
 
-    #)  Assuming /mnt is the largest partition, create the folder
-        "/mnt/.bda/tmp", if it isn't already present::
+        #)  Assuming /mnt is the largest partition, create the folder
+            "/mnt/.bda/tmp", if it isn't already present::
 
-            sudo mkdir -p /mnt/.bda/tmp
+                sudo mkdir -p /mnt/.bda/tmp
 
-    #)  Set the permissions on this directory for total access::
+        #)  Set the permissions on this directory for total access::
 
-            sudo chmod 1777 /mnt/.bda/tmp
+                sudo chmod 1777 /mnt/.bda/tmp
 
-    #)  Add the following line to the /etc/fstab file and save it::
+        #)  Add the following line to the /etc/fstab file and save it::
 
-            /mnt/.bda/tmp    /tmp    none   bind   0   0
+                /mnt/.bda/tmp    /tmp    none   bind   0   0
 
-    #)  Reboot the machine
+        #)  Reboot the machine
 
-#)  After all the nodes are rebooted, from |CDH| Web UI: first start "Cloudera
-    Management Service", and then start the |CDH|.
+    #)  After all the nodes are rebooted, from |CDH| Web UI: first start "Cloudera
+        Management Service", and then start the |CDH|.
 
-Spark space concerns
-====================
+    Spark space concerns
+    ====================
 
-Whenever a Spark application is run, redundant jars and logs go to
-/va/run/spark/work (or other location configured in Cloudera Manager).
-These can occupy over 140MB per command.
+    Whenever a Spark application is run, redundant jars and logs go to
+    /va/run/spark/work (or other location configured in Cloudera Manager).
+    These can occupy over 140MB per command.
 
-* Short-term workarounds:
+    * Short-term workarounds:
 
-    *   Periodically delete these files
-    *   Create a cron job to delete these files on a periodic basis.
-        An example where the files are deleted eveyday at 2 am is::
+        *   Periodically delete these files
+        *   Create a cron job to delete these files on a periodic basis.
+            An example where the files are deleted eveyday at 2 am is::
 
-            00 02 * * * sudo rm -rf /var/run/spark/work/app*
+                00 02 * * * sudo rm -rf /var/run/spark/work/app*
 
-* Long-term fix:
+    * Long-term fix:
 
-    *   Spark 1.0 will automatically clean up the files
+        *   Spark 1.0 will automatically clean up the files
 
-.. include:: ad_how.inc
+    .. include:: ad_how.inc
 
-----------
-References
-----------
+    ----------
+    References
+    ----------
 
-`Spark Docs <https://spark.apache.org/documentation.html>`__
+    `Spark Docs <https://spark.apache.org/documentation.html>`__
 

@@ -16,10 +16,13 @@
 
 package org.trustedanalytics.atk.domain.frame
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * The args for any frame plugin that takes "no args" except the frame
  * @param frame the frame to operate on
  */
-case class FrameNoArgs(frame: FrameReference) {
+case class FrameNoArgs(
+    @ArgDoc("""<TBD>""") frame: FrameReference) {
   require(frame != null, "frame is required")
 }

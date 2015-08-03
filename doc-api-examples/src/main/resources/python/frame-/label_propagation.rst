@@ -12,11 +12,11 @@ Examples
 
     script
 
-    ia.connect()
-    s = [("a", ia.int32), ("b", ia.int32), ("c", ia.float32), ("d", ia.vector(2))]
+    ta.connect()
+    s = [("a", ta.int32), ("b", ta.int32), ("c", ta.float32), ("d", ta.vector(2))]
     d = "lp.csv"
-    c = ia.CsvFile(d,s)
-    f = ia.Frame(c)
+    c = ta.CsvFile(d,s)
+    f = ta.Frame(c)
     r = f.label_propagation("a", "b", "c", "d", "results")
     r['frame'].inspect()
     r['report']

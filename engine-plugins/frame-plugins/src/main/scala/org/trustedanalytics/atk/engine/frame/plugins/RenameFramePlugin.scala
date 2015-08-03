@@ -25,13 +25,6 @@ import spray.json._
 import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
- * Parameters
- * ----------
- * new_name : str
- *   the new name of the frame.
- */
-
-/**
  * Rename a frame
  */
 @PluginDoc(oneLine = "Change the name of the current frame.",

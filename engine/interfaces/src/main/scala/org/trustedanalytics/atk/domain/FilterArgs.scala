@@ -19,7 +19,11 @@ package org.trustedanalytics.atk.domain
 import org.trustedanalytics.atk.domain.frame.FrameReference
 import org.trustedanalytics.atk.domain.frame.Udf
 
-case class FilterArgs(frame: FrameReference, udf: Udf) {
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
+case class FilterArgs(@ArgDoc("""<TBD>""") frame: FrameReference,
+                      @ArgDoc("""UDF which evaluates a row to a boolean;
+rows that evaluate to False are dropped from the Frame""") udf: Udf) {
   require(frame != null, "frame is required")
   require(udf != null, "predicate is required")
 }

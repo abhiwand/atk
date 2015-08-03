@@ -31,9 +31,9 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Parsing data to load and append to data frames
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "<TBD>",
+  extended = "<TBD>",
+  returns = "<TBD>")
 class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
 
   /**

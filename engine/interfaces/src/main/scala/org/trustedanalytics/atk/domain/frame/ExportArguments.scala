@@ -22,11 +22,16 @@ import org.trustedanalytics.atk.engine.plugin.ArgDoc
 /**
  * Input arguments class for export to CSV
  */
+
 case class ExportHdfsCsvArgs(frame: FrameReference,
-                             folderName: String,
-                             separator: Option[Char] = None,
-                             count: Option[Int] = None,
-                             offset: Option[Int] = None) {
+                             @ArgDoc("""The HDFS folder path where the files
+will be created.""") folderName: String,
+                             @ArgDoc("""The separator for separating the values.
+Default is comma (,).""") separator: Option[Char] = None,
+                             @ArgDoc("""The number of records you want.
+Default, or a non-positive value, is the whole frame.""") count: Option[Int] = None,
+                             @ArgDoc("""The number of rows to skip before exporting to the file.
+Default is zero (0).""") offset: Option[Int] = None) {
   require(frame != null, "frame is required")
   require(folderName != null, "folder name is required")
 }
@@ -35,9 +40,12 @@ case class ExportHdfsCsvArgs(frame: FrameReference,
  * Input arguments class for export to JSON
  */
 case class ExportHdfsJsonArgs(frame: FrameReference,
-                              folderName: String,
-                              count: Option[Int] = None,
-                              offset: Option[Int] = None) {
+                              @ArgDoc("""The HDFS folder path where the files
+will be created.""") folderName: String,
+                              @ArgDoc("""The number of records you want.
+Default, or a non-positive value, is the whole frame.""") count: Option[Int] = None,
+                              @ArgDoc("""The number of rows to skip before exporting to the file.
+Default is zero (0).""") offset: Option[Int] = None) {
   require(frame != null, "frame is required")
   require(folderName != null, "folder name is required")
 }

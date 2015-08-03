@@ -80,11 +80,11 @@ List the files in the directory::
 
     $ aws s3 ls s3://trustedanalytics-repo/release/latest/vm/
     2014-08-19 12:57:03           0
-    2014-11-25 16:22:57          70 TAProotAnalytics-VM.md5
-    2014-11-25 16:22:57 14656025025 TAProotAnalytics-VM.tar.gz
+    2014-11-25 16:22:57          70 TaprootAnalytics-VM.md5
+    2014-11-25 16:22:57 14656025025 TaprootAnalytics-VM.tar.gz
 
 Download the tar.gz file.
-In this case, it's 'TAProotAnalytics-VM.tar.gz'::
+In this case, it's 'TaprootAnalytics-VM.tar.gz'::
 
     $ aws s3 cp s3://trustedanalytics-repo/release/latest/vm/TAProotAnalytics-VM.tar.gz ./
 
@@ -261,7 +261,7 @@ Extracting On Linux
 ===================
 After acquiring the |VM|, extract the archive::
 
-    $ tar -xvf TAProotAnalytics-VM.tar.gz
+    $ tar -xvf TaprootAnalytics-VM.tar.gz
 
 After extraction, there should be two (2) files,
 one with the extension 'vmdk', and another with the extension 'ovf'.

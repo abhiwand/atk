@@ -18,6 +18,8 @@ package org.trustedanalytics.atk.domain.graph
 
 import org.trustedanalytics.atk.domain.UriReference
 
+import com.intel.taproot.analytics.engine.plugin.{ Invocation }
+
 case class GraphReference(graphId: Long) extends UriReference {
   /** The entity id */
   override def id: Long = graphId

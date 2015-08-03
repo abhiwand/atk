@@ -26,13 +26,6 @@ import spray.json._
 import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
- * Parameters
- * ----------
- * label : str
- *   label of the vertex type
- */
-
-/**
  * Define a vertex type for a seamless graph
  */
 @PluginDoc(oneLine = "Define a vertex type by label.",

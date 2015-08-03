@@ -18,6 +18,8 @@ package org.trustedanalytics.atk.domain.graph
 
 import org.trustedanalytics.atk.domain.graph.construction.FrameRule
 
+import com.intel.taproot.analytics.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Command for loading  graph data into existing graph in the graph database. Source is tabular data from a dataframe
  * and it is converted into graph data using the graphbuilder3 graph construction rules.
