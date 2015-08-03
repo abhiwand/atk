@@ -18,5 +18,10 @@ package org.trustedanalytics.atk.domain.frame.partitioning
 
 import org.trustedanalytics.atk.domain.frame.FrameReference
 
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
+
 /** Arguments to CoalescePlugin (see Spark API) */
-case class CoalesceArgs(frame: FrameReference, numberPartitions: Int, shuffle: Option[Boolean] = Some(false))
+case class CoalesceArgs(
+  @ArgDoc("""<TBD>""") frame: FrameReference,
+  @ArgDoc("""<TBD>""") numberPartitions: Int,
+  @ArgDoc("""<TBD>""") shuffle: Option[Boolean] = Some(false))

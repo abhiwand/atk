@@ -497,7 +497,7 @@ Glossary
 
         Data in the JavaScript Object Notation format. An open standard format
         that uses human-readable text to transmit data objects consisting of
-        attributevalue pairs. For more information see http:/json.org.
+        attributevalue pairs. For more information see `http:/json.org`__.
 
     Katz Centrality
 

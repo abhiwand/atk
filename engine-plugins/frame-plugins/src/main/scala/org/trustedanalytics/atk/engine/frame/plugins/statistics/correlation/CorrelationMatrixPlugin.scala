@@ -34,10 +34,6 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
  * Calculate correlation matrix for the specified columns
- * Parameters
- * ----------
- * columns : [ str | list of str ]
- *   The names of the column from which to compute the matrix.
  */
 @PluginDoc(oneLine = "Calculate correlation matrix for two or more columns.",
   extended = """Notes

@@ -18,15 +18,19 @@ package org.trustedanalytics.atk.domain.graph
 
 import org.trustedanalytics.atk.domain.schema.{ GraphSchema, EdgeSchema }
 
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Arguments for defining an edge
- * @param graphRef
- * @param label the label for this edge list
- * @param srcVertexLabel the src "type" of vertices this edge connects
- * @param destVertexLabel the destination "type" of vertices this edge connects
- * @param directed true if edges are directed, false if they are undirected
  */
-case class DefineEdgeArgs(graphRef: GraphReference, label: String, srcVertexLabel: String, destVertexLabel: String, directed: Boolean = false) {
+case class DefineEdgeArgs(@ArgDoc("""<TBD>""") graphRef: GraphReference,
+                          @ArgDoc("""Label of the edge type.""") label: String,
+                          @ArgDoc("""The src "type" of vertices this edge
+connects.""") srcVertexLabel: String,
+                          @ArgDoc("""The destination "type" of vertices this
+edge connects.""") destVertexLabel: String,
+                          @ArgDoc("""True if edges are directed,
+false if they are undirected.""") directed: Boolean = false) {
 
   def edgeSchema: EdgeSchema = {
     new EdgeSchema(GraphSchema.edgeSystemColumns, label, srcVertexLabel, destVertexLabel, directed)

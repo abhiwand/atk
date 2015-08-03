@@ -35,12 +35,6 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
  * Calculate covariance matrix for the specified columns
- * Parameters
- * ----------
- * columns : [ str | list of str ]
- *   The names of the column from which to compute the matrix.
- *   Names should refer to a single column of type vector, or two or more
- *   columns of numeric scalars.
  */
 @PluginDoc(oneLine = "Calculate covariance matrix for two or more columns.",
   extended = """Notes

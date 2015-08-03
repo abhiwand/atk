@@ -25,18 +25,6 @@ import spray.json._
 import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
- * Parameters
- * ----------
- * label : str
- *   label of the edge type
- * source_vertex_label : str
- *   label of the source vertex type
- * destination_vertex_label : str
- *   label of the destination vertex type
- * directed : bool
- *   is the edge directed
- */
-/**
  * Define an edge type for a seamless graph
  */
 @PluginDoc(oneLine = "Define an edge type.",

@@ -16,12 +16,15 @@
 
 package org.trustedanalytics.atk.domain.frame
 
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Input arguments class for correlation
  */
 
-case class CorrelationArgs(frame: FrameReference,
-                           dataColumnNames: List[String]) {
+case class CorrelationArgs(@ArgDoc("""<TBD>""") frame: FrameReference,
+                           @ArgDoc("""The names of 2 columns from which
+to compute the correlation.""") dataColumnNames: List[String]) {
   require(frame != null, "frame is required")
   require(dataColumnNames.size == 2, "exactly two data columns are required")
   require(!dataColumnNames.contains(null), "data columns names cannot be null")

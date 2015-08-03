@@ -31,19 +31,23 @@ function build_docstubs() {
 
 ###########################################################################################################
 function compile_jars() {
-    # $1 = AskThem
-    # $2 = DisplayStatus 
-    # $3 = TempFile
-    # $4 = LogFile
+    # $1 = Threads
+    # $2 = AskThem
+    # $3 = DisplayStatus 
+    # $4 = TempFile
+    # $5 = LogFile
 
     # debug: run maven
     which mvn > /dev/null
     if [ "$?" == "0" ]; then
         RunCommand="mvn clean package -P compile,test,events,modules-all,\!scala-coverage,\!integration-tests -Dcheckstyle.skip=true -DskipTests"
-        do_this "$RunCommand" $1 $2 $3 $4
+        if [ "$1" == "True" ]; then
+            RunCommand="$RunCommand -t 8"
+        fi
+        do_this "$RunCommand" $2 $3 $4 $5
         return $?
     else
-        Err "Maven does not appear to be installed." $1 $2 $3 $4
+        Err "Maven does not appear to be installed." $2 $3 $4 $5
         if [ "$?" == "1" ]; then return 1; fi
     fi
     return 0
@@ -106,6 +110,7 @@ function doc_help() {
     echo "-p:         Do not rebuild docstub files"
     echo "-q, -qq:    Quiet mode, use default values for prompts"
     echo "-s:         Do not compile Scala code"
+    echo "+t:         Use threads during maven compilations"
     echo
     echo "dirhtml:    Compile to html segregated with directories"
     echo "html:       Compile to html"
@@ -286,7 +291,13 @@ function main() {
         echo $ModifiedArguments | grep -i "/-s/" > /dev/null
         if [ "$?" == "1" ]; then
             # Update the scala
-            maven $AskThem $DisplayStatus $TempFile $LogFile
+            echo $ModifiedArguments | grep -i -e "/+t/" > /dev/null
+            if [ "$?" == "0" ]; then
+                Threads=True
+            else
+                Threads=False
+            fi
+            maven $Threads $AskThem $DisplayStatus $TempFile $LogFile
             if [ "$?" == "1" ]; then return 1; fi
         fi
 
@@ -374,21 +385,22 @@ function main() {
 
 ############################################################################################################
 function maven() {
-    # $1 = AskThem
-    # $2 = DisplayStatus
-    # $3 = Temporary file
-    # $4 = LogFile
+    # $1 = Threads
+    # $2 = AskThem
+    # $3 = DisplayStatus
+    # $4 = Temporary file
+    # $5 = LogFile
 
     # debug: Maven
 
     # debug: Stop the server
-    server_stop $1 $2 $3 $4
+    server_stop $2 $3 $4 $5
     Return=$?
     if [ "$Return" != "0" ]; then return $Return; fi
 
     # debug: Compile jars
     pushd ../ > /dev/null
-    compile_jars $1 $2 $3 $4
+    compile_jars $1 $2 $3 $4 $5
     Return=$?
     popd > /dev/null
 
@@ -468,7 +480,7 @@ function pdf_build() {
 
 ############################################################################################################
 function server_running() {
-    ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.*.component.Boot" | grep -v "grep" > /dev/null
+    ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*.component.Boot" | grep -v "grep" > /dev/null
     Return=$?
     if [ "$Return" != "0" ]; then
         return $Return
@@ -547,7 +559,7 @@ function server_stop() {
     server_running
     Looping=$?
     while [ "$Looping" == "0" ]; do
-        Servers=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.intel.*.component.Boot" | grep -v "grep")
+        Servers=$(ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*com.*component.Boot" | grep -v "grep")
         if [ "$?" == "0" ]; then
             Process_ID=$(echo $Servers | head -n 1 |  awk '{print $2}')
             echo -n "Stop server $Process_ID"
@@ -605,4 +617,6 @@ function sphinx_build() {
 }
 
 #==========================================================================================================#
+date
 main $(parameters "$*")
+if [ "$?" == "0" ]; then date; fi

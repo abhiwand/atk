@@ -20,8 +20,6 @@ import org.trustedanalytics.atk.engine.plugin.ArgDoc
 
 /**
  * Arguments used for a single execution of garbage collection
- * @param ageToDeleteData minimum age of entity for data deletion. defaults to server config
- * @param ageToDeleteMetaData minimum age of entity for meta data deletion. defaults to server config
  */
 case class GarbageCollectionArgs(
   @ArgDoc("""Minimum age of entity for data deletion.

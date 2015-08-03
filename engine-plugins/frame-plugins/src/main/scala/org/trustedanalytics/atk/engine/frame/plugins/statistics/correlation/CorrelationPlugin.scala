@@ -28,10 +28,6 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
  * Calculate correlation for the specified columns
- * Parameters
- * ----------
- * columns : [ str | list of str ]
- *   The names of 2 columns from which to compute the correlation.
  */
 @PluginDoc(oneLine = "Calculate correlation for two columns of current frame.",
   extended = """Notes

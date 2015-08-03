@@ -26,6 +26,9 @@ import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, CommandPlugin, Invocatio
 import org.apache.spark.sql.parquet.atk.giraph.frame.lp.{ LabelPropagationVertexOutputFormat, LabelPropagationVertexInputFormat, LabelPropagationEdgeInputFormat }
 import LabelPropagationJsonFormat._
 
+@PluginDoc(oneLine = "<TBD>",
+  extended = """<TBD>""",
+  returns = """<TBD>""")
 class LabelPropagationPlugin
     extends CommandPlugin[LabelPropagationArgs, LabelPropagationResult] {
 

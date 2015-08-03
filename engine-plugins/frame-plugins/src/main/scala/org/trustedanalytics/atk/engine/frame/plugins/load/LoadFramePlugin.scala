@@ -20,9 +20,8 @@ import org.trustedanalytics.atk.domain.UserPrincipal
 import org.trustedanalytics.atk.domain.frame.{ FrameReference, FrameEntity }
 import org.trustedanalytics.atk.domain.frame.load.LoadFrameArgs
 import org.trustedanalytics.atk.engine.frame.SparkFrame
-import org.trustedanalytics.atk.engine.plugin.Invocation
+import org.trustedanalytics.atk.engine.plugin.{ PluginDoc, Invocation }
 import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
-import org.trustedanalytics.atk.engine.plugin.PluginDoc
 import org.apache.spark.frame.FrameRdd
 
 import spray.json._
@@ -31,9 +30,9 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Parsing data to load and append to data frames
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "<TBD>",
+  extended = "<TBD>",
+  returns = "<TBD>")
 class LoadFramePlugin extends SparkCommandPlugin[LoadFrameArgs, FrameEntity] {
 
   /**

@@ -62,12 +62,13 @@ rst_epilog = """
 .. |VM|     replace:: :abbr:`VM (Virtual Machine)`
 .. |XML|    replace:: :abbr:`XML (Extensible Markup Language)`
 .. |YCSB|   replace:: :abbr:`YCSB (Yahoo! Cloud Serving Benchmarking)`
-.. |PACKAGE|    replace:: TAProot Analytics
+.. |PACKAGE|    replace:: Trusted Analytics
 .. |PACKAGE_1LC|    replace:: trustedanalytics
-.. |PACKAGE_DLC|    replace:: trustedanalytics
+.. |PACKAGE_DLC|    replace:: trusted-analytics
 .. |PACKAGE_SLC|    replace:: ta
 .. |PACKAGE_SUC|    replace:: TA
-.. |TOOLKIT|    replace:: |PACKAGE| Toolkit
+.. |PACKAGE_USER|   replace:: ta
+.. |TOOLKIT|    replace:: |PACKAGE| Package
 """
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -127,7 +128,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-#project = u'TAProot Analytics Toolkit'
+project = u'Trusted Analytics Package'
 copyright = u'2015, Intel'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -218,7 +219,7 @@ html_theme_path = ['_theme']
 #html_title = None
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = "TAProot Analytics"
+html_short_title = "Trusted Analytics"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -300,7 +301,7 @@ latex_elements = {
 
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [('index', 'Package_Documentation.tex', 'TAProot Analytics Documentation', 'Author: Intel', 'manual')]
+latex_documents = [('index', 'Package_Documentation.tex', 'Trusted Analytics Documentation', 'Author: Intel', 'manual')]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.

@@ -1,8 +1,8 @@
 .. index:: ! log
 
-============
+=================
 |PACKAGE| Logging
-============
+=================
 
 .. contents:: Table of Contents
     :local:

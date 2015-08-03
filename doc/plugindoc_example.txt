@@ -1,5 +1,3 @@
-@PluginDoc(oneLine = "Make new frame with additional column for predicted label.",
-  extended = """Predict the labels for a test frame and create a new frame revision with
-existing columns and a new predicted label's column.""",
-  returns = """A frame containing the original frame's columns and a column with the
-predicted label""")
+@PluginDoc(oneLine = "<TBD>",
+  extended = """<TBD>""",
+  returns = """<TBD>""")

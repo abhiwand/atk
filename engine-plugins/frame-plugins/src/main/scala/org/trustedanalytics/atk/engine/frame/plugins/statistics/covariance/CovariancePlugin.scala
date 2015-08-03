@@ -28,10 +28,6 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
 /**
  * Calculate covariance for the specified columns
- * Parameters
- * ----------
- * columns : [ str | list of str ]
- *     The names 2 columns from which to compute the covariance.
  */
 
 @PluginDoc(oneLine = "Calculate covariance for exactly two columns.",

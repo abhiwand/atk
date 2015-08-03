@@ -1,5 +1,6 @@
 Examples
 --------
+
 .. code::
 
     >>> entropy = frame.entropy('data column')

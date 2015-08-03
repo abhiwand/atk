@@ -3,7 +3,7 @@ Examples
 
 .. code::
 
-    >>> my_model = LdaModel()
+    >>> my_model = ta.LdaModel()
     >>> results = my_model.train(frame, 'doc_column_name', 'word_column_name',
     ... 'word_count_column_name', num_topics = 3)
 

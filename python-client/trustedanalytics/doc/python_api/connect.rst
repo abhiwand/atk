@@ -10,8 +10,8 @@ Connect to the Server
     :local:
     :backlinks: none
 
-Before the Python API can be used, the user must "connect" to the server, such
-that the Python client can download the API and configure itself:
+The Python client must 'connect' to an |PACKAGE| server before it can be used.
+Here is the 'connect' process described by the method's documentation:
 
 .. autofunction:: trustedanalytics.connect
 
@@ -36,16 +36,18 @@ To connect to a specific server:
 Connections requiring OAuth
 ---------------------------
 
-To connect to an Analytics PaaS instance of |PACKAGE|, the python client must have an OAuth
-access token (see
-`oauth tokens <http://self-issued.info/docs/draft-ietf-oauth-v2-bearer.html>`).
-The user must have a credentials file which holds an OAuth access token and
-a refresh token.
+To connect to a DP2 instance of |PACKAGE|, the python client must have an OAuth access token (see [oauth tokens](http://self-issued.info/docs/draft-ietf-oauth-v2-bearer.html)).  
+The user must have a credentials file which holds an OAuth access token and a refresh token.
 
-The user can create a credentials file using |PACKAGE| client running in an
-interactive python session.
-Call ``create_connect_file('filename_of_your_choice')`` and interactively
-provide answers to its prompt.
+The user can create a credentials file using |PACKAGE| client running in an interactive python session.  Call `create_credentials_file('filename_of_your_choice')` and interactively provide answers to its prompt.
+
+.. PaaS::
+
+    To connect to an Analytics PaaS instance of |PACKAGE|, the python client must have an OAuth access token (see `oauth tokens <http://self-issued.info/docs/draft-ietf-oauth-v2-bearer.html>`).
+    The user must have a credentials file which holds an OAuth access token and a refresh token.
+
+    The user can create a credentials file using |PACKAGE| client running in an interactive python session.
+    Call ``create_connect_file('filename_of_your_choice')`` and interactively provide answers to its prompt.
 
 .. code::
 
@@ -59,8 +61,7 @@ provide answers to its prompt.
 
     Credentials created at '/home/dscientist9/.ta/demo.creds'
 
-The credentials file can be specified when calling ``connect`` or
-set as an environmental variable $TA_CREDS.
+The credentials file can be specified when calling ``connect`` or set as an environmental variable $TA_CREDS.
 
 .. only:: html
 
@@ -113,8 +114,7 @@ Troubleshooting
 Client's Server Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-To see the client's configuration to find the server, just repr the
-``ta.server``:
+To see the client's configuration to find the server, look at ``ta.server``:
 
 .. only:: html
 
@@ -128,7 +128,7 @@ To see the client's configuration to find the server, just repr the
                 "Content-type": "application/json"
             }, 
             "scheme": "http", 
-            "uri": "ta-server.demo-gotapaas.com", 
+            "oauth_uri": "uaa.my-dp2-domain.comdemo-gotapaas.com", 
             "user": "dscientist9"
         }
 
@@ -156,10 +156,9 @@ To see the client's configuration to find the server, just repr the
                 "Content-type": "application/json"
             }, 
             "scheme": "http", 
-            "uri": "ta-server.demo-gotapaas.com", 
+            "oauth_uri": "uaa.my-dp2-domain.comdemo-gotapaas.com", 
             "user": "dscientist9"
         }
 
-The settings may be individually modified with the ``ta.server`` object,
-before calling connect.
+The settings may be individually modified with the ``ta.server`` object, before calling connect.
 
