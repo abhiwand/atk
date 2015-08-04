@@ -16,19 +16,24 @@
 
 package org.trustedanalytics.atk.domain.frame
 
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Command for calculating summary statistics for a dataframe column.
- * @param frame Identifier for the input dataframe.
- * @param dataColumn Name of the column to statistically summarize. Must contain numerical data.
- * @param weightsColumn Optional. Name of the column that provides weights (frequencies).
- * @param usePopulationVariance If true, variance calculated is the population variance. If false or the option is not
- *                              provided, the variance calculated is the sample variance. Because this option affects
- *                              the variance, it affects the standard deviation and the confidence intervals as well.
  */
-case class ColumnSummaryStatisticsArgs(frame: FrameReference,
-                                       dataColumn: String,
-                                       weightsColumn: Option[String],
-                                       usePopulationVariance: Option[Boolean]) {
+case class ColumnSummaryStatisticsArgs(@ArgDoc("""Identifier for the input
+dataframe.""") frame: FrameReference,
+                                       @ArgDoc("""The column to be statistically summarized.
+Must contain numerical data; all NaNs and infinite values are excluded
+from the calculation.""") dataColumn: String,
+                                       @ArgDoc("""Name of column holding weights of
+column values.""") weightsColumn: Option[String],
+                                       @ArgDoc("""If true, the variance is calculated
+as the population variance.
+If false, the variance calculated as the sample variance.
+Because this option affects the variance, it affects the standard
+deviation and the confidence intervals as well.
+Default is false.""") usePopulationVariance: Option[Boolean]) {
 
   require(frame != null, "frame is required but not provided")
   require(dataColumn != null, "data column is required but not provided")

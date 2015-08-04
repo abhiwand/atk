@@ -29,11 +29,11 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
 case class AnnotateWeightedDegreesArgs(graph: GraphReference,
-                                       @ArgDoc("") outputPropertyName: String,
-                                       @ArgDoc("") degreeOption: Option[String] = None,
-                                       @ArgDoc("") inputEdgeLabels: Option[List[String]] = None,
-                                       @ArgDoc("") edgeWeightProperty: Option[String] = None,
-                                       @ArgDoc("") edgeWeightDefault: Option[Double] = None) {
+                                       @ArgDoc("<TBD>") outputPropertyName: String,
+                                       @ArgDoc("<TBD>") degreeOption: Option[String] = None,
+                                       @ArgDoc("<TBD>") inputEdgeLabels: Option[List[String]] = None,
+                                       @ArgDoc("<TBD>") edgeWeightProperty: Option[String] = None,
+                                       @ArgDoc("<TBD>") edgeWeightDefault: Option[Double] = None) {
 
   // validate arguments
 

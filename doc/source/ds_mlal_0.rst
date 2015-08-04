@@ -43,7 +43,7 @@ Graphical Models
 
 
 The graphical models find more insights from structured noisy data.
-See `graph API <python_api/graphs/index>`_ for details of the
+See `graph API <python_api/graphs/index.html>`_ for details of the
 **Label Propagation (LP)** and **Loopy Belief Propagation (LBP)**.
 
 

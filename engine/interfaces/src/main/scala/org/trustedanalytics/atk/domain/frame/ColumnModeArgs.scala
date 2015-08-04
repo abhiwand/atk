@@ -16,21 +16,18 @@
 
 package org.trustedanalytics.atk.domain.frame
 
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 import spray.json.JsValue
 
 /**
  * Command for calculating the mode of a (possibly weighted) column.
- * @param frame Identifier for the input dataframe.
- * @param dataColumn Name of the column supplying the data.
- * @param weightsColumn Optional. Name of the column supplying the weights. Weights default to uniform (all 1's)
- *                      if no weights column is provided.
- * @param maxModesReturned Optional. Maximum number of modes returned. If this parameter is not provided, it
- *                                 defaults to 1.
  */
-case class ColumnModeArgs(frame: FrameReference,
-                          dataColumn: String,
-                          weightsColumn: Option[String],
-                          maxModesReturned: Option[Int]) {
+case class ColumnModeArgs(@ArgDoc("""Identifier for the input dataframe.""") frame: FrameReference,
+                          @ArgDoc("""Name of the column supplying the data.""") dataColumn: String,
+                          @ArgDoc("""Name of the column supplying the weights.
+Default is all items have weight of 1.""") weightsColumn: Option[String],
+                          @ArgDoc("""Maximum number of modes returned.
+Default is 1.""") maxModesReturned: Option[Int]) {
 
   require(frame != null, "frame is required")
   require(dataColumn != null, "data column is required")

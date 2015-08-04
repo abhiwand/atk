@@ -19,6 +19,7 @@ package org.trustedanalytics.atk.domain.frame.load
 import org.trustedanalytics.atk.domain.frame.FrameReference
 import org.trustedanalytics.atk.domain.schema.DataTypes.DataType
 import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema, Schema }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 /**
  * The case classes in this file are used to parse the json submitted as part of a load or append call
@@ -27,19 +28,23 @@ import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema, Schema }
 /**
  * Object used for parsing and then executing the frame.append command
  *
- * @param destination DataFrame to load data into. Should be either a uri or id
- * @param source Object describing the data to load into the destination. Includes the Where and How of loading.
  */
-case class LoadFrameArgs(destination: FrameReference, source: LoadSource)
+case class LoadFrameArgs(@ArgDoc("""DataFrame to load data into.
+Should be either a uri or id.""") destination: FrameReference,
+                         @ArgDoc("""Object describing the data to load into the destination.
+Includes the Where and How of loading.""") source: LoadSource)
 
 /**
  * Describes a resource that should be loaded into a DataFrame
  *
- * @param sourceType Source object that can be parsed into an RDD. Such as "file" or "frame"
- * @param uri Location of data to load. Should be appropriate for the source_type.
- * @param parser Object describing how to parse the resource. If data already an RDD can be set to None
  */
-case class LoadSource(sourceType: String, uri: String, parser: Option[LineParser] = None, data: Option[List[List[Any]]] = None, startTag: Option[List[String]] = None, endTag: Option[List[String]] = None) {
+case class LoadSource(
+    @ArgDoc("""Source object that can be parsed into an RDD. Such as "file" or "frame".""") sourceType: String,
+    @ArgDoc("""Location of data to load. Should be appropriate for the source_type.""") uri: String,
+    @ArgDoc("""Object describing how to parse the resource. If data already an RDD can be set to None.""") parser: Option[LineParser] = None,
+    @ArgDoc("""<TBD>""") data: Option[List[List[Any]]] = None,
+    @ArgDoc("""<TBD>""") startTag: Option[List[String]] = None,
+    @ArgDoc("""<TBD>""") endTag: Option[List[String]] = None) {
 
   require(sourceType != null, "sourceType cannot be null")
   require(sourceType == "frame" || sourceType == "file" || sourceType == "hivedb" || sourceType == "strings" || sourceType == "linefile" || sourceType == "multilinefile" || sourceType == "xmlfile",

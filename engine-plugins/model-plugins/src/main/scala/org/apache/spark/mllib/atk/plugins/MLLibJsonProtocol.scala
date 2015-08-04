@@ -16,17 +16,18 @@
 
 package org.apache.spark.mllib.atk.plugins
 
-import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
-import org.apache.spark.mllib.atk.plugins.classification._
-import org.apache.spark.mllib.atk.plugins.classification.glm.{ LogisticRegressionSummaryTable, LogisticRegressionData, LogisticRegressionTrainArgs }
-import org.apache.spark.mllib.atk.plugins.clustering.{ KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn }
-import org.apache.spark.mllib.atk.plugins.dimensionalityreduction._
-import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, Vector, Matrix, DenseMatrix }
+import org.apache.spark.mllib.linalg.{ DenseMatrix, DenseVector, Matrix, SparseVector, Vector }
 import org.apache.spark.mllib.regression.LinearRegressionModel
-import spray.json._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
+import org.trustedanalytics.atk.engine.model.plugins.classification._
+import org.trustedanalytics.atk.engine.model.plugins.classification.glm.{ LogisticRegressionData, LogisticRegressionSummaryTable, LogisticRegressionTrainArgs }
+import org.trustedanalytics.atk.engine.model.plugins.clustering.{ KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn }
+import org.trustedanalytics.atk.engine.model.plugins.dimensionalityreduction._
+import org.trustedanalytics.atk.engine.model.plugins.regression.LinearRegressionData
 import org.trustedanalytics.atk.engine.model.plugins.scoring.ModelPublishArgs
+import spray.json._
 
 /**
  * Implicit conversions for Logistic Regression objects to/from JSON

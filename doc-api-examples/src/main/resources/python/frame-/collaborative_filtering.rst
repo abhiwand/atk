@@ -12,11 +12,11 @@ Examples
 
     script
 
-    ia.connect()
-    s = [("a", ia.string), ("b", ia.string), ("c", ia.float32)]
+    ta.connect()
+    s = [("a", ta.string), ("b", ta.string), ("c", ta.float32)]
     d = "lp.csv"
-    c = ia.CsvFile(d,s)
-    f = ia.Frame(c)
+    c = ta.CsvFile(d,s)
+    f = ta.Frame(c)
     r = f.collaborative_filtering("a", "b", "c", "als")
     r['user_frame'].inspect()
     r['item_frame'].inspect()

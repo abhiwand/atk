@@ -16,16 +16,19 @@
 
 package org.trustedanalytics.atk.domain.frame
 
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Command for retrieving the top (or bottom) K distinct values by count for a specified column.
  *
- * @param frame Reference to the input data frame
- * @param columnName Column name
- * @param k Number of entries to return (if negative, return the bottom K values, else return top K)
- * @param weightsColumn Optional. Name of the column that provides weights (frequencies).
  */
-case class TopKArgs(frame: FrameReference, columnName: String, k: Int,
-                    weightsColumn: Option[String] = None) {
+case class TopKArgs(@ArgDoc("""Reference to the input data frame.""") frame: FrameReference,
+                    @ArgDoc("""The column whose top (or bottom) K distinct values are
+to be calculated.""") columnName: String,
+                    @ArgDoc("""Number of entries to return (If k is negative, return bottom k).""") k: Int,
+                    @ArgDoc("""The column that provides weights (frequencies) for the topK calculation.
+Must contain numerical data.
+Default is 1 for all items.""") weightsColumn: Option[String] = None) {
   require(frame != null, "frame is required")
   require(columnName != null, "column name is required")
   require(k != 0, "k should not be equal to zero")

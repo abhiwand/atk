@@ -18,6 +18,8 @@ package org.trustedanalytics.atk.domain.frame
 
 import org.trustedanalytics.atk.domain.UriReference
 
+import org.trustedanalytics.atk.engine.plugin.{ Invocation }
+
 case class FrameReference(frameId: Long) extends UriReference {
   /** The entity id */
   override def id: Long = frameId

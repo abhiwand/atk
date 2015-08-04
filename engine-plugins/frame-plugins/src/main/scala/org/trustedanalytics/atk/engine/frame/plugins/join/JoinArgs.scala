@@ -18,20 +18,17 @@ package org.trustedanalytics.atk.engine.frame.plugins.join
 
 import org.trustedanalytics.atk.domain.frame.FrameReference
 
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
+
 /**
  * Arguments for Join plugin
  *
- * @param leftFrame join arguments for first data frame
- * @param rightFrame join arguments for first data frame
- * @param how  methods of join (inner, left, right or outer)
- * @param name Optional name of new frame to be created
- * @param skewedJoinType Type of skewed join ('skewedhash' or 'skewedbroadcast')
  */
-case class JoinArgs(leftFrame: JoinFrameArgs,
-                    rightFrame: JoinFrameArgs,
-                    how: String,
-                    name: Option[String] = None,
-                    skewedJoinType: Option[String] = None) {
+case class JoinArgs(@ArgDoc("""Join arguments for first data frame.""") leftFrame: JoinFrameArgs,
+                    @ArgDoc("""Join arguments for first data frame.""") rightFrame: JoinFrameArgs,
+                    @ArgDoc("""Methods of join (inner, left, right or outer).""") how: String,
+                    @ArgDoc("""Name of new frame to be created.""") name: Option[String] = None,
+                    @ArgDoc("""<TBD>""") skewedJoinType: Option[String] = None) {
   require(leftFrame != null && leftFrame.frame != null, "left frame is required")
   require(rightFrame != null && rightFrame.frame != null, "right frame is required")
   require(leftFrame.joinColumn != null, "left join column is required")

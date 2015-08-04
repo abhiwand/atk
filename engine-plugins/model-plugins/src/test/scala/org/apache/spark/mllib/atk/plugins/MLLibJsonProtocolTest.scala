@@ -16,17 +16,18 @@
 
 package org.apache.spark.mllib.atk.plugins
 
+import org.trustedanalytics.atk.engine.model.plugins.classification.glm.LogisticRegressionData
+import org.trustedanalytics.atk.engine.model.plugins.classification.SVMData
+import org.trustedanalytics.atk.engine.model.plugins.clustering.KMeansData
+import org.trustedanalytics.atk.engine.model.plugins.dimensionalityreduction.PrincipalComponentsData
+import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, DenseMatrix }
 import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
-import org.trustedanalytics.atk.domain.DomainJsonProtocol._
-import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
-import org.apache.spark.mllib.atk.plugins.classification.glm.LogisticRegressionData
-import org.apache.spark.mllib.atk.plugins.classification.{ LinearRegressionData, SVMData }
-import org.apache.spark.mllib.atk.plugins.clustering.KMeansData
-import org.apache.spark.mllib.atk.plugins.dimensionalityreduction.PrincipalComponentsData
-import org.apache.spark.mllib.linalg.{ DenseVector, SparseVector, DenseMatrix }
 import org.apache.spark.mllib.regression.LinearRegressionModel
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.scalatest.WordSpec
+import MLLibJsonProtocol._
+import org.trustedanalytics.atk.engine.model.plugins.regression.LinearRegressionData
 
 import spray.json._
 

@@ -122,16 +122,17 @@ commonly used functions to get higher performance than a |UDF|, or integrating
 other tools to further unify the workflow.
 See the :doc:`Plugin Authoring Guide </ad_plug>` for more information.
 
+.. Outdated 20150727::
 
---------------------
-Installation Summary
---------------------
+    --------------------
+    Installation Summary
+    --------------------
 
-The |PACKAGE| installs as an edge node on a Hadoop/Spark cluster and makes use of a
-number of engines provided with the distribution.
-This version of the |PACKAGE| supports installation onto the Cloudera distribution
-to ensure compatibility with the underlying Spark and Hadoop engines.
-This also allows the use of the Cloudera Manager to install the necessary
-parcels and to provide the metadata store.
-See the section on :doc:`/ad_inst_ta1` for more information.
+    The |PACKAGE| installs as an edge node on a Hadoop/Spark cluster and makes use of a
+    number of engines provided with the distribution.
+    This version of the |PACKAGE| supports installation onto the Cloudera distribution
+    to ensure compatibility with the underlying Spark and Hadoop engines.
+    This also allows the use of the Cloudera Manager to install the necessary
+    parcels and to provide the metadata store.
+    See the section on :doc:`/ad_inst_ta1` for more information.
 

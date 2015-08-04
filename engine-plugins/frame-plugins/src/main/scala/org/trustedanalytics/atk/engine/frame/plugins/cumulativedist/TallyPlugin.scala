@@ -30,12 +30,6 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Computes a cumulative count
  *
- * Parameters
- * ----------
- * sample_col : str
- * The name of the column from which to compute the cumulative count.
- * count_value : str
- * The column value to be used for the counts.
  */
 @PluginDoc(oneLine = "Count number of times a value is seen.",
   extended = """A cumulative count is computed by sequentially stepping through the column

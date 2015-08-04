@@ -37,19 +37,9 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
  * Calculate Shannon entropy of a column.
  *
  * Entropy is a measure of the uncertainty in a random variable.
- * Parameters
- * ----------
- * data_column : str
- *   The column whose entropy is to be calculated.
- * weights_column : str (optional)
- *   The column that provides weights (frequencies) for the entropy
- *   calculation.
- *   Must contain numerical data.
- *   Uniform weights of 1 for all items will be used for the calculation if
- *   this parameter is not provided.
  */
 @PluginDoc(oneLine = "Calculate the Shannon entropy of a column.",
-  extended = """The column can be weighted.
+  extended = """The data column is weighted via the weights column.
 All data elements of weight <= 0 are excluded from the calculation, as are
 all data elements whose weight is NaN or infinite.
 If there are no data elements with a finite weight greater than 0,

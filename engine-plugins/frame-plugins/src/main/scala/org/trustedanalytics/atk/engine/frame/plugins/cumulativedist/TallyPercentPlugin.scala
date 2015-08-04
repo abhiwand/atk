@@ -30,12 +30,6 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Computes a cumulative percent count
  *
- * Parameters
- * ----------
- * sample_col : str
- * The name of the column from which to compute the cumulative sum.
- * count_value : str
- * The column value to be used for the counts.
  */
 @PluginDoc(oneLine = "Compute a cumulative percent count.",
   extended = """A cumulative percent count is computed by sequentially stepping through

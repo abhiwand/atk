@@ -2,6 +2,6 @@ Examples
 --------
 .. code::
 
-    >>> graph = ia.Graph()
+    >>> graph = ta.Graph()
     >>> graph.define_vertex_type('users')
 

@@ -19,22 +19,56 @@ package org.trustedanalytics.atk.giraph.lda
 import org.trustedanalytics.atk.domain.frame.{ FrameEntity, FrameReference }
 import org.trustedanalytics.atk.domain.graph.GraphReference
 import org.trustedanalytics.atk.domain.model.ModelReference
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 import org.apache.commons.lang3.StringUtils
 
 /**
  * Arguments to the LDA plugin - see user docs for more on the parameters
  */
-case class LdaTrainArgs(model: ModelReference,
-                        frame: FrameReference,
-                        documentColumnName: String,
-                        wordColumnName: String,
-                        wordCountColumnName: String,
-                        maxIterations: Option[Int] = None,
-                        alpha: Option[Float] = None,
-                        beta: Option[Float] = None,
-                        convergenceThreshold: Option[Float] = None,
-                        evaluateCost: Option[Boolean] = None,
-                        numTopics: Option[Int] = None) {
+case class LdaTrainArgs(@ArgDoc("""Reference to the model for which communities
+are to be determined.""") model: ModelReference,
+                        @ArgDoc("""Input frame data.""") frame: FrameReference,
+                        @ArgDoc("""Column Name for documents.
+                        Column should contain a str value.""") documentColumnName: String,
+                        @ArgDoc("""Column name for words.
+                        Column should contain a str value.""") wordColumnName: String,
+                        @ArgDoc("""Column name for word count.
+                        Column should contain an int64 value.""") wordCountColumnName: String,
+                        @ArgDoc("""The maximum number of iterations that the algorithm will execute.
+                        The valid value range is all positive int.
+                        Default is 20.""") maxIterations: Option[Int] = None,
+                        @ArgDoc("""The hyper-parameter for document-specific distribution over topics.
+                        Mainly used as a smoothing parameter in :term:`Bayesian inference`.
+                        Larger value implies that documents are assumed to cover all topics
+                        more uniformly; smaller value implies that documents are more
+                        concentrated on a small subset of topics.
+                        Valid value range is all positive float.
+                         Default is 0.1.""") alpha: Option[Float] = None,
+                        @ArgDoc("""The hyper-parameter for word-specific distribution over topics.
+                        Mainly used as a smoothing parameter in :term:`Bayesian inference`.
+                        Larger value implies that topics contain all words more uniformly and
+                        smaller value implies that topics are more concentrated on a small
+                        subset of words.
+                        Valid value range is all positive float.
+                        Default is 0.1.""") beta: Option[Float] = None,
+                        @ArgDoc("""The amount of change in LDA model parameters that will be tolerated
+                        at convergence.
+                        If the change is less than this threshold, the algorithm exits
+                        before it reaches the maximum number of supersteps.
+                        Valid value range is all positive float and 0.0.
+                        Default is 0.001.""") convergenceThreshold: Option[Float] = None,
+                        @ArgDoc(""""True" means turn on cost evaluation and "False" means turn off
+                        cost evaluation.
+                        It's relatively expensive for LDA to evaluate cost function.
+                        For time-critical applications, this option allows user to turn off cost
+                        function evaluation.
+                        Default is "False".""") evaluateCost: Option[Boolean] = None,
+                        @ArgDoc("""The number of topics to identify in the LDA model.
+                        Using fewer topics will speed up the computation, but the extracted topics
+                        might be more abstract or less specific; using more topics will
+                        result in more computation but lead to more specific topics.
+                        Valid value range is all positive int.
+                        Default is 10.""") numTopics: Option[Int] = None) {
 
   require(model != null, "model is required")
   require(frame != null, "frame is required")
