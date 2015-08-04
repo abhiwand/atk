@@ -43,7 +43,7 @@ import GraphClusteringFormat._
  * GraphClusteringPlugin implements the graph clustering algorithm on a graph.
  */
 @PluginDoc(oneLine = "Build graph clustering over an initial titan graph.",
-  extended = "",
+  extended = "<TBD>",
   returns = "A set of titan vertices and edges representing the internal clustering of the graph.")
 class GraphClusteringPlugin extends SparkCommandPlugin[GraphClusteringArgs, UnitReturn] {
 

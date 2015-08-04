@@ -14,18 +14,30 @@ Consider the following sample data set:
         d          9
         e          1
 
-    >>> hist = frame.histogram("b")
+A simple call for 3 equal-width bins gives:
+.. code::
+    >>> hist = frame.histogram("b", num_bins=3)
     >>> print hist
 
     Histogram:
-        cutoffs: [1, 3, 6, 9],
-        hist: [2, 1, 2],
-        density: [0.4, 0.2, 0.4]
+        cutoffs: cutoffs: [1.0, 3.6666666666666665, 6.333333333333333, 9.0],
+        hist: [3, 0, 2],
+        density: [0.6, 0.0, 0.4]
 
 
-Plot hist as a bar chart using matplotlib:
+Switching to equal depth gives:
+.. code::
+    >>> hist = frame.histogram("b", num_bins=3, bin_type='equaldepth')
+    >>> print hist
+
+    Histogram:
+        cutoffs: [1, 2, 7, 9],
+        hist: [1, 2, 2],
+        density: [0.2, 0.4, 0.4]
+
 
 .. only:: html
+       Plot hist as a bar chart using matplotlib:
 
     .. code::
 
@@ -34,6 +46,7 @@ Plot hist as a bar chart using matplotlib:
         >>> plt.bar(hist.cutoffs[:1], hist.hist, width=hist.cutoffs[1] - hist.cutoffs[0])
 
 .. only:: latex
+       Plot hist as a bar chart using matplotlib:
 
     .. code::
 

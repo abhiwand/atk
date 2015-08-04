@@ -37,21 +37,19 @@ REST server:
 .. index::
     pair: data; type
 
-------------
-Data Sources
-------------
+--------
+Raw Data
+--------
 
 .. _valid_data_types:
 
-Data is made up of variables of heterogeneous types (for example, strings,
+Data is made up of variables of heterogeneous types (for example: strings,
 integers, and floats) that can be organized as a collection of rows and
-columns.
+columns, similar to a table or spreadsheet.
 Each row corresponds to the data associated with one observation, and each
 column corresponds to a variable being observed.
-
-.. TODO::
-
-    Make writeup for database connectivity.
+See the Python API `Data Types <python_api/datatypes/index.html>`_ for
+a current list of data types supported.
 
 Connect to the server:
 
@@ -86,7 +84,7 @@ You should see a list of variable types similar to this:
 
 .. note::
 
-    Although the |PACKAGE| utilizes the Numpy package, numpy values of positive
+    Although the |PACKAGE| utilizes the NumPy package, NumPy values of positive
     infinity (np.inf), negative infinity (-np.inf) or nan (np.nan) are treated
     as None.
     Results of any user-defined functions which deal with such values are
@@ -100,10 +98,12 @@ You should see a list of variable types similar to this:
     single: JSON
     single: LineFile
 
-Types Of Raw Data
-=================
+Ingesting the Raw Data
+======================
 
-The currently supported raw data formats are |CSV|, |JSON| and LineFile.
+See the API section `Data Sources <python_api/datasources/index.html>`_
+for the various methods of ingesting data.
+
 
 .. _example_files.csvfile:
 
@@ -118,7 +118,7 @@ These are some rows from a |CSV| file::
 
 |CSV| files contain rows of information separated by new-line characters.
 Within each row, the data fields are separated from each other by some standard
-character(s).
+character.
 In the above example, the separating character is a comma (,).
 
 To import data, you must tell the system how the input file is formatted.
@@ -237,6 +237,9 @@ There are several ways to create frames\:
 #.  as "empty", with no schema or data
 #.  with a schema and data
 #.  by copying (all or a part of) another frame
+#.  as a return value from a Frame-based method; this is part of the ETL data flow.
+
+See the Python API `Frames section <python_api/frame/index.html>`__ for more information.
 
 Examples:
 ---------
@@ -262,24 +265,22 @@ it a new name, because the name must always be unique:
 
 .. code::
 
-    >>> my_frame2 = my_frame.copy()
-    >>> my_frame2.name = "copy_of_myframe"
+    >>> my_frame2 = my_frame.copy(name = "copy_of_myframe")
 
 To create a new frame with only columns *x* and *z* from the original frame
 *myframe*, and save the Frame object as *my_frame3*:
 
 .. code::
 
-    >>> my_frame3 = my_frame.copy(['x', 'z'])
-    >>> my_frame3.name = "copy2_of_myframe"
+    >>> my_frame3 = my_frame.copy(['x', 'z'], name = "copy2_of_myframe")
 
 To create a frame copy of the original columns *x* and *z*, but only those
 rows where *z* is TRUE:
 
 .. code::
 
-    >>> my_frame4 = my_frame.copy(['x', 'z'], where = (lambda row: "TRUE" in row.z))
-    >>> my_frame4.name = "copy_of_myframe_true"
+    >>> my_frame4 = my_frame.copy(['x', 'z'], where = (lambda row: "TRUE" in row.z),
+    ... name = "copy_of_myframe_true")
 
 Frames (capital 'F') are not the same thing as frames (lower case 'f').
 Frames (lower case 'f') contain data, viewed similarly to a table, while
@@ -451,6 +452,8 @@ Gives you something like this:
     input file.
     When the data is spread out over multiple clusters, the original sequence
     of rows from the raw data is lost.
+    Also, the sequence order of the columns is changed (from original data)
+    by some commands.
 
 .. only:: html
 
@@ -525,7 +528,7 @@ Example of data cleaning:
     >>> def clean_animals(row):
     ...     if 'basset hound' in row.animals:
     ...         return 'dog'
-    ...     elif 'ginea pig' in row.animals:
+    ...     elif 'guinea pig' in row.animals:
     ...         return 'cavy'
     ...     else:
     ...         return row.animals
@@ -653,20 +656,20 @@ Rename *a* to "id":
 
 .. code::
 
-    >>> my_frame.rename_columns(('a': 'id'))
+    >>> my_frame.rename_columns({'a': 'id'})
 
 Rename column *b* to "author" and *c* to "publisher":
 
 .. code::
 
-    >>> my_frame.rename_columns(('b': 'author', 'c': 'publisher'))
+    >>> my_frame.rename_columns({'b': 'author', 'c': 'publisher'})
 
 Transform The Data
 ==================
 
 Often, you will need to create new data based upon the existing data.
 For example, you need the first name combined with the last name, or
-you need the number times John spent more than five dollars, or
+you need the number of times John spent more than five dollars, or
 you need the average age of students attending a college.
 
 .. index::
@@ -944,7 +947,7 @@ the Frames by the same name, unless needed for clarity:
     /-----------------------------------/
       alligator   bear        cat
       auto        bus         car
-      apple       berry       cantelope
+      apple       berry       cantaloupe
       mirror      frog        ball
 
     >>> your_frame.inspect()
@@ -975,7 +978,7 @@ The result is *our_frame*:
     /-----------------------------------------------------------/
       alligator   bear        cat          None           None
       auto        bus         car           871           dog
-      apple       berry       cantelope    5281           frog
+      apple       berry       cantaloupe   5281           frog
       mirror      frog        ball         None           None
 
 Doing an "inner" join this time will include only data from *my_frame* and
@@ -1000,7 +1003,7 @@ Result is *inner_frame*:
       a:str       b:str       c_L:str      c_R:ta.int64   d:str
     /-----------------------------------------------------------/
       auto        bus         car             871         dog
-      apple       berry       cantelope      5218         frog
+      apple       berry       cantaloupe     5218         frog
 
 Doing an "outer" join this time will include only data from *my_frame* and
 *your_frame* which do not have matching values in *b*:
@@ -1017,12 +1020,9 @@ Result is *outer_frame*:
 
       a:str       b:str       c_L:str      c_R:ta.int64   d:str
     /-----------------------------------------------------------/
-      auto        bus         car            None         None
-      apple       berry       cantelope      None         None
       alligator   bear        cat            None         None
       mirror      frog        ball           None         None
-      None        None        blue              0         log
-
+      None        blue        None              0         log
 
 If column *b* in *my_frame* and column *d* in *your_frame* are the common
 column:
@@ -1350,26 +1350,14 @@ API section on :ref:`titan_graph`.
 Graph Analytics
 ---------------
 
-*   `Clustering Coefficients`_
-*   `Connected Components (CC)`_
+*   `Clustering Coefficients <python_api/graphs/graph-/clustering_coefficient.html>`__
+*   `Connected Components (CC) <python_api/graphs/graph-titan/connected_components.html>`__
 *   `Degree Calculation`_
-*   `K-Clique Percolation`_
-*   `PageRank (PR)`_
-
-.. _Clustering Coefficients:
-.. include:: ds_gaal_clco.inc
-
-.. _Connected Components (CC):
-.. include:: ds_gaal_cc.inc
+*   `K-Clique Percolation <python_api/graphs/graph-/ml/kclique_percolation.html>`__
+*   `PageRank (PR) <python_api/graphs/graph-titan/page_rank.html>`__
 
 .. _Degree Calculation:
 .. include:: ds_gaal_dc.inc
-
-.. _K-Clique Percolation:
-.. include:: ds_gaal_k.inc
-
-.. _PageRank (PR):
-.. include:: ds_gaal_pr.inc
 
 .. toctree::
     :hidden:
@@ -1377,17 +1365,4 @@ Graph Analytics
     ds_apir
 
 .. rubric:: Footnotes
-
-.. [K1]
-    G. Palla, I. Derenyi, I. Farkas, and T. Vicsek. “Uncovering the overlapping
-    community structure of complex networks in nature and society”.
-    Nature, 435:814, 2005 (
-    See http://hal.elte.hu/cfinder/wiki/papers/communitylettm.pdf )
-
-.. [K2]
-    Varamesh, A.; Akbari, M.K.; Fereiduni, M.; Sharifian, S.; Bagheri, A.,
-    "Distributed Clique Percolation based community detection on social
-    networks using MapReduce,"
-    Information and Knowledge Technology (IKT), 2013 5th Conference on, vol.,
-    no., pp.478,483, 28-30 May 2013
 

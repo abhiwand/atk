@@ -19,11 +19,17 @@ package org.trustedanalytics.atk.domain.frame
 import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
 
 case class AddColumnsArgs(
-    @ArgDoc("") frame: FrameReference,
-    @ArgDoc("") columnNames: List[String],
-    @ArgDoc("") columnTypes: List[String],
-    @ArgDoc("") udf: Udf,
-    @ArgDoc("") columnsAccessed: List[String]) {
+    @ArgDoc("<TBD>") frame: FrameReference,
+    @ArgDoc("<TBD>") columnNames: List[String],
+    @ArgDoc("<TBD>") columnTypes: List[String],
+    @ArgDoc("""User-Defined Function (|UDF|) which takes the values in the row
+and produces a value, or collection of values, for the
+new cell(s).""") udf: Udf,
+    @ArgDoc("""List of columns which the |UDF| will access.
+This adds significant performance benefit if we know which column(s) will be
+needed to execute the |UDF|, especially when the frame has significantly more
+columns than those being used to evaluate
+the |UDF|.""") columnsAccessed: List[String]) {
   require(frame != null, "frame is required")
   require(columnNames != null, "column names is required")
   for {

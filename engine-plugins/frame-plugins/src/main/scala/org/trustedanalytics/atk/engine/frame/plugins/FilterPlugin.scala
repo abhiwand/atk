@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.engine.frame.plugins
 
 import org.trustedanalytics.atk.domain.FilterArgs
 import org.trustedanalytics.atk.domain.frame.FrameEntity
-import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation, PluginDoc }
+import org.trustedanalytics.atk.engine.plugin.{ Invocation, PluginDoc }
 import org.trustedanalytics.atk.engine.frame.{ SparkFrame, PythonRddStorage }
 import org.trustedanalytics.atk.engine.plugin.SparkCommandPlugin
 
@@ -29,9 +29,9 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Select all rows which satisfy a predicate
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "Select all rows which satisfy a predicate.",
+  extended = """Modifies the current frame to save defined rows and
+delete everything else.""")
 class FilterPlugin extends SparkCommandPlugin[FilterArgs, FrameEntity] {
 
   /**

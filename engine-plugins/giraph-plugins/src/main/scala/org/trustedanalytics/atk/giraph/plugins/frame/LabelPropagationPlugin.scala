@@ -26,6 +26,9 @@ import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema }
 import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, CommandPlugin, Invocation, PluginDoc }
 import LabelPropagationJsonFormat._
 
+@PluginDoc(oneLine = "<TBD>",
+  extended = """<TBD>""",
+  returns = """<TBD>""")
 class LabelPropagationPlugin
     extends CommandPlugin[LabelPropagationArgs, LabelPropagationResult] {
 

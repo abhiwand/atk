@@ -16,7 +16,19 @@
 
 package org.trustedanalytics.atk.domain.frame
 
-case class ClassificationMetricArgs(frame: FrameReference, labelColumn: String, predColumn: String, posLabel: Option[Either[String, Int]], beta: Option[Double] = None) {
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
+
+case class ClassificationMetricArgs(frame: FrameReference,
+                                    @ArgDoc("""The name of the column containing the
+correct label for each instance.""") labelColumn: String,
+                                    @ArgDoc("""The name of the column containing the
+predicted label for each instance.""") predColumn: String,
+                                    @ArgDoc("""This is a str or int for binary classifiers,
+and Null for multi-class classifiers.
+The value to be interpreted as a positive instance.""") posLabel: Option[Either[String, Int]],
+                                    @ArgDoc("""This is the beta value to use for
+:math:`F_{ \beta}` measure (default F1 measure is computed); must be greater than zero.
+Defaults is 1.""") beta: Option[Double] = None) {
   require(frame != null, "ClassificationMetric requires a non-null dataframe.")
   require(labelColumn != null && !labelColumn.equals(""), "label column is required")
   require(predColumn != null && !predColumn.equals(""), "predict column is required")

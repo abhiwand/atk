@@ -930,71 +930,38 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> print my_frame.inspect(3)
+            >>> print my_frame.inspect()
 
-              a:str  b:str  c:str
-            /---------------------/
-                abc   bcd     cde
-                def   efg     fgh
-                ghi   hij     jkl
+              a:unicode   b:unicode   c:unicode
+            /--------------------------------------/
+              alligator   bear        cat
+              apple       berry       cantaloupe
+              auto        bus         car
+              mirror      frog        ball
 
-            >>> print your_frame.inspect(3)
+            >>> print your_frame.inspect()
 
-              a:str  d:numpy.int32  e:numpy.int32
+              b:unicode   c:int   d:unicode
             /-------------------------------------/
-                abc    1              2
-                def    3              4
-                b      5              6
+              berry        5218   frog
+              blue            0   log
+              bus           871   dog
 
-            >>> joined_frame = my_frame.join(your_frame, 'a')
+            >>> joined_frame = my_frame.join(your_frame, 'b', how='inner')
 
-        Now, joined_frame is a Frame accessing a frame with the columns *a_L*,
-        *a_R*, *b*, *c*, *d*, and *e*.
+        Now, joined_frame is a Frame accessing a frame with the columns *a*,
+        *b*, *c_L*, *ci_R*, and *d*.
         The data in the new frame will be from the rows where column 'a' was
         the same in both frames.
 
         .. code::
 
-            >>> print joined_frame.inspect(3)
+            >>> print joined_frame.inspect()
 
-              a_L:str  a_R:str  b:str  c:str  d:numpy.int32  e:numpy.int32
-            /--------------------------------------------------------------/
-                  abc      abc    bcd    cde    1              2
-                  def      def    efg    fgh    3              4
-
-        It is possible to use a single frame with two columns such as
-        *b* and *book*.
-        Building a new frame, but remove any rows where the values in *b* and
-        *book* do not match, eliminates all rows where *b* is valid and *book*
-        is not, and vice versa:
-
-        .. code::
-
-            >>> print my_frame.inspect(4)
-
-              a:str  b:str  book:str other:str
-            /----------------------------------/
-                cat    abc       abc       red
-                doc    abc       cde       pur
-                dog    cde       cde       blk
-                ant    def       def       blk
-
-            >>> joined_frame = my_frame.join(my_frame, left_on='b',
-            ... right_on='book', how='inner')
-
-        We end up with a new Frame *joined_frame* accessing a new frame with
-        all the original columns, but only those rows where the data in the
-        original frame in column *b* matched the data in column *book*.
-
-        .. code::
-
-            >>> print joined_frame.inspect(4)
-
-              a:str  b:str  book:str  other:str
-            /-----------------------------------/
-                cat    abc       abc       red
-                dog    cde       cde       blk
-                ant    def       def       blk
+              a:unicode   b:unicode     c_L:unicode   c_R:int64   d:unicode
+            /-------------------------------------------------------------------/
+              apple       berry         cantaloupe         5218   frog
+              auto        bus           car                 871   dog
 
         More examples can be found in the :ref:`user manual
         <example_frame.join>`.

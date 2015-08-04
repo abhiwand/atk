@@ -92,7 +92,7 @@ Appendix A |EM| Sample Application Configuration File
           }
         }
 
-        # Configuration for the TAProot Analytics REST API server
+        # Configuration for the Taproot Analytics ATK REST API server
         api {
           # this is reported by the API server in the /info results -
           # it can be used to identify a particular server or cluster.
@@ -288,7 +288,7 @@ Appendix A |EM| Sample Application Configuration File
             cache {
               # Adjust cache size parameters if you experience OutOfMemory
               # errors during Titan queries.
-              # Either increase heap allocation for TAProotAnalytics Engine, or
+              # Either increase heap allocation for TaprootAnalytics Engine, or
               # reduce db-cache-size.
               # Reducing db-cache will result in cache misses and increased
               # reads from disk.

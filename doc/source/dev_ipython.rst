@@ -80,7 +80,7 @@ Test the |PACKAGE| IPython installation by importing the REST client libraries
 inside of a notebook or IPython shell and ping the REST server.
 ::
 
-    # testing IPython/TAProot Analytics
+    # testing IPython/Taproot Analytics ATK
 
     $ ipython
     Python 2.7.5 (default, Sep  4 2014, 17:06:50)
@@ -94,7 +94,7 @@ inside of a notebook or IPython shell and ping the REST server.
     In [1]: import trustedanalytics as ta
 
     In [2]: ta.server.ping()
-    Successful ping to TAProot Analytics at http://localhost:9099/info
+    Successful ping to Taproot Analytics ATK at http://localhost:9099/info
 
     In [3]: ta.connect()
 

@@ -30,9 +30,16 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Adds one or more new columns to the frame by evaluating the given func on each row.
  */
-@PluginDoc(oneLine = "",
-  extended = "",
-  returns = "")
+@PluginDoc(oneLine = "Add columns to current frame.",
+  extended = """Assigns data to column based on evaluating a function for each row.
+
+Notes
+-----
+    1)  The row |UDF| ('func') must return a value in the same format as
+        specified by the schema.
+        See :doc:`/ds_apir`.
+    2)  Unicode in column names is not supported and will likely cause the
+        drop_frames() method (and others) to fail!""")
 class AddColumnsPlugin extends SparkCommandPlugin[AddColumnsArgs, FrameEntity] {
 
   /**
