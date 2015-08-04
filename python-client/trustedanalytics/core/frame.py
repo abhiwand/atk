@@ -245,14 +245,14 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> BF = ta.get_frame('my_data')
+            >>> BF = ia.get_frame('my_data')
             >>> print BF.schema
 
         The result is:
 
         .. code::
 
-            [("col1", str), ("col2", ta.int32)]
+            [("col1", str), ("col2", numpy.int32)]
 
         """
         return self._backend.get_schema(self)
@@ -272,11 +272,11 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         Examples
         --------
         Given that we have an existing data frame *my_data*, create a Frame,
-        then show the frame status:
+        then show the frame schema:
 
         .. code::
 
-            >>> BF = ta.get_frame('my_data')
+            >>> BF = ia.get_frame('my_data')
             >>> print BF.status
 
         The result is:
@@ -289,7 +289,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @has_udf_arg
-    @arg('func', 'UDF', "User-Defined Function (|UDF|) which takes the values in the row and produces a value, or "
+    @arg('func', 'UDF', "User-Defined Function (|UDF|) which takkes the values in the row and produces a value, or "
          "collection of values, for the new cell(s).")
     @arg('schema', 'tuple | list of tuples', "The schema for the results of the |UDF|, indicating the new column(s) to "
          "add.  Each tuple provides the column name and data type, and is of the form (str, type).")
@@ -320,7 +320,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
         .. code::
 
             >>> my_frame.add_columns(lambda row: row.column1*row.column2,
-            ... ('column3', ta.int32))
+            ... ('column3', int32))
 
         The frame now has three columns, *column1*, *column2* and *column3*.
         The type of *column3* is an int32, and the value is the product of
@@ -347,14 +347,14 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             .. code::
 
-                >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", ta.float32), ("a_plus_b", ta.float32)])
+                >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a + row.b], [("a_times_b", float32), ("a_plus_b", float32))
 
         .. only:: latex
 
             .. code::
 
                 >>> my_frame.add_columns(lambda row: [row.a * row.b, row.a +
-                ... row.b], [("a_times_b", ta.float32), ("a_plus_b", ta.float32)])
+                ... row.b], [("a_times_b", float32), ("a_plus_b", float32))
 
         Two new columns are created, "a_times_b" and "a_plus_b", with the
         appropriate contents.
@@ -380,7 +380,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> my_frame.add_columns(function_b, ("calculated_b", ta.float32))
+            >>> my_frame.add_columns(function_b, ("calculated_b", float32))
 
         This would result in an error because function_b is returning a value
         as a single element list like [2.4], but our column is defined as a
@@ -389,7 +389,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> my_frame.add_columns(function_b, [("calculated_b", ta.float32)])
+            >>> my_frame.add_columns(function_b, [("calculated_b", float32)])
 
         To run an optimized version of add_columns, columns_accessed parameter can
         be populated with the column names which are being accessed in |UDF|. This
@@ -402,23 +402,23 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> my_frame.add_columns(lambda row: row.a * row.b, ("a_times_b", ta.float32), columns_accessed=["a", "b"])
+            >>> my_frame.add_columns(lambda row: row.a * row.b, ("a_times_b", float32), columns_accessed=["a", "b"])
 
         add_columns would fail if columns_accessed parameter is not populated with the correct list of accessed
         columns. If not specified, columns_accessed defaults to None which implies that all columns might be accessed
         by the |UDF|.
 
-        More information on a row |UDF| can be found at :doc:`/ds_apir`.
+        More information on a row |UDF| can be found at :doc:`/ds_apir`
 
         """
         # For further examples, see :ref:`example_frame.add_columns`.
         self._backend.add_columns(self, func, schema, columns_accessed)
 
     @api
-    @arg('columns', 'str | list of str | dict', "Column filter, the names of columns to be included (default is all columns)"
-        "If dict, the string pairs represent a column renaming, {source_column_name: destination_column_name}")
+    @arg('columns', 'str | list of str | dict', "If not None, the copy will only include the columns specified. "
+         "If dict, the string pairs represent a column renaming, {source_column_name: destination_column_name}")
     @arg('where', 'function', "If not None, only those rows for which the UDF evaluates to True will be copied.")
-    @arg('name', str, "A new name for the new frame of copied data.")
+    @arg('name', str, "Name of the copied frame")
     @returns('Frame', "A new Frame of the copied data.")
     def __copy(self, columns=None, where=None, name=None):
         """
@@ -429,12 +429,12 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Build a Frame from a csv file with multiple rows of data; call the
+        Build a Frame from a csv file with 5 million rows of data; call the
         frame "cust":
 
         .. code::
 
-            >>> my_frame = ta.Frame(source="my_data.csv")
+            >>> my_frame = ia.Frame(source="my_data.csv")
             >>> my_frame.name("cust")
 
         Given the frame has columns *id*, *name*, *hair*, and *shoe*.
@@ -444,7 +444,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> your_frame = my_frame.copy()
 
-        Now we have two frames of data, each with the same data.
+        Now we have two frames of data, each with 5 million rows.
         Checking the names:
 
         .. code::
@@ -465,8 +465,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> our_frame = my_frame.copy(['id', 'hair'])
 
-        Our new frame now has two columns, *id* and *hair*, and has all of the
-        original rows.
+        Our new frame now has two columns, *id* and *hair*, and has 5 million
+        rows.
         Let's try that again, but this time change the name of the *hair*
         column to *color*:
 
@@ -498,7 +498,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         Examples
         --------
-        Given a Frame *my_frame* that accesses a frame with millions of rows of data.
+        Frame *my_frame* accesses a frame with millions of rows of data.
         Get a sample of 500 rows:
 
         .. code::
@@ -563,7 +563,7 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @has_udf_arg
-    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; rows that evaluate to False are dropped from the Frame")
+    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; rows that answer False are dropped from the Frame")
     def __filter(self, predicate):
         """
         Select all rows which satisfy a predicate.
@@ -674,8 +674,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             >>> new_frame = my_frame.group_by('a', agg.count)
             >>> new_frame.inspect()
 
-              a:str       count:int32
-            /-------------------------/
+              a:str       count:int
+            /-----------------------/
               cat             3
               apple           1
               bat             2
@@ -687,13 +687,13 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.inspect()
 
-              a:int32   b:str   c:float32
-            /-----------------------------/
-               1         alpha   3.0
-               1         bravo   5.0
-               1         alpha   5.0
-               2         bravo   8.0
-               2         bravo  12.0
+              a:int   b:str   c:float
+            /-------------------------/
+              1       alpha     3.0
+              1       bravo     5.0
+              1       alpha     5.0
+              2       bravo     8.0
+              2       bravo    12.0
 
         Create a new frame from this data, grouping the rows by unique
         combinations of column *a* and *b*.
@@ -704,11 +704,11 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             >>> new_frame = my_frame.group_by(['a', 'b'], {'c' : agg.avg})
             >>> new_frame.inspect()
 
-              a:int32   b:str   c_avg:float32
-            /---------------------------------/
-               1         alpha       4.0
-               1         bravo       5.0
-               2         bravo      10.0
+              a:int   b:str   c_avg:float
+            /-----------------------------/
+              1       alpha     4.0
+              1       bravo     5.0
+              2       bravo    10.0
 
         For this example, we use *my_frame* with columns *a*, *c*, *d*,
         and *e*:
@@ -717,13 +717,13 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> my_frame.inspect()
 
-              a:str   c:int32   d:float32 e:int32
-            /-------------------------------------/
-               ape     1         4.0       9
-               ape     1         8.0       8
-               big     1         5.0       7
-               big     1         6.0       6
-               big     1         8.0       5
+              a:str   c:int   d:float e:int
+            /-------------------------------/
+              ape     1       4.0     9
+              ape     1       8.0     8
+              big     1       5.0     7
+              big     1       6.0     6
+              big     1       8.0     5
 
         Create a new frame from this data, grouping the rows by unique
         combinations of column *a* and *c*.
@@ -737,10 +737,10 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
                 >>> new_frame = my_frame.group_by(['a', 'c'], agg.count, {'d': [agg.avg, agg.sum, agg.min], 'e': agg.max})
 
-                  a:str   c:int32   count:int32  d_avg:float32  d_sum:float32   d_min:float32   e_max:int32
-                /-------------------------------------------------------------------------------------------/
-                   ape     1             2            6.0            12.0            4.0             9
-                   big     1             3            6.333333       19.0            5.0             7
+                  a:str   c:int   count:int  d_avg:float  d_sum:float   d_min:float   e_max:int
+                /-------------------------------------------------------------------------------/
+                  ape     1       2          6.0          12.0          4.0           9
+                  big     1       3          6.333333     19.0          5.0           7
 
         .. only:: latex
 
@@ -762,43 +762,39 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
     @api
     @alpha
-    @arg('column_inputs', 'str | tuple(str, dict)', 'Comma-separated column names to summarize'
-                                                    'or tuple containing column name '
-                                                    'and dictionary of optional parameters. ')
+    @arg('column_inputs', 'str | tuple(str, dict)', 'Comma-separated column names to summarize or tuple containing column name '
+                                                    'and dictionary of optional parameters. '
+                                                    'Optional parameters (see below for details): '
+                                                    'top_k (default = 10), threshold (default = 0.0)')
 
     @returns(dict, 'Summary for specified column(s) consisting of levels with their frequency and percentage')
     def __categorical_summary(self, *column_inputs):
         """
-        Build summary of the data.
-
-        Optional parameters:
-
-            top_k *: int*
-                Displays levels which are in the top k most frequently
-                occurring values for that column.
-                Default is 10.
-
-            threshold *: float*
-                Displays levels which are above the threshold percentage with
-                respect to the total row count.
-                Default is 0.0.
-
         Compute a summary of the data in a column(s) for categorical or numerical data types.
         The returned value is a Map containing categorical summary for each specified column.
 
-        For each column, levels which satisfy the top k and/or threshold cutoffs are
-        displayed along with their frequency and percentage occurrence with respect to
-        the total rows in the dataset.
-
-        Performs level pruning first based on top k and then filters
-        out levels which satisfy the threshold criterion.
+        For each column, levels which satisfy the top k and/or threshold cutoffs are displayed along
+        with their frequency and percentage occurrence with respect to the total rows in the dataset.
 
         Missing data is reported when a column value is empty ("") or null.
 
-        All remaining data is grouped together in the Other category and its frequency
-        and percentage are reported as well.
+        All remaining data is grouped together in the Other category and its frequency and percentage are reported as well.
 
         User must specify the column name and can optionally specify top_k and/or threshold.
+
+        Optional parameters:
+
+            top_k
+                Displays levels which are in the top k most frequently occurring values for that column.
+
+            threshold
+                Displays levels which are above the threshold percentage with respect to the total row count.
+
+            top_k and threshold
+                Performs level pruning first based on top k and then filters out levels which satisfy the threshold criterion.
+
+            defaults
+                Displays all levels which are in Top 10.
 
 
         Examples
@@ -812,37 +808,29 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
             >>> frame.categorical_summary(('source', {'top_k' : 2}), ('target',
             ... {'threshold' : 0.5}))
 
-        .. only:: html
+        Sample output (for last example above):
 
-            Sample output::
-
-                {u'categorical_summary': [{u'column': u'source', u'levels': [{u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'thing'}, {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'abstraction'}, {u'percentage': 0.25, u'frequency': 7, u'level': u'physical_entity'}, {u'percentage': 0.10714285714285714, u'frequency': 3, u'level': u'entity'}, {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'}, {u'percentage': 0.0, u'frequency': 0, u'level': u'Other'}]}, {u'column': u'target', u'levels': [ {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'thing'}, {u'percentage': 0.07142857142857142, u'frequency': 2,  u'level': u'physical_entity'}, {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'entity'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'variable'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'unit'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'substance'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'subject'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'set'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'reservoir'}, {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'relation'}, {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'}, {u'percentage': 0.5357142857142857, u'frequency': 15, u'level': u'Other'}]}]}
-
-        .. only:: latex
-
-            Sample output::
-
-                {u'categorical_summary': [{u'column': u'source', u'levels': [
-                {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'thing'},
-                {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'abstraction'},
-                {u'percentage': 0.25, u'frequency': 7, u'level': u'physical_entity'},
-                {u'percentage': 0.10714285714285714, u'frequency': 3, u'level': u'entity'},
-                {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
-                {u'percentage': 0.0, u'frequency': 0, u'level': u'Other'}]},
-                {u'column': u'target', u'levels': [
-                {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'thing'},
-                {u'percentage': 0.07142857142857142, u'frequency': 2,
-                 u'level': u'physical_entity'},
-                {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'entity'},
-                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'variable'},
-                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'unit'},
-                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'substance'},
-                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'subject'},
-                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'set'},
-                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'reservoir'},
-                {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'relation'},
-                {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
-                {u'percentage': 0.5357142857142857, u'frequency': 15, u'level': u'Other'}]}]}
+            >>> {u'categorical_summary': [{u'column': u'source', u'levels': [
+            ... {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'thing'},
+            ... {u'percentage': 0.32142857142857145, u'frequency': 9, u'level': u'abstraction'},
+            ... {u'percentage': 0.25, u'frequency': 7, u'level': u'physical_entity'},
+            ... {u'percentage': 0.10714285714285714, u'frequency': 3, u'level': u'entity'},
+            ... {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
+            ... {u'percentage': 0.0, u'frequency': 0, u'level': u'Other'}]},
+            ... {u'column': u'target', u'levels': [
+            ... {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'thing'},
+            ... {u'percentage': 0.07142857142857142, u'frequency': 2,
+            ...  u'level': u'physical_entity'},
+            ... {u'percentage': 0.07142857142857142, u'frequency': 2, u'level': u'entity'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'variable'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'unit'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'substance'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'subject'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'set'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'reservoir'},
+            ... {u'percentage': 0.03571428571428571, u'frequency': 1, u'level': u'relation'},
+            ... {u'percentage': 0.0, u'frequency': 0, u'level': u'Missing'},
+            ... {u'percentage': 0.5357142857142857, u'frequency': 15, u'level': u'Other'}]}]}
 
         """
         return self._backend.categorical_summary(self, column_inputs)
@@ -871,8 +859,8 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
             >>> print my_frame.inspect(4)
 
-            column defs ->  animal:str  name:str    age:int32   weight:float32
-                          /----------------------------------------------------/
+            column defs ->  animal:str  name:str    age:int     weight:float
+                          /--------------------------------------------------/
             frame data ->   human       George        8            542.5
                             human       Ursula        6            495.0
                             ape         Ape          41            400.0
@@ -942,71 +930,38 @@ class _BaseFrame(_DocStubs_BaseFrame, CommandLoadable):
 
         .. code::
 
-            >>> print my_frame.inspect(3)
+            >>> print my_frame.inspect()
 
-              a:str  b:str  c:str
-            /---------------------/
-                abc   bcd     cde
-                def   efg     fgh
-                ghi   hij     jkl
+              a:unicode   b:unicode   c:unicode
+            /--------------------------------------/
+              alligator   bear        cat
+              apple       berry       cantaloupe
+              auto        bus         car
+              mirror      frog        ball
 
-            >>> print your_frame.inspect(3)
+            >>> print your_frame.inspect()
 
-              a:str  d:int32  e:int32
-            /-------------------------/
-                abc    1        2
-                def    3        4
-                b      5        6
+              b:unicode   c:int   d:unicode
+            /-------------------------------------/
+              berry        5218   frog
+              blue            0   log
+              bus           871   dog
 
-            >>> joined_frame = my_frame.join(your_frame, 'a')
+            >>> joined_frame = my_frame.join(your_frame, 'b', how='inner')
 
-        Now, joined_frame is a Frame accessing a frame with the columns *a_L*,
-        *a_R*, *b*, *c*, *d*, and *e*.
+        Now, joined_frame is a Frame accessing a frame with the columns *a*,
+        *b*, *c_L*, *ci_R*, and *d*.
         The data in the new frame will be from the rows where column 'a' was
         the same in both frames.
 
         .. code::
 
-            >>> print joined_frame.inspect(3)
+            >>> print joined_frame.inspect()
 
-              a_L:str  a_R:str  b:str  c:str  d:int32  e:int32
-            /--------------------------------------------------/
-                  abc      abc    bcd    cde    1        2
-                  def      def    efg    fgh    3        4
-
-        It is possible to use a single frame with two columns such as
-        *b* and *book*.
-        Building a new frame, but remove any rows where the values in *b* and
-        *book* do not match, eliminates all rows where *b* is valid and *book*
-        is not, and vice versa:
-
-        .. code::
-
-            >>> print my_frame.inspect(4)
-
-              a:str  b:str  book:str other:str
-            /----------------------------------/
-                cat    abc       abc       red
-                doc    abc       cde       pur
-                dog    cde       cde       blk
-                ant    def       def       blk
-
-            >>> joined_frame = my_frame.join(my_frame, left_on='b',
-            ... right_on='book', how='inner')
-
-        We end up with a new Frame *joined_frame* accessing a new frame with
-        all the original columns, but only those rows where the data in the
-        original frame in column *b* matched the data in column *book*.
-
-        .. code::
-
-            >>> print joined_frame.inspect(4)
-
-              a:str  b:str  book:str  other:str
-            /-----------------------------------/
-                cat    abc       abc       red
-                dog    cde       cde       blk
-                ant    def       def       blk
+              a:unicode   b:unicode     c_L:unicode   c_R:int64   d:unicode
+            /-------------------------------------------------------------------/
+              apple       berry         cantaloupe         5218   frog
+              auto        bus           car                 871   dog
 
         More examples can be found in the :ref:`user manual
         <example_frame.join>`.
@@ -1175,7 +1130,7 @@ class Frame(_DocStubsFrame, _BaseFrame):
 
     .. code::
 
-        >>> my_frame = ta.Frame(my_csv_schema, "myframe")
+        >>> my_frame = ia.Frame(my_csv_schema, "myframe")
 
     A Frame object has been created and *my_frame* is its proxy.
     It brought in the data described by *my_csv_schema*.
@@ -1185,7 +1140,7 @@ class Frame(_DocStubsFrame, _BaseFrame):
 
     .. code::
 
-        >>> your_frame = ta.Frame(name='yourframe')
+        >>> your_frame = ia.Frame(name='yourframe')
 
     A frame has been created and Frame *your_frame* is its proxy.
     It has no data yet, but it does have the name *yourframe*.
@@ -1315,9 +1270,9 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
 
         .. code::
 
-            >>> csv = ta.CsvFile("/movie.csv", schema= [('user_id', ta.int32), ('user_name', str), ('movie_id', ta.int32), ('movie_title', str), ('rating', str)])
-            >>> my_frame = ta.Frame(csv)
-            >>> my_graph = ta.Graph()
+            >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32), ('user_name', str), ('movie_id', int32), ('movie_title', str), ('rating', str)])
+            >>> my_frame = ia.Frame(csv)
+            >>> my_graph = ia.Graph()
             >>> my_graph.define_vertex_type('users')
             >>> my_vertex_frame = my_graph.vertices['users']
             >>> my_vertex_frame.add_vertices(my_frame, 'user_id', ['user_name', 'age'])
@@ -1326,13 +1281,13 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
 
         .. code::
 
-            >>> csv = ta.CsvFile("/movie.csv", schema= [('user_id', ta.int32),
+            >>> csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
             ...                                     ('user_name', str),
-            ...                                     ('movie_id', ta.int32),
+            ...                                     ('movie_id', int32),
             ...                                     ('movie_title', str),
             ...                                     ('rating', str)])
-            >>> my_frame = ta.Frame(csv)
-            >>> my_graph = ta.Graph()
+            >>> my_frame = ia.Frame(csv)
+            >>> my_graph = ia.Graph()
             >>> my_graph.define_vertex_type('users')
             >>> my_vertex_frame = my_graph.vertices['users']
             >>> my_vertex_frame.add_vertices(my_frame, 'user_id',
@@ -1342,7 +1297,7 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
 
     .. code::
 
-        >>> my_graph = ta.get_graph("your_graph")
+        >>> my_graph = ia.get_graph("your_graph")
         >>> my_vertex_frame = my_graph.vertices["your_label"]
 
     Calling methods on a VertexFrame:
@@ -1411,7 +1366,7 @@ class VertexFrame(_DocStubsVertexFrame, _BaseFrame):
         self._backend.filter_vertices(self, predicate, keep_matching_vertices=False)
 
     @api
-    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; vertices that evaluate to False are dropped from the Frame")
+    @arg('predicate', 'function', "|UDF| which evaluates a row to a boolean; vertices that answer False are dropped from the Frame")
     def __filter(self, predicate):
         self._backend.filter_vertices(self, predicate)
 
@@ -1466,14 +1421,14 @@ class EdgeFrame(_DocStubsEdgeFrame, _BaseFrame):
 
     .. code::
 
-        >>> my_csv = ta.CsvFile("/movie.csv", schema= [('user_id', ta.int32),
+        >>> my_csv = ia.CsvFile("/movie.csv", schema= [('user_id', int32),
         ...                                     ('user_name', str),
-        ...                                     ('movie_id', ta.int32),
+        ...                                     ('movie_id', int32),
         ...                                     ('movie_title', str),
         ...                                     ('rating', str)])
 
-        >>> my_frame = ta.Frame(my_csv)
-        >>> my_graph = ta.Graph()
+        >>> my_frame = ia.Frame(my_csv)
+        >>> my_graph = ia.Graph()
         >>> my_graph.define_vertex_type('users')
         >>> my_graph.define_vertex_type('movies')
         >>> my_graph.define_edge_type('ratings','users','movies',directed=True)
@@ -1506,7 +1461,7 @@ class EdgeFrame(_DocStubsEdgeFrame, _BaseFrame):
 
     .. code::
 
-        >>> my_old_graph = ta.get_graph("your_graph")
+        >>> my_old_graph = ia.get_graph("your_graph")
         >>> my_new_edge_frame = my_old_graph.edges["your_label"]
 
     Calling methods on an EdgeFrame:
