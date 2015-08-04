@@ -16,10 +16,6 @@
 
 package org.trustedanalytics.atk.giraph.algorithms.lp;
 
-import org.trustedanalytics.atk.giraph.io.VertexData4LPWritable;
-import org.trustedanalytics.atk.giraph.io.IdWithVectorMessage;
-import org.trustedanalytics.atk.giraph.lp.LabelPropagationConfig;
-import org.trustedanalytics.atk.giraph.lp.LabelPropagationConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
@@ -37,6 +33,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.mahout.math.Vector;
+import org.trustedanalytics.atk.giraph.config.lp.LabelPropagationConfig;
+import org.trustedanalytics.atk.giraph.config.lp.LabelPropagationConfiguration;
+import org.trustedanalytics.atk.giraph.io.IdWithVectorMessage;
+import org.trustedanalytics.atk.giraph.io.VertexData4LPWritable;
 
 import java.io.File;
 import java.io.IOException;

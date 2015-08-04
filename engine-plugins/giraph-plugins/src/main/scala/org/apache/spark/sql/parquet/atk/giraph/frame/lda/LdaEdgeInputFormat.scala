@@ -20,7 +20,7 @@ import java.util
 
 import org.trustedanalytics.atk.engine.frame.RowWrapper
 import org.trustedanalytics.atk.giraph.io.{ LdaEdgeData, LdaVertexId }
-import org.trustedanalytics.atk.giraph.lda.LdaConfiguration
+import org.trustedanalytics.atk.giraph.config.lda.LdaConfiguration
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._
 import org.apache.hadoop.conf.Configuration

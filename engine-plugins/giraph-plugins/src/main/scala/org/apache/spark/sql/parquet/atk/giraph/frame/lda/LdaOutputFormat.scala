@@ -16,15 +16,15 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame.lda
 
+import org.apache.spark.sql.parquet.atk.giraph.frame.MultiOutputCommitter
 import org.trustedanalytics.atk.giraph.io.{ LdaVertexData, LdaVertexId }
-import org.trustedanalytics.atk.giraph.lda.LdaConfiguration
+import org.trustedanalytics.atk.giraph.config.lda.LdaConfiguration
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce._
 import org.apache.spark.sql.catalyst.expressions.{ GenericRow, Row }
 import org.apache.spark.sql.parquet.RowWriteSupport
-import org.apache.spark.sql.parquet.atk.giraph.frame.MultiOutputCommitter
 import org.apache.spark.sql.types._
 import parquet.hadoop.ParquetOutputFormat
 

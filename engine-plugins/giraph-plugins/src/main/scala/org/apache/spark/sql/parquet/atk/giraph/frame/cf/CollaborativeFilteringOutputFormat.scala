@@ -16,8 +16,9 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame.cf
 
+import org.apache.spark.sql.parquet.atk.giraph.frame.MultiOutputCommitter
 import org.trustedanalytics.atk.giraph.io.{ VertexData4CFWritable, CFVertexId }
-import org.trustedanalytics.atk.giraph.cf.CollaborativeFilteringConfiguration
+import org.trustedanalytics.atk.giraph.config.cf.CollaborativeFilteringConfiguration
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.fs.Path
@@ -25,7 +26,6 @@ import org.apache.hadoop.mapreduce._
 import org.apache.spark.mllib.atk.plugins.VectorUtils
 import org.apache.spark.sql.catalyst.expressions.{ GenericRow, Row }
 import org.apache.spark.sql.parquet.RowWriteSupport
-import org.apache.spark.sql.parquet.atk.giraph.frame.MultiOutputCommitter
 import org.apache.spark.sql.types._
 import parquet.hadoop.ParquetOutputFormat
 
