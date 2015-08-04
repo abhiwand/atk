@@ -14,19 +14,22 @@
 // limitations under the License.
 */
 
-package org.trustedanalytics.atk.giraph.plugins.frame
+package org.trustedanalytics.atk.giraph.plugins.model.cf
 
 import org.apache.spark.sql.parquet.atk.giraph.frame.cf.{ CollaborativeFilteringEdgeInputFormat, CollaborativeFilteringVertexOutputFormat }
+import org.trustedanalytics.atk.domain.CreateEntityArgs
+import org.trustedanalytics.atk.domain.frame.FrameName
+import org.trustedanalytics.atk.domain.schema.{ Column, DataTypes, FrameSchema }
+import org.trustedanalytics.atk.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
 import org.trustedanalytics.atk.giraph.algorithms.als.AlternatingLeastSquaresComputation
 import org.trustedanalytics.atk.giraph.algorithms.als.AlternatingLeastSquaresComputation.{ AlternatingLeastSquaresAggregatorWriter, AlternatingLeastSquaresMasterCompute }
 import org.trustedanalytics.atk.giraph.algorithms.cgd.ConjugateGradientDescentComputation
 import org.trustedanalytics.atk.giraph.algorithms.cgd.ConjugateGradientDescentComputation.{ ConjugateGradientDescentAggregatorWriter, ConjugateGradientDescentMasterCompute }
-import org.trustedanalytics.atk.giraph.io.{ VertexData4CGDWritable, VertexData4CFWritable }
 import org.trustedanalytics.atk.giraph.config.cf._
+import org.trustedanalytics.atk.giraph.io.{ VertexData4CFWritable, VertexData4CGDWritable }
 import org.trustedanalytics.atk.giraph.plugins.util.{ GiraphConfigurationUtil, GiraphJobManager }
-import org.trustedanalytics.atk.domain.CreateEntityArgs
-import org.trustedanalytics.atk.domain.schema.{ DataTypes, Column, FrameSchema }
-import org.trustedanalytics.atk.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
+
+import spray.json._
 import CollaborativeFilteringJsonFormat._
 
 @PluginDoc(oneLine = "<TBD>",
@@ -274,8 +277,8 @@ its item vertex in the specified vertex property name.
 
 """,
   returns = """<TBD>""")
-class CollaborativeFilteringPlugin
-    extends CommandPlugin[CollaborativeFilteringArgs, CollaborativeFilteringResult] {
+class CollaborativeFilteringTrainPlugin
+    extends CommandPlugin[CollaborativeFilteringTrainArgs, CollaborativeFilteringTrainResult] {
 
   /**
    * The name of the command, e.g. frame:/label_propagation
@@ -283,9 +286,9 @@ class CollaborativeFilteringPlugin
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "frame:/collaborative_filtering"
+  override def name: String = "model:collaborative_filtering/train"
 
-  override def execute(arguments: CollaborativeFilteringArgs)(implicit context: Invocation): CollaborativeFilteringResult = {
+  override def execute(arguments: CollaborativeFilteringTrainArgs)(implicit context: Invocation): CollaborativeFilteringTrainResult = {
 
     val frames = engine.frames
     val config = configuration
@@ -296,8 +299,10 @@ class CollaborativeFilteringPlugin
     val hadoopConf = GiraphConfigurationUtil.newHadoopConfigurationFrom(config, "giraph")
     val giraphConf = new CollaborativeFilteringConfiguration(hadoopConf)
 
-    val userFrame = frames.prepareForSave(CreateEntityArgs(description = Some("Collaborative filtering user frame results")))
-    val itemFrame = frames.prepareForSave(CreateEntityArgs(description = Some("Collaborative filtering item frame results")))
+    val userFrameName = FrameName.generate(Some("user_"))
+    val itemFrameName = FrameName.generate(Some("item_"))
+    val userFrame = frames.prepareForSave(CreateEntityArgs(name = Some(userFrameName), description = Some("Collaborative filtering user frame results")))
+    val itemFrame = frames.prepareForSave(CreateEntityArgs(name = Some(itemFrameName), description = Some("Collaborative filtering item frame results")))
     val inputFormatConfig = new CollaborativeFilteringInputFormatConfig(frame.storageLocation.get, frame.schema)
     val outputFormatConfig = new CollaborativeFilteringOutputFormatConfig(userFrame.storageLocation.get, itemFrame.storageLocation.get)
     val collaborativeFilteringConfig = new CollaborativeFilteringConfig(inputFormatConfig, outputFormatConfig, arguments)
@@ -327,18 +332,28 @@ class CollaborativeFilteringPlugin
       throw new NotImplementedError("only als & cgd algorithms are supported")
     }
 
-    val result = GiraphJobManager.run("ia_giraph_cf",
+    val result = GiraphJobManager.run("cf_giraph",
       computation,
       config,
       giraphConf,
       context,
       CollaborativeFilteringConstants.reportFilename)
 
-    val resultsColumn = Column("cf_factors", DataTypes.vector(arguments.getNumFactors))
+    val factorsColumnName = "cf_factors"
+    val resultsColumn = Column(factorsColumnName, DataTypes.vector(arguments.getNumFactors))
     frames.postSave(None, userFrame.toReference, new FrameSchema(List(frame.schema.column(arguments.userColName), resultsColumn)))
     frames.postSave(None, itemFrame.toReference, new FrameSchema(List(frame.schema.column(arguments.itemColName), resultsColumn)))
 
-    CollaborativeFilteringResult(frames.expectFrame(userFrame.toReference), frames.expectFrame(itemFrame.toReference), result)
+    //Writing the model as JSON
+    val jsonModel = new CollaborativeFilteringData(userFrameReference = userFrame.toReference,
+      itemFrameReference = itemFrame.toReference,
+      userColumnName = arguments.userColName,
+      itemColumnName = arguments.itemColName,
+      factorsColumnName = factorsColumnName,
+      numFactors = arguments.getNumFactors)
+    val modelData = arguments.model.data = jsonModel.toJson.asJsObject
+
+    CollaborativeFilteringTrainResult(result)
   }
 
 }

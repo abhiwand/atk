@@ -20,6 +20,7 @@ import org.trustedanalytics.atk.domain.schema.Schema
 import org.apache.commons.lang3.StringUtils
 import org.apache.giraph.conf.GiraphConfiguration
 import org.apache.hadoop.conf.Configuration
+
 import spray.json._
 import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
@@ -78,7 +79,7 @@ case class CollaborativeFilteringConfig(inputFormatConfig: CollaborativeFilterin
 
   def this(inputFormatConfig: CollaborativeFilteringInputFormatConfig,
            outputFormatConfig: CollaborativeFilteringOutputFormatConfig,
-           args: CollaborativeFilteringArgs) = {
+           args: CollaborativeFilteringTrainArgs) = {
     this(inputFormatConfig,
       outputFormatConfig,
       args.userColName,

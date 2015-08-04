@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package org.trustedanalytics.atk.giraph.plugins.model.cfrecommend
+package org.trustedanalytics.atk.giraph.plugins.model.cf
 
 import org.trustedanalytics.atk.domain.CreateEntityArgs
 import org.trustedanalytics.atk.domain.model.{ GenericNewModelArgs, ModelEntity }
@@ -28,17 +28,17 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
  */
 @PluginDoc(oneLine = "",
   extended = "")
-class CfNewPlugin extends CommandPlugin[GenericNewModelArgs, ModelEntity] {
+class CollaborativeFilteringNewPlugin extends CommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
    * The name of the command.
    *
    * The format of the name determines how the plugin gets "installed" in the client layer
    * e.g Python client via code generation.
    */
-  override def name: String = "model:cf/new"
+  override def name: String = "model:collaborative_filtering/new"
 
   override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
     val models = engine.models
-    models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:cfrecommend")))
+    models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:collaborativefiltering_new")))
   }
 }
