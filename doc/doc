@@ -33,7 +33,7 @@ function build_docstubs() {
 function compile_jars() {
     # $1 = Threads
     # $2 = AskThem
-    # $3 = DisplayStatus 
+    # $3 = DisplayStatus
     # $4 = TempFile
     # $5 = LogFile
 
@@ -219,7 +219,7 @@ function main() {
     ScriptPath=$(dirname "$(readlink -f "$0")")
     LogFile=$ScriptPath/doc.log; if [ -e $LogFile ]; then rm $LogFile; fi
     TempFile=$ScriptPath/temp.txt; if [ -e $TempFile ]; then rm $TempFile; fi
-    export PYTHON_DIR=/usr/lib/python2.7/dist-packages 
+    export PYTHON_DIR=/usr/lib/python2.7/dist-packages
     export PYTHONPATH=$(pwd)/../python-client:$PYTHONPATH:$PYTHON_DIR
 
 
@@ -480,9 +480,9 @@ function pdf_build() {
 
 ############################################################################################################
 function server_running() {
-    ps aux 2>&1  | grep "java.*launcher/target/launcher.jar.*.component.Boot" | grep -v "grep" > /dev/null
+    pid=$(ps -aux  | grep -v grep | grep "java.*launcher/target/launcher.jar.*org.trustedanalytics.atk.component.Boot" | head -n 1 |  awk '{print $2}')
     Return=$?
-    if [ "$Return" != "0" ]; then
+    if [ "$pid" != "0" ]; then
         return $Return
     fi
     curl -s localhost:9099 > /dev/null
