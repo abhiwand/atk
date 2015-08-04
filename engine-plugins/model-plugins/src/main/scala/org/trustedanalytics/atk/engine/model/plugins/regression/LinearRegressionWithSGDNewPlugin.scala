@@ -16,10 +16,12 @@
 
 package org.trustedanalytics.atk.engine.model.plugins.regression
 
+import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol
 import org.trustedanalytics.atk.domain.CreateEntityArgs
-import org.trustedanalytics.atk.domain.model.{GenericNewModelArgs, ModelEntity}
-import org.trustedanalytics.atk.engine.plugin.{Invocation, PluginDoc, SparkCommandPlugin}
-
+import org.trustedanalytics.atk.domain.model.{ GenericNewModelArgs, ModelEntity }
+import org.trustedanalytics.atk.engine.plugin.{ Invocation, PluginDoc, SparkCommandPlugin }
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
+import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 /**
  * Create a 'new' instance of this model
  */

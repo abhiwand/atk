@@ -16,14 +16,14 @@
 
 package org.apache.spark.mllib.atk.plugins
 
-import org.apache.spark.mllib.classification.{LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel}
+import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFrequency, NaiveBayesModel, SVMModel }
 import org.apache.spark.mllib.clustering.KMeansModel
-import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, SparseVector, Vector}
+import org.apache.spark.mllib.linalg.{ DenseMatrix, DenseVector, Matrix, SparseVector, Vector }
 import org.apache.spark.mllib.regression.LinearRegressionModel
 import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.trustedanalytics.atk.engine.model.plugins.classification._
-import org.trustedanalytics.atk.engine.model.plugins.classification.glm.{LogisticRegressionData, LogisticRegressionSummaryTable, LogisticRegressionTrainArgs}
-import org.trustedanalytics.atk.engine.model.plugins.clustering.{KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn}
+import org.trustedanalytics.atk.engine.model.plugins.classification.glm.{ LogisticRegressionData, LogisticRegressionSummaryTable, LogisticRegressionTrainArgs }
+import org.trustedanalytics.atk.engine.model.plugins.clustering.{ KMeansData, KMeansPredictArgs, KMeansTrainArgs, KMeansTrainReturn }
 import org.trustedanalytics.atk.engine.model.plugins.dimensionalityreduction._
 import org.trustedanalytics.atk.engine.model.plugins.regression.LinearRegressionData
 import org.trustedanalytics.atk.engine.model.plugins.scoring.ModelPublishArgs

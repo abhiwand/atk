@@ -24,7 +24,9 @@ import org.trustedanalytics.atk.domain.schema.DataTypes
 import org.trustedanalytics.atk.engine.frame.SparkFrame
 import org.trustedanalytics.atk.engine.model.Model
 import org.trustedanalytics.atk.engine.model.plugins.classification.ClassificationWithSGDPredictArgs
-import org.trustedanalytics.atk.engine.plugin.{ApiMaturityTag, Invocation, PluginDoc, SparkCommandPlugin}
+import org.trustedanalytics.atk.engine.plugin.{ ApiMaturityTag, Invocation, PluginDoc, SparkCommandPlugin }
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
+import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
 
 @PluginDoc(oneLine = "Make new frame with column for label prediction.",
   extended = """Predict the labels for a test frame and create a new frame revision with
