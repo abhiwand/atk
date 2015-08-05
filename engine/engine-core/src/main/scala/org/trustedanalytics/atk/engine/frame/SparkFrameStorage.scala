@@ -16,7 +16,7 @@
 
 package org.trustedanalytics.atk.engine.frame
 
-import org.trustedanalytics.atk.domain.schema.{ Schema }
+import org.trustedanalytics.atk.domain.schema.Schema
 import org.trustedanalytics.atk.domain._
 import org.trustedanalytics.atk.component.ClassLoaderAware
 import org.trustedanalytics.atk.domain.frame.{ FrameReference, DataFrameTemplate, FrameEntity }
@@ -31,7 +31,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
-import org.trustedanalytics.atk.event.{ EventLogging }
+import org.trustedanalytics.atk.event.EventLogging
 import org.joda.time.DateTime
 import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
