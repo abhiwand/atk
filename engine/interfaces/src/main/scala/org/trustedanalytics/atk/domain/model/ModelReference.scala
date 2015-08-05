@@ -18,8 +18,6 @@ package org.trustedanalytics.atk.domain.model
 
 import org.trustedanalytics.atk.domain.UriReference
 
-import org.trustedanalytics.atk.engine.plugin.{ Invocation }
-
 /**
  * ModelReference is the model's unique identifier. It is used to generate the ia_uri for the model.
  */
