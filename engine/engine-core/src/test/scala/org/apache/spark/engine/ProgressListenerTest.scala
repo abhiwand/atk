@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package org.apache.spark.engine.spark
+package org.apache.spark.engine
 
 import org.trustedanalytics.atk.domain.command.Command
 import org.joda.time.DateTime
