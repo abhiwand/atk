@@ -41,7 +41,7 @@ class TitanHadoopGraphCacheTest extends FlatSpec with Matchers with MockitoSugar
     val titanHadoopGraph = titanHadoopGraphCache.getGraph(hadoopCacheConfiguration)
 
     titanHadoopGraph shouldNot equal(null)
-    titanHadoopGraphCache.cache.size() shouldEqual (1)
+    titanHadoopGraphCache.cache.size() shouldEqual 1
   }
   "TitanHadoopGraphCache" should "retrieve a Titan/Hadoop graph instance if it already exists in the cache" in {
     val titanHadoopGraphCache = new TitanHadoopGraphCache()
@@ -50,17 +50,17 @@ class TitanHadoopGraphCacheTest extends FlatSpec with Matchers with MockitoSugar
     val titanHadoopGraph2 = titanHadoopGraphCache.getGraph(hadoopCacheConfiguration)
 
     titanHadoopGraph should equal(titanHadoopGraph2)
-    titanHadoopGraphCache.cache.size() shouldEqual (1)
+    titanHadoopGraphCache.cache.size() shouldEqual 1
   }
   "TitanHadoopGraphCache" should "invalidate cache entries" in {
     val titanHadoopGraphCache = new TitanHadoopGraphCache()
 
     val titanHadoopGraph = titanHadoopGraphCache.getGraph(hadoopCacheConfiguration)
     titanHadoopGraph shouldNot equal(null)
-    titanHadoopGraphCache.cache.size() shouldEqual (1)
+    titanHadoopGraphCache.cache.size() shouldEqual 1
 
     titanHadoopGraphCache.invalidateAllCacheEntries()
-    titanHadoopGraphCache.cache.size() shouldEqual (0)
+    titanHadoopGraphCache.cache.size() shouldEqual 0
 
   }
   "TitanHadoopGraphCache" should "throw an IllegalArgumentException if hadoop configuration is null" in {
