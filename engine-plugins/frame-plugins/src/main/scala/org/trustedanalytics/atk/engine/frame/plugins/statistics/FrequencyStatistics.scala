@@ -165,24 +165,15 @@ private class FrequencyStatsAccumulatorParam[T](maxNumberOfModesReturned: Int)
 
   private class canonicalOrdering[T] extends Ordering[T] {
     def compare(a: T, b: T) = {
-      if (a.isInstanceOf[Int]) {
-        a.asInstanceOf[Int].compareTo(b.asInstanceOf[Int])
-      }
-      else if (a.isInstanceOf[Long]) {
-        a.asInstanceOf[Long].compareTo(b.asInstanceOf[Long])
-      }
-      else if (a.isInstanceOf[Float]) {
-        a.asInstanceOf[Float].compareTo(b.asInstanceOf[Float])
-      }
-      else if (a.isInstanceOf[Double]) {
-        a.asInstanceOf[Double].compareTo(b.asInstanceOf[Double])
-      }
-      else if (a.isInstanceOf[String]) {
-        a.asInstanceOf[String].compareTo(b.asInstanceOf[String])
-      }
-      else {
-        throw new IllegalArgumentException("Attempt to get frequency statistics for unsupported datatype: "
-          + a.getClass.getName)
+      a match {
+        case i: Int => i.compareTo(b.asInstanceOf[Int])
+        case l: Long => l.compareTo(b.asInstanceOf[Long])
+        case fl: Float => fl.compareTo(b.asInstanceOf[Float])
+        case d: Double => d.compareTo(b.asInstanceOf[Double])
+        case s: String => s.compareTo(b.asInstanceOf[String])
+        case _ =>
+          throw new IllegalArgumentException("Attempt to get frequency statistics for unsupported datatype: "
+            + a.getClass.getName)
       }
     }
   }
