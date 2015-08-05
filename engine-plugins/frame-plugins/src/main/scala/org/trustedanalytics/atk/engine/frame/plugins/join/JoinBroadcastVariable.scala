@@ -72,7 +72,7 @@ case class JoinBroadcastVariable(joinParam: RddJoinParam) {
     val broadcastList = joinParam.frame.rdd.groupBy(row => {
       val columnIndex = joinParam.joinColumnIndex
       Try(row.get(columnIndex)).getOrElse({
-        throw new IllegalArgumentException(s"Column index ${columnIndex} does not exist in frame")
+        throw new IllegalArgumentException(s"Column index $columnIndex does not exist in frame")
       })
     }).collect().toList
 
