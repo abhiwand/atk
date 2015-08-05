@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package org.trustedanalytics.atk.engine.frame.plugins.unflattencolumn
+package org.trustedanalytics.atk.engine.frame.plugins
 
 import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema, DataTypes }
 import org.trustedanalytics.atk.engine.frame.plugins.UnflattenColumnFunctions
