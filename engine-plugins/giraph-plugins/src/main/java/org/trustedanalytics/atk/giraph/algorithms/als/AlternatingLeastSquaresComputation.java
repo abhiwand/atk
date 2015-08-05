@@ -16,14 +16,6 @@
 
 package org.trustedanalytics.atk.giraph.algorithms.als;
 
-import org.trustedanalytics.atk.giraph.io.CFVertexId;
-import org.trustedanalytics.atk.giraph.io.EdgeData4CFWritable;
-import org.trustedanalytics.atk.giraph.io.EdgeData4CFWritable.EdgeType;
-import org.trustedanalytics.atk.giraph.io.MessageData4CFWritable;
-import org.trustedanalytics.atk.giraph.io.VertexData4CFWritable;
-import org.trustedanalytics.atk.giraph.io.VertexData4CFWritable.VertexType;
-import org.trustedanalytics.atk.giraph.cf.CollaborativeFilteringConfig;
-import org.trustedanalytics.atk.giraph.cf.CollaborativeFilteringConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
@@ -40,12 +32,15 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
-import org.apache.mahout.math.DenseMatrix;
-import org.apache.mahout.math.DiagonalMatrix;
-import org.apache.mahout.math.Matrix;
-import org.apache.mahout.math.QRDecomposition;
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.*;
+import org.trustedanalytics.atk.giraph.config.cf.CollaborativeFilteringConfig;
+import org.trustedanalytics.atk.giraph.config.cf.CollaborativeFilteringConfiguration;
+import org.trustedanalytics.atk.giraph.io.CFVertexId;
+import org.trustedanalytics.atk.giraph.io.EdgeData4CFWritable;
+import org.trustedanalytics.atk.giraph.io.EdgeData4CFWritable.EdgeType;
+import org.trustedanalytics.atk.giraph.io.MessageData4CFWritable;
+import org.trustedanalytics.atk.giraph.io.VertexData4CFWritable;
+import org.trustedanalytics.atk.giraph.io.VertexData4CFWritable.VertexType;
 
 import java.io.IOException;
 import java.util.HashMap;

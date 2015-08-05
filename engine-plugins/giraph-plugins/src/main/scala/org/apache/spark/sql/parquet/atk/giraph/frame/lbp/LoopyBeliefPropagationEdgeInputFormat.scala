@@ -16,7 +16,7 @@
 
 package org.apache.spark.sql.parquet.atk.giraph.frame.lbp
 
-import org.trustedanalytics.atk.giraph.lbp.LoopyBeliefPropagationConfiguration
+import org.trustedanalytics.atk.giraph.config.lbp.LoopyBeliefPropagationConfiguration
 import org.trustedanalytics.atk.engine.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._

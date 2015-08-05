@@ -17,7 +17,7 @@
 package org.apache.spark.sql.parquet.atk.giraph.frame.lp
 
 import org.trustedanalytics.atk.giraph.io.VertexData4LPWritable
-import org.trustedanalytics.atk.giraph.lp.LabelPropagationConfiguration
+import org.trustedanalytics.atk.giraph.config.lp.LabelPropagationConfiguration
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.fs.Path

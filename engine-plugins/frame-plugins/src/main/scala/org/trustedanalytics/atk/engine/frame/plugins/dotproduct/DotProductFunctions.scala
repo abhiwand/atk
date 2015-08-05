@@ -19,7 +19,7 @@ package org.trustedanalytics.atk.engine.frame.plugins.dotproduct
 import java.io.Serializable
 
 import org.trustedanalytics.atk.domain.schema.DataTypes
-import org.trustedanalytics.atk.engine.frame.RowWrapper
+import org.trustedanalytics.atk.engine.frame.{ VectorFunctions, RowWrapper }
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
@@ -80,22 +80,7 @@ object DotProductFunctions extends Serializable {
   def createVector(row: RowWrapper,
                    columnNames: List[String],
                    defaultValues: Option[List[Double]]): Vector[Double] = {
-    val vector = columnNames.flatMap(columnName => {
-      val value = row.value(columnName)
-
-      row.schema.columnDataType(columnName) match {
-        case DataTypes.vector(length) =>
-          if (value == null) {
-            Array.fill[Double](length.toInt)(Double.NaN)
-          }
-          else {
-            DataTypes.toVector(length)(value)
-          }
-        case _ => if (value == null) Array(Double.NaN) else Array(DataTypes.toDouble(value))
-      }
-    }).toVector
-
-    replaceNaNs(vector, defaultValues)
+    VectorFunctions.createVector(row, columnNames, defaultValues)
   }
 
   /**
@@ -106,15 +91,7 @@ object DotProductFunctions extends Serializable {
    * @return Vector with NaNs replaced by defaults or zero
    */
   def replaceNaNs(vector: Vector[Double], defaultValues: Option[List[Double]]): Vector[Double] = {
-    require(defaultValues.isEmpty || defaultValues.get.size == vector.size, s"size in default values should be ${vector.size}")
-
-    vector.zipWithIndex.map {
-      case (value, i) =>
-        value match {
-          case x if x.isNaN => if (defaultValues.isDefined) defaultValues.get(i) else 0d
-          case _ => value
-        }
-    }
+    VectorFunctions.replaceNaNs(vector, defaultValues)
   }
 
   /**
@@ -127,14 +104,7 @@ object DotProductFunctions extends Serializable {
    * @return Dot product
    */
   def computeDotProduct(leftVector: Vector[Double], rightVector: Vector[Double]): Double = {
-    require(leftVector.nonEmpty, "left vector should not be empty")
-    require(leftVector.size == rightVector.size, "size of left vector should equal size of right vector")
-
-    var dotProduct = 0d
-    for (i <- 0 until leftVector.size) {
-      dotProduct += leftVector(i) * rightVector(i)
-    }
-    dotProduct
+    VectorFunctions.dotProduct(leftVector, rightVector)
   }
 
   private def getVectorSize(frameRdd: FrameRdd, columnNames: List[String]): Int = {
