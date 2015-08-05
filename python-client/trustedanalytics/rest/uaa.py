@@ -62,8 +62,34 @@ class UaaServer(Server):
         scheme = Server._get_value_from_config('uaa_scheme')
         headers = Server._get_value_from_config('uaa_headers')
         super(UaaServer, self).__init__(uaa_info['uri'], scheme, headers)
-        self.client_name=uaa_info.get('client_name', Server._get_value_from_config('client_name'))
-        self.client_password=uaa_info.get('client_password', Server._get_value_from_config('client_password'))
+        self.client_name = self._get_client_credential("client_name", uaa_info)
+        self.client_password = self._get_client_credential("client_password", uaa_info)
+
+    @staticmethod
+    def _get_client_credential(credential_name, uaa_info):
+        from trustedanalytics.rest.iaserver import server
+        try:
+            credential = getattr(server, credential_name)  # if local server object has it, use as override
+        except AttributeError:
+            credential = uaa_info.get(credential_name, None)  # else use uaa_info
+        if credential is None:
+            UaaServer.raise_bad_client_credential_error(credential_name, is_missing=True)
+        return credential
+
+    @staticmethod
+    def raise_bad_client_credential_error(credential_name, is_missing=False):
+        m = "is missing" if is_missing else "has a bad value for"
+        raise RuntimeError("""Authentication ${m} the ${c} for the client app itself.
+This could mean a version mismatch or other problem with the server instance.
+If you know this ${c}, you can manually set it as an attribute of
+the server and then try again.  For example:
+
+    >>>  ta.server.${c} = "the_known_value"
+
+You can also turn on HTTP logging to discover more details:
+
+    >>>  ta.loggers.set_http()
+""".format(m=m, c=credential_name))
 
 
 def _get_oauth_server_info(atk_uri):
@@ -100,7 +126,18 @@ def _get_token(uaa_info, data):
         uaa_server = UaaServer(uaa_info)
         auth = (uaa_server.client_name, uaa_server.client_password)
         response = http.post(uaa_server, "/oauth/token", auth=auth, data=data)
-        uaa_server._check_response(response)
+        try:
+            uaa_server._check_response(response)
+        except Exception:
+            # try to provide better message if possible
+            j = response.json()
+            description = j.get('error_description', '')
+            if 'No client with requested id' in description:
+                UaaServer.raise_bad_client_credential_error('client_name')
+            elif 'Bad credentials' in description:
+                UaaServer.raise_bad_client_credential_error('client_password')
+            else:
+                raise
         token_type = response.json()['token_type']
         token = response.json()['access_token']
         refresh_token = response.json()['refresh_token']
