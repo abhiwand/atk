@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.scoring
 
 import java.io.{ FileOutputStream, File, FileInputStream }
 
-import akka.actor.{ ActorRef, ActorSystem, Props }
+import akka.actor.{ ActorSystem, Props }
 import akka.io.IO
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -29,7 +29,7 @@ import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
-import org.trustedanalytics.atk.event.{ EventLogging, EventLogger }
+import org.trustedanalytics.atk.event.EventLogging
 import org.trustedanalytics.atk.component.{ Boot, ArchiveDefinition, Archive }
 import com.typesafe.config.{ Config, ConfigFactory }
 import scala.reflect.ClassTag
@@ -86,28 +86,28 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
 
   private def modelLoadRead(): Unit = {
 
-    val pt = new Path(config.getString("trustedanalytics.scoring-engine.archive-tar"));
-    val uri = new URI(config.getString("trustedanalytics.scoring-engine.archive-tar"));
-    val hdfsFileSystem: org.apache.hadoop.fs.FileSystem = org.apache.hadoop.fs.FileSystem.get(uri, new Configuration());
+    val pt = new Path(config.getString("trustedanalytics.scoring-engine.archive-tar"))
+    val uri = new URI(config.getString("trustedanalytics.scoring-engine.archive-tar"))
+    val hdfsFileSystem: org.apache.hadoop.fs.FileSystem = org.apache.hadoop.fs.FileSystem.get(uri, new Configuration())
 
     val local = new Path(System.getProperty("user.dir"))
 
     hdfsFileSystem.copyToLocalFile(false, pt, local)
 
-    val fileName = pt.getName();
+    val fileName = pt.getName
 
-    val myTarFile: TarArchiveInputStream = new TarArchiveInputStream(new FileInputStream(new File(fileName)));
-    var entry: TarArchiveEntry = null;
-    entry = myTarFile.getNextTarEntry()
+    val myTarFile: TarArchiveInputStream = new TarArchiveInputStream(new FileInputStream(new File(fileName)))
+    var entry: TarArchiveEntry = null
+    entry = myTarFile.getNextTarEntry
     while (entry != null) {
       // Get the name of the file
-      val individualFile: String = entry.getName();
+      val individualFile: String = entry.getName
       // Get Size of the file and create a byte array for the size
-      val content: Array[Byte] = new Array[Byte](entry.getSize.toInt);
-      myTarFile.read(content, 0, content.length);
-      val outputFile = new FileOutputStream(new File(individualFile));
-      IOUtils.write(content, outputFile);
-      outputFile.close();
+      val content: Array[Byte] = new Array[Byte](entry.getSize.toInt)
+      myTarFile.read(content, 0, content.length)
+      val outputFile = new FileOutputStream(new File(individualFile))
+      IOUtils.write(content, outputFile)
+      outputFile.close()
       if (individualFile.contains(".jar")) {
         archiveName = individualFile.substring(0, individualFile.indexOf(".jar"))
       }
@@ -119,9 +119,9 @@ class ScoringServiceApplication(archiveDefinition: ArchiveDefinition, classLoade
       else {
         ModelBytesFileName = individualFile
       }
-      entry = myTarFile.getNextTarEntry()
+      entry = myTarFile.getNextTarEntry
     }
-    myTarFile.close();
+    myTarFile.close()
   }
 
   /**
