@@ -51,16 +51,14 @@ object TitanReaderUtils {
    * @return  Array of GraphBuilder elements with sorted property lists
    */
   def sortGraphElementProperties(graphElements: Array[GraphElement]) = {
-    graphElements.map(element => {
-      element match {
-        case v: GBVertex => {
-          new GBVertex(v.physicalId, v.gbId, v.properties).asInstanceOf[GraphElement]
-        }
-        case e: GBEdge => {
-          new GBEdge(None, e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties).asInstanceOf[GraphElement]
-        }
+    graphElements.map {
+      case v: GBVertex => {
+        new GBVertex(v.physicalId, v.gbId, v.properties).asInstanceOf[GraphElement]
       }
-    })
+      case e: GBEdge => {
+        new GBEdge(None, e.tailPhysicalId, e.headPhysicalId, e.tailVertexGbId, e.headVertexGbId, e.label, e.properties).asInstanceOf[GraphElement]
+      }
+    }
   }
 
   def createFaunusVertex(titanVertex: TitanVertex): FaunusVertex = {
