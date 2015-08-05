@@ -17,7 +17,7 @@ git checkout <sprint>; <sprint> is the name of the current Agile sprint branch, 
 	Make a new branch of your own named after the JIRA work issue
 git checkout -b <working branch>; <working branch> is the name of the branch being worked for general documentation issues
 	Change to the active working directory
-cd pyton/intelanalytics
+cd python-client/trustedanalytics
 	This is the base directory of everybody's work. The documentation is in the folder called doc.
 	Make your changes.  Add your changes to the local repository.
 git add <file name>
