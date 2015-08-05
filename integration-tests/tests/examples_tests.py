@@ -15,22 +15,22 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-#ia.loggers.set_api()
+ta.errors.show_details = True
+#ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 
 
 
-#import trustedanalytics as ia
-#ia.server.port = 19099
-#ia.connect()
+#import trustedanalytics as ta
+#ta.server.port = 19099
+#ta.connect()
 
 
 import doctest
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 #
 #     print "Running examples in %s" % relative_path
 #     return doctest.run_docstring_examples(content,
-#                                           {"ia": ia},
+#                                           {"ta": ta},
 #                                           verbose=True,
 #                                           optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
 #
@@ -143,9 +143,9 @@ if __name__ == "__main__":
 
 # option 2
 #connection_header = """
-#>>> import trustedanalytics as ia
-#>>> ia.server.port = 19099
-#>>> ia.connect()
+#>>> import trustedanalytics as ta
+#>>> ta.server.port = 19099
+#>>> ta.connect()
 #-etc-
 #"""
 #content = "\n".join([connection_header, content])

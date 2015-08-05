@@ -15,29 +15,29 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class ModelLinearRegressionTest(unittest.TestCase):
     def testLinearRegression(self):
         print "define csv file"
-        csv = ia.CsvFile("/datasets/linear_regression_8_columns.csv", schema = [("y", ia.float64),("1",ia.float64),("2",ia.float64),
-                                                              ("3",ia.float64),("4",ia.float64),("5",ia.float64),
-                                                              ("6",ia.float64),("7",ia.float64),("8",ia.float64),
-                                                              ("9",ia.float64),("10",ia.float64)])
+        csv = ta.CsvFile("/datasets/linear_regression_8_columns.csv", schema = [("y", ta.float64),("1",ta.float64),("2",ta.float64),
+                                                              ("3",ta.float64),("4",ta.float64),("5",ta.float64),
+                                                              ("6",ta.float64),("7",ta.float64),("8",ta.float64),
+                                                              ("9",ta.float64),("10",ta.float64)])
 
         print "create frame"
-        frame = ia.Frame(csv,'LinearRegressionSampleFrame')
+        frame = ta.Frame(csv,'LinearRegressionSampleFrame')
 
         print "Initializing a LinearRegressionModel object"
-        model = ia.LinearRegressionModel(name='myLinearRegressionModel')
+        model = ta.LinearRegressionModel(name='myLinearRegressionModel')
 
         print "Training the model on the Frame"
         model.train(frame,'y', ['1','2','3','4','5','6','7','8','9','10'])
