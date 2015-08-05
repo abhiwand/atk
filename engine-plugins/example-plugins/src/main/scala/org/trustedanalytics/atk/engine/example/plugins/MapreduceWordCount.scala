@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
-/* Here we demonstrate a sample plugin which reads of data from HDFS and runs a mapreduce job on the file to compute
+/* Here we demonstrate a sample plugin which reads data from HDFS and runs a mapreduce job on the file to compute
    the number of words in the file and write back the counts to another file. The input file is being read as plain
    text file.
 
