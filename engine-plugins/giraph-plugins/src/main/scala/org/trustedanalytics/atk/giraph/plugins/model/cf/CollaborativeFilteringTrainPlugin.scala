@@ -17,7 +17,7 @@
 package org.trustedanalytics.atk.giraph.plugins.model.cf
 
 import org.apache.spark.sql.parquet.atk.giraph.frame.cf.{ CollaborativeFilteringEdgeInputFormat, CollaborativeFilteringVertexOutputFormat }
-import org.trustedanalytics.atk.domain.CreateEntityArgs
+import org.trustedanalytics.atk.domain.{ StringValue, CreateEntityArgs }
 import org.trustedanalytics.atk.domain.frame.FrameName
 import org.trustedanalytics.atk.domain.schema.{ Column, DataTypes, FrameSchema }
 import org.trustedanalytics.atk.engine.plugin.{ CommandPlugin, Invocation, PluginDoc }
@@ -31,8 +31,9 @@ import org.trustedanalytics.atk.giraph.plugins.util.{ GiraphConfigurationUtil, G
 
 import spray.json._
 import CollaborativeFilteringJsonFormat._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 
-@PluginDoc(oneLine = "<TBD>",
+@PluginDoc(oneLine = "Collaborative filtering (als/cgd) model",
   extended = """.. index::
   single: colaborative filtering
 
@@ -276,9 +277,9 @@ user vertex in a specified vertex property name and each item-factors vector to
 its item vertex in the specified vertex property name.
 
 """,
-  returns = """<TBD>""")
+  returns = """Execution result summary for Giraph""")
 class CollaborativeFilteringTrainPlugin
-    extends CommandPlugin[CollaborativeFilteringTrainArgs, CollaborativeFilteringTrainResult] {
+    extends CommandPlugin[CollaborativeFilteringTrainArgs, StringValue] {
 
   /**
    * The name of the command, e.g. frame:/label_propagation
@@ -288,7 +289,7 @@ class CollaborativeFilteringTrainPlugin
    */
   override def name: String = "model:collaborative_filtering/train"
 
-  override def execute(arguments: CollaborativeFilteringTrainArgs)(implicit context: Invocation): CollaborativeFilteringTrainResult = {
+  override def execute(arguments: CollaborativeFilteringTrainArgs)(implicit context: Invocation): StringValue = {
 
     val frames = engine.frames
     val config = configuration
@@ -353,7 +354,7 @@ class CollaborativeFilteringTrainPlugin
       numFactors = arguments.getNumFactors)
     val modelData = arguments.model.data = jsonModel.toJson.asJsObject
 
-    CollaborativeFilteringTrainResult(result)
+    StringValue(result)
   }
 
 }

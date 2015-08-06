@@ -91,7 +91,7 @@ import LdaJsonFormat._
 /**
  * Latent Dirichlet allocation
  */
-@PluginDoc(oneLine = "Creates Latent Dirichlet Allocation model.",
+@PluginDoc(oneLine = "Creates Latent Dirichlet Allocation model",
   extended = """The `Latent Dirichlet Allocation <http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation>`""",
   returns = """dict
     The data returned is composed of multiple components:

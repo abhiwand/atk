@@ -27,7 +27,7 @@ import org.trustedanalytics.atk.engine.plugin.{ PluginDoc, CommandPlugin, Invoca
 
 import LoopyBeliefPropagationJsonFormat._
 
-@PluginDoc(oneLine = "Make inferences on graph data until converence.",
+@PluginDoc(oneLine = "Loopy Belief Propagation (LBP) from http://en.wikipedia.org/wiki/Belief_propagation",
   extended = """Loopy belief propagation on :term:`Markov Random Fields` (MRF).
 This algorithm was originally designed for acyclic graphical models, then it
 was found that the Belief Propagation algorithm can be used in general graphs.

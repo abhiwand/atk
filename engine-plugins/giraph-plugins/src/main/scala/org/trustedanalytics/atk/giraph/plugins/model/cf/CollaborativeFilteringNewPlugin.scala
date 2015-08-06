@@ -26,8 +26,8 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Collaborative filtering recommend model - create a 'new' instance of this model
  */
-@PluginDoc(oneLine = "",
-  extended = "")
+@PluginDoc(oneLine = "Collaborative filtering (als/cgd) model",
+  extended = "see collaborative filtering train for more information")
 class CollaborativeFilteringNewPlugin extends CommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
    * The name of the command.

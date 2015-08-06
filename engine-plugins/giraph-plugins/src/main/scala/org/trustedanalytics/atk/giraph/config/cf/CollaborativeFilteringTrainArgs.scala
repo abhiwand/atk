@@ -19,7 +19,7 @@ package org.trustedanalytics.atk.giraph.config.cf
 import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.trustedanalytics.atk.domain.frame.{ FrameReference }
 import org.trustedanalytics.atk.domain.model.ModelReference
-import org.trustedanalytics.atk.engine.plugin.{ ArgDoc, Invocation }
+import org.trustedanalytics.atk.engine.plugin.{ ArgDoc }
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -27,19 +27,19 @@ import org.apache.commons.lang3.StringUtils
  */
 case class CollaborativeFilteringTrainArgs(model: ModelReference,
                                            frame: FrameReference,
-                                           @ArgDoc("""<TBD>""") userColName: String,
-                                           @ArgDoc("""<TBD>""") itemColName: String,
-                                           @ArgDoc("""<TBD>""") ratingColName: String,
-                                           @ArgDoc("""<TBD>""") evaluationFunction: Option[String],
-                                           @ArgDoc("""<TBD>""") numFactors: Option[Int],
-                                           @ArgDoc("""<TBD>""") maxIterations: Option[Int] = None,
-                                           @ArgDoc("""<TBD>""") convergenceThreshold: Option[Double] = None,
-                                           @ArgDoc("""<TBD>""") regularization: Option[Float] = None,
-                                           @ArgDoc("""<TBD>""") biasOn: Option[Boolean] = None,
-                                           @ArgDoc("""<TBD>""") minValue: Option[Float] = None,
-                                           @ArgDoc("""<TBD>""") maxValue: Option[Float] = None,
-                                           @ArgDoc("""<TBD>""") learningCurveInterval: Option[Int] = None,
-                                           @ArgDoc("""<TBD>""") cgdIterations: Option[Int] = None) {
+                                           @ArgDoc("""Name of the user column from input data""") userColName: String,
+                                           @ArgDoc("""Name of the item column from input data""") itemColName: String,
+                                           @ArgDoc("""Name of the rating column from input data""") ratingColName: String,
+                                           @ArgDoc("""als/cgd""") evaluationFunction: Option[String] = None,
+                                           @ArgDoc("""Size of the desired factors (default is 3)""") numFactors: Option[Int] = None,
+                                           @ArgDoc("""Max number of iterations for Giraph""") maxIterations: Option[Int] = None,
+                                           @ArgDoc("""float value between 0 .. 1""") convergenceThreshold: Option[Double] = None,
+                                           @ArgDoc("""float value between 0 .. 1 """) regularization: Option[Float] = None,
+                                           @ArgDoc("""bias on/off switch """) biasOn: Option[Boolean] = None,
+                                           @ArgDoc("""minimum edge weight value""") minValue: Option[Float] = None,
+                                           @ArgDoc("""minimum edge weight value""") maxValue: Option[Float] = None,
+                                           @ArgDoc("""iteration interval to output learning curve""") learningCurveInterval: Option[Int] = None,
+                                           @ArgDoc("""custom argument for cgd learning curve output interval (default: every iteration)""") cgdIterations: Option[Int] = None) {
 
   require(frame != null, "frame is required")
   require(StringUtils.isNotBlank(userColName), "user column name property list is required")
@@ -102,15 +102,10 @@ object CollaborativeFilteringConstants {
   val reportFilename = "cf-learning-report"
 }
 
-case class CollaborativeFilteringTrainResult(report: String) {
-  require(StringUtils.isNotBlank(report), "report is required")
-}
-
 /** Json conversion for arguments and return value case classes */
 object CollaborativeFilteringJsonFormat {
 
   implicit val argsFormat = jsonFormat15(CollaborativeFilteringTrainArgs)
-  implicit val resultFormat = jsonFormat1(CollaborativeFilteringTrainResult)
   implicit val dataFormat = jsonFormat6(CollaborativeFilteringData)
   implicit val recommendFormat = jsonFormat3(CollaborativeFilteringRecommendArgs)
 

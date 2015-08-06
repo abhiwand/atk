@@ -26,7 +26,7 @@ import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 /**
  * Latent Dirichlet allocation - create a 'new' instance of this model
  */
-@PluginDoc(oneLine = "<TBD>",
+@PluginDoc(oneLine = "Creates Latent Dirichlet Allocation model",
   extended = """""")
 class LdaNewPlugin extends CommandPlugin[GenericNewModelArgs, ModelEntity] {
   /**
