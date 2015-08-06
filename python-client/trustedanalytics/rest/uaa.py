@@ -73,23 +73,14 @@ class UaaServer(Server):
         except AttributeError:
             credential = uaa_info.get(credential_name, None)  # else use uaa_info
         if credential is None:
-            UaaServer.raise_bad_client_credential_error(credential_name, is_missing=True)
+            UaaServer.raise_bad_client_credential_error(is_missing=True)
         return credential
 
     @staticmethod
-    def raise_bad_client_credential_error(credential_name, is_missing=False):
+    def raise_bad_client_credential_error(is_missing=False):
         m = "is missing" if is_missing else "has a bad value for"
-        raise RuntimeError("""Authentication ${m} the ${c} for the client app itself.
-This could mean a version mismatch or other problem with the server instance.
-If you know this ${c}, you can manually set it as an attribute of
-the server and then try again.  For example:
-
-    >>>  ta.server.${c} = "the_known_value"
-
-You can also turn on HTTP logging to discover more details:
-
-    >>>  ta.loggers.set_http()
-""".format(m=m, c=credential_name))
+        raise RuntimeError("Authentication %s for the client app itself.  "
+                           "This could mean a version mismatch or other problem with the server instance." % m)
 
 
 def _get_oauth_server_info(atk_uri):
@@ -130,12 +121,9 @@ def _get_token(uaa_info, data):
             uaa_server._check_response(response)
         except Exception:
             # try to provide better message if possible
-            j = response.json()
-            description = j.get('error_description', '')
-            if 'No client with requested id' in description:
-                UaaServer.raise_bad_client_credential_error('client_name')
-            elif 'Bad credentials' in description:
-                UaaServer.raise_bad_client_credential_error('client_password')
+            description = response.json().get('error_description', '')
+            if 'No client with requested id' in description or 'Bad credentials' in description:
+                UaaServer.raise_bad_client_credential_error()
             else:
                 raise
         token_type = response.json()['token_type']
