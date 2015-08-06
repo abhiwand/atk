@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package org.trustedanalytics.atk.engine.frame.plugins.levis
+package org.trustedanalytics.atk.engine.frame.plugins.experimental
 
 import org.trustedanalytics.atk.domain.CreateEntityArgs
 import org.trustedanalytics.atk.domain.frame.FrameEntity
