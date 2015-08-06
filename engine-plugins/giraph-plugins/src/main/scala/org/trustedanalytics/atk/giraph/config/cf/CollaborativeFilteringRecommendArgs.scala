@@ -19,30 +19,19 @@ package org.trustedanalytics.atk.giraph.config.cf
 import org.apache.commons.lang3.StringUtils
 import org.trustedanalytics.atk.domain.frame.{ FrameEntity }
 import org.trustedanalytics.atk.domain.model.ModelReference
+import org.trustedanalytics.atk.engine.ArgDocAnnotation
+import org.trustedanalytics.atk.engine.plugin.ArgDoc
 
 /**
  * Arguments to the CfRecommend plugin - see user docs for more on the parameters
  */
 case class CollaborativeFilteringRecommendArgs(model: ModelReference,
-                                               name: String,
-                                               topK: Int) {
-  //                                               userFrame: FrameReference,
-  //                                               itemFrame: FrameReference,
-  //                                               userColumnName: String,
-  //                                               itemColumnName: String,
-  //                                               cfFactorsColumnName: String,
-  //                                               numFactors: Int) {
+                                               @ArgDoc("""An entity name from the first column of the input frame""") name: String,
+                                               @ArgDoc("""positive integer representing the top recommendations for the name""") topK: Int) {
 
   require(StringUtils.isNotBlank(name), "entity name is required")
   require(topK > 0, "top k must be greater than 0")
   require(model != null, "model is required")
-  //  require(userFrame != null, "frame is required")
-  //  require(itemFrame != null, "frame is required")
-  //  require(StringUtils.isNotBlank(userColumnName), "user column name is required")
-  //  require(StringUtils.isNotBlank(itemColumnName), "item column name is required")
-  //  require(StringUtils.isNotBlank(cfFactorsColumnName), "factors column name is required")
-  //  require(numFactors > 0, "factors column size must be greater than 0")
-
 }
 
 /** Json conversion for arguments and return value case classes */
