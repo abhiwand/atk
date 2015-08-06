@@ -1,4 +1,4 @@
-package org.trustedanalytics.atk.engine.frame.plugins.levis
+package org.trustedanalytics.atk.engine.frame.plugins.experimental
 
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.broadcast.Broadcast
