@@ -27,7 +27,7 @@ from decorator import decorator
 from trustedanalytics.core.api import api_status
 import trustedanalytics.rest.config as config
 from trustedanalytics.rest.server import Server
-from trustedanalytics.rest.uaa import get_oauth_token, get_refreshed_oauth_token, get_oauth_server_uri
+from trustedanalytics.rest.uaa import get_refreshed_oauth_token, get_oauth_credentials
 from trustedanalytics.meta.installapi import install_api
 
 
@@ -287,26 +287,16 @@ def create_credentials_file(filename):
 
     cache = _CreateCredentialsCache  # alias the cache singleton for convenience
     cache.uri = default_input("URI of ATK or OAuth server", cache.uri)
+    if not cache.uri:
+        print "Empty URI, aborting."
+        return
     cache.user = default_input("User name", cache.user)
-    atk_uri = None
-    oauth_uri = None
-    connect_now = False
-    if cache.uri:
-        password = getpass.getpass()
-        stars = "*" * len(password)
-        # Get OAuth server URI from ATK server or else return given URI
-        try:
-            oauth_uri = get_oauth_server_uri(cache.uri)  # try using ATK URI first
-        except:
-            oauth_uri = cache.uri
-            logger.info("Using UAA uri %s provided explicitly." % oauth_uri)
-        else:
-            atk_uri = cache.uri  # save fact that this was an ATK URI
-            logger.info("Using UAA uri %s obtained from ATK server." % oauth_uri)
-        try:
-            token_type, token, refresh_token = get_oauth_token(oauth_uri, cache.user, password)
-        except Exception as error:
-            raise RuntimeError("""
+    password = getpass.getpass()
+    stars = "*" * len(password)
+    try:
+        credentials = get_oauth_credentials(cache.uri, cache.user, password)
+    except Exception as error:
+        raise RuntimeError("""
 Unable to acquire oauth token with these credentials.
   URI: %s
   User name: %s
@@ -315,24 +305,14 @@ Unable to acquire oauth token with these credentials.
   Error msg: %s
 """ % (cache.uri, cache.user, stars, str(error)))
 
-        if atk_uri:
-            connect_prompt = raw_input("Connect now? [y/N] ")
-            connect_now = False if not connect_prompt else connect_prompt[0].lower() == 'y'
-
-    else:
-        token_type, token, refresh_token = None, None, None
-
-    creds = dict({ 'user': cache.user,
-                   'oauth_uri': oauth_uri,
-                   'token_type': token_type,
-                   'token': token,
-                   'refresh_token': refresh_token })
-
     with open(cleaned_path, "w") as f:
-        f.write(json.dumps(creds, indent=2))
+        f.write(json.dumps(credentials, indent=2))
     print "\nCredentials file created at '%s'" % cleaned_path
 
-    if connect_now:
-        print "Attempting to connect to %s now..." % atk_uri
-        server.uri = atk_uri
-        server.connect(cleaned_path)
+    if cache.uri != credentials['oauth_uri']:
+        # indicates that cache.uri must be the ATK server uri, so we can offer to connect now
+        connect_now = raw_input("Connect now? [y/N] ")
+        if connect_now and connect_now[0].lower() == 'y':
+            print "Attempting to connect to %s now..." % cache.uri
+            server.uri = cache.uri
+            server.connect(cleaned_path)
