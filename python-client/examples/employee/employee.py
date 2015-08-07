@@ -14,15 +14,15 @@
 # limitations under the License.
 #
 
-import trustedanalytics as ia
-ia.connect()
+import trustedanalytics as ta
+ta.connect()
 
-for name in ia.get_frame_names():
+for name in ta.get_frame_names():
     print 'deleting frame: %s' %name
-    ia.drop_frames(name)
+    ta.drop_frames(name)
 
 
-employees_frame = ia.Frame(ia.CsvFile("employees.csv", schema = [('Employee', str), ('Manager', str), ('Title', str), ('Years', ia.int64)], skip_header_lines=1), 'employees_frame')
+employees_frame = ta.Frame(ta.CsvFile("employees.csv", schema = [('Employee', str), ('Manager', str), ('Title', str), ('Years', ta.int64)], skip_header_lines=1), 'employees_frame')
 
 employees_frame.inspect()
 
@@ -32,7 +32,7 @@ employees_frame.inspect()
 
 #Option 1
 
-graph = ia.Graph()
+graph = ta.Graph()
 graph.define_vertex_type('Employee')
 graph.define_edge_type('worksunder', 'Employee', 'Employee', directed=False)
 graph.vertices['Employee'].add_vertices(employees_frame, 'Manager', [])
@@ -46,8 +46,8 @@ graph.edges['worksunder'].inspect(20)
 
 #Option 2
 
-ia.drop_graphs(graph)
-graph = ia.Graph()
+ta.drop_graphs(graph)
+graph = ta.Graph()
 graph.define_vertex_type('Employee')
 graph.define_edge_type('worksunder', 'Employee', 'Employee', directed=False)
 graph.vertices['Employee'].add_vertices(employees_frame, 'Employee', ['Title'])

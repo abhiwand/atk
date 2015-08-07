@@ -15,27 +15,27 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 
 
 class UserExamples(unittest.TestCase):
     def test_frame(self):
         import trustedanalytics.examples.frame as frame_test
-        frame_test.run("/datasets/cities.csv", ia)
+        frame_test.run("/datasets/cities.csv", ta)
         assert True
 
     def test_movie_graph_small(self):
         import trustedanalytics.examples.movie_graph_small as mgs
-        vars = mgs.run("/datasets/movie_data_random.csv", ia)
+        vars = mgs.run("/datasets/movie_data_random.csv", ta)
 
         assert vars["frame"].row_count == 2
         assert vars["frame"].name == "MGS" and vars["graph"].name == "MGS"
@@ -45,7 +45,7 @@ class UserExamples(unittest.TestCase):
 
     def test_pr(self):
         import trustedanalytics.examples.pr as pr
-        vars = pr.run("/datasets/movie_data_random.csv", ia)
+        vars = pr.run("/datasets/movie_data_random.csv", ta)
 
         assert vars["frame"].row_count == 20
         assert vars["frame"].name == "PR" and vars["graph"].name == "PR"

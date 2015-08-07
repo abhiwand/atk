@@ -15,23 +15,23 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class GraphTriangleCountTest(unittest.TestCase):
 
     def test_triangle_count(self):
         graph_data = "/datasets/triangle_count_small.csv"
-        schema = [('from_node',str),('to_node',str),('max_k',ia.int64),('cc',ia.int64)]
-        frame = ia.Frame(ia.CsvFile(graph_data,schema))
-        graph= ia.Graph()
+        schema = [('from_node',str),('to_node',str),('max_k',ta.int64),('cc',ta.int64)]
+        frame = ta.Frame(ta.CsvFile(graph_data,schema))
+        graph= ta.Graph()
         graph.define_vertex_type("node")
         graph.vertices["node"].add_vertices(frame,"from_node",["max_k","cc"])
         graph.vertices["node"].add_vertices(frame,"to_node",["max_k","cc"])

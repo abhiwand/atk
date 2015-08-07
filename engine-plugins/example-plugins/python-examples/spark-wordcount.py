@@ -29,27 +29,27 @@
 #       execfile('/path/to/spark-wordcount.py')
 #
 
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
+ta.errors.show_details = True
 
-ia.connect()
+ta.connect()
 
-#ia.loggers.set_http()
+#ta.loggers.set_http()
 
 print("server ping")
-ia.server.ping()
+ta.server.ping()
 
 print("define csv file")
-csv = ia.CsvFile("/movie.csv", schema= [('user', ia.int32),
+csv = ta.CsvFile("/movie.csv", schema= [('user', ta.int32),
                                         ('vertexType', str),
-                                        ('movie', ia.int32),
+                                        ('movie', ta.int32),
                                         ('rating', str),
                                         ('splits', str)])
 
 print("create frame")
-frame = ia.Frame(csv)
+frame = ta.Frame(csv)
 
 errors = frame.get_error_frame()
 

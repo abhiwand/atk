@@ -15,23 +15,23 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class GraphPageRankTest(unittest.TestCase):
     def test_page_rank(self):
         graph_data = "/datasets/page_rank_test_data.csv"
-        schema = [("followed", ia.int32),("follows",ia.int32)]
-        frame = ia.Frame(ia.CsvFile(graph_data,schema))
+        schema = [("followed", ta.int32),("follows",ta.int32)]
+        frame = ta.Frame(ta.CsvFile(graph_data,schema))
 
-        graph = ia.Graph()
+        graph = ta.Graph()
         graph.define_vertex_type("node")
         graph.vertices["node"].add_vertices(frame,"follows")
         graph.vertices["node"].add_vertices(frame,"followed")

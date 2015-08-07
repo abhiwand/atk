@@ -587,6 +587,13 @@ export MAVEN_OPTS="-Xmx512m -XX:PermSize=256m"
                             </includes>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
+                        <fileset>
+                            <directory>python-client</directory>
+                            <includes>
+                                <include>nosetests.xml</include>
+                                <include>python-coverage.zip</include>
+                            </includes>
+                        </fileset>
                     </filesets>
                 </configuration>
             </plugin>

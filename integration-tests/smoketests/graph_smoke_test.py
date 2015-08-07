@@ -15,15 +15,15 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class GraphSmokeTest(unittest.TestCase):
     """
@@ -40,14 +40,14 @@ class GraphSmokeTest(unittest.TestCase):
 
     def test_graph(self):
         print "define csv file"
-        csv = ia.CsvFile("/datasets/movie.csv", schema= [('user', ia.int32),
+        csv = ta.CsvFile("/datasets/movie.csv", schema= [('user', ta.int32),
                                             ('vertex_type', str),
-                                            ('movie', ia.int32),
-                                            ('rating', ia.int32),
+                                            ('movie', ta.int32),
+                                            ('rating', ta.int32),
                                             ('splits', str)])
 
         print "creating frame"
-        frame = ia.Frame(csv)
+        frame = ta.Frame(csv)
 
         # TODO: add asserts verifying inspect is working
         print
@@ -58,7 +58,7 @@ class GraphSmokeTest(unittest.TestCase):
         self.assertEquals(len(frame.column_names), 5, "frame should have 5 columns")
 
         print "create graph"
-        graph = ia.Graph()
+        graph = ta.Graph()
 
         self.assertIsNotNone(graph._id)
 
