@@ -61,10 +61,10 @@ class TitanReaderITest extends TestingSparkContextWordSpec with Matchers {
       vertices.length shouldBe 3
       edges.length shouldBe 2
 
-      graphElements.map(e => e match {
+      graphElements.map {
         case v: GBVertex => v
         case e: GBEdge => e.copy(eid = None)
-      }) should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex, plutoGbEdge, seaGbEdge)
+      } should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex, plutoGbEdge, seaGbEdge)
       vertices should contain theSameElementsAs List[GraphElement](plutoGbVertex, seaGbVertex, neptuneGbVertex)
       edges.map(e => e.copy(eid = None)) should contain theSameElementsAs List[GraphElement](plutoGbEdge, seaGbEdge)
     }

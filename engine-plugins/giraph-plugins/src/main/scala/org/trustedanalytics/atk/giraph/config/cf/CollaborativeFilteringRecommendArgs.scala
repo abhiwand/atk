@@ -17,7 +17,7 @@
 package org.trustedanalytics.atk.giraph.config.cf
 
 import org.apache.commons.lang3.StringUtils
-import org.trustedanalytics.atk.domain.frame.{ FrameEntity }
+import org.trustedanalytics.atk.domain.frame.FrameEntity
 import org.trustedanalytics.atk.domain.model.ModelReference
 import org.trustedanalytics.atk.engine.ArgDocAnnotation
 import org.trustedanalytics.atk.engine.plugin.ArgDoc

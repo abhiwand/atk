@@ -52,7 +52,7 @@ class VertexRddFunctions(self: RDD[GBVertex]) {
     self.map(vertex => {
       val columnNames = vertex.fullProperties.map(_.key)
       val indexedProperties = indexNames.intersect(columnNames.toSeq)
-      val userDefinedColumn = if (indexedProperties.isEmpty) None else Some(indexedProperties.head)
+      val userDefinedColumn = indexedProperties.headOption
 
       val label = if (vertex.getProperty(GraphSchema.labelProperty).isDefined && vertex.getProperty(GraphSchema.labelProperty).get.value != null) {
         vertex.getProperty(GraphSchema.labelProperty).get.value

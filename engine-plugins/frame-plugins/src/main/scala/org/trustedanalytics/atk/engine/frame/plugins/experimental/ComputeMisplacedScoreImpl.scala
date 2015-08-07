@@ -38,7 +38,7 @@ object ComputeMisplacedScoreImpl {
         val y_pos_cur_R = dest.cly
 
         val spring_length = Math.pow(Math.pow(x_pos_ref_L - x_pos_ref_R, 2) + Math.pow(y_pos_ref_L - y_pos_ref_R, 2), .5)
-        val spring_flex = (1.0 / (Math.pow(spring_length, 2) + 1))
+        val spring_flex = 1.0 / (Math.pow(spring_length, 2) + 1)
         val current_dist = Math.pow(Math.pow(x_pos_cur_L - x_pos_cur_R, 2) + Math.pow(y_pos_cur_L - y_pos_cur_R, 2), .5)
         val tension = spring_flex * Math.abs(current_dist - spring_length)
         (row._1._1, tension)
@@ -85,7 +85,7 @@ object ComputeMisplacedScoreImpl {
     val x_pos_cur_R = dest.clx
     val y_pos_cur_R = dest.cly
     val spring_length = Math.pow(Math.pow(x_pos_ref_L - x_pos_ref_R, 2) + Math.pow(y_pos_ref_L - y_pos_ref_R, 2), .5)
-    val spring_flex = (1.0 / (Math.pow(spring_length, 2) + 1))
+    val spring_flex = 1.0 / (Math.pow(spring_length, 2) + 1)
     val current_dist = Math.pow(Math.pow(x_pos_cur_L - x_pos_cur_R, 2) + Math.pow(y_pos_cur_L - y_pos_cur_R, 2), .5)
     spring_flex * Math.abs(current_dist - spring_length)
   }

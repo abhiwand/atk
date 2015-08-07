@@ -51,7 +51,7 @@ class LoadLinesTest extends FlatSpec with Matchers {
     val myLoadLines = myJson.convertTo[LoadFrameArgs]
 
     myLoadLines.source.sourceType should be("file")
-    myLoadLines.source.parser should not be (None)
+    myLoadLines.source.parser should not be None
     val parser = myLoadLines.source.parser.get
 
     parser.name should be("builtin/line/separator")
@@ -105,7 +105,7 @@ class LoadLinesTest extends FlatSpec with Matchers {
     mySource.sourceType should be("file")
     mySource.uri should be("m1demo/domains.json")
 
-    mySource.parser should not be (None)
+    mySource.parser should not be None
   }
 
 }

@@ -619,7 +619,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def hasLiveChildren(id: Long)(implicit session: Session): Boolean = {
       val list = frames.where(f => f.parentId === id &&
         f.statusId =!= Status.Deleted_Final).list
-      list.filter(f => !hasLiveChildren(f.id)).length > 0
+      list.count(f => !hasLiveChildren(f.id)) > 0
     }
 
     /**
@@ -892,7 +892,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       }
       else {
         val frames = metaStore.frameRepo.lookupByGraphId(g.id)(session.asInstanceOf[metaStore.Session])
-        frames.filter(f => metaStore.frameRepo.isLive(f)).length > 0
+        frames.count(f => metaStore.frameRepo.isLive(f)) > 0
       }
     }
 

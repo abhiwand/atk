@@ -157,7 +157,7 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
       val tableDir = FSUtils.getTableDir(FSUtils.getRootDir(hBaseConfig), tableName)
       println("Table dir:" + tableDir)
       val fileSystem = FileSystem.get(hBaseConfig)
-      (fileSystem.getContentSummary(tableDir).getLength / (1024 * 1024))
+      fileSystem.getContentSummary(tableDir).getLength / (1024 * 1024)
     }).getOrElse(0L)
 
     println("Table size:" + tableSize)
@@ -183,7 +183,7 @@ case class TitanAutoPartitioner(titanConfig: Configuration) {
       // Using number of region servers to estimate the number of slaves since it is more reliable
       val numWorkers = getHBaseRegionServerCount(hBaseAdmin)
       val numCoresPerWorker = Runtime.getRuntime.availableProcessors()
-      (numCoresPerWorker * numWorkers)
+      numCoresPerWorker * numWorkers
     }
     Math.max(0, maxSparkCores)
   }

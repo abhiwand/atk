@@ -61,7 +61,7 @@ case class SupernodeFinder[K: ClassTag, V: ClassTag](rdd: RDD[(K, V)]) {
     val totalSize = rows.map {
       case (k, row) =>
         MemoryEstimator.deepSize(row.asInstanceOf[AnyRef])
-    }.reduce(_ + _)
+    }.sum
 
     if (rows.size > 0) totalSize / rows.size else 0d
   }

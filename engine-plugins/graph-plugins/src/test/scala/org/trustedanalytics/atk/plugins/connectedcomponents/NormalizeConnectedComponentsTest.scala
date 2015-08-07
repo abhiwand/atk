@@ -52,7 +52,7 @@ class NormalizeConnectedComponentsTest extends FlatSpec with Matchers with Testi
 
     val vertexComponentPairs = normalizedCCROutput._2.collect()
 
-    val groupedVertexComponentPairs = vertexComponentPairs.groupBy(x => x._2).map(x => x._2)
+    val groupedVertexComponentPairs = vertexComponentPairs.groupBy(x => x._2).values
 
     val setsOfPairs = groupedVertexComponentPairs.map(list => list.toSet)
 
