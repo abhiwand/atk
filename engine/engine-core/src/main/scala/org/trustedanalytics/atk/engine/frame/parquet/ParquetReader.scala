@@ -245,7 +245,7 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
       case PrimitiveTypeName.BOOLEAN => creader.getBoolean
       case PrimitiveTypeName.FLOAT => creader.getFloat
       case PrimitiveTypeName.DOUBLE => creader.getDouble
-      case _ => {
+      case _ =>
         val binary = creader.getBinary
         val data = binary.getBytes
         if (data == null)
@@ -254,7 +254,6 @@ class ParquetReader(val path: Path, fileStorage: HdfsFileStorage, parquetApiFact
           val buffer = decoder.decode(binary.toByteBuffer)
           buffer.toString
         }
-      }
     }
   }
 

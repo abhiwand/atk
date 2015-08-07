@@ -131,14 +131,13 @@ class SparkProgressListener(val progressUpdater: CommandProgressUpdater, val com
      */
     if (allProgress.length >= 2) {
       allProgress.zipWithIndex.map {
-        case (value, index) => {
+        case (value, index) =>
           if (index == result.length - 1) {
             ProgressInfo(value.progress, value.tasksInfo)
           }
           else {
             ProgressInfo(100, value.tasksInfo)
           }
-        }
       }
     }
     else {

@@ -3,7 +3,7 @@ ATK
 
 # Folders Overview
 * bin/ - script for starting REST server, gremlin shell
-* conf/ - configuration templates for setting up a system, put your application.conf here for running out of source_code
+* conf/ - configuration templates for setting up a system, put your application.conf here for running out of source code
 * deploy/ - a module for creating an uber jar needed for deployment on Analytics PaaS.
 * doc/ - end user docs for using the system (doc for specific plugins goes elsewhere)
 * doc-api-examples/ - examples of api usage for end user docs
@@ -37,7 +37,7 @@ ATK
 * Use bin/rest-server.sh to start the server
 * cd /python
 * ipython
-  * import intelanalytics as ia
+  * import trustedanalytics as ia
   * ia.connect()
 
 # Developer Todo

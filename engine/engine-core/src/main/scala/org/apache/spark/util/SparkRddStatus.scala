@@ -38,7 +38,7 @@ object SparkRddStatus {
     }
     else {
       sparkConf.getOption("spark.cores.max") match {
-        case s: Some[String] if (s != Int.MaxValue.toString) => s.get.toInt
+        case s: Some[String] if s.get != Int.MaxValue.toString => s.get.toInt
         case _ => Runtime.getRuntime.availableProcessors() * getExecutorCount(rdd)
       }
     }
