@@ -16,6 +16,9 @@
 
 package org.trustedanalytics.atk.engine.frame.plugins.exporthdfs
 
+import java.io.{ PrintWriter, File }
+
+import org.trustedanalytics.atk.engine.EngineConfig
 import org.trustedanalytics.atk.engine.frame.MiscFrameFunctions
 import org.apache.spark.SparkContext
 import org.apache.spark.frame.FrameRdd
@@ -114,7 +117,21 @@ object FrameExportHdfs extends Serializable {
 
     val df = frameRdd.toDataFrameUsingHiveContext
     df.registerTempTable("mytable")
-    df.sqlContext.asInstanceOf[org.apache.spark.sql.hive.HiveContext].sql("CREATE TABLE " + tablename + " STORED AS AVRO AS SELECT * FROM mytable")
+
+    val beginstring = "{\"name\": \"" + tablename + "\",\"type\": \"record\",\"fields\": "
+    val array = FrameRdd.schemaToHiveType(frameRdd.frameSchema).map(column => "{\"name\":\"" + column._1 + "\", \"type\":\"" + column._2 + "\"}")
+    val colSchema = array.mkString("[", ",", "]")
+    val endstring = "}"
+    val tmpFile = EngineConfig.fsRoot + "/schemahive.json"
+    val modelDatafile = new File(tmpFile)
+    val writer: PrintWriter = new PrintWriter(modelDatafile);
+    writer.print(beginstring)
+    writer.print(colSchema)
+    writer.print(endstring)
+    writer.close()
+
+    df.sqlContext.asInstanceOf[org.apache.spark.sql.hive.HiveContext].sql(s"CREATE TABLE " + tablename +
+      s" ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' STORED AS AVRO TBLPROPERTIES ('avro.schema.url'= '${tmpFile}' ) AS SELECT * FROM mytable")
   }
 
 }
