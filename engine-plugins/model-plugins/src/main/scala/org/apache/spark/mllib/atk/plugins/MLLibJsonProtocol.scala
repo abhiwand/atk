@@ -20,6 +20,12 @@ import org.apache.spark.mllib.classification.{ LogisticRegressionModelWithFreque
 import org.apache.spark.mllib.clustering.KMeansModel
 import org.apache.spark.mllib.linalg.{ DenseMatrix, DenseVector, Matrix, SparseVector, Vector }
 import org.apache.spark.mllib.regression.LinearRegressionModel
+import org.apache.spark.mllib.tree.configuration.FeatureType.FeatureType
+import org.apache.spark.mllib.tree.configuration.{FeatureType, Algo}
+import org.apache.spark.mllib.tree.configuration.Algo.Algo
+import org.apache.spark.mllib.tree.configuration.Algo.Algo
+import org.apache.spark.mllib.tree.configuration.FeatureType.FeatureType
+import org.apache.spark.mllib.tree.model._
 import org.trustedanalytics.atk.domain.DomainJsonProtocol._
 import org.trustedanalytics.atk.engine.model.plugins.classification._
 import org.trustedanalytics.atk.engine.model.plugins.classification.glm.{ LogisticRegressionData, LogisticRegressionSummaryTable, LogisticRegressionTrainArgs }
@@ -337,10 +343,200 @@ object MLLibJsonProtocol {
     }
   }
 
+  implicit object AlgoFormat extends JsonFormat[Algo] {
+    override  def write(obj: Algo) : JsValue = {
+      JsObject("algo" -> obj.toString.toJson)
+    }
+    override def read(json:JsValue) : Algo = {
+      val fields = json.asJsObject.fields
+      val a = getOrInvalid(fields,"algo").convertTo[String]
+      Algo.withName(a)
+    }
+  }
+
+  implicit object FeatureTypeFormat extends JsonFormat[FeatureType] {
+    override def write(obj:FeatureType) : JsValue = {
+      JsObject("featuretype" -> obj.toString.toJson)
+    }
+    override def read(json:JsValue) : FeatureType = {
+      val fields = json.asJsObject.fields
+      val f = getOrInvalid(fields,"featuretype").convertTo[String]
+      FeatureType.withName(f)
+    }
+  }
+
+  implicit object SplitFormat extends JsonFormat[Split] {
+    override def write(obj:Split) : JsValue = {
+      JsObject("feature" ->obj.feature.toJson,
+      "threshold" -> obj.threshold.toJson,
+      "featuretype" ->FeatureTypeFormat.write(obj.featureType),
+      "categories" -> obj.categories.toJson)
+    }
+
+    override def read(json:JsValue): Split = {
+      val fields = json.asJsObject.fields
+      val feature = getOrInvalid(fields,"feature").convertTo[Int]
+      val threshold = getOrInvalid(fields,"threshold").convertTo[Double]
+      val featureType = FeatureTypeFormat.read(getOrInvalid(fields,"featuretype"))
+      val categories = getOrInvalid(fields,"categories").convertTo[List[Double]]
+      new Split(feature, threshold, featureType, categories)
+    }
+  }
+
+  implicit object PredictFormat extends JsonFormat[Predict] {
+    override def write(obj: Predict) : JsValue = {
+      JsObject("predict" -> obj.predict.toJson,
+      "prob" -> obj.prob.toJson)
+    }
+
+    override def read(json:JsValue): Predict = {
+      val fields = json.asJsObject.fields
+      val predict = getOrInvalid(fields,"predict").convertTo[Double]
+      val prob = getOrInvalid(fields,"prob").convertTo[Double]
+      new Predict(predict, prob)
+    }
+  }
+
+  implicit object InformationGainStatsFormat extends JsonFormat[InformationGainStats]{
+    override def write(obj:InformationGainStats) : JsValue = {
+      JsObject("gain" -> obj.gain.toJson,
+      "impurity" -> obj.impurity.toJson,
+      "leftimpurity" -> obj.leftImpurity.toJson,
+      "rightimpurity" -> obj.rightImpurity.toJson,
+      "leftpredict" -> PredictFormat.write(obj.leftPredict),
+      "rightpredict" -> PredictFormat.write(obj.rightPredict)
+      )
+    }
+
+    override def read(json:JsValue) : InformationGainStats = {
+      val fields = json.asJsObject.fields
+      val gain = getOrInvalid(fields,"gain").convertTo[Double]
+      val impurity = getOrInvalid(fields,"impurity").convertTo[Double]
+      val leftImpurity = getOrInvalid(fields,"leftimpurity").convertTo[Double]
+      val rightImpurity = getOrInvalid(fields,"rightimpurity").convertTo[Double]
+      val leftPredict = PredictFormat.read(getOrInvalid(fields,"leftpredict"))
+      val rightPredict =  PredictFormat.read(getOrInvalid(fields,"rightpredict"))
+      new InformationGainStats(gain, impurity, leftImpurity, rightImpurity, leftPredict, rightPredict)
+    }
+  }
+
+  implicit object NodeFormat extends JsonFormat[Node]{
+    override def write(obj: Node): JsValue = {
+      val split : Option[JsValue] = obj.split.isDefined match {
+        case true => Some(SplitFormat.write(obj.split.get))
+        case false =>
+      }
+
+      val leftNode : Option[JsValue]= obj.leftNode.isDefined match {
+        case true => Some(NodeFormat.write(obj.leftNode.get))
+        case false => None
+      }
+
+      val rightNode : Option[JsValue]= obj.rightNode.isDefined match {
+        case true => Some(NodeFormat.write(obj.rightNode.get))
+        case false => None
+      }
+
+      val stats : Option[JsValue]= obj.stats.isDefined match {
+        case true => Some(InformationGainStatsFormat.write(obj.stats.get))
+        case false => None
+      }
+
+      JsObject("id" -> obj.id.toJson,
+      "predict" -> PredictFormat.write(obj.predict),
+      "impurity" -> obj.impurity.toJson,
+      "isLeaf" -> obj.isLeaf.toJson,
+      "split" -> split.toJson,
+      "leftNode" -> leftNode.toJson,
+      "rightNode" -> rightNode.toJson,
+      "stats" -> stats.toJson)
+    }
+
+    override def read(json:JsValue) : Node = {
+      val fields = json.asJsObject.fields
+      val id = getOrInvalid(fields,"id").convertTo[Int]
+      val predict = PredictFormat.read(getOrInvalid(fields,"predict"))
+      val impurity = getOrInvalid(fields,"impurity").convertTo[Double]
+      val isLeaf = getOrInvalid(fields,"isLeaf").convertTo[Boolean]
+      //val split = SplitFormat.read(getOrNone(fields,"split").isDefined)
+//      val split = getOrNone(fields,"split").isDefined match {
+//        case true => SplitFormat.read(getOrNone(fields,"split"))
+//        case None => None
+//      }
+
+//      val split : Option[Split] = fields.getOrElse("split",None).equals(None) match{
+//        case false => Some(SplitFormat.read(fields.get("split").get))
+//        case true => None
+//      }
+
+      val split : Option[Split] = getOrInvalid(fields,"split").equals(null) match {
+               case true => None
+               case false => Some(SplitFormat.read(fields.get("split").get))
+
+      }
+
+      val leftNode : Option[Node]= getOrInvalid(fields,"leftNode").equals(null) match {
+              case true => None
+               case false => Some(NodeFormat.read(fields.get("leftNode").get))
+
+      }
+
+      val rightNode : Option[Node] = getOrInvalid(fields,"rightNode").equals(null) match {
+        case true => None
+               case false => Some(NodeFormat.read(fields.get("rightNode").get))
+
+      }
+
+      val stats : Option[InformationGainStats]= getOrInvalid(fields,"stats").equals(null) match {
+        case true => None
+               case false => Some(InformationGainStatsFormat.read(fields.get("stats").get))
+
+      }
+
+      //val leftNode = NodeFormat.read(getOrInvalid(fields,"leftNode"))
+      //val rightNode = NodeFormat.read(getOrInvalid(fields,"rightNode"))
+      //val stats = InformationGainStatsFormat.read(getOrInvalid(fields,"stats"))
+      new Node(id,predict,impurity,isLeaf,split,leftNode,rightNode,stats)
+    }
+  }
+
+  implicit object DecisionTreeModelFormat extends JsonFormat[DecisionTreeModel] {
+    override def write(obj: DecisionTreeModel): JsValue = {
+      JsObject("topnode" -> NodeFormat.write(obj.topNode),
+      "algo" -> AlgoFormat.write(obj.algo))
+    }
+
+    override def read(json:JsValue) : DecisionTreeModel = {
+      val fields = json.asJsObject.fields
+      val topNode = NodeFormat.read(getOrInvalid(fields,"topnode"))
+      val algo = AlgoFormat.read(getOrInvalid(fields,"algo"))
+      new DecisionTreeModel(topNode,algo)
+    }
+  }
+
+  implicit object RandomForestModelFormat extends JsonFormat[RandomForestModel] {
+
+    override def write(obj: RandomForestModel): JsValue = {
+      JsObject("algo" -> AlgoFormat.write(obj.algo),
+      "trees" ->  new JsArray(obj.trees.map(t=>DecisionTreeModelFormat.write(t)).toList))
+    }
+
+    override def read(json:JsValue): RandomForestModel = {
+      val fields = json.asJsObject.fields
+      val algo = AlgoFormat.read(getOrInvalid(fields,"algo"))
+      val trees = getOrInvalid(fields,"trees").asInstanceOf[JsArray].elements.map(i=>DecisionTreeModelFormat.read(i)).toArray
+      new RandomForestModel(algo,trees)
+    }
+  }
+
   def getOrInvalid[T](map: Map[String, T], key: String): T = {
     // throw exception if a programmer made a mistake
     map.getOrElse(key, throw new InvalidJsonException(s"expected key $key was not found in JSON $map"))
   }
+// def getOrNone(map: Map[String, Any], key:String)= {
+//   map.getOrElse(key, None)
+// }
+
 
   implicit val logRegDataFormat = jsonFormat2(LogisticRegressionData)
   implicit val classficationWithSGDTrainFormat = jsonFormat10(ClassificationWithSGDTrainArgs)
@@ -362,6 +558,7 @@ object MLLibJsonProtocol {
   implicit val pcaPredictReturnFormat = jsonFormat2(PrincipalComponentsPredictReturn)
   implicit val pcaTrainReturnFormat = jsonFormat4(PrincipalComponentsTrainReturn)
   implicit val modelPublishFormat = jsonFormat3(ModelPublishArgs)
+
 }
 
 class InvalidJsonException(message: String) extends RuntimeException(message)
