@@ -483,4 +483,23 @@ object FrameRdd {
     }
   }
 
+  /**
+   * Converts the schema object to a StructType for use in creating a SchemaRDD
+   * @return StructType with StructFields corresponding to the columns of the schema object
+   */
+  def schemaToHiveType(schema: Schema): List[(String, String)] = {
+    val fields = schema.columns.map {
+      column =>
+        (column.name.replaceAll("\\s", ""), column.dataType match {
+          case x if x.equals(DataTypes.int32) => "int"
+          case x if x.equals(DataTypes.int64) => "bigint"
+          case x if x.equals(DataTypes.float32) => "double"
+          case x if x.equals(DataTypes.float64) => "double"
+          case x if x.equals(DataTypes.string) => "string"
+          case x => throw new IllegalArgumentException(s"unsupported export type ${x.toString}")
+        })
+    }
+    fields
+  }
+
 }
