@@ -49,17 +49,6 @@ class FrameCumulativeSumTest(unittest.TestCase):
         print "create frame"
         self.frame = ia.Frame(csv)
 
-    # def test_cum_sum_001(self):
-    #     self.assertEqual(self.frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
-    #     print self.frame.inspect(30)
-    #     self.frame.cumulative_sum('rank')
-    #     print self.frame.inspect(30)
-    #     self.assertEqual(self.frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county', 'rank_cumulative_sum'])
-    #     results = self.frame.take(20)
-    #     self.assertEquals(results[0][0], 1)
-    #     self.assertEquals(results[9][0], 10)
-    #     self.assertEquals(results[19][0], 20)
-
     def test_cum_sum_after_sort(self):
         self.assertEqual(self.frame.column_names, ['rank', 'city', 'population_2013', 'pop_2010', 'change', 'county'])
         self.frame.sort('rank')
