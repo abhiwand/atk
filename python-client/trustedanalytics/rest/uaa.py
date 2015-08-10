@@ -20,12 +20,75 @@ import trustedanalytics.rest.http as http
 from trustedanalytics.rest.server import Server
 
 
-def get_oauth_server_uri(atk_uri):
-    """Get the UAA server URI from the ATK Server"""
+def get_oauth_credentials(uri, user_name, user_password):
+    """
+    Get the credentials needed to communicate using OAuth
+
+    uri: URI of ATK server or the UAA server itself
+    """
+    try:
+        oauth_info = _get_oauth_server_info(uri)  # try using ATK URI first
+    except:
+        oauth_info = {'uri': uri}
+        logger.info("Using UAA uri %s provided explicitly." % uri)
+    else:
+        logger.info("Using UAA uri %s obtained from ATK server." % oauth_info['uri'])
+
+    token_type, token, refresh_token = _get_oauth_token(oauth_info, user_name, user_password)
+
+    return {'user': user_name,
+            'oauth_uri': oauth_info['uri'],
+            'token_type': token_type,
+            'token': token,
+            'refresh_token': refresh_token}
+
+
+def get_refreshed_oauth_token(uaa_uri, refresh_token):
+    """
+    Connect to the cloudfoundry uaa server and acquire access token using a refresh token
+    """
+    # Authenticate to UAA as client (this client)
+    # Tell UAA to grant us (the client) a token using a refresh token
+    data = {'grant_type': 'refresh_token', 'refresh_token': refresh_token }
+    return _get_token(_get_oauth_server_info(uaa_uri), data)
+
+
+# supporting objects and functions....
+
+class UaaServer(Server):
+    """Server object for communicating with the UAA server"""
+
+    def __init__(self, uaa_info):
+        scheme = Server._get_value_from_config('uaa_scheme')
+        headers = Server._get_value_from_config('uaa_headers')
+        super(UaaServer, self).__init__(uaa_info['uri'], scheme, headers)
+        self.client_name = self._get_client_credential("client_name", uaa_info)
+        self.client_password = self._get_client_credential("client_password", uaa_info)
+
+    @staticmethod
+    def _get_client_credential(credential_name, uaa_info):
+        from trustedanalytics.rest.iaserver import server
+        try:
+            credential = getattr(server, credential_name)  # if local server object has it, use as override
+        except AttributeError:
+            credential = uaa_info.get(credential_name, None)  # else use uaa_info
+        if credential is None:
+            UaaServer.raise_bad_client_credential_error(is_missing=True)
+        return credential
+
+    @staticmethod
+    def raise_bad_client_credential_error(is_missing=False):
+        m = "is missing" if is_missing else "has a bad value for"
+        raise RuntimeError("Authentication %s for the client app itself.  "
+                           "This could mean a version mismatch or other problem with the server instance." % m)
+
+
+def _get_oauth_server_info(atk_uri):
+    """Get the UAA server information from the ATK Server"""
     server = _get_simple_atk_server(atk_uri)
     response = http.get(server, "oauth_server")
     server._check_response(response)
-    return response.json()['uri']
+    return response.json()
 
 
 def _get_simple_atk_server(atk_uri):
@@ -35,14 +98,7 @@ def _get_simple_atk_server(atk_uri):
     return Server(atk_uri, scheme, headers)
 
 
-def _get_uaa_server(uaa_uri):
-    """Gets a Server object for UAA comms"""
-    scheme = Server._get_value_from_config('uaa_scheme')
-    headers = Server._get_value_from_config('uaa_headers')
-    return Server(uaa_uri, scheme, headers)
-
-
-def get_oauth_token(uaa_uri, user_name, user_password):
+def _get_oauth_token(uaa_info, user_name, user_password):
     """
     Connect to the cloudfoundry uaa server and acquire token
 
@@ -51,37 +107,25 @@ def get_oauth_token(uaa_uri, user_name, user_password):
     """
     # Authenticate to UAA as client (this client)
     # Tell UAA to grant us (the client) a token by authenticating with the user's password
-    if uaa_uri:
-        uaa_server = _get_uaa_server(uaa_uri)
-        client_name = Server._get_value_from_config('client_name')
-        client_password = Server._get_value_from_config('client_password')
-        auth = (client_name, client_password)
-        data = {'grant_type': "password", 'username': user_name, 'password': user_password}
-        response = http.post(uaa_server, "/oauth/token", auth=auth, data=data)
-        uaa_server._check_response(response)
-        token_type = response.json()['token_type']
-        token = response.json()['access_token']
-        refresh_token = response.json()['refresh_token']
-        #print "refresh_token=%s" % refresh_token
-        #print "token_type=%s" % token_type
-        return token_type, token, refresh_token
-    return None, None, None
+    data = {'grant_type': "password", 'username': user_name, 'password': user_password}
+    return _get_token(uaa_info, data)
 
 
-def get_refreshed_oauth_token(uaa_uri, refresh_token):
-    """
-    Connect to the cloudfoundry uaa server and acquire access token using a refresh token
-    """
-    # Authenticate to UAA as client (this client)
-    # Tell UAA to grant us (the client) a token using a refresh token
-    if uaa_uri:
-        uaa_server = _get_uaa_server(uaa_uri)
-        client_name = Server._get_value_from_config('client_name')
-        client_password = Server._get_value_from_config('client_password')
-        auth = (client_name, client_password)
-        data = {'grant_type': 'refresh_token', 'refresh_token': refresh_token }
+def _get_token(uaa_info, data):
+    """worker to get the token tuple from the UAA server"""
+    if uaa_info:
+        uaa_server = UaaServer(uaa_info)
+        auth = (uaa_server.client_name, uaa_server.client_password)
         response = http.post(uaa_server, "/oauth/token", auth=auth, data=data)
-        uaa_server._check_response(response)
+        try:
+            uaa_server._check_response(response)
+        except Exception:
+            # try to provide better message if possible
+            description = response.json().get('error_description', '')
+            if 'No client with requested id' in description or 'Bad credentials' in description:
+                UaaServer.raise_bad_client_credential_error()
+            else:
+                raise
         token_type = response.json()['token_type']
         token = response.json()['access_token']
         refresh_token = response.json()['refresh_token']

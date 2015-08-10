@@ -76,9 +76,7 @@ class SparkWordCountPlugin
     val frame: SparkFrame = arguments.frame
 
     /* Now you have a schema rdd at your disposal */
-    /* Let's filter all columns which are not strings and drop them first before computing the word counts */
-
-    /* Get all columns which are of string datatype from the frame schema */
+    /* Drop all but the string columns before computing word counts */
     val columnNames = frame.schema.columns.filter(column => column.dataType == DataTypes.str).map(_.name)
 
     val wordRdd = frame.rdd.mapRows(row => {

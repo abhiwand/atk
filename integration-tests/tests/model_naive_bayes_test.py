@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Intel Corporation
+# Copyright (c) 2015 Intel Corporation 
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,26 +16,26 @@
 
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class ModelNaiveBayesTest(unittest.TestCase):
     def test_naive_bayes(self):
         print "define csv file"
-        schema = [("Class", ia.int32),("Dim_1", ia.int32),("Dim_2", ia.int32),("Dim_3",ia.int32)]
-        train_file = ia.CsvFile("/datasets/naivebayes_spark_data.csv", schema= schema)
+        schema = [("Class", ta.int32),("Dim_1", ta.int32),("Dim_2", ta.int32),("Dim_3",ta.int32)]
+        train_file = ta.CsvFile("/datasets/naivebayes_spark_data.csv", schema= schema)
         print "creating the frame"
-        train_frame = ia.Frame(train_file)
+        train_frame = ta.Frame(train_file)
 
         print "initializing the naivebayes model"
-        n = ia.NaiveBayesModel()
+        n = ta.NaiveBayesModel()
 
         print "training the model on the frame"
         n.train(train_frame, 'Class', ['Dim_1', 'Dim_2', 'Dim_3'])

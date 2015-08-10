@@ -39,7 +39,7 @@ class CliqueExtensionEnumeratorTest extends FlatSpec with Matchers with TestingS
     "create all set of k-cliques" in new KCliqueEnumTest {
 
       val rddOfEdgeList: RDD[Edge] = sparkContext.parallelize(edgeList).map(keyval => Edge(keyval._1, keyval._2))
-      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => CliqueExtension(Clique(x), y, true) })
+      val rddOfFourCliques = sparkContext.parallelize(fourCliques).map({ case (x, y) => CliqueExtension(Clique(x), y, neighborsHigh = true) })
 
       val enumeratedFourCliques = CliqueExtensionEnumerator.run(rddOfEdgeList, 4)
 

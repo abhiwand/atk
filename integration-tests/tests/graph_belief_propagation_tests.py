@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Intel Corporation
+# Copyright (c) 2015 Intel Corporation 
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 #
 #
 # import unittest
-# import trustedanalytics as ia
+# import trustedanalytics as ta
 #
 # # show full stack traces
-# ia.errors.show_details = True
-# ia.loggers.set_api()
+# ta.errors.show_details = True
+# ta.loggers.set_api()
 # # TODO: port setup should move to a super class
-# if ia.server.port != 19099:
-#     ia.server.port = 19099
-# ia.connect()
+# if ta.server.port != 19099:
+#     ta.server.port = 19099
+# ta.connect()
 #
 # TODO: Commented out because of ClassNotFound error with spark local mode
 # class GraphBeliefPropagationTest(unittest.TestCase):
@@ -31,13 +31,13 @@
 #         lbp_graphlab_input_data ="/datasets/lbp_graphlab_small.csv"
 #         extra_vertex="/datasets/lbp_graphlab_append.csv"
 #
-#         schema = [("id1",ia.int32),("id2",ia.int32),("prior",str)]
-#         schema2 = [("id1",ia.int32),("prior",str)]
+#         schema = [("id1",ta.int32),("id2",ta.int32),("prior",str)]
+#         schema2 = [("id1",ta.int32),("prior",str)]
 #
-#         lbp_frame = ia.Frame(ia.CsvFile(lbp_graphlab_input_data,schema))
-#         extra_vertex_frame = ia.Frame(ia.CsvFile(extra_vertex,schema2))
+#         lbp_frame = ta.Frame(ta.CsvFile(lbp_graphlab_input_data,schema))
+#         extra_vertex_frame = ta.Frame(ta.CsvFile(extra_vertex,schema2))
 #
-#         graph = ia.Graph()
+#         graph = ta.Graph()
 #         graph.define_vertex_type("nodes")
 #         graph.vertices["nodes"].add_vertices(lbp_frame, "id1",["prior"])
 #         graph.vertices["nodes"].add_vertices(extra_vertex_frame, "id1",["prior"])

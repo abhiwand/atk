@@ -29,27 +29,27 @@
 #       execfile('/path/to/movie.py')
 #
 
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
+ta.errors.show_details = True
 
-ia.connect()
+ta.connect()
 
-#ia.loggers.set_http()
+#ta.loggers.set_http()
 
 print("server ping")
-ia.server.ping()
+ta.server.ping()
 
 print("define csv file")
-csv = ia.CsvFile("/movie.csv", schema= [('user', ia.int32),
+csv = ta.CsvFile("/movie.csv", schema= [('user', ta.int32),
                                         ('vertexType', str),
-                                        ('movie', ia.int32),
+                                        ('movie', ta.int32),
                                         ('rating', str),
                                         ('splits', str)])
 
 print("create frame")
-frame = ia.Frame(csv)
+frame = ta.Frame(csv)
 
 
 
@@ -64,10 +64,10 @@ print errors.inspect(10)
 print("frame row count " + str(errors.row_count))
 
 print("define graph parsing rules")
-movie = ia.VertexRule("movie", frame.movie)
-user = ia.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
-rates = ia.EdgeRule("rating", user, movie, { "splits": frame.splits }, bidirectional = False)
+movie = ta.VertexRule("movie", frame.movie)
+user = ta.VertexRule("user", frame.user, {"vertexType": frame.vertexType})
+rates = ta.EdgeRule("rating", user, movie, { "splits": frame.splits }, bidirectional = False)
 
 print("create graph")
-graph = ia.TitanGraph([user, movie, rates])
+graph = ta.TitanGraph([user, movie, rates])
 print("created graph " + graph.name)

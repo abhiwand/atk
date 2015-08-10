@@ -14,10 +14,9 @@
 // limitations under the License.
 */
 
-package org.trustedanalytics.atk.engine.frame.plugins.unflattencolumn
+package org.trustedanalytics.atk.engine.frame.plugins
 
 import org.trustedanalytics.atk.domain.schema.{ Column, FrameSchema, DataTypes }
-import org.trustedanalytics.atk.engine.frame.plugins.UnflattenColumnFunctions
 import org.apache.spark.frame.FrameRdd
 import org.apache.spark.sql.Row
 import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Matchers }

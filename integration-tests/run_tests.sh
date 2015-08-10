@@ -58,7 +58,7 @@ sleep 10
 PORT=19099
 COUNTER=0
 httpCode=$(curl -s -o /dev/null -w "%{http_code}" localhost:$PORT)
-echo $httpCode
+echo "$NAME REST Server http status code was $httpCode"
 while [ $httpCode != "200" ]
 do
     if [ $COUNTER -gt 120 ]
@@ -72,7 +72,7 @@ do
     echo "$NAME Waiting for REST Server to start up on port $PORT..."
     sleep 1
     httpCode=$(curl -s -o /dev/null -w "%{http_code}" localhost:$PORT)
-    echo $httpCode
+    echo "$NAME REST Server http status code was $httpCode"
 done
 
 echo "$NAME nosetests will be run in two calls: 1) make sure system works in basic way, 2) the rest of the tests"

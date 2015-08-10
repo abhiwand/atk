@@ -64,8 +64,8 @@ class CumulativeSumPlugin extends SparkCommandPlugin[CumulativeSumArgs, FrameEnt
     val sampleIndex = frame.schema.columnIndex(arguments.sampleCol)
 
     // run the operation
-    val (cumulativeDistRdd, columnName) = (CumulativeDistFunctions.cumulativeSum(frame.rdd, sampleIndex), "_cumulative_sum")
-    val updatedSchema = frame.schema.addColumn(arguments.sampleCol + columnName, DataTypes.float64)
+    val cumulativeDistRdd = CumulativeDistFunctions.cumulativeSum(frame.rdd, sampleIndex)
+    val updatedSchema = frame.schema.addColumn(arguments.sampleCol + "_cumulative_sum", DataTypes.float64)
 
     // save results
     frame.save(new FrameRdd(updatedSchema, cumulativeDistRdd))

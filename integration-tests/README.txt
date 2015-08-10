@@ -1,7 +1,7 @@
 
 This folder is for integration tests that are run at build time.
 
-- Runs out of source_code and assumes jars have been built using 'mvn package'
+- Runs out of source code and assumes jars have been built using 'mvn package'
 - Tests are ran in parallel
 - Spark is ran in local mode - one context is shared between all tests
 - No HDFS, everything is against local file system
@@ -23,7 +23,7 @@ This folder is for integration tests that are run at build time.
     /target - folder for all generated files, fs root gets created under here
         /fs-root - folder that functions like the HDFS root used by our application
             /datasets - copy of top-level /datasets folder
-            /intelanalytics - frames and graphs get written here
+            /trustedanalytics - frames and graphs get written here
         /rest-server.log - output from REST Server
         /rest-server.pid - contains PID of REST Server so we can kill it when we're done
     /smoketests - pyunit tests that are run first, these only verify the basic functionality of the system needed by all of the other tests

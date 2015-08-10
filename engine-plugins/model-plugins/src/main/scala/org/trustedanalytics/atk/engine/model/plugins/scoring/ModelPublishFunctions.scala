@@ -44,18 +44,18 @@ object ModelPublish {
     val modelDatafile = new File("/tmp/" + serviceName)
     // if file doesnt exists, then create it
     if (!modelDatafile.exists()) {
-      modelDatafile.createNewFile();
+      modelDatafile.createNewFile()
     }
-    val writer: PrintWriter = new PrintWriter(modelDatafile);
+    val writer: PrintWriter = new PrintWriter(modelDatafile)
     writer.print(modelData)
     writer.close()
 
     val modelClassNamefile = new File("/tmp/" + "modelname.txt")
     // if file doesnt exists, then create it
     if (!modelClassNamefile.exists()) {
-      modelDatafile.createNewFile();
+      modelDatafile.createNewFile()
     }
-    val classWriter: PrintWriter = new PrintWriter(modelClassNamefile);
+    val classWriter: PrintWriter = new PrintWriter(modelClassNamefile)
     classWriter.print(modelClassName)
     classWriter.close()
 
@@ -66,7 +66,7 @@ object ModelPublish {
     if (tarTempFile.exists()) {
       tarTempFile.delete()
     }
-    tarTempFile.createNewFile();
+    tarTempFile.createNewFile()
 
     val tarOut: OutputStream = new FileOutputStream(tarTempFile)
     val bOut = new BufferedOutputStream(tarOut)
@@ -98,8 +98,8 @@ object ModelPublish {
     val localPath = new Path(tarTempPath)
     val hdfsPath = new Path(tarFileName)
 
-    val hdfsFileSystem: org.apache.hadoop.fs.FileSystem = org.apache.hadoop.fs.FileSystem.get(new URI(tarFileName), new Configuration());
-    hdfsFileSystem.copyFromLocalFile(false, true, localPath, hdfsPath);
+    val hdfsFileSystem: org.apache.hadoop.fs.FileSystem = org.apache.hadoop.fs.FileSystem.get(new URI(tarFileName), new Configuration())
+    hdfsFileSystem.copyFromLocalFile(false, true, localPath, hdfsPath)
 
   }
 }

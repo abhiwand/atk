@@ -29,34 +29,34 @@
 #       execfile('/path/to/movie.py')
 #
 
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-#ia.loggers.set_api()
+ta.errors.show_details = True
+#ta.loggers.set_api()
 #ialoggers.set_http()
 
-ia.connect()
+ta.connect()
 
 print("server ping")
-ia.server.ping()
+ta.server.ping()
 
 print("define csv file")
-csv = ia.CsvFile("/movie.csv", schema= [('user', ia.int32),
+csv = ta.CsvFile("/movie.csv", schema= [('user', ta.int32),
                                               ('vertexType', str),
-                                              ('movie', ia.int32),
-                                              ('rating', ia.int32),
+                                              ('movie', ta.int32),
+                                              ('rating', ta.int32),
                                               ('splits', str)])
 
 print("create frame")
-frame = ia.Frame(csv)
+frame = ta.Frame(csv)
 
 print("inspect frame")
 frame.inspect(10)
 print("frame row count " + str(frame.row_count))
 
 print("create graph")
-graph = ia.Graph()
+graph = ta.Graph()
 
 print("created graph ")
 

@@ -15,15 +15,15 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class FrameClassificationTest(unittest.TestCase):
     """
@@ -38,13 +38,13 @@ class FrameClassificationTest(unittest.TestCase):
 
     def test_classification_metrics_001(self):
         print "define csv file"
-        csv = ia.CsvFile("/datasets/classification-compute.csv", schema= [('a', str),
-                                            ('b', ia.int32),
-                                            ('labels', ia.int32),
-                                            ('predictions', ia.int32)], delimiter=',', skip_header_lines=1)
+        csv = ta.CsvFile("/datasets/classification-compute.csv", schema= [('a', str),
+                                            ('b', ta.int32),
+                                            ('labels', ta.int32),
+                                            ('predictions', ta.int32)], delimiter=',', skip_header_lines=1)
 
         print "create frame"
-        frame = ia.Frame(csv)
+        frame = ta.Frame(csv)
 
         self.assertEquals(frame.row_count, 4, "frame should have 4 rows")
         self.assertEqual(frame.column_names, ['a', 'b', 'labels', 'predictions'])

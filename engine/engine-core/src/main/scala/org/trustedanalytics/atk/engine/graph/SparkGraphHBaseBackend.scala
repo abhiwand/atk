@@ -112,13 +112,12 @@ class SparkGraphHBaseBackend(hbaseAdminFactory: HBaseAdminFactory)
       }
     }
     catch {
-      case e: Throwable => {
+      case e: Throwable =>
         error(s"Unable to delete the requested HBase table: $tableName.", exception = e)
         if (!quiet) {
           throw new IllegalArgumentException(
             s"Unable to delete the requested HBase table: $tableName.")
         }
-      }
     }
   }
 }

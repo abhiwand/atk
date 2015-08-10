@@ -15,15 +15,15 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 
 class FrameAppendTests(unittest.TestCase):
@@ -38,24 +38,24 @@ class FrameAppendTests(unittest.TestCase):
     _multiprocess_can_split_ = True
 
     def setUp(self):
-        self.schema1 = [('rank', ia.int32),
+        self.schema1 = [('rank', ta.int32),
                         ('city', str),
                         ('population_2013', str),
                         ('pop_2010', str),
                         ('change', str),
                         ('county', str)]
-        self.schema2 = [('number', ia.int32),
+        self.schema2 = [('number', ta.int32),
                         ('abc', str),
                         ('food', str)]
         self.combined_schema = []
         self.combined_schema.extend(self.schema1)
         self.combined_schema.extend(self.schema2)
 
-        self.csv1 = ia.CsvFile("/datasets/oregon-cities.csv", schema=self.schema1, delimiter='|')
-        self.csv2 = ia.CsvFile("/datasets/flattenable.csv", schema= self.schema2, delimiter=',')
+        self.csv1 = ta.CsvFile("/datasets/oregon-cities.csv", schema=self.schema1, delimiter='|')
+        self.csv2 = ta.CsvFile("/datasets/flattenable.csv", schema= self.schema2, delimiter=',')
 
     def test_append_to_empty_frame(self):
-        frame = ia.Frame()
+        frame = ta.Frame()
         self.assertEqual(frame.row_count, 0)
         self.assertEqual(frame.column_names, [])
 
@@ -64,7 +64,7 @@ class FrameAppendTests(unittest.TestCase):
         self.assertEqual(frame.column_names, [name for name, type in self.schema1])
 
     def test_append_same_schema(self):
-        frame = ia.Frame(self.csv1)
+        frame = ta.Frame(self.csv1)
         self.assertEqual(frame.row_count, 20)
         self.assertEqual(frame.column_names, [name for name, type in self.schema1])
         frame.append(self.csv1)
@@ -72,7 +72,7 @@ class FrameAppendTests(unittest.TestCase):
         self.assertEqual(frame.column_names, [name for name, type in self.schema1])
 
     def test_append_new_columns(self):
-        frame = ia.Frame(self.csv1)
+        frame = ta.Frame(self.csv1)
         self.assertEqual(frame.row_count, 20)
         self.assertEqual(frame.column_names, [name for name, type in self.schema1])
         frame.append(self.csv2)
@@ -80,11 +80,11 @@ class FrameAppendTests(unittest.TestCase):
         self.assertEqual(frame.column_names, [name for name, type in self.combined_schema])
 
     def test_append_frame(self):
-        src_frame = ia.Frame(self.csv1)
+        src_frame = ta.Frame(self.csv1)
         self.assertEqual(src_frame.row_count, 20)
         self.assertEqual(src_frame.column_names, [name for name, type in self.schema1])
 
-        dest_frame = ia.Frame(self.csv2)
+        dest_frame = ta.Frame(self.csv2)
         self.assertEqual(dest_frame.row_count, 10)
         self.assertEqual(dest_frame.column_names,[name for name, type in  self.schema2])
 

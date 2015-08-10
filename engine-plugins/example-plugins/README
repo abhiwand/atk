@@ -2,9 +2,9 @@ To compile the project and create the sample jars do
  mvn package
 you should see a example-plugins.jar in the target directory.
 
-The hello world plugin will add a method to a frame reference that prints hello world.
-The word-count plugin will add a method to a frame reference that counts words in the frame.
-The vertex-degree count plugin will add a method to a graph reference that counts the vertex out-degree.
+The hello world plugin will add a method to the frame class that prints hello world.
+The word-count plugin will add a method to the frame class that counts words in the frame.
+The vertex-degree count plugin will add a method to the graph class that counts the vertex out-degree.
 
 
 Installing plugins:
@@ -41,7 +41,7 @@ trustedanalytics.atk {
 
     engine {
 
-        # The hdfs URL where the intelanalytics folder will be created
+        # The hdfs URL where the trustedanalytics folder will be created
         # and which will be used as the starting point for any relative URLs
         fs.root = "hdfs://invalid-fsroot-host/user/iauser"
 
@@ -66,15 +66,10 @@ trustedanalytics.atk {
 Inside the "engine {" tag add the following text.
 
 "
-plugin {
-      command {
-        #List of archives to scan for command plugins
-        archives = ["engine-core", "giraph-plugins", "frame-plugins", "graph-plugins", "model-plugins", "example-plugins"]
-      }
-    }
+trustedanalytics.atk.engine.plugin.command.archives += "example-plugins"
 "
 
-Now restart the intel analytics service and try the code example below.
+Now restart the trusted analytics service and try the code example below.
 
 sudo service trustedanalytics restart
 
@@ -96,7 +91,7 @@ csv_file = CsvFile(dataset, schema, skip_header_lines=1)
 
 print "Building data frame"
 
-frame = BigFrame(csv_file)
+frame = Frame(csv_file)
 
 print "View auto-generated Python documentation for plugin"
 help(frame.helloworld)
@@ -109,9 +104,3 @@ frame.helloworld("test")
 >> u'Frame says test'
 
 More examples are available in the python-examples folder.
-
-
-PROXY
-To use maven inside the corporate network you need to have maven proxy settings. I have included maven
- configuration file called "settings.xml" with the jones farm proxy settings. You will most likely have to update it with your
- local proxy configurations. The "settings.xml" file should be copied to ~/.m2 directory so maven can use it.

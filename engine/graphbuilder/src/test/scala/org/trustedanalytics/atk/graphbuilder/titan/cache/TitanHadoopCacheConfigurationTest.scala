@@ -70,8 +70,8 @@ class TitanHadoopCacheConfigurationTest extends FlatSpec with Matchers with Befo
 
     val titanHadoopCacheConf2 = new TitanHadoopCacheConfiguration(faunusConf2)
 
-    titanHadoopCacheConf should not equal (titanHadoopCacheConf2)
-    titanHadoopCacheConf.hashCode() should not equal (titanHadoopCacheConf2.hashCode())
+    titanHadoopCacheConf should not equal titanHadoopCacheConf2
+    titanHadoopCacheConf.hashCode() should not equal titanHadoopCacheConf2.hashCode()
   }
   "TitanHadoopCacheConfiguration" should "throw an IllegalArgumentException if Faunus configuration is null" in {
     intercept[IllegalArgumentException] {

@@ -15,15 +15,15 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 
 class FrameFlattenColumnTest(unittest.TestCase):
@@ -39,12 +39,12 @@ class FrameFlattenColumnTest(unittest.TestCase):
 
     def setUp(self):
         print "define csv file"
-        csv = ia.CsvFile("/datasets/flattenable.csv", schema= [('number', ia.int32),
+        csv = ta.CsvFile("/datasets/flattenable.csv", schema= [('number', ta.int32),
                                                              ('abc', str),
                                                              ('food', str)], delimiter=',')
 
         print "create frame"
-        self.frame = ia.Frame(csv)
+        self.frame = ta.Frame(csv)
 
     def test_flatten_column_abc(self):
         # validate expected pre-conditions

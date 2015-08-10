@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Intel Corporation
+# Copyright (c) 2015 Intel Corporation 
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class GraphAnnotateDegreesTest(unittest.TestCase):
 
@@ -31,40 +31,40 @@ class GraphAnnotateDegreesTest(unittest.TestCase):
 
         print "define csv file"
         schema_node = [("nodename", str),
-                       ("in", ia.int64),
-                       ("out", ia.int64),
-                       ("undirectedcount", ia.int64),
-                       ("isundirected", ia.int64),
-                       ("outlabel", ia.int64),
-                       ("insum", ia.float64),
-                       ("outsum", ia.float64),
-                       ("undirectedsum", ia.float64),
-                       ("labelsum", ia.float64),
-                       ("nolabelsum", ia.float64),
-                       ("defaultsum", ia.float64),
-                       ("integersum", ia.int64)]
+                       ("in", ta.int64),
+                       ("out", ta.int64),
+                       ("undirectedcount", ta.int64),
+                       ("isundirected", ta.int64),
+                       ("outlabel", ta.int64),
+                       ("insum", ta.float64),
+                       ("outsum", ta.float64),
+                       ("undirectedsum", ta.float64),
+                       ("labelsum", ta.float64),
+                       ("nolabelsum", ta.float64),
+                       ("defaultsum", ta.float64),
+                       ("integersum", ta.int64)]
 
         schema_directed = [("nodefrom", str),
                            ("nodeto", str),
-                           ("value", ia.float64),
+                           ("value", ta.float64),
                            ("badvalue", str),
-                           ("intvalue", ia.int32),
-                           ("int64value", ia.int64)]
+                           ("intvalue", ta.int32),
+                           ("int64value", ta.int64)]
 
         schema_undirected = [("node1", str),
                              ("node2", str),
-                             ("value", ia.float64)]
+                             ("value", ta.float64)]
 
         schema_directed_label = [("nodefrom", str),
                                  ("nodeto", str),
-                                 ("labeltest", ia.float64)]
+                                 ("labeltest", ta.float64)]
 
-        node_frame = ia.Frame(ia.CsvFile("/datasets/annotate_node_list.csv",schema_node))
-        directed_frame = ia.Frame(ia.CsvFile("/datasets/annotate_directed_list.csv",schema_directed))
-        undirected_frame = ia.Frame(ia.CsvFile("/datasets/annotate_undirected_list.csv", schema_undirected))
-        directed_label_frame = ia.Frame(ia.CsvFile("/datasets/annotate_directed_label_list.csv", schema_directed_label))
+        node_frame = ta.Frame(ta.CsvFile("/datasets/annotate_node_list.csv",schema_node))
+        directed_frame = ta.Frame(ta.CsvFile("/datasets/annotate_directed_list.csv",schema_directed))
+        undirected_frame = ta.Frame(ta.CsvFile("/datasets/annotate_undirected_list.csv", schema_undirected))
+        directed_label_frame = ta.Frame(ta.CsvFile("/datasets/annotate_directed_label_list.csv", schema_directed_label))
 
-        graph = ia.Graph()
+        graph = ta.Graph()
         graph.define_vertex_type('primary')
         graph.vertices['primary'].add_vertices(node_frame,"nodename",["out",
                                                                   "undirectedcount",

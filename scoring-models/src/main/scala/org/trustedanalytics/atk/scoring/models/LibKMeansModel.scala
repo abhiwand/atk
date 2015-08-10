@@ -13,7 +13,7 @@ class LibKMeansModel(libKMeansModel: KMeansModel) extends KMeansModel(libKMeansM
 
   override def score(data: Seq[Array[String]]): Future[Seq[Any]] = future {
     var score = Seq[Any]()
-    var value: Int = 2;
+    var value: Int = 2
     data.foreach { row =>
       {
         val x: Array[Double] = new Array[Double](row.length)

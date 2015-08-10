@@ -16,13 +16,6 @@
 
 package org.trustedanalytics.atk.giraph.algorithms.lda;
 
-import org.trustedanalytics.atk.giraph.aggregators.VectorSumAggregator;
-import org.trustedanalytics.atk.giraph.io.LdaEdgeData;
-import org.trustedanalytics.atk.giraph.io.LdaMessage;
-import org.trustedanalytics.atk.giraph.io.LdaVertexData;
-import org.trustedanalytics.atk.giraph.io.LdaVertexId;
-import org.trustedanalytics.atk.giraph.lda.LdaConfig;
-import org.trustedanalytics.atk.giraph.lda.LdaConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleMaxAggregator;
@@ -45,6 +38,13 @@ import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.function.Functions;
+import org.trustedanalytics.atk.giraph.aggregators.VectorSumAggregator;
+import org.trustedanalytics.atk.giraph.config.lda.LdaConfig;
+import org.trustedanalytics.atk.giraph.config.lda.LdaConfiguration;
+import org.trustedanalytics.atk.giraph.io.LdaEdgeData;
+import org.trustedanalytics.atk.giraph.io.LdaMessage;
+import org.trustedanalytics.atk.giraph.io.LdaVertexData;
+import org.trustedanalytics.atk.giraph.io.LdaVertexId;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -15,15 +15,15 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class ApiExistsSmokeTest(unittest.TestCase):
     """
@@ -46,7 +46,7 @@ class ApiExistsSmokeTest(unittest.TestCase):
     def test_expected_methods_exist_on_csvfile(self):
         self.assert_methods_defined(['annotation',
                                     'field_names',
-                                    'field_types'], ia.CsvFile)
+                                    'field_types'], ta.CsvFile)
 
     def test_expected_methods_exist_on_frame(self):
         self.assert_methods_defined(['add_columns',
@@ -56,7 +56,6 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'bin_column_equal_depth',
                                       'bin_column_equal_width',
                                       'classification_metrics',
-                                      'collaborative_filtering', 
                                       'column_median',
                                       'column_mode',
                                       'column_names',
@@ -98,7 +97,7 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'tally',
                                       'tally_percent',
                                       'top_k',
-                                      'unflatten_column'], ia.Frame)
+                                      'unflatten_column'], ta.Frame)
 
     def test_expected_methods_exist_on_vertexframe(self):
         self.assert_methods_defined([ 'add_columns',
@@ -148,7 +147,7 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'tally',
                                       'tally_percent',
                                       'top_k',
-                                      'unflatten_column'], ia.VertexFrame)
+                                      'unflatten_column'], ta.VertexFrame)
 
     def test_expected_methods_exist_on_edgeframe(self):
         self.assert_methods_defined([ 'add_columns',
@@ -197,7 +196,7 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                       'tally',
                                       'tally_percent',
                                       'top_k',
-                                      'unflatten_column'], ia.EdgeFrame)
+                                      'unflatten_column'], ta.EdgeFrame)
 
     def test_expected_methods_exist_on_graph(self):
         self.assert_methods_defined(['annotate_degrees',
@@ -216,7 +215,7 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'name',
                                      'status',
                                      'vertex_count',
-                                     'vertices'], ia.Graph)
+                                     'vertices'], ta.Graph)
 
     def test_expected_methods_exist_on_titangraph(self):
         self.assert_methods_defined(['annotate_degrees',
@@ -234,42 +233,46 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'name',
                                      'query',
                                      'status',
-                                     'vertex_sample'], ia.TitanGraph)
+                                     'vertex_sample'], ta.TitanGraph)
 
     def test_expected_methods_exist_on_titangraphml(self):
-        self.assert_methods_defined(['belief_propagation'], ia.core.api.TitanGraphMl)
+        self.assert_methods_defined(['belief_propagation'], ta.core.api.TitanGraphMl)
 
     def test_expected_methods_exist_on_kmeans_model(self):
         self.assert_methods_defined(["name",
                                      "predict",
-                                     "train"], ia.KMeansModel)
+                                     "train"], ta.KMeansModel)
     def test_expected_methods_exist_on_lda_model(self):
         self.assert_methods_defined(["name",
-                                    "train"], ia.LdaModel)
+                                    "train"], ta.LdaModel)
+    def test_expected_methods_exist_on_collaborative_filtering_model(self):
+        self.assert_methods_defined(["name",
+                                    "train",
+                                    "recommend"], ta.CollaborativeFilteringModel)
 
     def test_expected_methods_exist_on_libsvm_model(self):
         self.assert_methods_defined(["name",
                                      "predict",
                                      "score",
                                      "test",
-                                     "train"], ia.LibsvmModel)
+                                     "train"], ta.LibsvmModel)
 
     def test_expected_methods_exist_on_linear_regression_model(self):
         self.assert_methods_defined(["name",
                                      "predict",
-                                     "train"], ia.LinearRegressionModel)
+                                     "train"], ta.LinearRegressionModel)
 
     def test_expected_methods_exist_on_logistic_regression_model(self):
         self.assert_methods_defined(["name",
                                      "predict",
                                      "test",
-                                     "train"], ia.LogisticRegressionModel)
+                                     "train"], ta.LogisticRegressionModel)
 
     def test_expected_methods_exist_on_svm_model(self):
         self.assert_methods_defined(["name",
                                      "predict",
                                      "test",
-                                     "train"], ia.SvmModel)
+                                     "train"], ta.SvmModel)
 
     def test_expected_global_methods_exist(self):
         self.assert_methods_defined(['drop_frames',
@@ -280,7 +283,7 @@ class ApiExistsSmokeTest(unittest.TestCase):
                                      'get_graph',
                                      'get_graph_names',
                                      'get_model',
-                                     'get_model_names'], ia)
+                                     'get_model_names'], ta)
 
     def assert_methods_defined(self, methods, clazz):
         for method in methods:

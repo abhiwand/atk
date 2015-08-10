@@ -31,21 +31,21 @@
 #       execfile('/path/to/numbers.py')
 #
 
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
+ta.errors.show_details = True
 
-ia.connect()
+ta.connect()
 
-#ia.loggers.set_http()
+#ta.loggers.set_http()
 
 print("define csv file")
 schema =  [("number", str), ("factor", str), ("binary", str), ("isPrime", str), ("reverse", str), ("isPalindrome", str)]
-csv = ia.CsvFile("/numbers.csv", schema, delimiter=":", skip_header_lines=1)
+csv = ta.CsvFile("/numbers.csv", schema, delimiter=":", skip_header_lines=1)
 
 print("create frame")
-frame = ia.Frame(csv)
+frame = ta.Frame(csv)
 
 print("inspect frame")
 print frame.inspect(10)
@@ -57,14 +57,14 @@ print frame.inspect(10)
 print("frame row count " + str(frame.row_count))
 
 print("define graph parsing rules")
-number = ia.VertexRule("number", frame["number"],{ "isPrime": frame["isPrime"], "isPalindrome": frame["isPalindrome"]})
-factor = ia.VertexRule("number", frame["factor"])
-binary = ia.VertexRule("number", frame["binary"])
-reverse = ia.VertexRule("number", frame["reverse"])
+number = ta.VertexRule("number", frame["number"],{ "isPrime": frame["isPrime"], "isPalindrome": frame["isPalindrome"]})
+factor = ta.VertexRule("number", frame["factor"])
+binary = ta.VertexRule("number", frame["binary"])
+reverse = ta.VertexRule("number", frame["reverse"])
 
-hasFactor = ia.EdgeRule("hasFactor", number, factor, bidirectional=False)
-hasBinary = ia.EdgeRule("hasBinary", number, binary, bidirectional=False)
-hasReverse = ia.EdgeRule("hasReverse", number, reverse, bidirectional=True)
+hasFactor = ta.EdgeRule("hasFactor", number, factor, bidirectional=False)
+hasBinary = ta.EdgeRule("hasBinary", number, binary, bidirectional=False)
+hasReverse = ta.EdgeRule("hasReverse", number, reverse, bidirectional=True)
 
 print("create graph")
-graph = ia.TitanGraph([number, factor, binary, reverse, hasFactor, hasBinary, hasReverse])
+graph = ta.TitanGraph([number, factor, binary, reverse, hasFactor, hasBinary, hasReverse])

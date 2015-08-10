@@ -82,6 +82,6 @@ abstract class ComputedBinColumnPlugin extends SparkCommandPlugin[ComputedBinCol
    * @param rdd rdd to bin against
    * @return a result object containing the binned rdd and the list of computed cutoffs
    */
-  def executeBinColumn(columnIndex: Int, numBins: Int, rdd: FrameRdd): RddWithCutoffs = ???
+  def executeBinColumn(columnIndex: Int, numBins: Int, rdd: FrameRdd): RddWithCutoffs
 
 }

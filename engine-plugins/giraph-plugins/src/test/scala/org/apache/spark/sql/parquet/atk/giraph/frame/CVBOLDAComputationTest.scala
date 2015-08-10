@@ -18,7 +18,7 @@ package org.apache.spark.sql.parquet.atk.giraph.frame
 
 import org.trustedanalytics.atk.giraph.algorithms.lda.CVB0LDAComputation
 import org.trustedanalytics.atk.giraph.algorithms.lda.CVB0LDAComputation.{ CVB0LDAAggregatorWriter, CVB0LDAMasterCompute }
-import org.trustedanalytics.atk.giraph.lda._
+import org.trustedanalytics.atk.giraph.config.lda._
 import org.trustedanalytics.atk.domain.frame.FrameReference
 import org.trustedanalytics.atk.domain.model.ModelReference
 import org.trustedanalytics.atk.domain.schema.FrameSchema
