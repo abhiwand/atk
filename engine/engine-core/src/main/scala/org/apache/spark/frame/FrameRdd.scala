@@ -491,11 +491,11 @@ object FrameRdd {
     val fields = schema.columns.map {
       column =>
         (column.name.replaceAll("\\s", ""), column.dataType match {
-          case x if x.equals(DataTypes.int32) => "INT"
-          case x if x.equals(DataTypes.int64) => "BIGINT"
-          case x if x.equals(DataTypes.float32) => "DOUBLE"
-          case x if x.equals(DataTypes.float64) => "DOUBLE"
-          case x if x.equals(DataTypes.string) => "STRING"
+          case x if x.equals(DataTypes.int32) => "int"
+          case x if x.equals(DataTypes.int64) => "bigint"
+          case x if x.equals(DataTypes.float32) => "double"
+          case x if x.equals(DataTypes.float64) => "double"
+          case x if x.equals(DataTypes.string) => "string"
           case x => throw new IllegalArgumentException(s"unsupported export type ${x.toString}")
         })
     }

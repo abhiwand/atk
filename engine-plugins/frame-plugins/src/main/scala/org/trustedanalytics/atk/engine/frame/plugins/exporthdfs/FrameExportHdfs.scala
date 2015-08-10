@@ -122,16 +122,10 @@ object FrameExportHdfs extends Serializable {
     val array = FrameRdd.schemaToHiveType(frameRdd.frameSchema).map(column => "{\"name\":\"" + column._1 + "\", \"type\":\"" + column._2 + "\"}")
     val colSchema = array.mkString("[", ",", "]")
     val endstring = "}"
-    val tmpFile = EngineConfig.fsRoot + "/schemahive.json"
-    val modelDatafile = new File(tmpFile)
-    val writer: PrintWriter = new PrintWriter(modelDatafile);
-    writer.print(beginstring)
-    writer.print(colSchema)
-    writer.print(endstring)
-    writer.close()
+    val schema = beginstring + colSchema + endstring
 
     df.sqlContext.asInstanceOf[org.apache.spark.sql.hive.HiveContext].sql(s"CREATE TABLE " + tablename +
-      s" ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' STORED AS AVRO TBLPROPERTIES ('avro.schema.url'= '${tmpFile}' ) AS SELECT * FROM mytable")
+      s" ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' STORED AS AVRO TBLPROPERTIES ('avro.schema.literal'= '${schema}' ) AS SELECT * FROM mytable")
   }
 
 }
