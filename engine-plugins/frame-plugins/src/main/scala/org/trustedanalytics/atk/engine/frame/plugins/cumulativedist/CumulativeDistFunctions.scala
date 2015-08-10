@@ -107,7 +107,7 @@ private object CumulativeDistFunctions extends Serializable {
     }
 
     // compute the partition sums
-    val partSums = partitionSums(pairedRdd)
+    val partSums = partitionSums(pairedRdd.values)
 
     // compute cumulative sum
     val cumulativeSums = totalPartitionSums(pairedRdd, partSums)
@@ -136,7 +136,7 @@ private object CumulativeDistFunctions extends Serializable {
     })
 
     // compute the partition sums
-    val partSums = partitionSums(pairedRdd)
+    val partSums = partitionSums(pairedRdd.values)
 
     // compute cumulative count
     val cumulativeCounts = totalPartitionSums(pairedRdd, partSums)
@@ -161,7 +161,7 @@ private object CumulativeDistFunctions extends Serializable {
     }
 
     // compute the partition sums
-    val partSums = partitionSums(pairedRdd)
+    val partSums = partitionSums(pairedRdd.values)
 
     val numValues = pairedRdd.map { case (row, columnValue) => columnValue }.sum()
 
@@ -192,7 +192,7 @@ private object CumulativeDistFunctions extends Serializable {
     })
 
     // compute the partition sums
-    val partSums = partitionSums(pairedRdd)
+    val partSums = partitionSums(pairedRdd.values)
 
     val numValues = pairedRdd.map { case (row, columnValue) => columnValue }.sum()
 
@@ -208,9 +208,9 @@ private object CumulativeDistFunctions extends Serializable {
    * @param rdd the input RDD
    * @return an Array[Double] that contains the partition sums
    */
-  private def partitionSums(rdd: RDD[(Row, Double)]): Array[Double] = {
+  private[cumulativedist] def partitionSums(rdd: RDD[Double]): Array[Double] = {
     0.0 +: rdd.mapPartitionsWithIndex {
-      case (index, partition) => Iterator(partition.map { case (row, columnValue) => columnValue }.sum)
+      case (index, partition) => Iterator(partition.sum)
     }.collect()
   }
 
@@ -222,16 +222,16 @@ private object CumulativeDistFunctions extends Serializable {
    * @return RDD of (value, cumulativeSum)
    */
   private def totalPartitionSums(rdd: RDD[(Row, Double)], partSums: Array[Double]): RDD[(Row, Double)] = {
-    rdd.mapPartitionsWithIndex {
-      case (index, partition) => {
+    rdd.mapPartitionsWithIndex({
+      (index, partition) =>
         var startValue = 0.0
         for (i <- 0 to index) {
           startValue += partSums(i)
         }
         // startValue updated, so drop first value
         partition.scanLeft((Row(), startValue))((prev, curr) => (curr._1, prev._2 + curr._2)).drop(1)
-      }
-    }
+    }, preservesPartitioning = true
+    )
   }
 
   /**
