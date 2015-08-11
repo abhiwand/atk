@@ -80,6 +80,8 @@ case class LogisticRegressionTrainArgs(@ArgDoc("""Handle to the model to be used
   require(model != null, "model is required")
   require(frame != null, "frame is required")
   require(optimizer == "LBFGS" || optimizer == "SGD", "optimizer name must be 'LBFGS' or 'SGD'")
+  require(numClasses > 1, "number of classes must be greater than 1")
+  if (optimizer == "SGD") require(numClasses == 2, "multinomial logistic regression not supported for SGD")
   require(observationColumns != null && !observationColumns.isEmpty, "observation columns must not be null nor empty")
   require(labelColumn != null && !labelColumn.isEmpty, "label column must not be null nor empty")
   require(numIterations > 0, "number of iterations must be a positive value")
