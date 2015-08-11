@@ -42,7 +42,7 @@ object DataValidatorsWithFrequency extends Logging {
   val binaryLabelValidator: RDD[LabeledPointWithFrequency] => Boolean = { data =>
     val numInvalid = data.filter(x => x.label != 1.0 && x.label != 0.0).count()
     if (numInvalid != 0) {
-      logError("Classification labels should be 0 or 1. Found " + numInvalid + " invalid labels")
+      throw new IllegalArgumentException("Classification labels should be 0 or 1. Found " + numInvalid + " invalid labels")
     }
     numInvalid == 0
   }
@@ -57,7 +57,7 @@ object DataValidatorsWithFrequency extends Logging {
     val numInvalid = data.filter(x =>
       x.label - x.label.toInt != 0.0 || x.label < 0 || x.label > k - 1).count()
     if (numInvalid != 0) {
-      logError("Classification labels should be in {0 to " + (k - 1) + "}. " +
+      throw new IllegalArgumentException("Classification labels should be in {0 to " + (k - 1) + "}. " +
         "Found " + numInvalid + " invalid labels")
     }
     numInvalid == 0

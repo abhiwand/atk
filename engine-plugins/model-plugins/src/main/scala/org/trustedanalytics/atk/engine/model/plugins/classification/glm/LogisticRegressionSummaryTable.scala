@@ -15,11 +15,11 @@
 */
 package org.trustedanalytics.atk.engine.model.plugins.classification.glm
 
-import breeze.linalg.{ DenseMatrix, DenseVector, diag }
+import breeze.linalg.{DenseMatrix, DenseVector, diag}
 import breeze.numerics.sqrt
 import breeze.stats.distributions.ChiSquared
-import org.trustedanalytics.atk.domain.frame.FrameEntity
 import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
+import org.trustedanalytics.atk.domain.frame.FrameEntity
 
 /**
  * Summary table with results of logistic regression train plugin
@@ -105,7 +105,10 @@ case class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency
    */
   private def getApproxCovarianceMatrix: Option[ApproximateCovarianceMatrix] = {
     hessianMatrix match {
-      case Some(hessian) => Some(ApproximateCovarianceMatrix(hessian, isAddIntercept))
+      case Some(hessian) => {
+        val reorderMatrix = isAddIntercept && logRegModel.numClasses <= 2
+        Some(ApproximateCovarianceMatrix(hessian, reorderMatrix))
+      }
       case _ => None
     }
   }
@@ -117,7 +120,7 @@ case class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency
    * and if `addIntercept != true`, the dimension will be (numClasses - 1) * numFeatures
    */
   private def getCoefficients: DenseVector[Double] = {
-    if (isAddIntercept) {
+    if (isAddIntercept && logRegModel.numClasses <= 2) {
       DenseVector(logRegModel.intercept +: logRegModel.weights.toArray)
     }
     else {
@@ -133,22 +136,25 @@ case class SummaryTableBuilder(logRegModel: LogisticRegressionModelWithFrequency
    * A suffix is added to the observation column name to differentiate repeated entries.
    */
   private def getCoefficientNames: List[String] = {
+    val interceptCol = if (isAddIntercept) 1 else 0
     val names = if (logRegModel.numClasses > 2) {
       for {
-        i <- 0 until logRegModel.numFeatures
-        j <- 0 until (logRegModel.numClasses - 1)
-      } yield s"${observationColumns(i)}_${j}"
+
+        i <- 0 until (logRegModel.numClasses - 1)
+        j <- 0 until (logRegModel.numFeatures + interceptCol)
+        coefName = if (j < logRegModel.numFeatures) {
+          s"${observationColumns(j)}_${i}"
+        }
+        else {
+          s"${interceptName}_${i}"
+        }
+      } yield coefName
     }
     else {
-      observationColumns
+      if (isAddIntercept) interceptName +: observationColumns else observationColumns
     }
 
-    if (isAddIntercept) {
-      (interceptName +: names).toList
-    }
-    else {
-      names.toList
-    }
+    names.toList
   }
 
   /**
