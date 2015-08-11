@@ -15,12 +15,12 @@
 */
 package org.trustedanalytics.atk.engine.model.plugins.classification.glm
 
-import breeze.linalg.{DenseMatrix, inv}
+import breeze.linalg.{ DenseMatrix, inv }
 import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
 import org.apache.spark.mllib.linalg.DenseVector
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import org.trustedanalytics.atk.domain.frame.FrameEntity
 
 class SummaryTableBuilderTest extends FlatSpec with Matchers with MockitoSugar {

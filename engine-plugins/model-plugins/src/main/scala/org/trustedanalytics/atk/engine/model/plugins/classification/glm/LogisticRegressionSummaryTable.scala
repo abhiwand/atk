@@ -15,7 +15,7 @@
 */
 package org.trustedanalytics.atk.engine.model.plugins.classification.glm
 
-import breeze.linalg.{DenseMatrix, DenseVector, diag}
+import breeze.linalg.{ DenseMatrix, DenseVector, diag }
 import breeze.numerics.sqrt
 import breeze.stats.distributions.ChiSquared
 import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
