@@ -7,7 +7,7 @@ trustedanalytics.atk.component.archives {
 }
 
 trustedanalytics.scoring-engine {
-  archive-tar = "hdfs://spbathi-ws.eg.intel.com:8020/user/taproot/test1.tar"
+  archive-tar = "hdfs://scoring-server.intel.com:8020/user/atkuser/test.tar"
 }
 
 trustedanalytics.atk {
