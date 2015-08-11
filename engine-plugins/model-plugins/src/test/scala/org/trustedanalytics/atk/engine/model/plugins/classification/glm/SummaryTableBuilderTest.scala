@@ -15,13 +15,13 @@
 */
 package org.trustedanalytics.atk.engine.model.plugins.classification.glm
 
-import breeze.linalg.{ DenseMatrix, inv }
-import org.trustedanalytics.atk.domain.frame.FrameEntity
+import breeze.linalg.{DenseMatrix, inv}
 import org.apache.spark.mllib.classification.LogisticRegressionModelWithFrequency
 import org.apache.spark.mllib.linalg.DenseVector
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.{FlatSpec, Matchers}
+import org.trustedanalytics.atk.domain.frame.FrameEntity
 
 class SummaryTableBuilderTest extends FlatSpec with Matchers with MockitoSugar {
 
@@ -55,62 +55,80 @@ class SummaryTableBuilderTest extends FlatSpec with Matchers with MockitoSugar {
   }
 
   "SummaryTableBuilder" should "build summary table with an intercept column" in {
-    val hessianMatrix = DenseMatrix((1330d, 480d), (480d, 200d))
+    val inputCovMatrix = DenseMatrix(
+      (2d, 1d, 0d),
+      (2d, 4d, 0d),
+      (2d, 0d, 1d)
+    )
+    val covarianceFrame = mock[FrameEntity]
+    val hessianMatrix = inv(inputCovMatrix)
+
+    //Reordered covariance matrix where the intercept is stored in the first row and first column
+    //instead of in the last row and last column of the matrix
+    val reorderedCovMatrix = DenseMatrix(
+      (1d, 2d, 0d),
+      (0d, 2d, 1d),
+      (0d, 2d, 4d)
+    )
 
     val model = mock[LogisticRegressionModelWithFrequency]
-    val obsColumns = List("col1", "col2", "col3")
+    val obsColumns = List("col1", "col2")
     val intercept = 4.5d
-    val weights = Array(1.5, 2.0d, 3.4d)
+    val weights = Array(2.0d, 3.4d)
 
     when(model.numClasses).thenReturn(2)
     when(model.numFeatures).thenReturn(obsColumns.size)
     when(model.intercept).thenReturn(intercept)
     when(model.weights).thenReturn(new DenseVector(weights))
 
-    val summaryTableBuilder = SummaryTableBuilder(model, obsColumns, isAddIntercept = true)
+    val summaryTableBuilder = SummaryTableBuilder(model, obsColumns, isAddIntercept = true,
+      hessianMatrix = Some(hessianMatrix))
     val interceptName = summaryTableBuilder.interceptName
-    val summaryTable = summaryTableBuilder.build()
+    val summaryTable = summaryTableBuilder.build(Some(covarianceFrame))
 
     summaryTable.numClasses shouldBe 2
-    summaryTable.numFeatures shouldBe 3
-    obsColumns.zipWithIndex.foreach { case (col, i) => summaryTable.coefficients(col) shouldBe weights(i) +- tolerance }
-    obsColumns.zipWithIndex.foreach { case (col, i) => summaryTable.degreesFreedom(col) shouldBe 1d +- tolerance }
+    summaryTable.numFeatures shouldBe 2
 
-    summaryTable.coefficients(interceptName) shouldBe intercept +- tolerance
-    summaryTable.degreesFreedom(interceptName) shouldBe 1d +- tolerance
-    summaryTable.standardErrors shouldBe empty
-    summaryTable.waldStatistic shouldBe empty
-    summaryTable.pValue shouldBe empty
-    summaryTable.covarianceMatrix shouldBe empty
+    val expectedCoefNames = interceptName +: obsColumns
+    val expectedCoefs = intercept +: weights
+    val expectedErrors = List(1d, 1.414214d, 2d) //square root of diagonal of covariance matrix
+    val expectedWaldStats = List(4.5d, 1.414214d, 1.7d) //coefs divided by standard error
+
+    expectedCoefNames.zipWithIndex.foreach {
+      case (col, i) => summaryTable.coefficients(col) shouldBe expectedCoefs(i) +- tolerance
+    }
+    expectedCoefNames.zipWithIndex.foreach {
+      case (col, i) => summaryTable.degreesFreedom(col) shouldBe 1d +- tolerance
+    }
+    expectedCoefNames.zipWithIndex.foreach {
+      case (col, i) => summaryTable.standardErrors.get(col) shouldBe expectedErrors(i) +- tolerance
+    }
+    expectedCoefNames.zipWithIndex.foreach {
+      case (col, i) => summaryTable.waldStatistic.get(col) shouldBe expectedWaldStats(i) +- tolerance
+    }
+
+    summaryTable.pValue shouldBe defined
+    summaryTable.covarianceMatrix shouldBe defined
   }
 
   "SummaryTableBuilder" should "build summary table for multinomial logistic regression with intercept and covariance matrix" in {
     val covarianceFrame = mock[FrameEntity]
 
     val inputCovMatrix = DenseMatrix(
-      (5d, 8d, -9d, 7d, 5d),
-      (0d, 6d, 0d, 4d, 4d),
-      (0d, 0d, 3d, 2d, 5d),
-      (0d, 0d, 0d, 1d, -5d),
-      (0d, 0d, 0d, 0d, 1d)
+      (5d, 8d, -9d, 7d, 5d, 3d),
+      (-0.05d, 6d, -0.25d, 4d, 4d, 7d),
+      (0d, 0d, 3d, -2d, -5d, -1d),
+      (-0.02d, -0.05d, -0.15d, 1d, -5d, 4d),
+      (-0.05d, -0.09d, -0.22d, -0.13d, 1d, 6d),
+      (1d, 2d, 5d, 3d, 2d, 1d)
     )
     val hessianMatrix = inv(inputCovMatrix)
-
-    //Reordered covariance matrix where the intercept is stored in the first row and first column
-    //instead of in the last row and last column of the matrix
-    val reorderedCovMatrix = DenseMatrix(
-      (1d, 0d, 0d, 0d, 0d),
-      (5d, 5d, 8d, -9d, 7d),
-      (4d, 0d, 6d, 0d, 4d),
-      (5d, 0d, 0d, 3d, 2d),
-      (-5d, 0d, 0d, 0d, 1d)
-    )
 
     //If the number of classes > 2, then each observation variable occurs (numClasses - 1) times in the weights.
     val numClasses = 3
     val obsColumns = List("col1", "col2")
-    val intercept = 0.9d
-    val weights = Array(1.0, 2.5, 5.0, 7.5)
+    val intercept = 0d
+    val weights = Array(1.0, 2.5, 5.0, 7.5, 6, 3)
 
     val model = mock[LogisticRegressionModelWithFrequency]
     when(model.numClasses).thenReturn(numClasses)
@@ -118,17 +136,18 @@ class SummaryTableBuilderTest extends FlatSpec with Matchers with MockitoSugar {
     when(model.intercept).thenReturn(intercept)
     when(model.weights).thenReturn(new DenseVector(weights))
 
-    val summaryTableBuilder = SummaryTableBuilder(model, obsColumns, isAddIntercept = true, Some(hessianMatrix))
+    val summaryTableBuilder = SummaryTableBuilder(model, obsColumns, hessianMatrix = Some(hessianMatrix))
     val interceptName = summaryTableBuilder.interceptName
     val summaryTable = summaryTableBuilder.build(Some(covarianceFrame))
 
     summaryTable.numClasses shouldBe numClasses
     summaryTable.numFeatures shouldBe obsColumns.size
 
-    val expectedCoefNames = List(interceptName, "col1_0", "col1_1", "col2_0", "col2_1")
-    val expectedCoefs = intercept +: weights
-    val expectedErrors = List(1.0, 2.236068, 2.44949, 1.732051, 1.0) //square root of diagonal of covariance matrix
-    val expectedWaldStats = List(0.9, 0.4472136, 1.0206207, 2.8867513, 7.5) //coefs divided by standard error
+    val expectedCoefNames = List("col1_0", "col2_0", interceptName + "_0",
+      "col1_1", "col2_1", interceptName + "_1")
+    val expectedCoefs = weights
+    val expectedErrors = List(2.236068, 2.449490, 1.732051, 1, 1, 1) //square root of diagonal of covariance matrix
+    val expectedWaldStats = List(0.4472136, 1.0206207, 2.8867513, 7.5, 6, 3) //coefs divided by standard error
 
     expectedCoefNames.zipWithIndex.foreach {
       case (col, i) => summaryTable.coefficients(col) shouldBe expectedCoefs(i) +- tolerance
