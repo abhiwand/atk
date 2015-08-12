@@ -492,7 +492,7 @@ object FrameRdd {
       column =>
         (column.name.replaceAll("\\s", ""), column.dataType match {
           case x if x.equals(DataTypes.int32) => "int"
-          case x if x.equals(DataTypes.int64) => "bigint"
+          case x if x.equals(DataTypes.int64) => "long"
           case x if x.equals(DataTypes.float32) => "double"
           case x if x.equals(DataTypes.float64) => "double"
           case x if x.equals(DataTypes.string) => "string"
