@@ -42,9 +42,7 @@ ATK
 
 # Developer Todo
 * Most items under misc should move to separate repos
-* All plugins should move to plugin modules (a few lingering plugins under engine-core)
-* Replace Slick with something nicer (even straight JDBC would be better)
-* Replace Spray DSL with something nicer (the DSL is confusing to use and our REST layer is too thin to make people learn a DSL)
+* Enable lazy execution and delayed execution. We have a plan where SparkContexts can be re-used and only shutdown when needed.
 * Properly support directed and undirected graphs (get rid of "bi-directional")
 * Data types in graphs/frames needs to be extended greatly
 * Improve Plugins
@@ -54,6 +52,10 @@ ATK
   * Need many more extension points for 3rd parties
   * Meta-programming needs to be expanded to support more kinds of objects
   * Nicer interfaces for plugin authors
+* All plugins should move to plugin modules (a few lingering plugins under engine-core)
+* Add support for Spark's dataframes
+* Replace Slick with something simpler (even straight JDBC would be better, everyone already knows SQL and we aren't getting enough value to justify the learning curve for Slick)
+* Replace Spray DSL with something simpler (the DSL is confusing to use and our REST layer is too thin to make people learn a DSL)
 * Integration tests need support added to be able to test Giraph and Titan functions
 * testutils should probably merge into engine-core
 * giraph-plugins needs refactoring of packages (the current hierarchy is very poorly organized)
@@ -63,5 +65,4 @@ ATK
 * Auto-conversion of return types
 * Frames should go back to mutable and immutability should be re-implemented but where frames can keep stable ids
 * Launcher code needs simplification and tests (it doesn't seem to setup classloaders all of the way how we want)
-* Add support for Spark's dataframes
-* Enable lazy execution and delayed execution. We have a plan where SparkContexts can be re-used and only shutdown when needed.
+
