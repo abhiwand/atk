@@ -23,16 +23,28 @@
 
 package org.trustedanalytics.atk.engine.model.plugins.classification
 
-import org.apache.spark.mllib.classification.NaiveBayesModel
-import org.apache.spark.mllib.tree.model.RandomForestModel
-import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol._
+import org.apache.spark.mllib.atk.plugins.MLLibJsonProtocol
+import org.trustedanalytics.atk.domain.CreateEntityArgs
+import org.trustedanalytics.atk.domain.model.{ GenericNewModelArgs, ModelEntity }
+import org.trustedanalytics.atk.engine.plugin.{ Invocation, SparkCommandPlugin }
+import spray.json._
+import org.trustedanalytics.atk.domain.DomainJsonProtocol._
+import MLLibJsonProtocol._
 
 /**
- * Command for loading model data into existing model in the model database.
- * @param randomForestModel Trained MLLib's LinearRegressionModel object
- * @param observationColumns Handle to the observation columns of the data frame
+ * Create a 'new' instance of this model
  */
-case class RandomForestClassifierData(randomForestModel: RandomForestModel, observationColumns: List[String], numClasses: Int) {
-  require(observationColumns != null && !observationColumns.isEmpty, "observationColumns must not be null nor empty")
-  require(randomForestModel != null, "randomForestModel must not be null")
+class RandomForestClassifierNewPlugin extends SparkCommandPlugin[GenericNewModelArgs, ModelEntity] {
+  /**
+   * The name of the command.
+   *
+   * The format of the name determines how the plugin gets "installed" in the client layer
+   * e.g Python client via code generation.
+   */
+  override def name: String = "model:random_forest_classifier/new"
+
+  override def execute(arguments: GenericNewModelArgs)(implicit invocation: Invocation): ModelEntity = {
+    engine.models.createModel(CreateEntityArgs(name = arguments.name, entityType = Some("model:random_forest_classifier")))
+  }
 }
+
