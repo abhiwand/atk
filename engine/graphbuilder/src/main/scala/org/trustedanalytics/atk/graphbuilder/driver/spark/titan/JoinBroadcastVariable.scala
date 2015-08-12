@@ -129,7 +129,7 @@ object JoinBroadcastVariable {
   def useBroadcastVariable[T](rdd: RDD[T], broadcastJoinThreshold: Long): Boolean = {
     val rddSize = getRddSize(rdd)
 
-    val useBroadcastVariable = (rddSize > 0 && rddSize < broadcastJoinThreshold)
+    val useBroadcastVariable = rddSize > 0 && rddSize < broadcastJoinThreshold
     if (useBroadcastVariable) {
       println(s"Using broadcast join: rdd size=${rddSize}, threshold=${broadcastJoinThreshold}")
     }

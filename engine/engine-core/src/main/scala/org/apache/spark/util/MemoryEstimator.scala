@@ -15,7 +15,7 @@
 package org.apache.spark.util
 
 import java.lang.reflect.{ Array, Modifier }
-import java.util.{ IdentityHashMap, Stack }
+import java.util
 
 import sun.misc.Unsafe
 
@@ -40,7 +40,7 @@ class MemoryEstimator {
   field.setAccessible(true)
   private val UNSAFE: Unsafe = field.get(null).asInstanceOf[Unsafe]
   private val HELPER_OBJECT: AnyRef = new FieldOffsetHelper()
-  private val OBJECT_BASE_SIZE: Long = UNSAFE.objectFieldOffset(HELPER_OBJECT.getClass().getDeclaredField("b"));
+  private val OBJECT_BASE_SIZE: Long = UNSAFE.objectFieldOffset(HELPER_OBJECT.getClass.getDeclaredField("b"))
   private val OBJECT_ALIGNMENT: Long = 8
 
   /** Return the size of the object excluding any referenced objects. */
@@ -48,7 +48,7 @@ class MemoryEstimator {
     var objectClass: Class[_] = javaObject.getClass
     if (objectClass.isArray) {
       val size: Long = UNSAFE.arrayBaseOffset(objectClass) + UNSAFE.arrayIndexScale(objectClass) * Array.getLength(javaObject)
-      return padSize(size)
+      padSize(size)
     }
     else {
       var size: Long = OBJECT_BASE_SIZE
@@ -63,27 +63,27 @@ class MemoryEstimator {
         }
         objectClass = objectClass.getSuperclass
       } while (objectClass != null)
-      return padSize(size)
+      padSize(size)
     }
   }
 
   /** Return the size of the object including any referenced objects. */
   def deepSize(javaObject: AnyRef): Long = {
-    val visited: IdentityHashMap[AnyRef, AnyRef] = new IdentityHashMap[AnyRef, AnyRef]
-    val stack: Stack[AnyRef] = new Stack[AnyRef]
+    val visited: util.IdentityHashMap[AnyRef, AnyRef] = new util.IdentityHashMap[AnyRef, AnyRef]
+    val stack: util.Stack[AnyRef] = new util.Stack[AnyRef]
     if (javaObject != null) stack.push(javaObject)
     var size: Long = 0
     while (!stack.isEmpty) {
       size += internalSizeOf(stack.pop, stack, visited)
     }
-    return size
+    size
   }
 
   private def padSize(size: Long): Long = {
-    return (size + (OBJECT_ALIGNMENT - 1)) & ~(OBJECT_ALIGNMENT - 1)
+    (size + (OBJECT_ALIGNMENT - 1)) & ~(OBJECT_ALIGNMENT - 1)
   }
 
-  private def internalSizeOf(javaObject: AnyRef, stack: Stack[AnyRef], visited: IdentityHashMap[AnyRef, AnyRef]): Long = {
+  private def internalSizeOf(javaObject: AnyRef, stack: util.Stack[AnyRef], visited: util.IdentityHashMap[AnyRef, AnyRef]): Long = {
     var c: Class[_] = javaObject.getClass
     if (c.isArray && !c.getComponentType.isPrimitive) {
       {
@@ -110,12 +110,10 @@ class MemoryEstimator {
                 }
               }
               catch {
-                case e: IllegalArgumentException => {
+                case e: IllegalArgumentException =>
                   throw new RuntimeException(e)
-                }
-                case e: IllegalAccessException => {
+                case e: IllegalAccessException =>
                   throw new RuntimeException(e)
-                }
               }
             }
           }
@@ -123,6 +121,6 @@ class MemoryEstimator {
         c = c.getSuperclass
       }
     }
-    return shallowSize(javaObject)
+    shallowSize(javaObject)
   }
 }

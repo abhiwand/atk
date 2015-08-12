@@ -14,23 +14,23 @@
 # limitations under the License.
 #
 
-import trustedanalytics as ia
+import trustedanalytics as ta
 
-ia.connect()
+ta.connect()
 
 
 print("define csv file")
-csv = ia.CsvFile("/lda.csv", schema= [('doc_id', str),
+csv = ta.CsvFile("/lda.csv", schema= [('doc_id', str),
                                         ('word_id', str),
-                                        ('word_count', ia.int64)], skip_header_lines=1)
+                                        ('word_count', ta.int64)], skip_header_lines=1)
 print("create frame")
-frame = ia.Frame(csv)
+frame = ta.Frame(csv)
 
 print("inspect frame")
 frame.inspect(20)
 print("frame row count " + str(frame.row_count))
 
-model = ia.LdaModel()
+model = ta.LdaModel()
 results = model.train(frame,
             'doc_id', 'word_id', 'word_count',
             max_iterations = 3,
@@ -57,5 +57,5 @@ frame.inspect()
 print("compute histogram of scores")
 word_hist = frame.histogram('word_count')
 lda_hist = frame.histogram('lda_score')
-group_frame = frame.group_by('word_id_L', {'word_count': ia.agg.histogram(word_hist.cutoffs), 'lda_score':  ia.agg.histogram(lda_hist.cutoffs)})
+group_frame = frame.group_by('word_id_L', {'word_count': ta.agg.histogram(word_hist.cutoffs), 'lda_score':  ta.agg.histogram(lda_hist.cutoffs)})
 group_frame.inspect()

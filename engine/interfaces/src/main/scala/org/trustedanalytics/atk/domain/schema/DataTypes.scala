@@ -23,7 +23,7 @@ import spray.json.{ JsValue, _ }
 
 import scala.collection.immutable.Set
 import scala.collection.mutable
-import scala.util.{ Try }
+import scala.util.Try
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.JavaConversions._
 

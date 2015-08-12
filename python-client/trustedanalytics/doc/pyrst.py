@@ -134,7 +134,7 @@ def get_class_rst(cls):
 
 .. class:: {name}
 
-    {rst_doc}""".format(toctree=toctree, name=get_type_name(cls), rst_doc=cls.__doc__)
+{rst_doc}""".format(toctree=toctree, name=get_type_name(cls), rst_doc=indent(cls.__doc__))
 
     lines = [starter]
     lines.append(indent(get_attribute_summary_table(sorted_members), 4))

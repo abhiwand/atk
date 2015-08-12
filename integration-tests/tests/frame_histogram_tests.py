@@ -15,17 +15,17 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 import math
 import numpy
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 _multiprocess_can_split_ = True
 
@@ -42,13 +42,13 @@ class FrameHistogramTests(unittest.TestCase):
 
     def setUp(self):
         print "define csv file"
-        self.csv = ia.CsvFile("/datasets/movie.csv", schema= [('user', ia.int32),
+        self.csv = ta.CsvFile("/datasets/movie.csv", schema= [('user', ta.int32),
                                                         ('vertex_type', str),
-                                                        ('movie', ia.int32),
-                                                        ('rating', ia.int32),
+                                                        ('movie', ta.int32),
+                                                        ('rating', ta.int32),
                                                         ('splits', str)])
         print "creating frame"
-        self.frame = ia.Frame(self.csv)
+        self.frame = ta.Frame(self.csv)
 
     def test_histogram_equal_width(self):
         h = self.frame.histogram('user', 4)

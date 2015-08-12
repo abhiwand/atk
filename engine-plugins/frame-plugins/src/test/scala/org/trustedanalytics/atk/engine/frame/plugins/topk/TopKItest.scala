@@ -92,7 +92,7 @@ class TopKItest extends TestingSparkContextFlatSpec with Matchers {
 
   "topK" should "return an empty sequence if the input data frame is empty" in {
     val frameRdd = sparkContext.parallelize(emptyList, 2)
-    val bottomKColumn1 = TopKRddFunctions.topK(frameRdd, 1, 4, true).collect()
+    val bottomKColumn1 = TopKRddFunctions.topK(frameRdd, 1, 4, useBottomK = true).collect()
     bottomKColumn1.size should equal(0)
   }
 

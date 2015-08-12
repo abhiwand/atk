@@ -15,27 +15,27 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class ModelSvmTest(unittest.TestCase):
     def testSvm(self):
         print "define csv file"
-        csv = ia.CsvFile("/datasets/SvmTestFile.csv", schema= [('data', ia.float64),
+        csv = ta.CsvFile("/datasets/SvmTestFile.csv", schema= [('data', ta.float64),
                                                                   ('label', str)], skip_header_lines=1)
 
         print "create frame"
-        frame = ia.Frame(csv)
+        frame = ta.Frame(csv)
 
         print "Initializing a SvmModel object"
-        k = ia.SvmModel(name='mySvmModel')
+        k = ta.SvmModel(name='mySvmModel')
 
         print "Training the model on the Frame"
         k.train(frame,'label', ['data'])

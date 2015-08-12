@@ -52,7 +52,7 @@ class TitanAutoPartitionerITest extends FlatSpec with Matchers with MockitoSugar
     titanConfig.setProperty(TitanAutoPartitioner.ENABLE_AUTO_PARTITION, "true")
 
     val titanAutoPartitioner = new TitanAutoPartitioner(titanConfig)
-    titanAutoPartitioner.enableAutoPartition shouldBe (true)
+    titanAutoPartitioner.enableAutoPartition shouldBe true
   }
 
   "enableAutoPartition" should "return false when auto-partitioner is disabled" in {
@@ -60,7 +60,7 @@ class TitanAutoPartitionerITest extends FlatSpec with Matchers with MockitoSugar
     titanConfig.setProperty(TitanAutoPartitioner.ENABLE_AUTO_PARTITION, "false")
 
     val titanAutoPartitioner = new TitanAutoPartitioner(titanConfig)
-    titanAutoPartitioner.enableAutoPartition shouldBe (false)
+    titanAutoPartitioner.enableAutoPartition shouldBe false
   }
 
   "setHBasePreSplits" should "set HBase pre-splits for graph construction based on available region servers" in {
@@ -72,7 +72,7 @@ class TitanAutoPartitionerITest extends FlatSpec with Matchers with MockitoSugar
     val newTitanConfig = titanAutoPartitioner.setHBasePreSplits(hBaseAdminMock)
 
     val expectedRegionCount = hBaseRegionServers * 6
-    newTitanConfig.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT) shouldBe (expectedRegionCount)
+    newTitanConfig.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT) shouldBe expectedRegionCount
   }
   "setHBasePreSplits" should "not set HBase pre-splits if regions are less than Titan's minimum region count" in {
     val titanConfig = new BaseConfiguration()
@@ -81,7 +81,7 @@ class TitanAutoPartitionerITest extends FlatSpec with Matchers with MockitoSugar
 
     val titanAutoPartitioner = TitanAutoPartitioner(titanConfig)
     val newTitanConfig = titanAutoPartitioner.setHBasePreSplits(hBaseAdminMock)
-    newTitanConfig.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT) shouldBe (null)
+    newTitanConfig.getProperty(TitanAutoPartitioner.TITAN_HBASE_REGION_COUNT) shouldBe null
   }
   "getHBaseInputSplits" should "get input splits for Titan/HBase reader using spark.cores.max" in {
     val sparkConfig = new SparkConf()
@@ -100,7 +100,7 @@ class TitanAutoPartitionerITest extends FlatSpec with Matchers with MockitoSugar
     val inputSplits = titanAutoPartitioner.getSparkHBaseInputSplits(sparkContextMock, hBaseAdminMock, hBaseTableName)
 
     val expectedHBaseSplits = Math.round(Math.log1p(20) / Math.log(2)) * 2
-    inputSplits shouldBe (expectedHBaseSplits)
+    inputSplits shouldBe expectedHBaseSplits
   }
 
 }

@@ -15,15 +15,15 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class FrameMultiLineTests(unittest.TestCase):
     """
@@ -37,27 +37,27 @@ class FrameMultiLineTests(unittest.TestCase):
     _multiprocess_can_split_ = True
 
     def setUp(self):
-        self.json = ia.JsonFile("/datasets/trailblazers.json")
-        self.xml = ia.XmlFile("/datasets/foods.xml", "food")
-        self.xml_root = ia.XmlFile("/datasets/foods.xml", "menu")
+        self.json = ta.JsonFile("/datasets/trailblazers.json")
+        self.xml = ta.XmlFile("/datasets/foods.xml", "food")
+        self.xml_root = ta.XmlFile("/datasets/foods.xml", "menu")
 
     def test_load_json(self):
         #covers escape double quote and nested json. They are in dataset
-        frame = ia.Frame(self.json)
+        frame = ta.Frame(self.json)
         self.assertEquals(frame.row_count, 15)
         self.assertEquals(frame.column_names, ["data_lines"])
 
 
     def test_load_xml(self):
         #covers xml comments
-        frame = ia.Frame(self.xml)
+        frame = ta.Frame(self.xml)
         self.assertEquals(frame.row_count, 9)
         self.assertEquals(frame.column_names, ["data_lines"])
 
 
     def test_load_xml(self):
         #covers xml comments
-        frame = ia.Frame(self.xml_root)
+        frame = ta.Frame(self.xml_root)
         self.assertEquals(frame.row_count, 1)
         self.assertEquals(frame.column_names, ["data_lines"])
 

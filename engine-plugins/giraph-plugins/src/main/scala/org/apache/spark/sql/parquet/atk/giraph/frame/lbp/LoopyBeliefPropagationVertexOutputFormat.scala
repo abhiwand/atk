@@ -17,7 +17,7 @@
 package org.apache.spark.sql.parquet.atk.giraph.frame.lbp
 
 import org.trustedanalytics.atk.giraph.io.VertexData4LBPWritable
-import org.trustedanalytics.atk.giraph.lbp.LoopyBeliefPropagationConfiguration
+import org.trustedanalytics.atk.giraph.config.lbp.LoopyBeliefPropagationConfiguration
 import org.apache.giraph.graph.Vertex
 import org.apache.giraph.io.{ VertexOutputFormat, VertexWriter }
 import org.apache.hadoop.fs.Path

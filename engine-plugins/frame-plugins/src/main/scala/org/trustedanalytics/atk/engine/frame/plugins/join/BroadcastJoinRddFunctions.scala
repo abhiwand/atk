@@ -85,7 +85,7 @@ class BroadcastJoinRddFunctions(self: RddJoinParam) extends Logging with Seriali
         }
       })
     }
-    else throw new IllegalArgumentException(s"Frame size exceeds broadcast-join-threshold: ${broadcastJoinThreshold}.")
+    else throw new IllegalArgumentException(s"Frame size exceeds broadcast-join-threshold: $broadcastJoinThreshold.")
     innerJoinedRDD
   }
 }

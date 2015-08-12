@@ -6,7 +6,7 @@ If you know what a configuration does please add a comment about its function.
 
 EXERCISE CAUTION WHEN UPDATING application.conf.tpl because you might break the post installation script. the following
 properties get search replaced with relevant data from Cloudera manager by
-source_code/package/config/intelanalytics-rest-server/assets/etc/intelanalytics/rest-server/config.py
+atk/package/config/trustedanalytics/assets/etc/trustedanalytics/rest-server/config.py
     fs.root
     titan.load.storage.hostname
     titan.load.storage.port
@@ -21,7 +21,7 @@ PLEASE
 	a good example would be
 	
 	fs {
-	  # the system will create an "intelanalytics" folder at this location, if set,
+	  # the system will create an "trustedanalytics" folder at this location, if set,
       # or at the root of the filesystem, if not. All Intel Analytics Toolkit files will
       # be stored somehwere under that base location.
       #
@@ -37,7 +37,7 @@ PLEASE
 
 to use the base config copy it and rename to the conf directory
 
-cp source_code/conf/examples/application.conf.tpl source_code/conf/examples/application.conf
+cp atk/conf/examples/application.conf.tpl atk/conf/examples/application.conf
 
 application.conf is being ignored by git so no worries about commiting in by mistake
 

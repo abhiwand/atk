@@ -267,12 +267,11 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
 
     val columnNames = columnNamesAndAscending.map(_._1)
     val ascendingPerColumn = columnNamesAndAscending.map(_._2)
-    val pairRdd = mapRows(row => (row.values(columnNames), row.data))
 
     implicit val multiColumnOrdering = new MultiColumnOrdering(ascendingPerColumn)
 
     // ascending is always true here because we control in the ordering
-    val sortedRows = pairRdd.sortByKey(ascending = true).values
+    val sortedRows = this.sortBy(row => rowWrapper(row).values(columnNames), ascending = true)
     new FrameRdd(frameSchema, sortedRows)
   }
 
@@ -481,6 +480,25 @@ object FrameRdd {
       case `timeStampType` => DataTypes.string
       case _ => throw new IllegalArgumentException(s"unsupported type $a")
     }
+  }
+
+  /**
+   * Converts the schema object to a StructType for use in creating a SchemaRDD
+   * @return StructType with StructFields corresponding to the columns of the schema object
+   */
+  def schemaToHiveType(schema: Schema): List[(String, String)] = {
+    val fields = schema.columns.map {
+      column =>
+        (column.name.replaceAll("\\s", ""), column.dataType match {
+          case x if x.equals(DataTypes.int32) => "int"
+          case x if x.equals(DataTypes.int64) => "long"
+          case x if x.equals(DataTypes.float32) => "double"
+          case x if x.equals(DataTypes.float64) => "double"
+          case x if x.equals(DataTypes.string) => "string"
+          case x => throw new IllegalArgumentException(s"unsupported export type ${x.toString}")
+        })
+    }
+    fields
   }
 
 }

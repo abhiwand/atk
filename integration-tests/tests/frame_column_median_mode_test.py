@@ -15,15 +15,15 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class FrameColumnMedianModeTest(unittest.TestCase):
     """
@@ -38,13 +38,13 @@ class FrameColumnMedianModeTest(unittest.TestCase):
 
     def test_column_median(self):
         print "define csv file"
-        csv = ia.CsvFile("/datasets/classification-compute.csv", schema= [('a', str),
-                                                                          ('b', ia.int32),
-                                                                          ('labels', ia.int32),
-                                                                          ('predictions', ia.int32)], delimiter=',', skip_header_lines=1)
+        csv = ta.CsvFile("/datasets/classification-compute.csv", schema= [('a', str),
+                                                                          ('b', ta.int32),
+                                                                          ('labels', ta.int32),
+                                                                          ('predictions', ta.int32)], delimiter=',', skip_header_lines=1)
 
         print "create frame"
-        frame = ia.Frame(csv)
+        frame = ta.Frame(csv)
 
         print "compute column median()"
         column_median_b = frame.column_median(data_column='b')
@@ -56,13 +56,13 @@ class FrameColumnMedianModeTest(unittest.TestCase):
     # TODO: temporarily commenting out to get a good build
     # def test_column_mode(self):
     #     print "define csv file"
-    #     csv = ia.CsvFile("/datasets/classification-compute.csv", schema= [('a', str),
-    #                                                                       ('b', ia.int32),
-    #                                                                       ('labels', ia.int32),
-    #                                                                       ('predictions', ia.int32)], delimiter=',', skip_header_lines=1)
+    #     csv = ta.CsvFile("/datasets/classification-compute.csv", schema= [('a', str),
+    #                                                                       ('b', ta.int32),
+    #                                                                       ('labels', ta.int32),
+    #                                                                       ('predictions', ta.int32)], delimiter=',', skip_header_lines=1)
     #
     #     print "create frame"
-    #     frame = ia.Frame(csv)
+    #     frame = ta.Frame(csv)
     #
     #     print "compute column mode()"
     #     column_mode_b = frame.column_mode(data_column='b')

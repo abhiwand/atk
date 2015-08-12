@@ -20,7 +20,7 @@ import java.util
 
 import org.trustedanalytics.atk.giraph.io.EdgeData4CFWritable.EdgeType
 import org.trustedanalytics.atk.giraph.io.{ CFVertexId, EdgeData4CFWritable }
-import org.trustedanalytics.atk.giraph.cf.CollaborativeFilteringConfiguration
+import org.trustedanalytics.atk.giraph.config.cf.CollaborativeFilteringConfiguration
 import org.trustedanalytics.atk.engine.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._

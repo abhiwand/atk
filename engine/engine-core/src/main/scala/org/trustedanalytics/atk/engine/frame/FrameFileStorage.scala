@@ -21,7 +21,7 @@ import org.trustedanalytics.atk.domain.frame.FrameEntity
 import org.trustedanalytics.atk.engine.plugin.Invocation
 import org.trustedanalytics.atk.engine.HdfsFileStorage
 import org.apache.hadoop.fs.Path
-import org.trustedanalytics.atk.event.{ EventLogging }
+import org.trustedanalytics.atk.event.EventLogging
 
 /**
  * Frame storage in HDFS.

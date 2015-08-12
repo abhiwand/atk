@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015 Intel Corporation
+# Copyright (c) 2015 Intel Corporation 
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 #
 
 import unittest
-import trustedanalytics as ia
+import trustedanalytics as ta
 
 # show full stack traces
-ia.errors.show_details = True
-ia.loggers.set_api()
+ta.errors.show_details = True
+ta.loggers.set_api()
 # TODO: port setup should move to a super class
-if ia.server.port != 19099:
-    ia.server.port = 19099
-ia.connect()
+if ta.server.port != 19099:
+    ta.server.port = 19099
+ta.connect()
 
 class FrameCategorySummaryTest(unittest.TestCase):
     """
@@ -39,11 +39,11 @@ class FrameCategorySummaryTest(unittest.TestCase):
     def setUp(self):
         print "define csv file"
         schema = [("source",str),("target",str)]
-        self.csv = ia.CsvFile("/datasets/noun_graph_small.csv", schema)
+        self.csv = ta.CsvFile("/datasets/noun_graph_small.csv", schema)
 
     def test_category_summary_topk(self):
         print "create frame"
-        frame = ia.Frame(self.csv)
+        frame = ta.Frame(self.csv)
 
         print "compute category summary"
         cm = frame.categorical_summary(('source', {'top_k' : 2}))
@@ -58,7 +58,7 @@ class FrameCategorySummaryTest(unittest.TestCase):
 
     def test_category_summary_threshold(self):
         print "create frame"
-        frame = ia.Frame(self.csv)
+        frame = ta.Frame(self.csv)
 
         print "compute category summary"
         cm = frame.categorical_summary(('source', {'threshold' : 0.5}))
@@ -71,7 +71,7 @@ class FrameCategorySummaryTest(unittest.TestCase):
 
     def test_category_summary_both(self):
         print "create frame"
-        frame = ia.Frame(self.csv)
+        frame = ta.Frame(self.csv)
 
         print "compute category summary"
         cm = frame.categorical_summary(('source', {'top_k' : 2}), ('target', {'threshold' : 0.5}))
@@ -94,7 +94,7 @@ class FrameCategorySummaryTest(unittest.TestCase):
 
     def test_category_summary_none(self):
         print "create frame"
-        frame = ia.Frame(self.csv)
+        frame = ta.Frame(self.csv)
 
         print "compute category summary"
         cm = frame.categorical_summary('source','target')

@@ -16,16 +16,11 @@
 
 package org.trustedanalytics.atk.engine.command
 
-import java.io.File
-import java.nio.file.{ FileSystems, Files }
-
-import sys.process._
-
 import org.trustedanalytics.atk.component.ClassLoaderAware
 import org.trustedanalytics.atk.domain._
 import org.trustedanalytics.atk.engine._
 import org.trustedanalytics.atk.engine.plugin.{ Invocation, CommandPlugin }
-import org.trustedanalytics.atk.engine.util.{ JvmMemory }
+import org.trustedanalytics.atk.engine.util.JvmMemory
 import org.trustedanalytics.atk.{ EventLoggingImplicits, NotFoundException }
 import spray.json._
 import scala.concurrent._

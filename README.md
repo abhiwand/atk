@@ -1,12 +1,14 @@
 ATK
 ===
 
+Analytics Toolkit
+
 # Folders Overview
 * bin/ - script for starting REST server, gremlin shell
-* conf/ - configuration templates for setting up a system, put your application.conf here for running out of source_code
+* conf/ - configuration templates for setting up a system, put your application.conf here for running out of source code
 * deploy/ - a module for creating an uber jar needed for deployment on Analytics PaaS.
-* doc/ - end user docs for using the system (doc for specific plugins goes elsewhere)
-* doc-api-examples/ - examples of api usage for end user docs
+* doc/ - end user docs for the system (except doc for specific plugins goes in the plugins themselves)
+* doc-api-examples/ - examples of api usage for plugins
 * engine/
   * engine-core/ - loads and executes plugins and provides the basic services that plugins need.
   * interfaces/ - interfaces the Engine exposes to the REST server. (we should move plugin args/return values out of here)
@@ -37,14 +39,12 @@ ATK
 * Use bin/rest-server.sh to start the server
 * cd /python
 * ipython
-  * import intelanalytics as ia
+  * import trustedanalytics as ia
   * ia.connect()
 
 # Developer Todo
 * Most items under misc should move to separate repos
-* All plugins should move to plugin modules (a few lingering plugins under engine-core)
-* Replace Slick with something nicer (even straight JDBC would be better)
-* Replace Spray DSL with something nicer (the DSL is confusing to use and our REST layer is too thin to make people learn a DSL)
+* Enable lazy execution and delayed execution. We have a plan where SparkContexts can be re-used and only shutdown when needed.
 * Properly support directed and undirected graphs (get rid of "bi-directional")
 * Data types in graphs/frames needs to be extended greatly
 * Improve Plugins
@@ -54,6 +54,10 @@ ATK
   * Need many more extension points for 3rd parties
   * Meta-programming needs to be expanded to support more kinds of objects
   * Nicer interfaces for plugin authors
+* All plugins should move to plugin modules (a few lingering plugins under engine-core)
+* Add support for Spark's dataframes
+* Replace Slick with something simpler (even straight JDBC would be better, everyone already knows SQL and we aren't getting enough value to justify the learning curve for Slick)
+* Replace Spray DSL with something simpler (the DSL is confusing to use and our REST layer is too thin to make people learn a DSL)
 * Integration tests need support added to be able to test Giraph and Titan functions
 * testutils should probably merge into engine-core
 * giraph-plugins needs refactoring of packages (the current hierarchy is very poorly organized)
@@ -63,5 +67,4 @@ ATK
 * Auto-conversion of return types
 * Frames should go back to mutable and immutability should be re-implemented but where frames can keep stable ids
 * Launcher code needs simplification and tests (it doesn't seem to setup classloaders all of the way how we want)
-* Add support for Spark's dataframes
-* Enable lazy execution and delayed execution. We have a plan where SparkContexts can be re-used and only shutdown when needed.
+

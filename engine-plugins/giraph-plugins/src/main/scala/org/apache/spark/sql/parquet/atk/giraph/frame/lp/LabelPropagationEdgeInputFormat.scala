@@ -13,10 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
-
 package org.apache.spark.sql.parquet.atk.giraph.frame.lp
 
-import org.trustedanalytics.atk.giraph.lp.LabelPropagationConfiguration
+import org.trustedanalytics.atk.giraph.config.lp.LabelPropagationConfiguration
 import org.trustedanalytics.atk.engine.frame.RowWrapper
 import org.apache.giraph.edge.{ DefaultEdge, Edge }
 import org.apache.giraph.io._

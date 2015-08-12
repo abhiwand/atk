@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-package org.apache.spark.engine.spark
+package org.apache.spark.engine
 
 import org.trustedanalytics.atk.domain.command.Command
 import org.joda.time.DateTime
@@ -27,11 +27,8 @@ import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.TaskContext
 import org.trustedanalytics.atk.engine.CommandProgressUpdater
-import org.apache.spark.engine.SparkProgressListener
 import org.trustedanalytics.atk.engine.{ ProgressInfo, TaskProgressInfo }
 import org.scalatest.mock.MockitoSugar
-
-import scala.collection.immutable.HashMap
 
 class ProgressListenerTest extends WordSpec with Matchers with MockitoSugar {
 

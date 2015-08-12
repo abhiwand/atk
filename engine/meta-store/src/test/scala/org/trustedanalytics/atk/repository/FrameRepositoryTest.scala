@@ -18,7 +18,7 @@ package org.trustedanalytics.atk.repository
 
 import org.trustedanalytics.atk.domain.frame.DataFrameTemplate
 import org.trustedanalytics.atk.domain.graph.{ GraphEntity, GraphTemplate }
-import org.joda.time.{ DateTime }
+import org.joda.time.DateTime
 import org.scalatest.Matchers
 
 class FrameRepositoryTest extends SlickMetaStoreH2Testing with Matchers {

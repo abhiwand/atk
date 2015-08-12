@@ -16,12 +16,6 @@
 
 package org.trustedanalytics.atk.giraph.algorithms.lbp;
 
-import org.trustedanalytics.atk.giraph.io.VertexData4LBPWritable;
-import org.trustedanalytics.atk.giraph.io.VertexData4LBPWritable.VertexType;
-import org.trustedanalytics.atk.giraph.io.IdWithVectorMessage;
-
-import org.trustedanalytics.atk.giraph.lbp.LoopyBeliefPropagationConfig;
-import org.trustedanalytics.atk.giraph.lbp.LoopyBeliefPropagationConfiguration;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
@@ -41,6 +35,11 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.function.Functions;
+import org.trustedanalytics.atk.giraph.config.lbp.LoopyBeliefPropagationConfig;
+import org.trustedanalytics.atk.giraph.config.lbp.LoopyBeliefPropagationConfiguration;
+import org.trustedanalytics.atk.giraph.io.IdWithVectorMessage;
+import org.trustedanalytics.atk.giraph.io.VertexData4LBPWritable;
+import org.trustedanalytics.atk.giraph.io.VertexData4LBPWritable.VertexType;
 
 import java.io.IOException;
 import java.util.HashMap;
