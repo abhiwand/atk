@@ -267,12 +267,11 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
 
     val columnNames = columnNamesAndAscending.map(_._1)
     val ascendingPerColumn = columnNamesAndAscending.map(_._2)
-    val pairRdd = mapRows(row => (row.values(columnNames), row.data))
 
     implicit val multiColumnOrdering = new MultiColumnOrdering(ascendingPerColumn)
 
     // ascending is always true here because we control in the ordering
-    val sortedRows = pairRdd.sortByKey(ascending = true).values
+    val sortedRows = this.sortBy(row => rowWrapper(row).values(columnNames), ascending = true)
     new FrameRdd(frameSchema, sortedRows)
   }
 
