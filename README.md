@@ -1,12 +1,14 @@
 ATK
 ===
 
+Analytics Toolkit
+
 # Folders Overview
 * bin/ - script for starting REST server, gremlin shell
 * conf/ - configuration templates for setting up a system, put your application.conf here for running out of source code
 * deploy/ - a module for creating an uber jar needed for deployment on Analytics PaaS.
-* doc/ - end user docs for using the system (doc for specific plugins goes elsewhere)
-* doc-api-examples/ - examples of api usage for end user docs
+* doc/ - end user docs for the system (except doc for specific plugins goes in the plugins themselves)
+* doc-api-examples/ - examples of api usage for plugins
 * engine/
   * engine-core/ - loads and executes plugins and provides the basic services that plugins need.
   * interfaces/ - interfaces the Engine exposes to the REST server. (we should move plugin args/return values out of here)
